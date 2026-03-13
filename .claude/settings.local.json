@@ -36,7 +36,8 @@
       "Agent",
       "WebFetch(domain:www.zebest-3000.com)",
       "Read(//c/Users/wdubo/AppData/**)",
-      "Read(//c/Users/wdubo/**)"
+      "Read(//c/Users/wdubo/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)"
     ],
     "deny": [
       "Bash(git push --force*)",
