@@ -21,6 +21,56 @@
       "triggers": { "gives_boules": true, "starts_intro": true }
     },
     {
+      "id": "villager_1",
+      "name": "Monique",
+      "type": "villager",
+      "map": "village_depart",
+      "tile_x": 22, "tile_y": 14,
+      "facing": "left",
+      "sprite": "npc_villager_1",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Bienvenue au village, petit !",
+        "Tu sais, ici, tout le monde joue a la petanque.",
+        "Va voir le Vieux Maitre pres de la fontaine."
+      ]
+    },
+    {
+      "id": "villager_2",
+      "name": "Fernand",
+      "type": "villager",
+      "map": "village_depart",
+      "tile_x": 8, "tile_y": 17,
+      "facing": "right",
+      "sprite": "npc_villager_2",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Ah, les cigales chantent aujourd'hui...",
+        "Il fait bon vivre en Provence !"
+      ]
+    },
+    {
+      "id": "village_dresseur",
+      "name": "Thierry",
+      "type": "trainer",
+      "map": "village_depart",
+      "tile_x": 20, "tile_y": 20,
+      "facing": "left",
+      "sprite": "npc_dresseur_1",
+      "view_distance": 3,
+      "difficulty": "easy",
+      "terrain": "terre",
+      "format": "tete_a_tete",
+      "dialogue_before": [
+        "He ! Tu veux jouer a la petanque ?",
+        "Allez, on fait une partie sur le terrain !"
+      ],
+      "dialogue_after": [
+        "Bien joue ! Tu m'as eu cette fois.",
+        "Le Vieux Maitre avait raison, t'as du talent."
+      ]
+    },
+    {
       "id": "marcel",
       "name": "Maitre Marcel",
       "type": "arena_master",

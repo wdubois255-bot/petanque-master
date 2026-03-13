@@ -1,112 +1,133 @@
 # HANDOFF - Petanque Master
-> Document de reprise pour nouvelle session Claude Code. Dernière MAJ : 13 mars 2026.
+> Document de reprise pour nouvelle session Claude Code. Derniere MAJ : 13 mars 2026.
 
-## ÉTAT ACTUEL DU PROJET
+## ETAT ACTUEL DU PROJET
 
-### Ce qui est FAIT et FONCTIONNEL ✅
+### Ce qui est FAIT et FONCTIONNEL
 
 **Sprint 0 (complet):**
-- Vite 8 + Phaser 3.90.0 + phaser3-rex-plugins installés
-- `vite.config.js` : `assetsInlineLimit: 0`, manualChunks phaser (fonction), `base: './'`
+- Vite 8 + Phaser 3.90.0 + phaser3-rex-plugins installes
+- `vite.config.js` : `assetsInlineLimit: 0`, manualChunks phaser, `base: './'`
 - `index.html` : CSS pixel art, letterboxing `#3A2E28`
-- `src/main.js` + `src/config.js` : résolution 416x240, Arcade Physics, pixelArt: true
+- `src/main.js` + `src/config.js` : resolution 416x240, Arcade Physics, pixelArt: true
 - `src/utils/Constants.js` : toutes les constantes du PLAN_MVP.md
-- `public/data/` : boules.json, npcs.json, progression.json (schémas complets du plan)
-- `.github/workflows/deploy.yml` : GitHub Actions → GitHub Pages
-- `.gitignore`, git init, 2 commits sur branche master
-- Git config : user=WDB, email=wdubois255@gmail.com
+- `public/data/` : boules.json, npcs.json, progression.json
+- `.github/workflows/deploy.yml` : GitHub Actions -> GitHub Pages
+- Git sur GitHub : https://github.com/wdubois255-bot/petanque-master
 
-**Sprint 1 (moteur pétanque - fonctionnel, nécessite tuning):**
-- `src/petanque/Ball.js` : physique custom, friction linéaire, collisions élastiques cercle-cercle, out of bounds = mort FIPJP
-- `src/petanque/Cochonnet.js` : hérite Ball, masse 30g, petit rayon
-- `src/petanque/PetanqueEngine.js` : state machine FIPJP complète (COCHONNET_THROW → FIRST_BALL → SECOND_TEAM_FIRST → PLAY_LOOP → WAITING_STOP → SCORE_MENE → MENE_DEAD → GAME_OVER), scoring correct, victoire à 13 pts
-- `src/petanque/AimingSystem.js` : drag-and-release slingshot, flèche colorée (vert/jaune/rouge), dead zone 15px, annulation Escape
-- `src/petanque/PetanqueAI.js` : 3 niveaux (EASY/MEDIUM/HARD), décision pointer vs tirer
-- `src/ui/ScorePanel.js` : panneau score, boules restantes, numéro de mène
-- `src/scenes/BootScene.js` : écran titre "Cliquer pour jouer" (unlock audio)
-- `src/scenes/PetanqueScene.js` : terrain vertical 90x210px, cercle de lancer, assemble tout
-- Indicateur BEST : halo vert (joueur gagne) ou rouge (IA gagne) sur la boule la plus proche
+**Sprint 1 (moteur petanque - fonctionnel):**
+- `src/petanque/Ball.js` : physique custom, friction lineaire, collisions elastiques
+- `src/petanque/Cochonnet.js` : herite Ball, masse 30g, petit rayon
+- `src/petanque/PetanqueEngine.js` : state machine FIPJP complete, scoring correct, victoire a 13 pts
+- `src/petanque/AimingSystem.js` : drag-and-release slingshot, fleche coloree, dead zone 15px
+- `src/petanque/PetanqueAI.js` : 3 niveaux (EASY/MEDIUM/HARD), pointer vs tirer
+- `src/ui/ScorePanel.js` : panneau score, boules restantes, numero de mene
+- Indicateur BEST : halo vert (joueur gagne) ou rouge (IA gagne)
+- Ecran Game Over : overlay sombre, score final, bouton Rejouer/Continuer
+- Physique roulement corrigee : formule v0 = sqrt(2 * friction * distance)
 
-### Vérifié par Playwright (tests automatisés) ✅
+**Sprint 2 (monde ouvert - fonctionnel):**
+- `src/world/TilesetGenerator.js` : 14 types de tiles generes en canvas (herbe, chemin, murs, eau, maisons, arbres, fleurs, clotures, terrain petanque)
+- `src/world/SpriteGenerator.js` : generation de spritesheets 16x24 pour personnages (6 palettes: joueur, maitre, marcel, villageois, dresseur)
+- `src/world/MapManager.js` : carte village_depart 30x30 tiles procedural (maisons, chemins croises, terrain petanque cloture, arbres, eau, fleurs)
+- `src/world/NPCManager.js` : gestion des PNJ par map, collision, lookup
+- `src/entities/Player.js` : mouvement grid-based avec tween 200ms, animations 4 directions x 4 frames, input fleches + ZQSD, collision map + NPC
+- `src/entities/NPC.js` : idle (changement direction), line-of-sight (trainers), encounter ("!" + marche vers joueur), dialogue, battle trigger
+- `src/ui/DialogBox.js` : typewriter effect, avancer Espace/Entree/clic, skip rapide, fleche clignotante
+- `src/scenes/OverworldScene.js` : charge map + NPC + joueur, camera follow, dialogue, transition vers combat
+- Transition exploration <-> combat petanque : flash + fadeOut, sleep/wake OverworldScene, retour avec resultat
+- 5 PNJ dans village_depart : Le Vieux Maitre (mentor), Monique (villageoise), Fernand (villageois), Thierry (dresseur, declenche combat)
+- `src/scenes/BootScene.js` : ecran titre avec texte clignotant, charge JSON data
+
+### Verifie par Playwright (tests automatises)
 - 0 erreurs JS
-- Cochonnet lancé correctement (atterrit au milieu du terrain)
-- Boules joueur et IA visibles, dans le terrain
-- Scoring fonctionne (ex: "L'adversaire gagne 3 points !")
-- Transition entre mènes (terrain nettoyé, nouvelle mène)
-- Score panel mis à jour en temps réel
-- State machine alterne joueur/IA correctement
-- Playwright + test script dans `test-game.mjs` et `screenshots/`
+- OverworldScene se charge et s'affiche correctement
+- Joueur se deplace sur la carte
+- PNJ visibles et bien places
+- Tilemap procedural s'affiche (herbe, chemins, terrain, arbres, maisons)
+- Camera suit le joueur
+- Tests dans `test-game.mjs` (petanque) et `test-overworld.mjs` (monde ouvert)
 
-## CE QU'IL RESTE À FAIRE / AMÉLIORER
+## CE QU'IL RESTE A FAIRE
 
-### Tuning prioritaire (avant Sprint 2)
-1. **Les boules du joueur tombent trop court** — le Playwright drag est limité, mais un humain peut faire mieux. À tester manuellement avec `npm run dev`.
-2. **L'IA semble mieux viser que le joueur** (0-6 dans le test auto) — vérifier que la puissance du joueur est bien calibrée.
-3. **Pas encore de message de victoire/défaite persistant** — le GAME_OVER affiche un texte mais pas d'écran dédié ni de bouton "Rejouer".
-4. **Pas de son** — à ajouter plus tard (Sprint 4).
+### Tuning
+1. **Dialogue non teste en auto** - le Playwright ne positionne pas le joueur assez pres du maitre. Tester manuellement.
+2. **Transition combat** - non testee automatiquement. Tester manuellement en allant devant Thierry.
+3. **Pas de son** - a ajouter Sprint 4.
 
-### Sprint 2 (monde ouvert) - PAS COMMENCÉ
-Voir PLAN_MVP.md pour le détail complet. Résumé :
-- Assets via PixelLab MCP (`/sprite`, `/tileset`)
-- Map Tiled village départ (30x30 tiles)
-- OverworldScene avec tilemap, camera follow, collision layers
-- Classe Player (mouvement grid-based, animations)
-- Classe NPC (détection, dialogue, patrol)
-- DialogBox (typewriter, 9-slice panel)
-- Transition exploration → combat pétanque
+### Sprint 3 (contenu et progression) - PAS COMMENCE
+Voir PLAN_MVP.md pour le detail complet. Resume :
+- Sauvegarde localStorage (SaveManager.js)
+- Ecran titre complet (Nouvelle Partie / Continuer)
+- Intro + choix des boules
+- 6 maps supplementaires (routes + villages arenes)
+- Systeme badges + gates
+- Doublettes (2v2)
+- 10+ dresseurs avec dialogues uniques
 
-### Sprint 3 et 4 - PAS COMMENCÉS
-Voir PLAN_MVP.md.
+### Sprint 4 (polish) - PAS COMMENCE
+- Assets definitifs PixelLab MCP
+- Effets visuels (particules, camera, zoom)
+- Audio complet (SFX + musique)
+- Arene finale Grand Marius
+- Responsive mobile
+- Deploy GitHub Pages
 
 ## COMMANDES
 
 ```bash
-npm run dev          # Serveur dev → http://localhost:8080
-npm run build        # Build production (vérifié, fonctionne)
+npm install          # Installer les dependances
+npm run dev          # Serveur dev -> http://localhost:8080
+npm run build        # Build production
 npm run preview      # Preview du build
-node test-game.mjs   # Test Playwright automatisé (screenshots/)
+node test-game.mjs   # Test Playwright petanque
+node test-overworld.mjs  # Test Playwright monde ouvert
 ```
 
-## FICHIERS CLÉS À LIRE EN PREMIER
+## FICHIERS CLES
 
-1. `CLAUDE.md` — conventions, stack, règles
-2. `PLAN_MVP.md` — plan complet 5 sprints avec schémas de données
-3. `src/utils/Constants.js` — toutes les constantes de jeu
-4. `src/petanque/PetanqueEngine.js` — le cœur du moteur (state machine)
-5. `public/data/boules.json` — physique, terrains, sets de boules
+1. `CLAUDE.md` - conventions, stack, regles
+2. `PLAN_MVP.md` - plan complet 5 sprints
+3. `src/utils/Constants.js` - toutes les constantes
+4. `src/petanque/PetanqueEngine.js` - state machine petanque
+5. `src/scenes/OverworldScene.js` - scene monde ouvert
+6. `src/world/MapManager.js` - carte village + collisions
+7. `src/entities/Player.js` - joueur avec mouvement grille
+8. `src/entities/NPC.js` - PNJ avec dialogue et combat
+9. `public/data/npcs.json` - donnees PNJ
 
-## ARCHITECTURE ACTUELLE
+## ARCHITECTURE
 
 ```
 src/
-  main.js              → new Phaser.Game(config)
-  config.js            → 416x240, Arcade, pixelArt, [BootScene, PetanqueScene]
+  main.js              -> new Phaser.Game(config)
+  config.js            -> 416x240, Arcade, [Boot, Overworld, Petanque]
   scenes/
-    BootScene.js       → "Cliquer pour jouer" + charge boules.json
-    PetanqueScene.js   → Terrain vertical, instancie Engine/Aiming/AI/Score
+    BootScene.js       -> Ecran titre + preload JSON
+    OverworldScene.js  -> Monde ouvert, camera, NPC, dialogue, combat
+    PetanqueScene.js   -> Terrain vertical, Engine/Aiming/AI/Score
+  entities/
+    Player.js          -> Mouvement grille, animation, input
+    NPC.js             -> Idle, line-of-sight, encounter, dialogue
   petanque/
-    Ball.js            → Physique custom (friction, collision élastique, bounds)
-    Cochonnet.js       → Ball spécialisé (petit, léger)
-    PetanqueEngine.js  → State machine FIPJP, scoring, mène morte
-    AimingSystem.js    → Drag slingshot, flèche, power calc
-    PetanqueAI.js      → 3 niveaux, pointer vs tirer
+    Ball.js            -> Physique custom (friction, collision)
+    Cochonnet.js       -> Ball specialise (petit, leger)
+    PetanqueEngine.js  -> State machine FIPJP, scoring, Game Over
+    AimingSystem.js    -> Drag slingshot, fleche, power
+    PetanqueAI.js      -> 3 niveaux, pointer vs tirer
+  world/
+    TilesetGenerator.js -> 14 tiles generes en canvas
+    SpriteGenerator.js  -> Spritesheets personnages generes en canvas
+    MapManager.js       -> Carte procedurale village_depart 30x30
+    NPCManager.js       -> Gestion PNJ par map
   ui/
-    ScorePanel.js      → Score, boules restantes, mène
+    DialogBox.js       -> Typewriter, avancer, skip
+    ScorePanel.js      -> Score petanque
   utils/
-    Constants.js       → Toutes les constantes
+    Constants.js       -> Toutes les constantes
 public/
   data/
-    boules.json        → 3 sets + cochonnet + physics + 4 terrains
-    npcs.json          → PNJ (3 maîtres, 3 dresseurs route 1)
-    progression.json   → 4 badges, gates, partenaires
-```
-
-## PROMPT SUGGÉRÉ POUR NOUVELLE SESSION
-
-```
-Lis HANDOFF.md, CLAUDE.md et PLAN_MVP.md. Le Sprint 0 et Sprint 1 sont faits
-(moteur pétanque jouable, testé par Playwright).
-
-Lance `npm run dev` et fais un playtest avec Playwright (node test-game.mjs).
-Corrige les problèmes que tu vois, puis enchaîne le Sprint 2 (monde ouvert).
+    boules.json        -> 3 sets + cochonnet + physics + 4 terrains
+    npcs.json          -> PNJ (maitre, villageois, dresseurs)
+    progression.json   -> 4 badges, gates, partenaires
 ```

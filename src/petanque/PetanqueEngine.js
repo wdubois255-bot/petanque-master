@@ -434,10 +434,13 @@ export default class PetanqueEngine {
             { fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center' }
         ).setOrigin(0.5).setDepth(101);
 
-        // Bouton Rejouer
+        // Bouton principal
+        const hasReturnScene = !!this.scene.returnScene;
+        const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
+
         const btn = this.scene.add.text(
             this.scene.scale.width / 2, this.scene.scale.height / 2 + 15,
-            '[ REJOUER ]',
+            btnLabel,
             {
                 fontFamily: 'monospace', fontSize: '10px',
                 color: '#F5E6D0', backgroundColor: '#C44B3F',
@@ -448,11 +451,20 @@ export default class PetanqueEngine {
         btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#D4654A' }));
         btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#C44B3F' }));
         btn.on('pointerdown', () => {
-            this.scene.scene.restart({
-                terrain: this.terrainType,
-                difficulty: this.scene.difficulty,
-                format: this.format
-            });
+            if (hasReturnScene) {
+                const returnScene = this.scene.scene.get(this.scene.returnScene);
+                this.scene.scene.stop();
+                this.scene.scene.wake(this.scene.returnScene);
+                if (returnScene && returnScene.returnFromBattle) {
+                    returnScene.returnFromBattle({ won: isVictory, opponentId: this.scene.opponentId });
+                }
+            } else {
+                this.scene.scene.restart({
+                    terrain: this.terrainType,
+                    difficulty: this.scene.difficulty,
+                    format: this.format
+                });
+            }
         });
     }
 

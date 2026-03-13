@@ -20,6 +20,9 @@ export default class PetanqueScene extends Phaser.Scene {
         this.terrainType = data.terrain || 'terre';
         this.difficulty = data.difficulty || 'easy';
         this.format = data.format || 'tete_a_tete';
+        this.opponentName = data.opponentName || 'Adversaire';
+        this.opponentId = data.opponentId || null;
+        this.returnScene = data.returnScene || null;
     }
 
     create() {
