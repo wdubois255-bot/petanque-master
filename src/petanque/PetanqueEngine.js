@@ -4,7 +4,7 @@ import {
     VICTORY_SCORE, BALL_COLORS, BALL_RADIUS,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     THROW_CIRCLE_RADIUS, MAX_THROW_SPEED,
-    LANDING_FACTOR_POINT, ROLLING_EFFICIENCY,
+    LANDING_FACTOR_POINT, ROLLING_EFFICIENCY, FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
     TERRAIN_WIDTH, TERRAIN_HEIGHT
 } from '../utils/Constants.js';
@@ -236,8 +236,12 @@ export default class PetanqueEngine {
         const targetX = Phaser.Math.Clamp(rawTargetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
         const targetY = Phaser.Math.Clamp(rawTargetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
-        // Rolling velocity: enough speed to cover rollDist with friction
-        const rollingSpeed = rollDist * ROLLING_EFFICIENCY * 0.08;
+        // Rolling velocity: derive speed from desired roll distance and friction
+        // Per frame: speed -= FRICTION_BASE * frictionMult, position += speed
+        // Total distance = v0^2 / (2 * perFrameFriction)
+        // So v0 = sqrt(2 * perFrameFriction * desiredDistance)
+        const perFrameFriction = FRICTION_BASE * this.frictionMult;
+        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * ROLLING_EFFICIENCY);
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 
@@ -411,10 +415,45 @@ export default class PetanqueEngine {
 
     _handleGameOver() {
         const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
-        const msg = winner === 'player'
+        const isVictory = winner === 'player';
+        const msg = isVictory
             ? 'VICTOIRE !\nVous etes le Petanque Master !'
             : 'DEFAITE...\nL\'adversaire l\'emporte.';
         this._showMessage(msg, true);
+
+        // Overlay sombre
+        const overlay = this.scene.add.graphics().setDepth(90);
+        overlay.fillStyle(0x3A2E28, 0.6);
+        overlay.fillRect(0, 0, this.scene.scale.width, this.scene.scale.height);
+
+        // Score final
+        const scoreText = `${this.scores.player} - ${this.scores.opponent}`;
+        this.scene.add.text(
+            this.scene.scale.width / 2, this.scene.scale.height / 2 - 20,
+            scoreText,
+            { fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center' }
+        ).setOrigin(0.5).setDepth(101);
+
+        // Bouton Rejouer
+        const btn = this.scene.add.text(
+            this.scene.scale.width / 2, this.scene.scale.height / 2 + 15,
+            '[ REJOUER ]',
+            {
+                fontFamily: 'monospace', fontSize: '10px',
+                color: '#F5E6D0', backgroundColor: '#C44B3F',
+                padding: { x: 8, y: 4 }
+            }
+        ).setOrigin(0.5).setDepth(101).setInteractive({ useHandCursor: true });
+
+        btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#D4654A' }));
+        btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#C44B3F' }));
+        btn.on('pointerdown', () => {
+            this.scene.scene.restart({
+                terrain: this.terrainType,
+                difficulty: this.scene.difficulty,
+                format: this.format
+            });
+        });
     }
 
     update(delta) {

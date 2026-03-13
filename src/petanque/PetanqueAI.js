@@ -54,7 +54,9 @@ export default class PetanqueAI {
         const powerNoise = this._noise(this.config.powerDev);
 
         const angle = idealAngle + angleNoise;
-        const idealPower = idealDist / 200;
+        // Power maps to fraction of max terrain distance (same as throwBall)
+        const maxDist = 210 * 0.85; // TERRAIN_HEIGHT * 0.85
+        const idealPower = idealDist / maxDist;
         const power = Phaser.Math.Clamp(idealPower + powerNoise, 0.1, 1.0);
 
         // Show brief aiming visualization
