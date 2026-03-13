@@ -39,8 +39,8 @@
 
 **Sprint 3 (contenu et progression - fonctionnel):**
 - **SaveManager.js** : localStorage, 3 slots, save/load/delete, auto-save toutes les 5 min + sur changement de map + apres combat
-- **TitleScene.js** : ecran titre PETANQUE MASTER, menu Nouvelle Partie / Continuer, selection de slot, boules decoratives
-- **IntroScene.js** : dialogue narratif avec le Papet (14 lignes, origines de la petanque, lore), choix de 3 sets de boules (Acier/Bronze/Chrome) avec cards visuelles et barres de stats
+- **TitleScene.js** : ecran titre PETANQUE MASTER, menu Nouvelle Partie / Continuer, selection de slot, boules decoratives, hint controles
+- **IntroScene.js** : dialogue narratif avec le Papet (14 lignes, origines de la petanque, lore), choix de 3 sets de boules (Acier/Bronze/Chrome) avec cards visuelles et barres de stats, hint controles
 - **3 maps procedurales** :
   - `village_depart` (30x30) : village natal, maisons, terrain petanque, PNJ
   - `route_1` (20x60) : route forestiere, 3 dresseurs, pont sur riviere, touriste
@@ -49,34 +49,48 @@
 - **Systeme de badges** : obtention apres victoire d'arene, notification visuelle "BADGE OBTENU !", flash dore
 - **Systeme de gates** : PNJ garde bloque passage sans badge, dialogue contextuel
 - **Maitre Marcel** : premier maitre d'arene, terrain terre, difficulte easy, 6 lignes dialogue avant/apres
-- **Rival Bastien "Le Fennec"** : petit-fils du Grand Marius, arrogant, dialogue qui evolue avec la progression
-- **13 PNJ dans npcs.json** :
-  - Village : Papet (mentor), Bastien (rival), Maman, Monique, Fernand, Thierry (dresseur)
-  - Route 1 : Jean-Pierre, Mireille, Rene (dresseurs), Bernard (touriste)
-  - Village Arene 1 : Josette, Tonton Robert (villageois), Garde Raymond (gate), Marcel (arene)
-- **Histoire/Lore enrichi** : references parodiques aux legendes de la petanque (Fazzino, Quintais, Foyot, Lacroix, La Marseillaise), origines "pes tanquats", culture provencale
-- **LORE_PETANQUE.md** : document de reference complet sur l'histoire reelle de la petanque et le mapping vers les personnages du jeu
+- **Rival Bastien "Le Fennec"** : inspire de Dylan Rocher, petit-fils du Grand Marius, arrogant, dialogue evolue
+- **13 PNJ dans npcs.json** avec dialogues riches inspires legendes petanque
+- **Hints de controles** : ecran titre, overworld (1ere fois), choix boules, combat petanque
+- **LORE_PETANQUE.md** : Quintais "Le Roi", Fazzino, Lacroix, Foyot, Rocher, Bonetto, Dream Team, La Marseillaise
 
-### Verifie par Playwright (tests automatises)
-- `test-sprint3.mjs` : TitleScene → IntroScene → choix boules → OverworldScene → 0 erreurs, sauvegarde OK
-- `test-transition.mjs` : village_depart → Route 1 transition OK, PNJ route 1 visibles
-- `test-game.mjs` : petanque engine fonctionnel (menes, scoring, IA)
-- `test-overworld.mjs` : monde ouvert basique (legacy, pre-Sprint 3)
+### Verifie par Playwright (tests automatises - TOUS PASSENT)
+- `test-sprint3.mjs` : TitleScene → IntroScene → choix boules → OverworldScene → Route 1 → sauvegarde **PASS**
+- `test-transition.mjs` : village → route_1 → village_arene_1 + retour bidirectionnel **PASS**
+- `test-game.mjs` : petanque engine (menes, scoring, IA, lancers) **0 erreurs**
+- Note : les tests utilisent `keyboard.down()/up()` (pas `press()`) pour compatibilite Phaser JustDown
 
-## CE QU'IL RESTE A FAIRE
+### Playtest FAIT (13 mars 2026) - FEEDBACK UTILISATEUR
 
-### Sprint 3 - A finir (optionnel)
-1. **Doublettes (2v2)** - format prevu pour Fanny et Ricardo, pas encore implemente
-2. **Partenaires recrutables** - Bob le Touriste, Mamie Rose, Le Petit Lucas
-3. **Route 2 + Village Arene 2 (Fanny)** - maps non creees
-4. **Route 3 + Village Arene 3 (Ricardo)** - maps non creees
+Le jeu a ete teste manuellement. Retour :
+- **Positif** : le jeu fonctionne bien mecaniquement, le lancer est agreable, le flow est coherent
+- **A ameliorer en PRIORITE** :
+  1. **Textes illisibles** : trop petits en pixel art, manque de contraste
+  2. **Joueurs invisibles en combat** : sur le terrain de petanque, on voit juste des ronds, pas les personnages
+  3. **Qualite visuelle** : les placeholders canvas sont fonctionnels mais moches, il faut du "beau pixel art"
+  4. **Systeme tir/point** : pouvoir choisir entre tirer (viser une boule adverse) et pointer (viser le cochonnet)
 
-### Sprint 4 (polish) - PAS COMMENCE
-- Assets definitifs PixelLab MCP
-- Effets visuels (particules, camera, zoom)
-- Audio complet (SFX + musique)
+## PRIORITES PROCHAINE SESSION
+
+### 1. POLISH VISUEL (priorite absolue)
+- Ameliorer la lisibilite des textes (taille, contraste, font)
+- Ajouter sprites joueur + adversaire VISIBLES sur le terrain de petanque (pas juste des boules)
+- Ameliorer la qualite du pixel art (TilesetGenerator, SpriteGenerator)
+- Rendre l'experience visuelle agreable et pro meme en placeholders
+
+### 2. GAMEPLAY PETANQUE
+- Systeme tir vs point : choisir entre viser le cochonnet (pointer) ou une boule adverse (tirer)
+- C'est un game changer pour la profondeur strategique
+
+### 3. CONTENU (Sprint 3 suite)
+- Route 2 + Village Arene 2 (Fanny, herbe)
+- Route 3 + Village Arene 3 (Ricardo, sable)
+- Doublettes (2v2), partenaires recrutables
+
+### 4. POLISH (Sprint 4)
+- Audio (SFX + musique chiptune)
+- Effets visuels (particules, camera shake, zoom)
 - Arene finale Grand Marius
-- Responsive mobile
 - Deploy GitHub Pages
 
 ## COMMANDES
@@ -86,27 +100,27 @@ npm install          # Installer les dependances
 npm run dev          # Serveur dev -> http://localhost:8080
 npm run build        # Build production
 npm run preview      # Preview du build
-node test-sprint3.mjs    # Test Sprint 3 complet (titre → intro → overworld)
-node test-transition.mjs # Test transitions de maps
-node test-game.mjs       # Test petanque engine
-node test-overworld.mjs  # Test monde ouvert (legacy)
+node test-sprint3.mjs    # Test Sprint 3 complet (PASS)
+node test-transition.mjs # Test transitions de maps (PASS)
+node test-game.mjs       # Test petanque engine (0 erreurs)
 ```
 
 ## FICHIERS CLES
 
 1. `CLAUDE.md` - conventions, stack, regles
 2. `PLAN_MVP.md` - plan complet 5 sprints
-3. `LORE_PETANQUE.md` - histoire petanque + mapping personnages
+3. `LORE_PETANQUE.md` - histoire petanque + mapping personnages (Quintais, Fazzino, Rocher, Bonetto...)
 4. `src/utils/Constants.js` - toutes les constantes
 5. `src/utils/SaveManager.js` - sauvegarde localStorage 3 slots
 6. `src/scenes/TitleScene.js` - ecran titre avec menu
 7. `src/scenes/IntroScene.js` - intro + choix boules
 8. `src/scenes/OverworldScene.js` - monde ouvert, transitions, gates, auto-save
 9. `src/scenes/PetanqueScene.js` - combat petanque
-10. `src/world/MapManager.js` - 3 maps procedurales + exits
-11. `src/entities/Player.js` - joueur avec mouvement grille
-12. `src/entities/NPC.js` - PNJ avec dialogue et combat
-13. `public/data/npcs.json` - 13 PNJ avec dialogues riches
+10. `src/petanque/PetanqueEngine.js` - moteur regles FIPJP + state machine
+11. `src/world/MapManager.js` - 3 maps procedurales + exits
+12. `src/entities/Player.js` - joueur avec mouvement grille
+13. `src/entities/NPC.js` - PNJ avec dialogue et combat
+14. `public/data/npcs.json` - 13 PNJ avec dialogues riches
 
 ## ARCHITECTURE
 
@@ -126,7 +140,7 @@ src/
   petanque/
     Ball.js            -> Physique custom (friction, collision)
     Cochonnet.js       -> Ball specialise (petit, leger)
-    PetanqueEngine.js  -> State machine FIPJP, scoring, Game Over
+    PetanqueEngine.js  -> State machine FIPJP, scoring, Game Over, hint controles
     AimingSystem.js    -> Drag slingshot, fleche, power
     PetanqueAI.js      -> 3 niveaux, pointer vs tirer
   world/
@@ -159,18 +173,18 @@ BootScene (preload JSON)
           → village_arene_1 (Marcel, Josette, Robert, Garde)
             → Combat Marcel (PetanqueScene, terre, easy)
             → Badge Terre obtenu !
-            → [Route 2... Sprint 3 suite ou Sprint 4]
+            → [Route 2... Sprint 3 suite]
 ```
 
 ## PERSONNAGES ET LORE
 
 | Personnage | Inspire de | Role |
 |-----------|-----------|------|
-| Le Vieux Papet | Henri Lacroix | Mentor, ancien champion |
-| Bastien "Le Fennec" | Rival shonen | Petit-fils de Marius, arrogant |
-| Marcel | Marco Foyot | 1er maitre d'arene, terre battue |
-| Fanny | Legende de Fanny | 2eme maitre, herbe (Sprint 4) |
-| Ricardo | Suchaud | 3eme maitre, sable (Sprint 4) |
-| Grand Marius | Fazzino "L'Ogre" | Boss final (Sprint 4) |
+| Le Vieux Papet | Henri Lacroix (GOAT pointeur) | Mentor, ancien champion |
+| Bastien "Le Fennec" | Dylan Rocher (jeune prodige) | Rival, petit-fils de Marius |
+| Marcel | Marco Foyot (showman veterran) | 1er maitre d'arene, terre battue |
+| Fanny | Legende de Fanny | 2eme maitre, herbe (a faire) |
+| Ricardo | Philippe Suchaud | 3eme maitre, sable (a faire) |
+| Grand Marius | Quintais "Le Roi" + Fazzino "L'Ogre" | Boss final, 20+ ans de domination |
 
-Voir `LORE_PETANQUE.md` pour le detail complet.
+Voir `LORE_PETANQUE.md` pour le detail complet (Dream Team, Bonetto, La Marseillaise, etc.).
