@@ -7,11 +7,12 @@ export const TILE_SIZE = 16;
 export const PLAYER_MOVE_DURATION = 200;
 export const PLAYER_ANIM_FPS = 8;
 
-// Petanque - terrain
-export const TERRAIN_WIDTH = 300;
-export const TERRAIN_HEIGHT = 80;
-export const COCHONNET_MIN_DIST = 96;
-export const COCHONNET_MAX_DIST = 160;
+// Petanque - terrain (vertical: player bottom, cochonnet top)
+// Display: narrow & tall, ratio ~15:4 FIPJP
+export const TERRAIN_WIDTH = 90;
+export const TERRAIN_HEIGHT = 210;
+export const COCHONNET_MIN_DIST = 100;
+export const COCHONNET_MAX_DIST = 170;
 
 // Petanque - physique
 export const FRICTION_BASE = 0.15;

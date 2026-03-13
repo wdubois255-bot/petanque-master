@@ -43,6 +43,7 @@ export default class AimingSystem {
         if (!this.isDragging) return;
         this.isDragging = false;
         this.arrowGfx.clear();
+        if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
 
         const dx = this.startX - this.currentX;
         const dy = this.startY - this.currentY;
@@ -52,7 +53,7 @@ export default class AimingSystem {
 
         // Slingshot: direction is opposite of drag
         const angle = Math.atan2(dy, dx);
-        const power = Math.min(dist / 150, 1);
+        const power = Math.min(dist / 60, 1);
 
         this.engine.aimingEnabled = false;
         this._executeThrow(angle, power);
@@ -71,11 +72,15 @@ export default class AimingSystem {
     cancel() {
         this.isDragging = false;
         this.arrowGfx.clear();
+        if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
     }
 
     update() {
         this.arrowGfx.clear();
-        if (!this.isDragging || !this.engine.aimingEnabled) return;
+        if (!this.isDragging || !this.engine.aimingEnabled) {
+            if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
+            return;
+        }
 
         const dx = this.startX - this.currentX;
         const dy = this.startY - this.currentY;
@@ -83,7 +88,7 @@ export default class AimingSystem {
 
         if (dist < DEAD_ZONE_PX) return;
 
-        const power = Math.min(dist / 150, 1);
+        const power = Math.min(dist / 60, 1);
 
         // Arrow color: green < 33%, yellow < 66%, red > 66%
         let color;

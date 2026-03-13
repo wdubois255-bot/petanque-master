@@ -5,7 +5,8 @@ import {
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     THROW_CIRCLE_RADIUS, MAX_THROW_SPEED,
     LANDING_FACTOR_POINT, ROLLING_EFFICIENCY,
-    THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION
+    THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
+    TERRAIN_WIDTH, TERRAIN_HEIGHT
 } from '../utils/Constants.js';
 
 const STATES = {
@@ -220,14 +221,23 @@ export default class PetanqueEngine {
         this.remaining[team]--;
         this.lastTeamPlayed = team;
 
-        // Calculate landing and rolling
-        const throwSpeed = power * MAX_THROW_SPEED;
-        const landDist = throwSpeed * LANDING_FACTOR_POINT * 5;
-        const rollingSpeed = throwSpeed * (1 - LANDING_FACTOR_POINT) * ROLLING_EFFICIENCY;
+        // Calculate landing point and rolling velocity
+        // Power maps to total distance: 0 = short, 1 = max terrain length
+        const maxDist = TERRAIN_HEIGHT * 0.85;
+        const totalDist = power * maxDist;
+        const landDist = totalDist * LANDING_FACTOR_POINT;
+        const rollDist = totalDist * (1 - LANDING_FACTOR_POINT);
 
-        const targetX = cx + Math.cos(angle) * landDist;
-        const targetY = cy + Math.sin(angle) * landDist;
+        const rawTargetX = cx + Math.cos(angle) * landDist;
+        const rawTargetY = cy + Math.sin(angle) * landDist;
 
+        // Clamp landing inside terrain
+        const margin = 8;
+        const targetX = Phaser.Math.Clamp(rawTargetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
+        const targetY = Phaser.Math.Clamp(rawTargetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
+
+        // Rolling velocity: enough speed to cover rollDist with friction
+        const rollingSpeed = rollDist * ROLLING_EFFICIENCY * 0.08;
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 
@@ -429,6 +439,9 @@ export default class PetanqueEngine {
         // Check bounds
         this._checkBoundsAll();
 
+        // Update BEST indicator
+        this._updateBestIndicator(anyMoving);
+
         // If waiting for stop and everything stopped
         if (this.state === STATES.WAITING_STOP && !anyMoving) {
             if (this._afterStopCallback) {
@@ -436,6 +449,33 @@ export default class PetanqueEngine {
                 this._afterStopCallback = null;
                 cb();
             }
+        }
+    }
+
+    _updateBestIndicator(anyMoving) {
+        if (!this._bestGfx) {
+            this._bestGfx = this.scene.add.graphics().setDepth(10);
+        }
+        this._bestGfx.clear();
+
+        if (!this.cochonnet || !this.cochonnet.isAlive || anyMoving) return;
+        if (this.balls.filter(b => b.isAlive).length === 0) return;
+
+        let bestBall = null;
+        let bestDist = Infinity;
+        for (const ball of this.balls) {
+            if (!ball.isAlive) continue;
+            const d = ball.distanceTo(this.cochonnet);
+            if (d < bestDist) {
+                bestDist = d;
+                bestBall = ball;
+            }
+        }
+
+        if (bestBall) {
+            const color = bestBall.team === 'player' ? 0x44CC44 : 0xCC4444;
+            this._bestGfx.lineStyle(1, color, 0.7);
+            this._bestGfx.strokeCircle(bestBall.x, bestBall.y, bestBall.radius + 3);
         }
     }
 
