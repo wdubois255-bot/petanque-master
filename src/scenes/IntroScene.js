@@ -156,6 +156,13 @@ export default class IntroScene extends Phaser.Scene {
                 this._updateSelection();
             });
         }
+
+        // Controls hint
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 12,
+            '←→  Choisir     Espace  Confirmer', {
+                fontFamily: 'monospace', fontSize: '6px', color: '#9E9E8E', align: 'center'
+            }).setOrigin(0.5);
+        this._uiElements.push(hint);
     }
 
     _drawStatBar(x, y, label, value, max) {

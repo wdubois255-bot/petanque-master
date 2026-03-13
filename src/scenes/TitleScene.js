@@ -43,6 +43,14 @@ export default class TitleScene extends Phaser.Scene {
         g.fillStyle(0xFFD700, 1);
         g.fillCircle(140, 222, 2);
 
+        // Controls hint
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 18, '↑↓  Naviguer     Espace  Confirmer', {
+            fontFamily: 'monospace',
+            fontSize: '6px',
+            color: '#9E9E8E',
+            align: 'center'
+        }).setOrigin(0.5);
+
         this._showMainMenu();
 
         // Keyboard

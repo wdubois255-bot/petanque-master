@@ -91,6 +91,7 @@ export default class PetanqueEngine {
                 this.currentTeam = 'player';
                 this.aimingEnabled = true;
                 this._showMessage('Lancez le cochonnet !');
+                this._showAimHint();
                 break;
 
             case STATES.FIRST_BALL:
@@ -534,6 +535,29 @@ export default class PetanqueEngine {
         if (this.scene.ai) {
             this.scene.ai.takeTurn();
         }
+    }
+
+    _showAimHint() {
+        if (this._aimHintShown) return;
+        this._aimHintShown = true;
+
+        const hint = this.scene.add.text(
+            this.scene.scale.width / 2,
+            this.scene.scale.height - 14,
+            'Glissez et relachez pour viser',
+            {
+                fontFamily: 'monospace', fontSize: '6px',
+                color: '#9E9E8E', align: 'center',
+                backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
+            }
+        ).setOrigin(0.5).setDepth(100);
+
+        this.scene.time.delayedCall(5000, () => {
+            this.scene.tweens.add({
+                targets: hint, alpha: 0, duration: 600,
+                onComplete: () => hint.destroy()
+            });
+        });
     }
 
     _showMessage(text, persistent = false) {

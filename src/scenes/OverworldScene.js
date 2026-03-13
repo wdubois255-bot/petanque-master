@@ -91,6 +91,12 @@ export default class OverworldScene extends Phaser.Scene {
         // Transition state
         this._transitioning = false;
 
+        // Show control hints on first visit
+        if (!this.gameState.flags._controls_shown) {
+            this.gameState.flags._controls_shown = true;
+            this._showControlHints();
+        }
+
         // Playtime tracking
         this._playtimeStart = Date.now();
 
@@ -331,6 +337,22 @@ export default class OverworldScene extends Phaser.Scene {
             spaceKey.off('down', handler);
         };
         spaceKey.on('down', handler);
+    }
+
+    _showControlHints() {
+        const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 16, 200, 24, 0x3A2E28, 0.9)
+            .setDepth(150).setScrollFactor(0);
+        const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16,
+            '↑←↓→  Se deplacer     Espace  Parler', {
+                fontFamily: 'monospace', fontSize: '6px', color: '#F5E6D0', align: 'center'
+            }).setOrigin(0.5).setDepth(151).setScrollFactor(0);
+
+        this.time.delayedCall(4000, () => {
+            this.tweens.add({
+                targets: [bg, text], alpha: 0, duration: 800,
+                onComplete: () => { bg.destroy(); text.destroy(); }
+            });
+        });
     }
 
     _autoSave() {
