@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(ls)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(cat *)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch*)",
+      "Bash(git checkout *)",
+      "Bash(git init*)",
+      "Bash(git stash*)",
+      "Bash(cd *)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Bash(python *)",
+      "Bash(pip *)",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite",
+      "NotebookEdit",
+      "Agent",
+      "WebFetch(domain:www.zebest-3000.com)",
+      "Read(//c/Users/wdubo/AppData/**)",
+      "Read(//c/Users/wdubo/**)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "Bash(git branch -D *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\wdubo\\OneDrive\\Bureau\\Projets\\Projet jeux web petanque Pokémon"
+    ]
+  }
+}

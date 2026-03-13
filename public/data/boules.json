@@ -1,0 +1,71 @@
+{
+  "sets": [
+    {
+      "id": "acier",
+      "name": "Boules d'Acier",
+      "description": "Equilibrees. Un bon compromis entre precision et puissance.",
+      "sprite": "boules_acier",
+      "color": "#A8B5C2",
+      "stats": {
+        "precision": 3,
+        "puissance": 3,
+        "masse": 700,
+        "rayon": 5
+      },
+      "bonus": null,
+      "lore": "Les classiques du boulodrome. Fiables, sans surprise."
+    },
+    {
+      "id": "bronze",
+      "name": "Boules de Bronze",
+      "description": "Lourdes et devastatrices. Ideales pour le tir et le carreau.",
+      "sprite": "boules_bronze",
+      "color": "#CD7F32",
+      "stats": {
+        "precision": 2,
+        "puissance": 4,
+        "masse": 800,
+        "rayon": 5.5
+      },
+      "bonus": "knockback_x1.2",
+      "lore": "Forgees par le vieux Marcel lui-meme. Ca fait mal."
+    },
+    {
+      "id": "chrome",
+      "name": "Boules de Chrome",
+      "description": "Legeres et precises. Parfaites pour poser au point.",
+      "sprite": "boules_chrome",
+      "color": "#E8E8E8",
+      "stats": {
+        "precision": 4,
+        "puissance": 2,
+        "masse": 620,
+        "rayon": 4.5
+      },
+      "bonus": "friction_x0.9",
+      "lore": "Polies comme un miroir. Glissent sur le terrain comme du beurre."
+    }
+  ],
+  "cochonnet": {
+    "masse": 30,
+    "rayon": 2,
+    "color": "#FFD700",
+    "sprite": "cochonnet"
+  },
+  "physics": {
+    "restitution_boule_boule": 0.85,
+    "restitution_boule_cochonnet": 0.7,
+    "friction_base": 0.15,
+    "speed_threshold": 0.3,
+    "max_throw_speed": 12,
+    "landing_factor_point": 0.65,
+    "landing_factor_tir": 0.3,
+    "rolling_efficiency": 0.7
+  },
+  "terrains": {
+    "terre": { "friction_mult": 1.0, "label": "Terre battue", "color_bg": "#C4854A", "particles": "dust_brown" },
+    "herbe": { "friction_mult": 1.8, "label": "Herbe", "color_bg": "#6B8E4E", "particles": "grass_blades" },
+    "sable": { "friction_mult": 3.0, "label": "Sable", "color_bg": "#E8D5B7", "particles": "sand_puff" },
+    "dalles": { "friction_mult": 0.7, "label": "Dalles de pierre", "color_bg": "#9E9E8E", "particles": "spark_stone" }
+  }
+}
