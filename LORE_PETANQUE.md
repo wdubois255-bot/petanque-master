@@ -15,11 +15,18 @@
 - **→ Parodie dans le jeu : "Le Grand Marius"** - le boss final, l'Ogre du Canton
   - Inspiré de Fazzino pour la longévité et le statut de légende vivante
 
-### Philippe Quintais - "Le Roi"
+### Philippe Quintais - "Le Roi" 👑
 - Né en 1967, **13 titres de Champion du Monde**, 12 titres de Champion de France
-- Membre de la "Dream Team" avec Suchaud et Lacroix (2001-2003)
-- Tireur exceptionnel, carreau à volonté
-- **→ Parodie : inspiré pour le concept de "Dream Team"** dans le lore du jeu
+- Surnommé **"Le Roi"** de la pétanque, considéré comme LE plus grand compétiteur
+- Tireur d'exception : carreau à volonté, régularité surhumaine, mental de champion
+- Membre fondateur de la "Dream Team" avec Suchaud et Lacroix
+- A dominé la pétanque mondiale pendant plus de 20 ans (années 90 à 2010+)
+- Encore actif en compétition, toujours redouté par les jeunes générations
+- En 2025, présent en finale de La Marseillaise (perdue contre les Malgaches)
+- **→ Parodie : inspiration principale pour "Le Grand Marius"** (le boss final)
+  - Le titre de "Roi" → Marius est surnommé "L'Ogre du Canton", roi incontesté
+  - Sa longévité et domination → Marius règne sur le Canton depuis des décennies
+  - Son aura d'invincibilité → le battre = accomplissement ultime du jeu
 
 ### Philippe Suchaud - "L'Autre Philippe"
 - **13 titres de Champion du Monde**, 11 de Champion de France
@@ -144,7 +151,7 @@
 | Marcel | Marco Foyot + vétéran bourru | 40 ans de terrain, terre battue, caractère fort |
 | Fanny | La légende de Fanny + fine stratège | Terrain herbe, finesse, ironie |
 | Ricardo | Suchaud + international | Terrain sable, technique exotique, flair |
-| Le Grand Marius | Christian Fazzino (L'Ogre) | Boss final, Joueur du Siècle, imbattable... en théorie |
+| Le Grand Marius | Quintais "Le Roi" + Fazzino "L'Ogre" | Boss final, roi incontesté du Canton, 20+ ans de domination |
 | Bastien "Le Fennec" | Dylan Rocher + rival shonen | Petit-fils de Marius, jeune prodige arrogant |
 | Jean-Pierre | Retraité passionné | Depuis 3 jours en retraite, joue H24 |
 | Mireille | Joueuse sous-estimée | Force féminine dans un milieu masculin |
