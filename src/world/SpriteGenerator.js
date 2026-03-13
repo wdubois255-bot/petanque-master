@@ -189,5 +189,39 @@ export const PALETTES = {
         shoes: '#3A2E28',
         eyes: '#3A2E28',
         hat: '#C44B3F'
+    },
+    npc_rival: {
+        skin: '#E8B890',
+        hair: '#1A1A2E',
+        shirt: '#2D2D44',
+        pants: '#1A1A2E',
+        shoes: '#0A0A15',
+        eyes: '#3A2E28',
+        hat: '#C44B3F'
+    },
+    npc_dresseur_2: {
+        skin: '#E8C8A0',
+        hair: '#C4854A',
+        shirt: '#9B7BB8',
+        pants: '#6B5A80',
+        shoes: '#3A2E28',
+        eyes: '#3A2E28'
+    },
+    npc_dresseur_3: {
+        skin: '#D4A880',
+        hair: '#C0C0C0',
+        shirt: '#6B8E4E',
+        pants: '#4A6A3A',
+        shoes: '#503A28',
+        eyes: '#3A2E28',
+        hat: '#8B6B4A'
+    },
+    npc_gate: {
+        skin: '#D4A880',
+        hair: '#4A3020',
+        shirt: '#4A5A6A',
+        pants: '#3A4A5A',
+        shoes: '#3A2E28',
+        eyes: '#3A2E28'
     }
 };

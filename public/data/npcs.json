@@ -2,7 +2,7 @@
   "npcs": [
     {
       "id": "maitre_vieux",
-      "name": "Le Vieux Maitre",
+      "name": "Le Vieux Papet",
       "type": "mentor",
       "map": "village_depart",
       "tile_x": 14, "tile_y": 10,
@@ -10,18 +10,68 @@
       "sprite": "npc_maitre",
       "view_distance": 0,
       "dialogue_default": [
-        "Ah, te voila ! Je t'attendais.",
-        "Tu veux devenir le meilleur bouliste du canton ?",
-        "Choisis bien tes boules, petit. C'est pour la vie !"
+        "Ah, te voila gamin ! Je t'attendais.",
+        "Moi c'est le Papet. Le meilleur bouliste que cette region ait connu.",
+        "Enfin... avant que je me casse le dos sur un carreau en 87.",
+        "Bref ! Tu veux devenir Petanque Master, non ?",
+        "Alors ecoute bien : la petanque, c'est pas un jeu.",
+        "C'est un art. Un combat. Une philosophie de vie !",
+        "Il te faudra battre les 3 Maitres d'Arene du canton.",
+        "Marcel, Fanny, Ricardo... et si t'es assez fort...",
+        "...le Grand Marius lui-meme t'attendra."
       ],
       "dialogue_after_intro": [
-        "Va defier Marcel au village voisin.",
-        "Et n'oublie pas : la petanque, c'est 80% de mental !"
+        "Tes boules te vont bien, petit.",
+        "Maintenant, prends la Route 1 vers le sud.",
+        "Le premier Maitre, Marcel, t'attend au village voisin.",
+        "Et souviens-toi : pointer, c'est reflechir. Tirer, c'est oser."
       ],
       "triggers": { "gives_boules": true, "starts_intro": true }
     },
     {
-      "id": "villager_1",
+      "id": "rival_bastien",
+      "name": "Bastien \"Le Fennec\"",
+      "type": "rival",
+      "map": "village_depart",
+      "tile_x": 17, "tile_y": 10,
+      "facing": "left",
+      "sprite": "npc_rival",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Tiens tiens... le fameux protege du Papet.",
+        "Moi c'est Bastien. Le petit-fils du Grand Marius.",
+        "On m'appelle Le Fennec. Rapide, malin, insaisissable.",
+        "La petanque coule dans mes veines depuis trois generations.",
+        "Toi ? T'as commence quand, hier ?",
+        "Mon grand-pere dit que le talent ca se transmet pas.",
+        "Ca s'herite. Et toi... t'as rien herite du tout.",
+        "On verra qui arrive en premier chez le Grand Marius. Ciao !"
+      ],
+      "dialogue_after": [
+        "... Tu te debrouilles pas trop mal.",
+        "T'as battu Marcel ? Mouais. Marcel c'est l'echauffement.",
+        "Le jour ou on s'affrontera vraiment...",
+        "...je te ferai embrasser Fanny. Crois-moi.",
+        "On se reverra, gamin. Compte la-dessus."
+      ]
+    },
+    {
+      "id": "villager_mere",
+      "name": "Maman",
+      "type": "villager",
+      "map": "village_depart",
+      "tile_x": 5, "tile_y": 7,
+      "facing": "down",
+      "sprite": "npc_villager_1",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Mon petit... tu pars deja ?",
+        "Promets-moi de bien manger et de ne pas rentrer trop tard.",
+        "Et si tu croises Marcel, dis-lui qu'il me doit un pastis !"
+      ]
+    },
+    {
+      "id": "villager_monique",
       "name": "Monique",
       "type": "villager",
       "map": "village_depart",
@@ -30,13 +80,13 @@
       "sprite": "npc_villager_1",
       "view_distance": 0,
       "dialogue_default": [
-        "Bienvenue au village, petit !",
-        "Tu sais, ici, tout le monde joue a la petanque.",
-        "Va voir le Vieux Maitre pres de la fontaine."
+        "Tu sais, ici tout le monde joue a la petanque.",
+        "Les hommes, les femmes, meme le chat de Fernand.",
+        "Va voir le Papet, il t'apprendra les bases."
       ]
     },
     {
-      "id": "villager_2",
+      "id": "villager_fernand",
       "name": "Fernand",
       "type": "villager",
       "map": "village_depart",
@@ -45,8 +95,10 @@
       "sprite": "npc_villager_2",
       "view_distance": 0,
       "dialogue_default": [
-        "Ah, les cigales chantent aujourd'hui...",
-        "Il fait bon vivre en Provence !"
+        "Les cigales chantent, le pastis est frais...",
+        "Que demander de plus ? Ah oui : une bonne partie !",
+        "Si tu vas vers le sud, fais gaffe aux dresseurs sur la route.",
+        "Y'a Jean-Pierre qui defie tout le monde depuis mardi."
       ]
     },
     {
@@ -63,11 +115,148 @@
       "format": "tete_a_tete",
       "dialogue_before": [
         "He ! Tu veux jouer a la petanque ?",
+        "Moi c'est Thierry. J'ai commence y'a 2 semaines.",
         "Allez, on fait une partie sur le terrain !"
       ],
       "dialogue_after": [
-        "Bien joue ! Tu m'as eu cette fois.",
-        "Le Vieux Maitre avait raison, t'as du talent."
+        "Ouah... t'es deja bon !",
+        "Le Papet a bien choisi son protege on dirait.",
+        "Bonne chance pour la suite, champion !"
+      ]
+    },
+    {
+      "id": "route1_dresseur_1",
+      "name": "Jean-Pierre",
+      "type": "trainer",
+      "map": "route_1",
+      "tile_x": 10, "tile_y": 15,
+      "facing": "left",
+      "sprite": "npc_dresseur_1",
+      "view_distance": 4,
+      "difficulty": "easy",
+      "terrain": "terre",
+      "format": "tete_a_tete",
+      "dialogue_before": [
+        "He toi ! Stop !",
+        "Moi c'est Jean-Pierre. Retraite depuis 3 jours.",
+        "Depuis, je fais que de la petanque. H24.",
+        "T'as pas le choix : on joue !"
+      ],
+      "dialogue_after": [
+        "Pfff... deja battu.",
+        "C'est pas grave, j'ai toute la retraite pour m'entrainer !",
+        "Continue tout droit, le village de Marcel est pas loin."
+      ]
+    },
+    {
+      "id": "route1_dresseur_2",
+      "name": "Mireille",
+      "type": "trainer",
+      "map": "route_1",
+      "tile_x": 5, "tile_y": 30,
+      "facing": "right",
+      "sprite": "npc_villager_1",
+      "view_distance": 3,
+      "difficulty": "easy",
+      "terrain": "terre",
+      "format": "tete_a_tete",
+      "dialogue_before": [
+        "Oh la la, un p'tit jeune !",
+        "Tu sais que la petanque c'est pas que pour les vieux ?",
+        "Allez, montre-moi ta technique, mignon !"
+      ],
+      "dialogue_after": [
+        "Et ben dis donc ! Ou t'as appris ca ?",
+        "Bravo petit. Mais Marcel, c'est autre chose..."
+      ]
+    },
+    {
+      "id": "route1_dresseur_3",
+      "name": "Rene",
+      "type": "trainer",
+      "map": "route_1",
+      "tile_x": 14, "tile_y": 45,
+      "facing": "down",
+      "sprite": "npc_dresseur_1",
+      "view_distance": 5,
+      "difficulty": "easy",
+      "terrain": "terre",
+      "format": "tete_a_tete",
+      "dialogue_before": [
+        "On joue pas a la petanque sans defier le Rene !",
+        "40 ans de terrain, gamin. 40 ANS !",
+        "Prepare tes boules."
+      ],
+      "dialogue_after": [
+        "Sacre... bleu.",
+        "T'as un don, gamin. Un vrai don.",
+        "Marcel va avoir du fil a retordre. Hehehe."
+      ]
+    },
+    {
+      "id": "route1_villager_1",
+      "name": "Touriste Bernard",
+      "type": "villager",
+      "map": "route_1",
+      "tile_x": 3, "tile_y": 22,
+      "facing": "right",
+      "sprite": "npc_villager_2",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Bonjour ! Moi c'est Bernard, je suis de Lille.",
+        "C'est magnifique ici ! Et cette petanque, quel sport !",
+        "J'ai entendu dire qu'il y a un Maitre d'Arene au prochain village."
+      ]
+    },
+    {
+      "id": "gate_route1",
+      "name": "Garde Raymond",
+      "type": "gate",
+      "map": "village_arene_1",
+      "tile_x": 15, "tile_y": 28,
+      "facing": "up",
+      "sprite": "npc_villager_2",
+      "view_distance": 0,
+      "requires_badge": "badge_marcel",
+      "dialogue_default": [
+        "Hola ! Tu veux aller sur la Route 2 ?",
+        "Faut d'abord battre Maitre Marcel.",
+        "C'est la regle du canton. Pas de badge, pas de passage !"
+      ],
+      "dialogue_after": [
+        "Le badge de Marcel ! Beau travail.",
+        "Allez, la Route 2 est a toi. Bonne chance !"
+      ]
+    },
+    {
+      "id": "arene1_villager_1",
+      "name": "Josette",
+      "type": "villager",
+      "map": "village_arene_1",
+      "tile_x": 6, "tile_y": 14,
+      "facing": "right",
+      "sprite": "npc_villager_1",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Tu viens defier Marcel ?",
+        "Il est costaud, mais entre nous...",
+        "...il perd toujours sa concentration apres le 3eme pastis."
+      ]
+    },
+    {
+      "id": "arene1_villager_2",
+      "name": "Tonton Robert",
+      "type": "villager",
+      "map": "village_arene_1",
+      "tile_x": 22, "tile_y": 10,
+      "facing": "left",
+      "sprite": "npc_villager_2",
+      "view_distance": 0,
+      "dialogue_default": [
+        "Marcel ? Un sacre bonhomme.",
+        "Il a commence la petanque avant de savoir marcher.",
+        "Litteralement. Son pere lui mettait une boule dans le berceau.",
+        "Mais bon, toi t'as l'air determine. Fonce !"
       ]
     },
     {
@@ -84,108 +273,21 @@
       "format": "tete_a_tete",
       "badge": "badge_marcel",
       "dialogue_before": [
-        "He petit ! Tu crois pouvoir battre le Marcel ?",
-        "J'ai 40 ans de terrain dans les pattes !",
-        "Allez, montre-moi ce que tu sais faire !"
+        "He la ! C'est qui ce mouflet ?",
+        "Le protege du Papet, hein ? Il m'a prevenu.",
+        "Moi c'est Marcel. 40 ans de terrain dans les pattes.",
+        "Ici c'est la terre battue. Mon domaine.",
+        "Chaque grain de poussiere me connait par son prenom !",
+        "Alors gamin... montre-moi si t'as des tripes !"
       ],
       "dialogue_after": [
-        "Sacre nom d'une boule...",
-        "Tu m'as eu, gamin. Tiens, prends ce badge.",
-        "Mais attention, Fanny va pas te faire de cadeau !"
+        "Sacre nom d'une boule en inox...",
+        "Tu... tu m'as battu ? MOI ? Sur MA terre ?!",
+        "Bon... le Papet avait raison. T'as quelque chose.",
+        "Tiens. Le Badge Terre. Tu l'as merite, gamin.",
+        "Mais fais-toi pas d'illusions...",
+        "Fanny, c'est une autre paire de boules. Litteralement."
       ]
-    },
-    {
-      "id": "fanny",
-      "name": "Maitre Fanny",
-      "type": "arena_master",
-      "map": "village_arene_2",
-      "tile_x": 15, "tile_y": 8,
-      "facing": "down",
-      "sprite": "npc_fanny",
-      "view_distance": 0,
-      "difficulty": "medium",
-      "terrain": "herbe",
-      "format": "doublette",
-      "badge": "badge_fanny",
-      "dialogue_before": [
-        "Tiens tiens, le protege de Marcel...",
-        "Sur l'herbe, c'est une autre chanson, mon petit.",
-        "Ici, faut de la finesse !"
-      ],
-      "dialogue_after": [
-        "Eh ben... pas mal du tout.",
-        "Tiens, ton badge. Tu l'as merite.",
-        "Ricardo t'attend sur la plage. Bonne chance !"
-      ]
-    },
-    {
-      "id": "ricardo",
-      "name": "Maitre Ricardo",
-      "type": "arena_master",
-      "map": "village_arene_3",
-      "tile_x": 15, "tile_y": 8,
-      "facing": "down",
-      "sprite": "npc_ricardo",
-      "view_distance": 0,
-      "difficulty": "hard",
-      "terrain": "sable",
-      "format": "doublette",
-      "badge": "badge_ricardo",
-      "dialogue_before": [
-        "Amigo ! Bienvenue sur MON sable.",
-        "Ici les boules s'arretent ou JE le decide.",
-        "Tu vas voir ce que c'est, la petanque !"
-      ],
-      "dialogue_after": [
-        "Madre mia... tu m'as eu.",
-        "Prends ce badge, champion.",
-        "Le Grand Marius t'attend. Prepare-toi bien !"
-      ]
-    },
-    {
-      "id": "route1_dresseur_1",
-      "name": "Jean-Pierre",
-      "type": "trainer",
-      "map": "route_1",
-      "tile_x": 10, "tile_y": 25,
-      "facing": "left",
-      "sprite": "npc_dresseur_1",
-      "view_distance": 4,
-      "difficulty": "easy",
-      "terrain": "terre",
-      "format": "tete_a_tete",
-      "dialogue_before": ["He toi ! Tu joues a la petanque ?", "On fait une partie ?"],
-      "dialogue_after": ["Pas mal du tout ! Continue comme ca."]
-    },
-    {
-      "id": "route1_dresseur_2",
-      "name": "Mireille",
-      "type": "trainer",
-      "map": "route_1",
-      "tile_x": 8, "tile_y": 40,
-      "facing": "right",
-      "sprite": "npc_dresseur_2",
-      "view_distance": 3,
-      "difficulty": "easy",
-      "terrain": "terre",
-      "format": "tete_a_tete",
-      "dialogue_before": ["Oh la la, un nouveau joueur !", "Montre-moi ta technique !"],
-      "dialogue_after": ["Bravo ! T'as du talent, petit."]
-    },
-    {
-      "id": "route1_dresseur_3",
-      "name": "Rene",
-      "type": "trainer",
-      "map": "route_1",
-      "tile_x": 14, "tile_y": 50,
-      "facing": "down",
-      "sprite": "npc_dresseur_3",
-      "view_distance": 5,
-      "difficulty": "easy",
-      "terrain": "terre",
-      "format": "tete_a_tete",
-      "dialogue_before": ["Hep ! On joue pas a la petanque sans defier Rene !"],
-      "dialogue_after": ["Ah, j'ai perdu... mais c'etait une belle partie !"]
     }
   ]
 }

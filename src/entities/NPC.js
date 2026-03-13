@@ -25,8 +25,11 @@ export default class NPC extends Phaser.GameObjects.Sprite {
         this.badge = data.badge || null;
 
         this.dialogueBefore = data.dialogue_before || data.dialogue_default || ['...'];
-        this.dialogueAfter = data.dialogue_after || ['...'];
+        this.dialogueAfter = data.dialogue_after || data.dialogue_default || ['...'];
         this.defeated = false;
+
+        // Keep raw data for special NPC types
+        this.npcData = data;
 
         this._exclamation = null;
         this._idleTimer = 0;

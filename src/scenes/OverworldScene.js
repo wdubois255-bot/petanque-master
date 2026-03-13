@@ -6,10 +6,12 @@ import MapManager from '../world/MapManager.js';
 import NPCManager from '../world/NPCManager.js';
 import Player from '../entities/Player.js';
 import DialogBox from '../ui/DialogBox.js';
+import { saveGame } from '../utils/SaveManager.js';
 
 export default class OverworldScene extends Phaser.Scene {
     constructor() {
         super('OverworldScene');
+        this._assetsGenerated = false;
     }
 
     init(data) {
@@ -19,17 +21,44 @@ export default class OverworldScene extends Phaser.Scene {
     }
 
     create() {
-        // Generate placeholder assets
-        generateTileset(this);
-        generateCharacterSprite(this, 'player', PALETTES.player);
-        generateCharacterSprite(this, 'npc_maitre', PALETTES.npc_vieux_maitre);
-        generateCharacterSprite(this, 'npc_marcel', PALETTES.npc_marcel);
-        generateCharacterSprite(this, 'npc_dresseur_1', PALETTES.npc_dresseur);
-        generateCharacterSprite(this, 'npc_villager_1', PALETTES.npc_villager_1);
-        generateCharacterSprite(this, 'npc_villager_2', PALETTES.npc_villager_2);
+        // Generate assets only once
+        if (!this._assetsGenerated) {
+            generateTileset(this);
+            const spriteKeys = [
+                ['player', PALETTES.player],
+                ['npc_maitre', PALETTES.npc_vieux_maitre],
+                ['npc_marcel', PALETTES.npc_marcel],
+                ['npc_dresseur_1', PALETTES.npc_dresseur],
+                ['npc_dresseur_2', PALETTES.npc_dresseur_2],
+                ['npc_dresseur_3', PALETTES.npc_dresseur_3],
+                ['npc_villager_1', PALETTES.npc_villager_1],
+                ['npc_villager_2', PALETTES.npc_villager_2],
+                ['npc_rival', PALETTES.npc_rival],
+                ['npc_gate', PALETTES.npc_gate],
+            ];
+            for (const [key, palette] of spriteKeys) {
+                if (!this.textures.exists(key)) {
+                    generateCharacterSprite(this, key, palette);
+                }
+            }
+            this._assetsGenerated = true;
+        }
 
         // Load NPC data
         this.npcData = this.cache.json.get('npcs');
+        this.progressionData = this.cache.json.get('progression');
+
+        // Game state from registry
+        this.gameState = this.registry.get('gameState') || {
+            player: { name: 'Joueur', map: this.spawnMap, x: this.spawnX, y: this.spawnY, facing: 'down' },
+            bouleType: 'acier',
+            badges: [],
+            flags: {},
+            partners: [],
+            scoreTotal: 0,
+            playtime: 0
+        };
+        this.registry.set('gameState', this.gameState);
 
         // Map
         this.mapManager = new MapManager(this);
@@ -47,17 +76,10 @@ export default class OverworldScene extends Phaser.Scene {
         this.cameras.main.startFollow(this.player, true, CAMERA_LERP, CAMERA_LERP);
         this.cameras.main.setBounds(0, 0, mapSize.w, mapSize.h);
         this.cameras.main.roundPixels = true;
+        this.cameras.main.fadeIn(300);
 
         // Dialog box
         this.dialogBox = new DialogBox(this);
-
-        // Game state
-        this.gameState = this.registry.get('gameState') || {
-            flags: {},
-            badges: [],
-            bouleType: 'acier'
-        };
-        this.registry.set('gameState', this.gameState);
 
         // Apply defeated flags to NPCs
         for (const npc of this.npcManager.npcs) {
@@ -66,17 +88,23 @@ export default class OverworldScene extends Phaser.Scene {
             }
         }
 
-        // Map exit handler
-        this.onMapExit = (exit) => {
-            // For now, just show a message
-            this.dialogBox.show('', ['Vous ne pouvez pas encore quitter le village.'], () => {
-                this.player.unfreeze();
-            });
-            this.player.freeze();
-        };
+        // Transition state
+        this._transitioning = false;
+
+        // Playtime tracking
+        this._playtimeStart = Date.now();
+
+        // Auto-save timer (every 5 min)
+        this._autoSaveTimer = this.time.addEvent({
+            delay: 300000,
+            callback: () => this._autoSave(),
+            loop: true
+        });
     }
 
     update(time, delta) {
+        if (this._transitioning) return;
+
         // Dialog takes priority
         if (this.dialogBox.isVisible) {
             this.dialogBox.update();
@@ -90,11 +118,110 @@ export default class OverworldScene extends Phaser.Scene {
             const facingTile = this.player.getFacingTile();
             const npc = this.npcManager.getNpcAt(facingTile.x, facingTile.y);
             if (npc) {
-                this.startDialogue(npc);
+                this._handleNPCInteraction(npc);
+                return;
+            }
+        }
+
+        // Check map exit after player moves
+        if (!this.player.isMoving) {
+            const exit = this.mapManager.isExit(this.player.tileX, this.player.tileY);
+            if (exit) {
+                this._handleMapExit(exit);
             }
         }
 
         this.npcManager.update(time, delta, this.player);
+    }
+
+    _handleNPCInteraction(npc) {
+        // Gate NPC: check badge
+        if (npc.type === 'gate') {
+            const requiredBadge = npc.npcData?.requires_badge;
+            if (requiredBadge && !this.gameState.badges.includes(requiredBadge)) {
+                this.startDialogue(npc);
+                return;
+            }
+            // Has the badge -> show pass dialogue
+            npc.defeated = true;
+            this.startDialogue(npc);
+            return;
+        }
+
+        // Rival NPC: dialogue changes with progression
+        if (npc.type === 'rival') {
+            const lines = this.gameState.badges.length > 0 ? npc.dialogueAfter : npc.dialogueBefore;
+            this.player.freeze();
+            this.dialogBox.show(npc.npcName, lines, () => {
+                this.player.unfreeze();
+            });
+            return;
+        }
+
+        // Mentor: after intro, show post-intro dialogue
+        if (npc.type === 'mentor' && this.gameState.flags.intro_done) {
+            this.player.freeze();
+            const afterLines = npc.npcData?.dialogue_after_intro || npc.dialogueAfter;
+            this.dialogBox.show(npc.npcName, afterLines, () => {
+                this.player.unfreeze();
+            });
+            return;
+        }
+
+        this.startDialogue(npc);
+    }
+
+    _handleMapExit(exit) {
+        if (!exit) {
+            // Blocked exit
+            this.player.freeze();
+            this.dialogBox.show('', ['Vous ne pouvez pas encore aller par la.'], () => {
+                this.player.unfreeze();
+            });
+            return;
+        }
+
+        // Check gate requirements
+        if (this.progressionData && this.progressionData.gates) {
+            const gate = this.progressionData.gates.find(g =>
+                g.map === exit.map || g.map === this.mapManager.currentMapName
+            );
+            if (gate && gate.requires) {
+                const missing = gate.requires.filter(b => !this.gameState.badges.includes(b));
+                if (missing.length > 0) {
+                    this.player.freeze();
+                    this.dialogBox.show('', ['Il faut d\'abord battre le Maitre d\'Arene pour continuer !'], () => {
+                        // Push player back one tile
+                        this.player.unfreeze();
+                    });
+                    return;
+                }
+            }
+        }
+
+        this._transitionToMap(exit.map, exit.spawnX, exit.spawnY);
+    }
+
+    _transitionToMap(mapName, spawnX, spawnY) {
+        this._transitioning = true;
+        this.player.freeze();
+
+        // Update playtime before save
+        this._updatePlaytime();
+
+        // Update game state
+        this.gameState.player.map = mapName;
+        this.gameState.player.x = spawnX;
+        this.gameState.player.y = spawnY;
+        this.registry.set('gameState', this.gameState);
+
+        // Auto-save on map change
+        this._autoSave();
+
+        this.cameras.main.fadeOut(200);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.restart({ map: mapName, spawnX, spawnY });
+        });
     }
 
     startDialogue(npc) {
@@ -112,8 +239,8 @@ export default class OverworldScene extends Phaser.Scene {
 
     _startBattle(npc) {
         this._currentOpponent = npc;
+        this._updatePlaytime();
 
-        // Flash + fade transition
         this.cameras.main.flash(200, 255, 255, 255);
         this.cameras.main.once('cameraflashcomplete', () => {
             this.cameras.main.fadeOut(300);
@@ -138,19 +265,87 @@ export default class OverworldScene extends Phaser.Scene {
         if (result.won && this._currentOpponent) {
             this._currentOpponent.markDefeated();
             this.gameState.flags[`${this._currentOpponent.id}_defeated`] = true;
+
             if (this._currentOpponent.badge) {
                 this.gameState.badges.push(this._currentOpponent.badge);
             }
+
+            this.gameState.scoreTotal = (this.gameState.scoreTotal || 0) + (result.playerScore || 0);
             this.registry.set('gameState', this.gameState);
+            this._autoSave();
 
             // Show victory dialogue
-            this.scene.time.delayedCall(500, () => {
+            this.time.delayedCall(500, () => {
                 const afterLines = this._currentOpponent.dialogueAfter;
-                this.dialogBox.show(this._currentOpponent.npcName, afterLines, () => {
-                    this.player.unfreeze();
-                });
+                const isMaster = this._currentOpponent.type === 'arena_master';
+
                 this.player.freeze();
+                this.dialogBox.show(this._currentOpponent.npcName, afterLines, () => {
+                    if (isMaster && this._currentOpponent.badge) {
+                        this._showBadgeObtained(this._currentOpponent.badge);
+                    } else {
+                        this.player.unfreeze();
+                    }
+                });
             });
         }
+    }
+
+    _showBadgeObtained(badgeId) {
+        const badge = this.progressionData?.badges?.find(b => b.id === badgeId);
+        const badgeName = badge ? badge.name : badgeId;
+
+        // Flash effect
+        this.cameras.main.flash(300, 255, 215, 0);
+
+        // Badge notification
+        const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 200, 80, 0x3A2E28, 0.95)
+            .setDepth(200).setStrokeStyle(2, 0xFFD700);
+
+        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, 'BADGE OBTENU !', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', align: 'center'
+        }).setOrigin(0.5).setDepth(201);
+
+        const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 5, badgeName, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#F5E6D0', align: 'center'
+        }).setOrigin(0.5).setDepth(201);
+
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 22, 'Appuyez sur Espace', {
+            fontFamily: 'monospace', fontSize: '6px', color: '#9E9E8E', align: 'center'
+        }).setOrigin(0.5).setDepth(201);
+
+        this.tweens.add({ targets: hint, alpha: { from: 1, to: 0.3 }, duration: 500, yoyo: true, repeat: -1 });
+
+        const cleanup = () => {
+            overlay.destroy();
+            title.destroy();
+            name.destroy();
+            hint.destroy();
+            this.player.unfreeze();
+        };
+
+        this.input.once('pointerdown', cleanup);
+        const spaceKey = this.input.keyboard.addKey('SPACE');
+        const handler = () => {
+            cleanup();
+            spaceKey.off('down', handler);
+        };
+        spaceKey.on('down', handler);
+    }
+
+    _autoSave() {
+        const slot = this.registry.get('currentSlot');
+        if (slot === undefined || slot === null) return;
+        this.gameState.player.map = this.mapManager.currentMapName || this.spawnMap;
+        this.gameState.player.x = this.player.tileX;
+        this.gameState.player.y = this.player.tileY;
+        this.gameState.player.facing = this.player.facing;
+        saveGame(slot, this.gameState);
+    }
+
+    _updatePlaytime() {
+        const now = Date.now();
+        this.gameState.playtime = (this.gameState.playtime || 0) + (now - this._playtimeStart);
+        this._playtimeStart = now;
     }
 }
