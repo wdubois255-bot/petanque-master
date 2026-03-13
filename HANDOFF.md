@@ -27,69 +27,68 @@
 - Physique roulement corrigee : formule v0 = sqrt(2 * friction * distance)
 
 **Sprint 2 (monde ouvert - fonctionnel):**
-- `src/world/TilesetGenerator.js` : 14 types de tiles generes en canvas
-- `src/world/SpriteGenerator.js` : generation de spritesheets 16x24, 10 palettes de personnages
+- `src/world/TilesetGenerator.js` : 14 types de tiles generes en canvas, dithering, palette enrichie
+- `src/world/SpriteGenerator.js` : generation de spritesheets 16x24, 10 palettes, shading/highlights
 - `src/world/MapManager.js` : carte village_depart 30x30 tiles procedural
 - `src/world/NPCManager.js` : gestion des PNJ par map, collision, lookup
 - `src/entities/Player.js` : mouvement grid-based, animations, input fleches + ZQSD
 - `src/entities/NPC.js` : idle, line-of-sight, encounter, dialogue, battle trigger
-- `src/ui/DialogBox.js` : typewriter effect, avancer Espace/Entree/clic
+- `src/ui/DialogBox.js` : typewriter effect, avancer Espace/Entree/clic, textes lisibles 10px + ombres
 - `src/scenes/OverworldScene.js` : charge map + NPC + joueur, camera follow, dialogue, transition vers combat
 - Transition exploration <-> combat petanque fonctionnelle
 
 **Sprint 3 (contenu et progression - fonctionnel):**
 - **SaveManager.js** : localStorage, 3 slots, save/load/delete, auto-save toutes les 5 min + sur changement de map + apres combat
-- **TitleScene.js** : ecran titre PETANQUE MASTER, menu Nouvelle Partie / Continuer, selection de slot, boules decoratives, hint controles
-- **IntroScene.js** : dialogue narratif avec le Papet (14 lignes, origines de la petanque, lore), choix de 3 sets de boules (Acier/Bronze/Chrome) avec cards visuelles et barres de stats, hint controles
+- **TitleScene.js** : ecran titre PETANQUE MASTER dore 24px, menu avec curseur triangle, ombres portees
+- **IntroScene.js** : dialogue narratif avec le Papet, choix de 3 sets de boules avec bordures dorees, stats ameliorees
 - **3 maps procedurales** :
   - `village_depart` (30x30) : village natal, maisons, terrain petanque, PNJ
   - `route_1` (20x60) : route forestiere, 3 dresseurs, pont sur riviere, touriste
   - `village_arene_1` (30x30) : village de Marcel, arene terre battue, villageois, garde
 - **Transitions de maps** : fadeOut/fadeIn, MapManager avec exits bidirectionnels, scene restart
-- **Systeme de badges** : obtention apres victoire d'arene, notification visuelle "BADGE OBTENU !", flash dore
+- **Systeme de badges** : obtention apres victoire d'arene, notification 14px doree "BADGE OBTENU !", flash dore
 - **Systeme de gates** : PNJ garde bloque passage sans badge, dialogue contextuel
 - **Maitre Marcel** : premier maitre d'arene, terrain terre, difficulte easy, 6 lignes dialogue avant/apres
 - **Rival Bastien "Le Fennec"** : inspire de Dylan Rocher, petit-fils du Grand Marius, arrogant, dialogue evolue
 - **13 PNJ dans npcs.json** avec dialogues riches inspires legendes petanque
-- **Hints de controles** : ecran titre, overworld (1ere fois), choix boules, combat petanque
 - **LORE_PETANQUE.md** : Quintais "Le Roi", Fazzino, Lacroix, Foyot, Rocher, Bonetto, Dream Team, La Marseillaise
 
+**Polish visuel (fait - 13 mars 2026):**
+- **Textes lisibles** : toutes les polices augmentees (7-8px -> 10-14px), ombres portees sur TOUS les textes, meilleur contraste
+- **Sprites sur terrain petanque** : joueur + adversaire visibles pendant le combat, palettes dynamiques par adversaire, indicateurs de tour (fleches animees), posture accroupie (pointer) / debout (tirer)
+- **Pixel art ameliore** :
+  - TilesetGenerator : dithering, profondeur, palette enrichie (30+ couleurs), details (briques, vagues, ecorce, petales)
+  - SpriteGenerator : shading darken/lighten, highlights, cols de chemise, mains visibles, outlines subtils
+- **Terrain petanque** : ombre portee, texture noise, double bordure, label "VS adversaire"
+
+**Systeme tir/point (fait - 13 mars 2026):**
+- **Choix avant chaque lancer** : boutons POINTER / TIRER avec clavier (P/T/fleches/espace) et souris
+- **Pointer** : trajectoire en cloche haute (plombee), arc -30px, roulement doux, efficacite 0.7
+- **Tirer** : trajectoire rasante, arc -8px, plus rapide (x0.7 duree), impact fort (camera shake x2, flash blanc), efficacite 1.2 (possibilite de carreau)
+- **IA mise a jour** : choisit tir/point selon strategie, fleche de visee coloree par mode
+- **Feedback visuel** : boules adverses surbrillance doree + crosshair quand mode tirer, label TIR/POINT sur fleche de visee
+
 ### Verifie par Playwright (tests automatises - TOUS PASSENT)
-- `test-sprint3.mjs` : TitleScene → IntroScene → choix boules → OverworldScene → Route 1 → sauvegarde **PASS**
-- `test-transition.mjs` : village → route_1 → village_arene_1 + retour bidirectionnel **PASS**
+- `test-sprint3.mjs` : TitleScene -> IntroScene -> choix boules -> OverworldScene -> Route 1 -> sauvegarde **PASS**
+- `test-transition.mjs` : village -> route_1 -> village_arene_1 + retour bidirectionnel **PASS**
 - `test-game.mjs` : petanque engine (menes, scoring, IA, lancers) **0 erreurs**
 - Note : les tests utilisent `keyboard.down()/up()` (pas `press()`) pour compatibilite Phaser JustDown
 
-### Playtest FAIT (13 mars 2026) - FEEDBACK UTILISATEUR
-
-Le jeu a ete teste manuellement. Retour :
-- **Positif** : le jeu fonctionne bien mecaniquement, le lancer est agreable, le flow est coherent
-- **A ameliorer en PRIORITE** :
-  1. **Textes illisibles** : trop petits en pixel art, manque de contraste
-  2. **Joueurs invisibles en combat** : sur le terrain de petanque, on voit juste des ronds, pas les personnages
-  3. **Qualite visuelle** : les placeholders canvas sont fonctionnels mais moches, il faut du "beau pixel art"
-  4. **Systeme tir/point** : pouvoir choisir entre tirer (viser une boule adverse) et pointer (viser le cochonnet)
-
 ## PRIORITES PROCHAINE SESSION
 
-### 1. POLISH VISUEL (priorite absolue)
-- Ameliorer la lisibilite des textes (taille, contraste, font)
-- Ajouter sprites joueur + adversaire VISIBLES sur le terrain de petanque (pas juste des boules)
-- Ameliorer la qualite du pixel art (TilesetGenerator, SpriteGenerator)
-- Rendre l'experience visuelle agreable et pro meme en placeholders
+### 1. SPRITES PIXEL ART (PixelLab MCP)
+- Utiliser `/sprite` pour generer de vrais sprites pixel art de qualite
+- Remplacer les placeholders canvas par des sprites PixelLab pour joueur, PNJ, maitres
+- Utiliser `/tileset` pour des tilesets plus beaux
 
-### 2. GAMEPLAY PETANQUE
-- Systeme tir vs point : choisir entre viser le cochonnet (pointer) ou une boule adverse (tirer)
-- C'est un game changer pour la profondeur strategique
-
-### 3. CONTENU (Sprint 3 suite)
+### 2. CONTENU (Sprint 3 suite)
 - Route 2 + Village Arene 2 (Fanny, herbe)
 - Route 3 + Village Arene 3 (Ricardo, sable)
 - Doublettes (2v2), partenaires recrutables
 
-### 4. POLISH (Sprint 4)
-- Audio (SFX + musique chiptune)
-- Effets visuels (particules, camera shake, zoom)
+### 3. POLISH (Sprint 4)
+- Audio (SFX via `/sfx` + musique chiptune)
+- Effets visuels (particules poussiere, zoom lancer)
 - Arene finale Grand Marius
 - Deploy GitHub Pages
 
@@ -112,15 +111,16 @@ node test-game.mjs       # Test petanque engine (0 erreurs)
 3. `LORE_PETANQUE.md` - histoire petanque + mapping personnages (Quintais, Fazzino, Rocher, Bonetto...)
 4. `src/utils/Constants.js` - toutes les constantes
 5. `src/utils/SaveManager.js` - sauvegarde localStorage 3 slots
-6. `src/scenes/TitleScene.js` - ecran titre avec menu
+6. `src/scenes/TitleScene.js` - ecran titre avec menu dore
 7. `src/scenes/IntroScene.js` - intro + choix boules
 8. `src/scenes/OverworldScene.js` - monde ouvert, transitions, gates, auto-save
-9. `src/scenes/PetanqueScene.js` - combat petanque
-10. `src/petanque/PetanqueEngine.js` - moteur regles FIPJP + state machine
-11. `src/world/MapManager.js` - 3 maps procedurales + exits
-12. `src/entities/Player.js` - joueur avec mouvement grille
-13. `src/entities/NPC.js` - PNJ avec dialogue et combat
-14. `public/data/npcs.json` - 13 PNJ avec dialogues riches
+9. `src/scenes/PetanqueScene.js` - combat petanque avec sprites joueur/adversaire
+10. `src/petanque/PetanqueEngine.js` - moteur regles FIPJP + tir/point + state machine
+11. `src/petanque/AimingSystem.js` - systeme de visee avec choix POINTER/TIRER
+12. `src/world/MapManager.js` - 3 maps procedurales + exits
+13. `src/entities/Player.js` - joueur avec mouvement grille
+14. `src/entities/NPC.js` - PNJ avec dialogue et combat
+15. `public/data/npcs.json` - 13 PNJ avec dialogues riches
 
 ## ARCHITECTURE
 
@@ -130,27 +130,27 @@ src/
   config.js            -> 416x240, Arcade, [Boot, Title, Intro, Overworld, Petanque]
   scenes/
     BootScene.js       -> Preload JSON + transition TitleScene
-    TitleScene.js      -> Nouvelle Partie / Continuer / Slots
-    IntroScene.js      -> Dialogue Papet + choix boules (3 sets)
+    TitleScene.js      -> Nouvelle Partie / Continuer / Slots (textes dores 24px)
+    IntroScene.js      -> Dialogue Papet + choix boules (3 sets, bordures dorees)
     OverworldScene.js  -> Monde ouvert, maps, NPC, dialogue, transitions, auto-save
-    PetanqueScene.js   -> Combat petanque (4 terrains, 3 IA)
+    PetanqueScene.js   -> Combat petanque (sprites joueur/adversaire, 4 terrains, 3 IA)
   entities/
     Player.js          -> Mouvement grille, animation, input
     NPC.js             -> Idle, line-of-sight, encounter, dialogue, types (mentor/rival/trainer/gate)
   petanque/
     Ball.js            -> Physique custom (friction, collision)
     Cochonnet.js       -> Ball specialise (petit, leger)
-    PetanqueEngine.js  -> State machine FIPJP, scoring, Game Over, hint controles
-    AimingSystem.js    -> Drag slingshot, fleche, power
-    PetanqueAI.js      -> 3 niveaux, pointer vs tirer
+    PetanqueEngine.js  -> State machine FIPJP, scoring, Game Over, tir/point
+    AimingSystem.js    -> Drag slingshot, choix POINTER/TIRER, fleche coloree
+    PetanqueAI.js      -> 3 niveaux, choisit tir/point selon strategie
   world/
-    TilesetGenerator.js -> 14 tiles generes en canvas
-    SpriteGenerator.js  -> 10 palettes, spritesheets generes en canvas
+    TilesetGenerator.js -> 14 tiles enrichis (dithering, 30+ couleurs)
+    SpriteGenerator.js  -> 10 palettes, shading/highlights, outlines
     MapManager.js       -> 3 maps procedurales (village, route, arene), exits bidirectionnels
     NPCManager.js       -> Gestion PNJ par map
   ui/
-    DialogBox.js       -> Typewriter, avancer, skip
-    ScorePanel.js      -> Score petanque
+    DialogBox.js       -> Typewriter, textes 10px + ombres, nom dore
+    ScorePanel.js      -> Score petanque 14px, bordure doree, mene, boules restantes
   utils/
     Constants.js       -> Toutes les constantes
     SaveManager.js     -> localStorage, 3 slots, format versionne
@@ -165,15 +165,16 @@ public/
 
 ```
 BootScene (preload JSON)
-  → TitleScene (Nouvelle Partie / Continuer)
-    → IntroScene (dialogue Papet + choix boules) [si nouvelle partie]
-    → OverworldScene (village_depart, spawn 14,20) [si continuer]
-      → village_depart (Papet, Bastien rival, Thierry dresseur, villageois)
-        → Route 1 (Jean-Pierre, Mireille, Rene, Bernard)
-          → village_arene_1 (Marcel, Josette, Robert, Garde)
-            → Combat Marcel (PetanqueScene, terre, easy)
-            → Badge Terre obtenu !
-            → [Route 2... Sprint 3 suite]
+  -> TitleScene (Nouvelle Partie / Continuer)
+    -> IntroScene (dialogue Papet + choix boules) [si nouvelle partie]
+    -> OverworldScene (village_depart, spawn 14,20) [si continuer]
+      -> village_depart (Papet, Bastien rival, Thierry dresseur, villageois)
+        -> Route 1 (Jean-Pierre, Mireille, Rene, Bernard)
+          -> village_arene_1 (Marcel, Josette, Robert, Garde)
+            -> Combat Marcel (PetanqueScene, terre, easy)
+              -> Choix POINTER/TIRER avant chaque lancer
+            -> Badge Terre obtenu !
+            -> [Route 2... Sprint 3 suite]
 ```
 
 ## PERSONNAGES ET LORE
