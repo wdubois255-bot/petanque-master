@@ -1,5 +1,31 @@
 # HANDOFF - Petanque Master
-> Document de reprise pour nouvelle session Claude Code. Derniere MAJ : 13 mars 2026.
+> Document de reprise pour nouvelle session Claude Code. Derniere MAJ : 14 mars 2026.
+
+## PROMPT PROCHAINE SESSION
+
+Copie ce bloc pour demarrer la prochaine conversation :
+
+```
+Lis HANDOFF.md et LORE_PETANQUE.md. Les Sprints 0, 1, 2, 3 + polish visuel + systeme tir/point sont faits. Le jeu tourne : `npm run dev`. Tests : `node test-sprint3.mjs`, `node test-transition.mjs`, `node test-game.mjs`.
+
+Parle en francais.
+
+PRIORITE 1 - Vrais sprites PixelLab :
+1. Utilise /sprite pour generer les sprites du joueur, du Papet, de Marcel, de Bastien, et des dresseurs
+2. Utilise /tileset pour generer un tileset provencal de qualite (herbe, chemin, maisons, eau, arbres)
+3. Remplace les placeholders canvas par les vrais sprites/tilesets dans le code
+
+PRIORITE 2 - Contenu (Suite Sprint 3) :
+4. Route 2 + Village Arene 2 : Maitre Fanny (terrain herbe, difficulte medium)
+5. Route 3 + Village Arene 3 : Maitre Ricardo (terrain sable, difficulte hard)
+6. Ajouter les PNJ, dialogues et gates correspondants
+
+PRIORITE 3 - Audio :
+7. Utilise /sfx pour generer les sons d'impact (boule-boule, boule-cochonnet, atterrissage)
+8. Musique chiptune legere pour le monde ouvert et le combat
+
+Lance `npm run dev`, fais un playtest Playwright avant et apres tes changements. Assure-toi que tout est commite et pousse sur GitHub a la fin.
+```
 
 ## ETAT ACTUEL DU PROJET
 
