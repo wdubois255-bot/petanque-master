@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, TYPEWRITER_SPEED, COLORS } from '../utils/Constants.js';
 
-const BOX_HEIGHT = 52;
+const BOX_HEIGHT = 58;
 const BOX_MARGIN = 4;
-const BOX_PADDING = 6;
+const BOX_PADDING = 8;
 const TEXT_COLOR = '#F5E6D0';
 const BG_COLOR = 0x3A2E28;
 const BORDER_COLOR = 0xF5E6D0;
+const TEXT_SHADOW = '#1A1510';
 
 export default class DialogBox {
     constructor(scene) {
@@ -32,9 +33,13 @@ export default class DialogBox {
 
         // Name label
         this.nameText = scene.add.text(
-            BOX_MARGIN + BOX_PADDING, boxY - 8,
+            BOX_MARGIN + BOX_PADDING, boxY - 10,
             '',
-            { fontFamily: 'monospace', fontSize: '7px', color: TEXT_COLOR, backgroundColor: '#3A2E28', padding: { x: 3, y: 1 } }
+            {
+                fontFamily: 'monospace', fontSize: '10px', color: '#FFD700',
+                backgroundColor: '#3A2E28', padding: { x: 4, y: 2 },
+                shadow: { offsetX: 1, offsetY: 1, color: TEXT_SHADOW, blur: 0, fill: true }
+            }
         ).setDepth(101);
         this.container.add(this.nameText);
 
@@ -44,20 +49,21 @@ export default class DialogBox {
             '',
             {
                 fontFamily: 'monospace',
-                fontSize: '7px',
+                fontSize: '10px',
                 color: TEXT_COLOR,
                 wordWrap: { width: GAME_WIDTH - BOX_MARGIN * 2 - BOX_PADDING * 2 },
-                lineSpacing: 2
+                lineSpacing: 3,
+                shadow: { offsetX: 1, offsetY: 1, color: TEXT_SHADOW, blur: 0, fill: true }
             }
         ).setDepth(101);
         this.container.add(this.dialogText);
 
         // Arrow indicator (blinking)
         this.arrow = scene.add.text(
-            GAME_WIDTH - BOX_MARGIN - BOX_PADDING - 6,
-            boxY + BOX_HEIGHT - BOX_PADDING - 8,
-            'v',
-            { fontFamily: 'monospace', fontSize: '7px', color: TEXT_COLOR }
+            GAME_WIDTH - BOX_MARGIN - BOX_PADDING - 8,
+            boxY + BOX_HEIGHT - BOX_PADDING - 10,
+            '\u25bc',
+            { fontFamily: 'monospace', fontSize: '10px', color: '#D4A574' }
         ).setDepth(101).setVisible(false);
         this.container.add(this.arrow);
 

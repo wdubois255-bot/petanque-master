@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, deleteGame, formatPlaytime } from '../utils/SaveManager.js';
 
+const SHADOW = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+
 export default class TitleScene extends Phaser.Scene {
     constructor() {
         super('TitleScene');
@@ -17,38 +19,48 @@ export default class TitleScene extends Phaser.Scene {
         bg.fillGradientStyle(0x5A3E28, 0x5A3E28, COLORS.OMBRE, COLORS.OMBRE, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Title
-        this.add.text(GAME_WIDTH / 2, 40, 'PETANQUE\nMASTER', {
+        // Title with shadow
+        this.add.text(GAME_WIDTH / 2, 38, 'PETANQUE\nMASTER', {
             fontFamily: 'monospace',
-            fontSize: '22px',
-            color: '#F5E6D0',
+            fontSize: '24px',
+            color: '#FFD700',
             align: 'center',
-            lineSpacing: 2
+            lineSpacing: 4,
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
         // Subtitle
-        this.add.text(GAME_WIDTH / 2, 85, 'Devenez le meilleur bouliste du canton !', {
+        this.add.text(GAME_WIDTH / 2, 88, 'Devenez le meilleur bouliste du canton !', {
             fontFamily: 'monospace',
-            fontSize: '6px',
+            fontSize: '8px',
             color: '#D4A574',
-            align: 'center'
+            align: 'center',
+            shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Decorative boules
+        // Decorative boules (bigger)
         const g = this.add.graphics();
+        // Silver boule
         g.fillStyle(0xA8B5C2, 1);
-        g.fillCircle(130, 210, 6);
+        g.fillCircle(125, 210, 8);
+        g.fillStyle(0xFFFFFF, 0.3);
+        g.fillCircle(122, 207, 3);
+        // Red boule
         g.fillStyle(0xC44B3F, 1);
-        g.fillCircle(150, 215, 6);
+        g.fillCircle(148, 216, 8);
+        g.fillStyle(0xFFFFFF, 0.3);
+        g.fillCircle(145, 213, 3);
+        // Cochonnet
         g.fillStyle(0xFFD700, 1);
-        g.fillCircle(140, 222, 2);
+        g.fillCircle(137, 224, 3);
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 18, '↑↓  Naviguer     Espace  Confirmer', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193  Naviguer     Espace  Confirmer', {
             fontFamily: 'monospace',
-            fontSize: '6px',
+            fontSize: '8px',
             color: '#9E9E8E',
-            align: 'center'
+            align: 'center',
+            shadow: SHADOW
         }).setOrigin(0.5);
 
         this._showMainMenu();
@@ -70,11 +82,12 @@ export default class TitleScene extends Phaser.Scene {
 
         const startY = 120;
         items.forEach((label, i) => {
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 22, label, {
+            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 24, label, {
                 fontFamily: 'monospace',
-                fontSize: '10px',
+                fontSize: '12px',
                 color: '#F5E6D0',
-                align: 'center'
+                align: 'center',
+                shadow: SHADOW
             }).setOrigin(0.5);
             this._menuItems.push(txt);
         });
@@ -100,20 +113,22 @@ export default class TitleScene extends Phaser.Scene {
             } else {
                 label = `Slot ${i + 1}: ---`;
             }
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 20, label, {
+            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 22, label, {
                 fontFamily: 'monospace',
-                fontSize: '8px',
+                fontSize: '10px',
                 color: s ? '#F5E6D0' : '#9E9E8E',
-                align: 'center'
+                align: 'center',
+                shadow: SHADOW
             }).setOrigin(0.5);
             this._menuItems.push(txt);
         }
 
-        const back = this.add.text(GAME_WIDTH / 2, startY + 70, 'Retour', {
+        const back = this.add.text(GAME_WIDTH / 2, startY + 74, 'Retour', {
             fontFamily: 'monospace',
-            fontSize: '8px',
+            fontSize: '10px',
             color: '#D4A574',
-            align: 'center'
+            align: 'center',
+            shadow: SHADOW
         }).setOrigin(0.5);
         this._menuItems.push(back);
 
@@ -131,11 +146,12 @@ export default class TitleScene extends Phaser.Scene {
         const item = this._menuItems[this._selectedIndex];
         if (!item) return;
         this._cursor = this.add.text(
-            item.x - item.width / 2 - 12, item.y,
-            '>', {
+            item.x - item.width / 2 - 14, item.y,
+            '\u25b6', {
                 fontFamily: 'monospace',
                 fontSize: item.style.fontSize,
-                color: '#C44B3F'
+                color: '#C44B3F',
+                shadow: SHADOW
             }
         ).setOrigin(0.5);
     }
@@ -171,16 +187,13 @@ export default class TitleScene extends Phaser.Scene {
 
     _onMainSelect() {
         if (this._selectedIndex === 0) {
-            // Nouvelle Partie -> choisir slot
             if (hasSaveData()) {
                 this._showSlotMenu();
                 this._newGame = true;
             } else {
-                // Pas de sauvegarde, lancer intro directement sur slot 0
                 this._startNewGame(0);
             }
         } else if (this._selectedIndex === 1) {
-            // Continuer -> choisir slot
             this._showSlotMenu();
             this._newGame = false;
         }
@@ -188,7 +201,6 @@ export default class TitleScene extends Phaser.Scene {
 
     _onSlotSelect() {
         if (this._selectedIndex === 3) {
-            // Retour
             this._showMainMenu();
             return;
         }
@@ -205,13 +217,12 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     _startNewGame(slot) {
-        // Unlock audio
         if (this.sound.locked) this.sound.unlock();
 
         this.registry.set('currentSlot', slot);
         this.registry.set('gameState', {
             player: { name: 'Joueur', map: 'village_depart', x: 14, y: 20, facing: 'down' },
-            bouleType: null, // sera choisi dans IntroScene
+            bouleType: null,
             badges: [],
             flags: {},
             partners: [],

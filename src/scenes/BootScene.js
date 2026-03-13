@@ -12,11 +12,12 @@ export default class BootScene extends Phaser.Scene {
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
 
-        // Simple loading text
+        // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {
             fontFamily: 'monospace',
-            fontSize: '8px',
-            color: '#F5E6D0'
+            fontSize: '12px',
+            color: '#F5E6D0',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
     }
 

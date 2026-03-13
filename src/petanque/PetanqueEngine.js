@@ -205,7 +205,7 @@ export default class PetanqueEngine {
         });
     }
 
-    throwBall(angle, power, team) {
+    throwBall(angle, power, team, shotMode = 'pointer') {
         if (this.remaining[team] <= 0) return;
 
         const cx = this.scene.throwCircleX;
@@ -224,10 +224,14 @@ export default class PetanqueEngine {
 
         // Calculate landing point and rolling velocity
         // Power maps to total distance: 0 = short, 1 = max terrain length
-        const maxDist = TERRAIN_HEIGHT * 0.85;
+        // Tir = more energy in flight (flatter arc), less rolling
+        // Point = high arc, more rolling
+        const isTir = shotMode === 'tirer';
+        const landingFactor = isTir ? LANDING_FACTOR_TIR : LANDING_FACTOR_POINT;
+        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85);
         const totalDist = power * maxDist;
-        const landDist = totalDist * LANDING_FACTOR_POINT;
-        const rollDist = totalDist * (1 - LANDING_FACTOR_POINT);
+        const landDist = totalDist * landingFactor;
+        const rollDist = totalDist * (1 - landingFactor);
 
         const rawTargetX = cx + Math.cos(angle) * landDist;
         const rawTargetY = cy + Math.sin(angle) * landDist;
@@ -238,11 +242,11 @@ export default class PetanqueEngine {
         const targetY = Phaser.Math.Clamp(rawTargetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
         // Rolling velocity: derive speed from desired roll distance and friction
-        // Per frame: speed -= FRICTION_BASE * frictionMult, position += speed
-        // Total distance = v0^2 / (2 * perFrameFriction)
-        // So v0 = sqrt(2 * perFrameFriction * desiredDistance)
+        // Tir: much higher rolling speed (carries through on impact)
+        // Point: gentle rolling
         const perFrameFriction = FRICTION_BASE * this.frictionMult;
-        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * ROLLING_EFFICIENCY);
+        const rollEfficiency = isTir ? 1.2 : ROLLING_EFFICIENCY;
+        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * rollEfficiency);
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 
@@ -257,10 +261,10 @@ export default class PetanqueEngine {
                     this.setState(STATES.PLAY_LOOP);
                 }
             };
-        });
+        }, isTir);
     }
 
-    _animateThrow(ball, targetX, targetY, rollVx, rollVy, callback) {
+    _animateThrow(ball, targetX, targetY, rollVx, rollVy, callback, isTir = false) {
         // Fly tween
         const startX = ball.x;
         const startY = ball.y;
@@ -271,25 +275,33 @@ export default class PetanqueEngine {
         ball.gfx.setVisible(false);
         ball.shadow.setVisible(false);
 
+        // Tir = fast flat trajectory, Point = high arc (plombee)
+        const flyDuration = isTir ? THROW_FLY_DURATION * 0.7 : THROW_FLY_DURATION * 1.2;
+        const arcHeight = isTir ? -8 : -30; // Tir: rasant, Point: cloche
+        const ease = isTir ? 'Linear' : 'Quad.easeOut';
+
         const tween = { t: 0 };
         this.scene.tweens.add({
             targets: tween,
             t: 1,
-            duration: THROW_FLY_DURATION,
-            ease: 'Quad.easeOut',
+            duration: flyDuration,
+            ease,
             onUpdate: () => {
                 const cx = Phaser.Math.Linear(startX, targetX, tween.t);
                 const cy = Phaser.Math.Linear(startY, targetY, tween.t);
-                // Arc height
-                const arcHeight = -20 * Math.sin(tween.t * Math.PI);
+                // Arc: sin curve, height depends on tir/point
+                const arc = arcHeight * Math.sin(tween.t * Math.PI);
 
                 flyGfx.clear();
                 flyGfx.fillStyle(ball.color, 1);
-                flyGfx.fillCircle(cx, cy + arcHeight, ball.radius);
+                flyGfx.fillCircle(cx, cy + arc, ball.radius);
+                // Highlight
+                flyGfx.fillStyle(0xFFFFFF, 0.3);
+                flyGfx.fillCircle(cx - ball.radius * 0.3, cy + arc - ball.radius * 0.3, ball.radius * 0.3);
 
-                // Shadow grows as ball "descends"
+                // Shadow: for tir, shadow stays close (low flight); for point, shadow starts small
                 shadowGfx.clear();
-                const shadowScale = 0.3 + tween.t * 0.7;
+                const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
                 shadowGfx.fillStyle(0x000000, 0.15 * shadowScale);
                 shadowGfx.fillCircle(cx, cy, ball.radius * shadowScale);
             },
@@ -303,8 +315,21 @@ export default class PetanqueEngine {
                 ball.shadow.setVisible(true);
                 ball.draw();
 
-                // Screen shake
-                this.scene.cameras.main.shake(THROW_SHAKE_DURATION, THROW_SHAKE_INTENSITY / 1000);
+                // Screen shake: stronger for tir (impact!)
+                const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2 : THROW_SHAKE_INTENSITY;
+                const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
+                this.scene.cameras.main.shake(shakeDuration, shakeIntensity / 1000);
+
+                // Impact flash for tir
+                if (isTir) {
+                    const flash = this.scene.add.graphics().setDepth(60);
+                    flash.fillStyle(0xFFFFFF, 0.6);
+                    flash.fillCircle(targetX, targetY, ball.radius + 4);
+                    this.scene.tweens.add({
+                        targets: flash, alpha: 0, duration: 200,
+                        onComplete: () => flash.destroy()
+                    });
+                }
 
                 // Apply rolling velocity
                 ball.launch(rollVx, rollVy);
@@ -417,22 +442,40 @@ export default class PetanqueEngine {
     _handleGameOver() {
         const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
         const isVictory = winner === 'player';
-        const msg = isVictory
-            ? 'VICTOIRE !\nVous etes le Petanque Master !'
-            : 'DEFAITE...\nL\'adversaire l\'emporte.';
-        this._showMessage(msg, true);
+        const shadow = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
 
         // Overlay sombre
         const overlay = this.scene.add.graphics().setDepth(90);
-        overlay.fillStyle(0x3A2E28, 0.6);
+        overlay.fillStyle(0x3A2E28, 0.7);
         overlay.fillRect(0, 0, this.scene.scale.width, this.scene.scale.height);
+
+        // Title
+        const titleMsg = isVictory ? 'VICTOIRE !' : 'DEFAITE...';
+        this.scene.add.text(
+            this.scene.scale.width / 2, this.scene.scale.height / 2 - 40,
+            titleMsg,
+            {
+                fontFamily: 'monospace', fontSize: '20px',
+                color: isVictory ? '#FFD700' : '#C44B3F',
+                align: 'center',
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+            }
+        ).setOrigin(0.5).setDepth(101);
+
+        // Subtitle
+        const subMsg = isVictory ? 'Vous etes le Petanque Master !' : 'L\'adversaire l\'emporte.';
+        this.scene.add.text(
+            this.scene.scale.width / 2, this.scene.scale.height / 2 - 20,
+            subMsg,
+            { fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', align: 'center', shadow }
+        ).setOrigin(0.5).setDepth(101);
 
         // Score final
         const scoreText = `${this.scores.player} - ${this.scores.opponent}`;
         this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 - 20,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 + 5,
             scoreText,
-            { fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center' }
+            { fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center', shadow }
         ).setOrigin(0.5).setDepth(101);
 
         // Bouton principal
@@ -440,12 +483,12 @@ export default class PetanqueEngine {
         const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
 
         const btn = this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 + 15,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 + 35,
             btnLabel,
             {
-                fontFamily: 'monospace', fontSize: '10px',
+                fontFamily: 'monospace', fontSize: '12px',
                 color: '#F5E6D0', backgroundColor: '#C44B3F',
-                padding: { x: 8, y: 4 }
+                padding: { x: 10, y: 5 }, shadow
             }
         ).setOrigin(0.5).setDepth(101).setInteractive({ useHandCursor: true });
 
@@ -546,9 +589,10 @@ export default class PetanqueEngine {
             this.scene.scale.height - 14,
             'Glissez et relachez pour viser',
             {
-                fontFamily: 'monospace', fontSize: '6px',
-                color: '#9E9E8E', align: 'center',
-                backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
+                fontFamily: 'monospace', fontSize: '9px',
+                color: '#F5E6D0', align: 'center',
+                backgroundColor: '#3A2E28', padding: { x: 6, y: 3 },
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }
         ).setOrigin(0.5).setDepth(100);
 
@@ -569,11 +613,12 @@ export default class PetanqueEngine {
             text,
             {
                 fontFamily: 'monospace',
-                fontSize: '8px',
+                fontSize: '10px',
                 color: '#F5E6D0',
                 align: 'center',
                 backgroundColor: '#3A2E28',
-                padding: { x: 4, y: 2 }
+                padding: { x: 6, y: 3 },
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }
         ).setOrigin(0.5, 0).setDepth(100);
 

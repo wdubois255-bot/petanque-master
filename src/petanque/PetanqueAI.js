@@ -39,7 +39,7 @@ export default class PetanqueAI {
         const cochonnet = this.engine.cochonnet;
         if (!cochonnet || !cochonnet.isAlive) return;
 
-        const target = this._chooseTarget();
+        const { target, shotMode } = this._chooseTarget();
 
         // Calculate angle to target from throw circle
         const cx = this.scene.throwCircleX;
@@ -54,14 +54,15 @@ export default class PetanqueAI {
         const powerNoise = this._noise(this.config.powerDev);
 
         const angle = idealAngle + angleNoise;
-        // Power maps to fraction of max terrain distance (same as throwBall)
-        const maxDist = 210 * 0.85; // TERRAIN_HEIGHT * 0.85
+        // Power maps to fraction of max terrain distance
+        const maxDist = 210 * (shotMode === 'tirer' ? 0.95 : 0.85);
         const idealPower = idealDist / maxDist;
         const power = Phaser.Math.Clamp(idealPower + powerNoise, 0.1, 1.0);
 
         // Show brief aiming visualization
-        this._showAimingArrow(angle, power, () => {
-            this.engine.throwBall(angle, power, 'opponent');
+        const arrowColor = shotMode === 'tirer' ? 0xFF6644 : 0xC44B3F;
+        this._showAimingArrow(angle, power, arrowColor, () => {
+            this.engine.throwBall(angle, power, 'opponent', shotMode);
         });
     }
 
@@ -78,15 +79,21 @@ export default class PetanqueAI {
 
             if (closestPlayerBall.ball && closestPlayerBall.dist < this.config.shootThreshold * 5) {
                 // Shoot at closest player ball
-                return { x: closestPlayerBall.ball.x, y: closestPlayerBall.ball.y };
+                return {
+                    target: { x: closestPlayerBall.ball.x, y: closestPlayerBall.ball.y },
+                    shotMode: 'tirer'
+                };
             }
         }
 
         // Default: point (aim near cochonnet)
-        return { x: cochonnet.x, y: cochonnet.y };
+        return {
+            target: { x: cochonnet.x, y: cochonnet.y },
+            shotMode: 'pointer'
+        };
     }
 
-    _showAimingArrow(angle, power, callback) {
+    _showAimingArrow(angle, power, color, callback) {
         const g = this.scene.add.graphics().setDepth(50);
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
@@ -94,7 +101,7 @@ export default class PetanqueAI {
         const endX = originX + Math.cos(angle) * arrowLen;
         const endY = originY + Math.sin(angle) * arrowLen;
 
-        g.lineStyle(2, 0xC44B3F, 0.6);
+        g.lineStyle(2, color, 0.6);
         g.beginPath();
         g.moveTo(originX, originY);
         g.lineTo(endX, endY);
