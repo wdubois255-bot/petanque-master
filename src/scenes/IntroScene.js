@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/Constants.js';
 import { saveGame } from '../utils/SaveManager.js';
 
-const SHADOW = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 const INTRO_DIALOGUE = [
     "Ah, te voila gamin ! Approche, approche.",
@@ -63,22 +63,22 @@ export default class IntroScene extends Phaser.Scene {
         // Maitre sprite area
         const g = this.add.graphics();
         g.fillStyle(COLORS.OCRE, 0.3);
-        g.fillRoundedRect(GAME_WIDTH / 2 - 30, 16, 60, 60, 4);
-        this.add.text(GAME_WIDTH / 2, 46, '\ud83d\udc74', { fontSize: '28px' }).setOrigin(0.5);
+        g.fillRoundedRect(GAME_WIDTH / 2 - 60, 32, 120, 120, 8);
+        this.add.text(GAME_WIDTH / 2, 92, '\ud83d\udc74', { fontSize: '56px' }).setOrigin(0.5);
 
         // Dialogue box
-        this._dialogBg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 38, GAME_WIDTH - 16, 58, 0x3A2E28, 0.92);
-        this._dialogBg.setStrokeStyle(1, COLORS.OCRE);
-        this._dialogText = this.add.text(16, GAME_HEIGHT - 62, '', {
+        this._dialogBg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 76, GAME_WIDTH - 32, 116, 0x3A2E28, 0.92);
+        this._dialogBg.setStrokeStyle(2, COLORS.OCRE);
+        this._dialogText = this.add.text(32, GAME_HEIGHT - 124, '', {
             fontFamily: 'monospace',
-            fontSize: '10px',
+            fontSize: '20px',
             color: '#F5E6D0',
-            wordWrap: { width: GAME_WIDTH - 36 },
-            lineSpacing: 3,
+            wordWrap: { width: GAME_WIDTH - 72 },
+            lineSpacing: 6,
             shadow: SHADOW
         });
-        this._dialogArrow = this.add.text(GAME_WIDTH - 20, GAME_HEIGHT - 16, '\u25bc', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
+        this._dialogArrow = this.add.text(GAME_WIDTH - 40, GAME_HEIGHT - 32, '\u25bc', {
+            fontFamily: 'monospace', fontSize: '20px', color: '#D4A574',
             shadow: SHADOW
         }).setOrigin(0.5);
         this.tweens.add({ targets: this._dialogArrow, alpha: { from: 1, to: 0.2 }, duration: 500, yoyo: true, repeat: -1 });
@@ -114,46 +114,46 @@ export default class IntroScene extends Phaser.Scene {
     }
 
     _showBouleChoice() {
-        const startX = 26;
-        const cardW = 115;
-        const cardH = 105;
-        const gap = 10;
+        const startX = 52;
+        const cardW = 230;
+        const cardH = 210;
+        const gap = 20;
 
         for (let i = 0; i < 3; i++) {
             const set = BOULE_SETS[i];
             const cx = startX + i * (cardW + gap) + cardW / 2;
-            const cy = 48 + cardH / 2;
+            const cy = 96 + cardH / 2;
 
             // Card bg
             const card = this.add.rectangle(cx, cy, cardW, cardH, 0x4A3E28, 0.9);
-            card.setStrokeStyle(i === this._selectedBoule ? 2 : 1, i === this._selectedBoule ? 0xFFD700 : 0x6B5A40);
+            card.setStrokeStyle(i === this._selectedBoule ? 3 : 2, i === this._selectedBoule ? 0xFFD700 : 0x6B5A40);
             this._uiElements.push(card);
 
             // Boule circle (bigger)
             const boule = this.add.graphics();
             boule.fillStyle(set.color, 1);
-            boule.fillCircle(cx, cy - 28, 12);
+            boule.fillCircle(cx, cy - 56, 24);
             boule.fillStyle(0xFFFFFF, 0.3);
-            boule.fillCircle(cx - 4, cy - 32, 4);
+            boule.fillCircle(cx - 8, cy - 64, 8);
             this._uiElements.push(boule);
 
             // Name
-            const nameT = this.add.text(cx, cy - 8, set.name, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#FFD700', align: 'center',
+            const nameT = this.add.text(cx, cy - 16, set.name, {
+                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', align: 'center',
                 shadow: SHADOW
             }).setOrigin(0.5);
             this._uiElements.push(nameT);
 
             // Desc
-            const descT = this.add.text(cx, cy + 10, set.desc, {
-                fontFamily: 'monospace', fontSize: '8px', color: '#D4A574', align: 'center',
-                lineSpacing: 2, shadow: SHADOW
+            const descT = this.add.text(cx, cy + 20, set.desc, {
+                fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center',
+                lineSpacing: 4, shadow: SHADOW
             }).setOrigin(0.5);
             this._uiElements.push(descT);
 
             // Stats bars
-            this._drawStatBar(cx - 35, cy + 30, 'PRE', set.stats.precision, 4);
-            this._drawStatBar(cx - 35, cy + 40, 'PUI', set.stats.puissance, 4);
+            this._drawStatBar(cx - 70, cy + 60, 'PRE', set.stats.precision, 4);
+            this._drawStatBar(cx - 70, cy + 80, 'PUI', set.stats.puissance, 4);
 
             // Click zone
             card.setInteractive();
@@ -164,9 +164,9 @@ export default class IntroScene extends Phaser.Scene {
         }
 
         // Controls hint
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 12,
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 24,
             '\u2190\u2192  Choisir     Espace  Confirmer', {
-                fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E',
+                fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
                 align: 'center', shadow: SHADOW
             }).setOrigin(0.5);
         this._uiElements.push(hint);
@@ -174,7 +174,7 @@ export default class IntroScene extends Phaser.Scene {
 
     _drawStatBar(x, y, label, value, max) {
         const lbl = this.add.text(x, y, label, {
-            fontFamily: 'monospace', fontSize: '7px', color: '#9E9E8E',
+            fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
             shadow: SHADOW
         });
         this._uiElements.push(lbl);
@@ -182,12 +182,11 @@ export default class IntroScene extends Phaser.Scene {
         const barG = this.add.graphics();
         for (let i = 0; i < max; i++) {
             barG.fillStyle(i < value ? 0xD4A574 : 0x4A3E28, 1);
-            barG.fillRect(x + 22, y + 1, 10, 6);
-            // Border
-            barG.lineStyle(1, 0x6B5A40, 0.5);
-            barG.strokeRect(x + 22 + i * 13, y + 1, 10, 6);
+            barG.fillRect(x + 44, y + 2, 20, 12);
+            barG.lineStyle(2, 0x6B5A40, 0.5);
+            barG.strokeRect(x + 44 + i * 26, y + 2, 20, 12);
             barG.fillStyle(i < value ? 0xD4A574 : 0x4A3E28, 1);
-            barG.fillRect(x + 22 + i * 13, y + 1, 10, 6);
+            barG.fillRect(x + 44 + i * 26, y + 2, 20, 12);
         }
         this._uiElements.push(barG);
     }

@@ -6,7 +6,7 @@ import {
 import PetanqueEngine from './PetanqueEngine.js';
 import Ball from './Ball.js';
 
-const SHADOW = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 export default class AimingSystem {
     constructor(scene, engine) {
@@ -71,31 +71,31 @@ export default class AimingSystem {
         this.engine.aimingEnabled = false;
 
         const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 36;
+        const baseY = this.scene.scale.height - 72;
 
         const bg = this.scene.add.graphics().setDepth(95);
         bg.fillStyle(0x3A2E28, 0.9);
-        bg.fillRoundedRect(cx - 100, baseY - 8, 200, 30, 4);
-        bg.lineStyle(1, 0xD4A574, 0.5);
-        bg.strokeRoundedRect(cx - 100, baseY - 8, 200, 30, 4);
+        bg.fillRoundedRect(cx - 200, baseY - 16, 400, 60, 8);
+        bg.lineStyle(2, 0xD4A574, 0.5);
+        bg.strokeRoundedRect(cx - 200, baseY - 16, 400, 60, 8);
         this._modeUI.push(bg);
 
         const pointerBtn = this.scene.add.text(
-            cx - 50, baseY + 6,
+            cx - 100, baseY + 12,
             'POINTER', {
-                fontFamily: 'monospace', fontSize: '11px',
+                fontFamily: 'monospace', fontSize: '22px',
                 color: '#A8B5C2', backgroundColor: '#4A3E28',
-                padding: { x: 8, y: 4 }, shadow: SHADOW
+                padding: { x: 16, y: 8 }, shadow: SHADOW
             }
         ).setOrigin(0.5).setDepth(96).setInteractive({ useHandCursor: true });
         this._modeUI.push(pointerBtn);
 
         const tirerBtn = this.scene.add.text(
-            cx + 50, baseY + 6,
+            cx + 100, baseY + 12,
             'TIRER', {
-                fontFamily: 'monospace', fontSize: '11px',
+                fontFamily: 'monospace', fontSize: '22px',
                 color: '#C44B3F', backgroundColor: '#4A3E28',
-                padding: { x: 8, y: 4 }, shadow: SHADOW
+                padding: { x: 16, y: 8 }, shadow: SHADOW
             }
         ).setOrigin(0.5).setDepth(96).setInteractive({ useHandCursor: true });
         this._modeUI.push(tirerBtn);
@@ -157,26 +157,26 @@ export default class AimingSystem {
         this.engine.aimingEnabled = false;
 
         const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 36;
+        const baseY = this.scene.scale.height - 72;
 
         const bg = this.scene.add.graphics().setDepth(95);
         bg.fillStyle(0x3A2E28, 0.9);
-        bg.fillRoundedRect(cx - 120, baseY - 8, 240, 30, 4);
-        bg.lineStyle(1, 0xD4A574, 0.5);
-        bg.strokeRoundedRect(cx - 120, baseY - 8, 240, 30, 4);
+        bg.fillRoundedRect(cx - 240, baseY - 16, 480, 60, 8);
+        bg.lineStyle(2, 0xD4A574, 0.5);
+        bg.strokeRoundedRect(cx - 240, baseY - 16, 480, 60, 8);
         this._loftUI.push(bg);
 
         this._loftBtns = [];
         const labels = LOFT_PRESETS.map(p => p.label);
-        const offsets = [-75, 0, 75];
+        const offsets = [-150, 0, 150];
 
         for (let i = 0; i < 3; i++) {
             const btn = this.scene.add.text(
-                cx + offsets[i], baseY + 6,
+                cx + offsets[i], baseY + 12,
                 labels[i], {
-                    fontFamily: 'monospace', fontSize: '9px',
+                    fontFamily: 'monospace', fontSize: '18px',
                     color: '#F5E6D0', backgroundColor: '#4A3E28',
-                    padding: { x: 6, y: 3 }, shadow: SHADOW
+                    padding: { x: 12, y: 6 }, shadow: SHADOW
                 }
             ).setOrigin(0.5).setDepth(96).setInteractive({ useHandCursor: true });
             this._loftUI.push(btn);
@@ -232,14 +232,14 @@ export default class AimingSystem {
 
         const opponentBalls = this.engine.getTeamBallsAlive('opponent');
         for (const ball of opponentBalls) {
-            this._targetHighlights.lineStyle(1, 0xFFD700, 0.8);
-            this._targetHighlights.strokeCircle(ball.x, ball.y, ball.radius + 4);
-            this._targetHighlights.lineStyle(1, 0xFFD700, 0.4);
+            this._targetHighlights.lineStyle(2, 0xFFD700, 0.8);
+            this._targetHighlights.strokeCircle(ball.x, ball.y, ball.radius + 8);
+            this._targetHighlights.lineStyle(2, 0xFFD700, 0.4);
             this._targetHighlights.beginPath();
-            this._targetHighlights.moveTo(ball.x - 6, ball.y);
-            this._targetHighlights.lineTo(ball.x + 6, ball.y);
-            this._targetHighlights.moveTo(ball.x, ball.y - 6);
-            this._targetHighlights.lineTo(ball.x, ball.y + 6);
+            this._targetHighlights.moveTo(ball.x - 12, ball.y);
+            this._targetHighlights.lineTo(ball.x + 12, ball.y);
+            this._targetHighlights.moveTo(ball.x, ball.y - 12);
+            this._targetHighlights.lineTo(ball.x, ball.y + 12);
             this._targetHighlights.strokePath();
         }
     }
@@ -291,7 +291,7 @@ export default class AimingSystem {
         if (dist < DEAD_ZONE_PX) return;
 
         const angle = Math.atan2(dy, dx);
-        const power = Math.min(dist / 60, 1);
+        const power = Math.min(dist / 120, 1);
 
         this.engine.aimingEnabled = false;
         this._clearTargetHighlights();
@@ -382,7 +382,7 @@ export default class AimingSystem {
 
         if (dist < DEAD_ZONE_PX) return;
 
-        const power = Math.min(dist / 60, 1);
+        const power = Math.min(dist / 120, 1);
         const angle = Math.atan2(dy, dx);
 
         // Arrow color based on mode
@@ -398,11 +398,11 @@ export default class AimingSystem {
         // Draw arrow
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
-        const arrowLen = power * 40;
+        const arrowLen = power * 80;
         const endX = originX + Math.cos(angle) * arrowLen;
         const endY = originY + Math.sin(angle) * arrowLen;
 
-        const lineWidth = this.shotMode === 'tirer' ? 3 : 2;
+        const lineWidth = this.shotMode === 'tirer' ? 5 : 3;
         this.arrowGfx.lineStyle(lineWidth, color, 0.8);
         this.arrowGfx.beginPath();
         this.arrowGfx.moveTo(originX, originY);
@@ -410,7 +410,7 @@ export default class AimingSystem {
         this.arrowGfx.strokePath();
 
         // Arrowhead
-        const headLen = 5;
+        const headLen = 10;
         const headAngle = 0.5;
         this.arrowGfx.beginPath();
         this.arrowGfx.moveTo(endX, endY);
@@ -446,10 +446,10 @@ export default class AimingSystem {
         if (this._powerText) this._powerText.destroy();
         const modeLabel = this.shotMode === 'tirer' ? 'TIR' : loft.label;
         this._powerText = this.scene.add.text(
-            originX, originY + 14,
+            originX, originY + 28,
             `${modeLabel} ${Math.round(power * 100)}%`,
             {
-                fontFamily: 'monospace', fontSize: '10px',
+                fontFamily: 'monospace', fontSize: '20px',
                 color: this.shotMode === 'tirer' ? '#FF8844' : '#F5E6D0',
                 shadow: SHADOW
             }

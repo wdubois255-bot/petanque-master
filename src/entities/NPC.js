@@ -4,13 +4,13 @@ import { TILE_SIZE } from '../utils/Constants.js';
 export default class NPC extends Phaser.GameObjects.Sprite {
     constructor(scene, data) {
         const px = data.tile_x * TILE_SIZE + TILE_SIZE / 2;
-        const py = data.tile_y * TILE_SIZE + TILE_SIZE / 2 - 4;
+        const py = data.tile_y * TILE_SIZE + TILE_SIZE / 2;
         const spriteKey = data.sprite || 'npc_villager_1';
         super(scene, px, py, spriteKey, 0);
 
         scene.add.existing(this);
         this.setDepth(10);
-        this.setOrigin(0.5, 0.7);
+        this.setOrigin(0.5, 0.5);
 
         this.id = data.id;
         this.npcName = data.name;
@@ -109,8 +109,8 @@ export default class NPC extends Phaser.GameObjects.Sprite {
 
         // Show "!" exclamation
         this._exclamation = this.scene.add.text(
-            this.x, this.y - 18, '!',
-            { fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', fontStyle: 'bold' }
+            this.x, this.y - 36, '!',
+            { fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', fontStyle: 'bold' }
         ).setOrigin(0.5).setDepth(30);
 
         this.scene.time.delayedCall(600, () => {
@@ -150,7 +150,7 @@ export default class NPC extends Phaser.GameObjects.Sprite {
             this.scene.tweens.add({
                 targets: this,
                 x: this.tileX * TILE_SIZE + TILE_SIZE / 2,
-                y: this.tileY * TILE_SIZE + TILE_SIZE / 2 - 4,
+                y: this.tileY * TILE_SIZE + TILE_SIZE / 2,
                 duration: 150,
                 onComplete: () => { moved++; moveNext(); }
             });

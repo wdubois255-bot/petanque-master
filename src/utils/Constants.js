@@ -1,7 +1,7 @@
-// Resolution
-export const GAME_WIDTH = 416;
-export const GAME_HEIGHT = 240;
-export const TILE_SIZE = 16;
+// Resolution (doubled from 416x240 for 32x32 tiles)
+export const GAME_WIDTH = 832;
+export const GAME_HEIGHT = 480;
+export const TILE_SIZE = 32;
 
 // Mouvement joueur
 export const PLAYER_MOVE_DURATION = 200;
@@ -9,10 +9,10 @@ export const PLAYER_ANIM_FPS = 8;
 
 // Petanque - terrain (vertical: player bottom, cochonnet top)
 // Display: narrow & tall, ratio ~15:4 FIPJP
-export const TERRAIN_WIDTH = 90;
-export const TERRAIN_HEIGHT = 210;
-export const COCHONNET_MIN_DIST = 100;
-export const COCHONNET_MAX_DIST = 170;
+export const TERRAIN_WIDTH = 180;
+export const TERRAIN_HEIGHT = 420;
+export const COCHONNET_MIN_DIST = 200;
+export const COCHONNET_MAX_DIST = 340;
 
 // Petanque - physique
 export const FRICTION_BASE = 0.15;
@@ -32,41 +32,41 @@ export const AI_MEDIUM = { angleDev: 8, powerDev: 0.10, canShoot: true, shootThr
 export const AI_HARD = { angleDev: 3, powerDev: 0.05, canShoot: true, shootThreshold: 4 };
 
 // Petanque - lancer
-export const DEAD_ZONE_PX = 15;
+export const DEAD_ZONE_PX = 30;
 export const THROW_FLY_DURATION = 300;
-export const THROW_SHAKE_INTENSITY = 2;
+export const THROW_SHAKE_INTENSITY = 4;
 export const THROW_SHAKE_DURATION = 150;
 
 // Petanque - loft presets (pointer only, tirer uses LOFT_TIR)
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.25, arcHeight: -4, flyDurationMult: 0.6, rollEfficiency: 1.4
+    landingFactor: 0.25, arcHeight: -8, flyDurationMult: 0.6, rollEfficiency: 1.4
 };
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
-    landingFactor: 0.50, arcHeight: -18, flyDurationMult: 0.9, rollEfficiency: 0.9
+    landingFactor: 0.50, arcHeight: -36, flyDurationMult: 0.9, rollEfficiency: 0.9
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.75, arcHeight: -35, flyDurationMult: 1.3, rollEfficiency: 0.5
+    landingFactor: 0.75, arcHeight: -70, flyDurationMult: 1.3, rollEfficiency: 0.5
 };
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.30, arcHeight: -8, flyDurationMult: 0.7, rollEfficiency: 1.2
+    landingFactor: 0.30, arcHeight: -16, flyDurationMult: 0.7, rollEfficiency: 1.2
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
 // Petanque - prediction trajectoire
 export const PREDICTION_STEPS = 120;
 export const PREDICTION_SAMPLE_RATE = 3;
-export const PREDICTION_DOT_RADIUS = 1;
+export const PREDICTION_DOT_RADIUS = 2;
 
 // Petanque - carreau
-export const CARREAU_THRESHOLD = 8;
-export const CARREAU_DISPLACED_MIN = 16;
+export const CARREAU_THRESHOLD = 16;
+export const CARREAU_DISPLACED_MIN = 32;
 
 // Petanque - lisibilite
-export const PIXELS_TO_METERS = 15 / 210; // ~0.071 m/px
+export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
 
 // Petanque - IA personnalites
 export const AI_MARCEL = {
@@ -136,12 +136,12 @@ export const BALL_COLORS = {
     cochonnet: 0xFFD700
 };
 
-// Ball sizes (pixels in game)
-export const BALL_RADIUS = 5;
-export const COCHONNET_RADIUS = 2;
+// Ball sizes (pixels in game) - doubled
+export const BALL_RADIUS = 10;
+export const COCHONNET_RADIUS = 4;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 30;
 
-// Circle de lancer
-export const THROW_CIRCLE_RADIUS = 8;
-export const THROW_CIRCLE_Y_OFFSET = 10;
+// Circle de lancer - doubled
+export const THROW_CIRCLE_RADIUS = 16;
+export const THROW_CIRCLE_Y_OFFSET = 20;

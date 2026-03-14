@@ -300,26 +300,26 @@ export default class OverworldScene extends Phaser.Scene {
     _showBadgeObtained(badgeId) {
         const badge = this.progressionData?.badges?.find(b => b.id === badgeId);
         const badgeName = badge ? badge.name : badgeId;
-        const shadow = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
         // Flash effect
         this.cameras.main.flash(300, 255, 215, 0);
 
         // Badge notification
-        const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 220, 90, 0x3A2E28, 0.95)
-            .setDepth(200).setStrokeStyle(2, 0xFFD700).setScrollFactor(0);
+        const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 440, 180, 0x3A2E28, 0.95)
+            .setDepth(200).setStrokeStyle(3, 0xFFD700).setScrollFactor(0);
 
-        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 24, 'BADGE OBTENU !', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', align: 'center',
-            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 48, 'BADGE OBTENU !', {
+            fontFamily: 'monospace', fontSize: '28px', color: '#FFD700', align: 'center',
+            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-        const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 4, badgeName, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0', align: 'center', shadow
+        const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 8, badgeName, {
+            fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 24, 'Appuyez sur Espace', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E', align: 'center', shadow
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 48, 'Appuyez sur Espace', {
+            fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
         this.tweens.add({ targets: hint, alpha: { from: 1, to: 0.3 }, duration: 500, yoyo: true, repeat: -1 });
@@ -342,12 +342,12 @@ export default class OverworldScene extends Phaser.Scene {
     }
 
     _showControlHints() {
-        const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 16, 260, 24, 0x3A2E28, 0.9)
+        const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 32, 520, 48, 0x3A2E28, 0.9)
             .setDepth(150).setScrollFactor(0);
-        const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16,
+        const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32,
             '\u2191\u2190\u2193\u2192  Se deplacer     Espace  Parler', {
-                fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0', align: 'center',
-                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center',
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(151).setScrollFactor(0);
 
         this.time.delayedCall(4000, () => {

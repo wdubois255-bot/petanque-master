@@ -1,6 +1,6 @@
 ---
 name: tileset
-description: Generate a 16x16 pixel art tileset using PixelLab MCP for Petanque Master maps. Use when creating terrain, buildings, or environment tiles.
+description: Generate a 32x32 pixel art tileset using PixelLab MCP for Petanque Master maps. Use when creating terrain, buildings, or environment tiles.
 user-invocable: true
 argument-hint: "[tileset-name] [biome: village|route|plage|parc|place]"
 allowed-tools: Bash, Read, Write, Edit, Glob
@@ -8,7 +8,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob
 
 # Generate Tileset
 
-Generate a 16x16 pixel art tileset for **Petanque Master** maps using PixelLab MCP.
+Generate a 32x32 pixel art tileset for **Petanque Master** maps using PixelLab MCP.
 
 ## Input
 
@@ -17,11 +17,12 @@ Generate a 16x16 pixel art tileset for **Petanque Master** maps using PixelLab M
 
 ## Art Style Constraints (STRICT)
 
-- **Tile size** : 16x16 pixels, ALWAYS
+- **Tile size** : 32x32 pixels (migre depuis 16x16)
+- **Generation** : 64x64 via PixelLab, downscale 2x nearest-neighbor -> 32x32
 - **Palette provencale** : ocres, terracotta, olive, lavande, ciel, creme
 - **Ombres** : #3A2E28 — JAMAIS de noir pur
-- **Style** : pixel art retro, top-down RPG, Pokemon GBA
-- **Output** : PNG tileset grid (16x16 tiles arranged in rows)
+- **Style** : pixel art retro, top-down RPG, Pokemon GBA ameliore
+- **Output** : PNG tileset grid (32x32 tiles arranged in rows)
 
 ## Biome Guidelines
 
@@ -59,17 +60,19 @@ Generate a 16x16 pixel art tileset for **Petanque Master** maps using PixelLab M
 
 ## Steps
 
-1. Call PixelLab MCP "create tileset" tool:
-   - Inner/outer tiles according to biome
-   - Wang tileset or 3x3 tileset for seamless edges
-   - 16x16 pixels per tile
+1. Call PixelLab MCP to generate each tile at 64x64:
+   - `image_size: {width: 64, height: 64}`
    - Style: "pixel art, top-down, provencal, Mediterranean"
 
-2. Save to: `assets/tilesets/$NAME_$BIOME.png`
+2. Downscale 2x nearest-neighbor -> 32x32
 
-3. Verify: tiles are exactly 16x16 aligned, no anti-aliasing artifacts
+3. Assemble into tileset grid
 
-4. Report: file path, grid dimensions, tile count
+4. Save to: `assets/tilesets/$NAME_$BIOME.png`
+
+5. Verify: tiles are exactly 32x32 aligned, no anti-aliasing artifacts
+
+6. Report: file path, grid dimensions, tile count
 
 ## Example
 

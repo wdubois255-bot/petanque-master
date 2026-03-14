@@ -15,9 +15,9 @@ export default class BootScene extends Phaser.Scene {
         // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {
             fontFamily: 'monospace',
-            fontSize: '12px',
+            fontSize: '24px',
             color: '#F5E6D0',
-            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
     }
 

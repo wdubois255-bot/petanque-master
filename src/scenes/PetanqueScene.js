@@ -66,12 +66,12 @@ export default class PetanqueScene extends Phaser.Scene {
         this.scorePanel = new ScorePanel(this, this.engine);
 
         // Opponent name label
-        const shadow = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
         this.add.text(
-            GAME_WIDTH / 2, this.terrainY - 6,
+            GAME_WIDTH / 2, this.terrainY - 12,
             `VS ${this.opponentName}`,
             {
-                fontFamily: 'monospace', fontSize: '9px',
+                fontFamily: 'monospace', fontSize: '18px',
                 color: '#C44B3F', align: 'center', shadow
             }
         ).setOrigin(0.5, 1).setDepth(5);
@@ -107,17 +107,17 @@ export default class PetanqueScene extends Phaser.Scene {
     _createPlayerSprites() {
         // Player: in the throw circle, facing up toward terrain
         const playerHomeX = this.throwCircleX;
-        const playerHomeY = this.throwCircleY + 8;
+        const playerHomeY = this.throwCircleY + 16;
         this.playerSprite = this.add.sprite(playerHomeX, playerHomeY, 'petanque_player', 12)
             .setOrigin(0.5, 1).setDepth(20).setScale(1);
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
 
         // Opponent: waiting area, top-right of terrain
-        const opponentWaitX = this.terrainX + TERRAIN_WIDTH - 20;
-        const opponentWaitY = this.terrainY + 25;
+        const opponentWaitX = this.terrainX + TERRAIN_WIDTH - 40;
+        const opponentWaitY = this.terrainY + 50;
         const opponentCircleX = this.throwCircleX;
-        const opponentCircleY = this.throwCircleY + 8;
+        const opponentCircleY = this.throwCircleY + 16;
         this.opponentSprite = this.add.sprite(opponentWaitX, opponentWaitY, 'petanque_opponent', 0)
             .setOrigin(0.5, 1).setDepth(20).setScale(1);
         this._opponentWaitX = opponentWaitX;
@@ -126,23 +126,23 @@ export default class PetanqueScene extends Phaser.Scene {
         this._opponentCircleY = opponentCircleY;
 
         // Turn indicator arrows
-        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 28, '\u25bc', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#A8B5C2'
+        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 56, '\u25bc', {
+            fontFamily: 'monospace', fontSize: '16px', color: '#A8B5C2'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        this.opponentTurnArrow = this.add.text(opponentWaitX, opponentWaitY - 28, '\u25bc', {
-            fontFamily: 'monospace', fontSize: '8px', color: '#C44B3F'
+        this.opponentTurnArrow = this.add.text(opponentWaitX, opponentWaitY - 56, '\u25bc', {
+            fontFamily: 'monospace', fontSize: '16px', color: '#C44B3F'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
         // Bounce animation for turn arrow
         this._playerArrowTween = this.tweens.add({
             targets: this.playerTurnArrow,
-            y: playerHomeY - 24,
+            y: playerHomeY - 48,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
         this._opponentArrowTween = this.tweens.add({
             targets: this.opponentTurnArrow,
-            y: opponentWaitY - 24,
+            y: opponentWaitY - 48,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
 
@@ -165,9 +165,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
     _animateToCircle(team) {
         if (team === 'ai') {
-            // Opponent walks to circle
-            // Walk animation: cycle through down frames
-            this.opponentSprite.setFrame(1); // walking frame
+            this.opponentSprite.setFrame(1);
             this.tweens.add({
                 targets: this.opponentSprite,
                 x: this._opponentCircleX,
@@ -175,33 +173,29 @@ export default class PetanqueScene extends Phaser.Scene {
                 duration: 500,
                 ease: 'Sine.easeInOut',
                 onUpdate: () => {
-                    // Cycle walk frames (row 0: 0,1,2,3)
                     const f = Math.floor(Date.now() / 150) % 4;
                     this.opponentSprite.setFrame(f);
                 },
                 onComplete: () => {
-                    this.opponentSprite.setFrame(12); // face up (toward terrain)
+                    this.opponentSprite.setFrame(12);
                 }
             });
-            // Move arrow with sprite
             this.tweens.add({
                 targets: this.opponentTurnArrow,
                 x: this._opponentCircleX,
                 duration: 500
             });
-            // Player walks away to wait
             this.tweens.add({
                 targets: this.playerSprite,
-                x: this.terrainX + 20,
-                y: this.terrainY + TERRAIN_HEIGHT - 15,
+                x: this.terrainX + 40,
+                y: this.terrainY + TERRAIN_HEIGHT - 30,
                 duration: 400,
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
-                    this.playerSprite.setFrame(12); // face up, watching
+                    this.playerSprite.setFrame(12);
                 }
             });
         } else {
-            // Player to circle
             this.tweens.add({
                 targets: this.playerSprite,
                 x: this._playerHomeX,
@@ -209,10 +203,9 @@ export default class PetanqueScene extends Phaser.Scene {
                 duration: 400,
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
-                    this.playerSprite.setFrame(12); // face up
+                    this.playerSprite.setFrame(12);
                 }
             });
-            // Opponent walks back to wait area
             this.tweens.add({
                 targets: this.opponentSprite,
                 x: this._opponentWaitX,
@@ -224,7 +217,7 @@ export default class PetanqueScene extends Phaser.Scene {
                     this.opponentSprite.setFrame(f);
                 },
                 onComplete: () => {
-                    this.opponentSprite.setFrame(0); // face down, watching
+                    this.opponentSprite.setFrame(0);
                 }
             });
             this.tweens.add({
@@ -239,19 +232,14 @@ export default class PetanqueScene extends Phaser.Scene {
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
         const baseY = sprite.y;
 
-        // Flash the sprite white briefly for emphasis
         sprite.setTint(0xFFFFFF);
         this.time.delayedCall(80, () => sprite.clearTint());
 
-        // Throw animation: wind-up, release, recovery
         this.tweens.chain({
             targets: sprite,
             tweens: [
-                // Wind up: lean back, compress
-                { scaleX: 0.9, scaleY: 1.1, y: baseY + 1, duration: 150, ease: 'Quad.easeOut' },
-                // Release: stretch forward, arm extends
-                { scaleX: 1.15, scaleY: 0.8, y: baseY - 4, duration: 100, ease: 'Quad.easeIn' },
-                // Recovery: bounce back to normal
+                { scaleX: 0.9, scaleY: 1.1, y: baseY + 2, duration: 150, ease: 'Quad.easeOut' },
+                { scaleX: 1.15, scaleY: 0.8, y: baseY - 8, duration: 100, ease: 'Quad.easeIn' },
                 { scaleX: 1.0, scaleY: 1.0, y: baseY, duration: 250, ease: 'Bounce.easeOut' }
             ]
         });
@@ -276,7 +264,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // Terrain shadow
         g.fillStyle(0x000000, 0.15);
-        g.fillRect(this.terrainX + 2, this.terrainY + 2, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+        g.fillRect(this.terrainX + 4, this.terrainY + 4, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
         // Background
         g.fillStyle(colors.bg, 1);
@@ -284,29 +272,29 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // Terrain texture (subtle noise)
         const texG = this.add.graphics().setDepth(1);
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 60; i++) {
             const nx = this.terrainX + Math.random() * TERRAIN_WIDTH;
             const ny = this.terrainY + Math.random() * TERRAIN_HEIGHT;
             texG.fillStyle(0x000000, 0.04);
-            texG.fillRect(nx, ny, 1, 1);
+            texG.fillRect(nx, ny, 2, 2);
         }
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 30; i++) {
             const nx = this.terrainX + Math.random() * TERRAIN_WIDTH;
             const ny = this.terrainY + Math.random() * TERRAIN_HEIGHT;
             texG.fillStyle(0xFFFFFF, 0.03);
-            texG.fillRect(nx, ny, 1, 1);
+            texG.fillRect(nx, ny, 2, 2);
         }
 
         // Border (double line for style)
-        g.lineStyle(2, colors.line, 0.4);
-        g.strokeRect(this.terrainX - 1, this.terrainY - 1, TERRAIN_WIDTH + 2, TERRAIN_HEIGHT + 2);
-        g.lineStyle(1, colors.line, 0.2);
-        g.strokeRect(this.terrainX - 3, this.terrainY - 3, TERRAIN_WIDTH + 6, TERRAIN_HEIGHT + 6);
+        g.lineStyle(3, colors.line, 0.4);
+        g.strokeRect(this.terrainX - 2, this.terrainY - 2, TERRAIN_WIDTH + 4, TERRAIN_HEIGHT + 4);
+        g.lineStyle(2, colors.line, 0.2);
+        g.strokeRect(this.terrainX - 6, this.terrainY - 6, TERRAIN_WIDTH + 12, TERRAIN_HEIGHT + 12);
 
         // Throw circle
         this.throwCircleX = GAME_WIDTH / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
-        g.lineStyle(1, COLORS.BLANC, 0.5);
+        g.lineStyle(2, COLORS.BLANC, 0.5);
         g.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
     }
 
@@ -322,7 +310,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 if (this.aimingSystem.shotMode === 'pointer' && !this._playerCrouched) {
                     this._playerCrouched = true;
                     this._playerStanding = false;
-                    // Crouch: scale Y down, shift down
                     this.tweens.add({
                         targets: this.playerSprite,
                         scaleY: 0.7, duration: 200
@@ -330,7 +317,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 } else if (this.aimingSystem.shotMode === 'tirer' && !this._playerStanding) {
                     this._playerStanding = true;
                     this._playerCrouched = false;
-                    // Stand tall
                     this.tweens.add({
                         targets: this.playerSprite,
                         scaleY: 1.0, duration: 200
@@ -338,7 +324,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 }
             }
 
-            // Reset crouch state when not aiming
             if (!this.engine.aimingEnabled && this._playerCrouched) {
                 this._playerCrouched = false;
                 this._playerStanding = false;

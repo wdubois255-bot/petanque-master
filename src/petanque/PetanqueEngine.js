@@ -204,7 +204,7 @@ export default class PetanqueEngine {
         const targetY = cy + Math.sin(angle) * dist;
 
         // Clamp within terrain (with margin)
-        const margin = 10;
+        const margin = 20;
         const clampedX = Phaser.Math.Clamp(targetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
         const clampedY = Phaser.Math.Clamp(targetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
@@ -226,7 +226,7 @@ export default class PetanqueEngine {
         const rawTargetX = originX + Math.cos(angle) * landDist;
         const rawTargetY = originY + Math.sin(angle) * landDist;
 
-        const margin = 8;
+        const margin = 16;
         const targetX = Phaser.Math.Clamp(rawTargetX, bounds.x + margin, bounds.x + bounds.w - margin);
         const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + margin, bounds.y + bounds.h - margin);
 
@@ -451,7 +451,7 @@ export default class PetanqueEngine {
     _handleGameOver() {
         const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
         const isVictory = winner === 'player';
-        const shadow = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
         // Overlay sombre
         const overlay = this.scene.add.graphics().setDepth(90);
@@ -461,30 +461,30 @@ export default class PetanqueEngine {
         // Title
         const titleMsg = isVictory ? 'VICTOIRE !' : 'DEFAITE...';
         this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 - 40,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 - 80,
             titleMsg,
             {
-                fontFamily: 'monospace', fontSize: '20px',
+                fontFamily: 'monospace', fontSize: '40px',
                 color: isVictory ? '#FFD700' : '#C44B3F',
                 align: 'center',
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+                shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
             }
         ).setOrigin(0.5).setDepth(101);
 
         // Subtitle
         const subMsg = isVictory ? 'Vous etes le Petanque Master !' : 'L\'adversaire l\'emporte.';
         this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 - 20,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 - 40,
             subMsg,
-            { fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', align: 'center', shadow }
+            { fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', align: 'center', shadow }
         ).setOrigin(0.5).setDepth(101);
 
         // Score final
         const scoreText = `${this.scores.player} - ${this.scores.opponent}`;
         this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 + 5,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 + 10,
             scoreText,
-            { fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center', shadow }
+            { fontFamily: 'monospace', fontSize: '36px', color: '#F5E6D0', align: 'center', shadow }
         ).setOrigin(0.5).setDepth(101);
 
         // Bouton principal
@@ -492,12 +492,12 @@ export default class PetanqueEngine {
         const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
 
         const btn = this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 + 35,
+            this.scene.scale.width / 2, this.scene.scale.height / 2 + 70,
             btnLabel,
             {
-                fontFamily: 'monospace', fontSize: '12px',
+                fontFamily: 'monospace', fontSize: '24px',
                 color: '#F5E6D0', backgroundColor: '#C44B3F',
-                padding: { x: 10, y: 5 }, shadow
+                padding: { x: 20, y: 10 }, shadow
             }
         ).setOrigin(0.5).setDepth(101).setInteractive({ useHandCursor: true });
 
@@ -639,14 +639,14 @@ export default class PetanqueEngine {
         this.scene.cameras.main.flash(80, 255, 255, 255);
 
         // "CARREAU !" text
-        const txt = this.scene.add.text(ball.x, ball.y - 15, 'CARREAU !', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#FFD700',
-            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {
+            fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(65);
 
         this.scene.tweens.add({
             targets: txt,
-            y: txt.y - 25, alpha: 0, scaleX: 1.5, scaleY: 1.5,
+            y: txt.y - 50, alpha: 0, scaleX: 1.5, scaleY: 1.5,
             duration: 1500, ease: 'Cubic.easeOut',
             onComplete: () => txt.destroy()
         });
@@ -656,12 +656,12 @@ export default class PetanqueEngine {
             const angle = (i / 8) * Math.PI * 2;
             const spark = this.scene.add.graphics().setDepth(64);
             spark.fillStyle(0xFFD700, 1);
-            spark.fillCircle(0, 0, 2);
+            spark.fillCircle(0, 0, 4);
             spark.setPosition(ball.x, ball.y);
             this.scene.tweens.add({
                 targets: spark,
-                x: ball.x + Math.cos(angle) * 18,
-                y: ball.y + Math.sin(angle) * 18,
+                x: ball.x + Math.cos(angle) * 36,
+                y: ball.y + Math.sin(angle) * 36,
                 alpha: 0, duration: 500,
                 onComplete: () => spark.destroy()
             });
@@ -737,13 +737,13 @@ export default class PetanqueEngine {
 
         const hint = this.scene.add.text(
             this.scene.scale.width / 2,
-            this.scene.scale.height - 14,
+            this.scene.scale.height - 28,
             'Glissez et relachez pour viser',
             {
-                fontFamily: 'monospace', fontSize: '9px',
+                fontFamily: 'monospace', fontSize: '18px',
                 color: '#F5E6D0', align: 'center',
-                backgroundColor: '#3A2E28', padding: { x: 6, y: 3 },
-                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                backgroundColor: '#3A2E28', padding: { x: 12, y: 6 },
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }
         ).setOrigin(0.5).setDepth(100);
 
@@ -760,16 +760,16 @@ export default class PetanqueEngine {
 
         this._msgText = this.scene.add.text(
             this.scene.scale.width / 2,
-            12,
+            24,
             text,
             {
                 fontFamily: 'monospace',
-                fontSize: '10px',
+                fontSize: '20px',
                 color: '#F5E6D0',
                 align: 'center',
                 backgroundColor: '#3A2E28',
-                padding: { x: 6, y: 3 },
-                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                padding: { x: 12, y: 6 },
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }
         ).setOrigin(0.5, 0).setDepth(100);
 

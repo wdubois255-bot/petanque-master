@@ -4,12 +4,12 @@ import { TILE_SIZE, PLAYER_MOVE_DURATION } from '../utils/Constants.js';
 export default class Player extends Phaser.GameObjects.Sprite {
     constructor(scene, tileX, tileY) {
         const px = tileX * TILE_SIZE + TILE_SIZE / 2;
-        const py = tileY * TILE_SIZE + TILE_SIZE / 2 - 4; // Offset up to align feet with tile
+        const py = tileY * TILE_SIZE + TILE_SIZE / 2; // Centered in tile (32x32 sprite = 32x32 tile)
         super(scene, px, py, 'player', 0);
 
         scene.add.existing(this);
         this.setDepth(10);
-        this.setOrigin(0.5, 0.7);
+        this.setOrigin(0.5, 0.5);
 
         this.tileX = tileX;
         this.tileY = tileY;
@@ -108,7 +108,7 @@ export default class Player extends Phaser.GameObjects.Sprite {
         this.tileY = newTileY;
 
         const targetX = newTileX * TILE_SIZE + TILE_SIZE / 2;
-        const targetY = newTileY * TILE_SIZE + TILE_SIZE / 2 - 4;
+        const targetY = newTileY * TILE_SIZE + TILE_SIZE / 2;
 
         this.play(`walk_${this.facing}`, true);
 
