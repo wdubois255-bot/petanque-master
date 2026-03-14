@@ -14,9 +14,9 @@
 | Bundler | **Vite 6.3+** | Template officiel Phaser. `assetsInlineLimit: 0` OBLIGATOIRE. |
 | Physique petanque | **Custom** (~100 lignes) | Consensus 11 recherches. Pas de Matter.js. |
 | Physique exploration | **Phaser Arcade** | Standard RPG top-down. |
-| Resolution | **416x240** (26x15 tiles) | Quasi 16:9, tiles entiers, scale x3=1248x720, x4=1664x960. |
-| Tiles terrain | **16x16** | Standard Pokemon GBA. |
-| Sprites persos | **16x24** | Standard Pokemon GBA (1 tile large, 1.5 tiles haut). |
+| Resolution | **832x480** (26x15 tiles) | Doublee depuis 416x240 pour sprites PixelLab 32x32. Scale x2=1664x960. |
+| Tiles terrain | **32x32** | Upgrade depuis 16x16 pour meilleur detail et sprites PixelLab. |
+| Sprites persos | **32x32** | Generes par PixelLab API (64x64 downscale 2x nearest-neighbor). |
 | Maps | **Tiled -> JSON** (1 fichier/zone) | Integration Phaser native. |
 | Audio | **Phaser built-in** | Suffisant. Howler.js en fallback si besoin. |
 | UI/Dialogues | **phaser3-rex-plugins 1.80+** | Suite UI complete. Import individuel avec Vite. |
@@ -358,6 +358,241 @@ const saveData = {
 
 **Livrable Sprint 3** : jeu complet, 7 maps, 3 arenes, 10+ dresseurs, doublettes, sauvegarde.
 **Estimation : ~18h**
+
+---
+
+### SPRINT 3.5 : Ameliorations Gameplay Petanque (CRITIQUE)
+> Objectif : transformer le gameplay de "fonctionnel" a "profond et satisfaisant".
+> Ces changements touchent le COEUR du jeu. A faire AVANT le contenu et le polish.
+> Verifie le 14 mars 2026 : chaque etape est compatible avec le code existant.
+
+**ORDRE D'IMPLEMENTATION RECOMMANDE :** 3.5.6 (prediction) -> 3.5.1 (loft) -> 3.5.2 (point) -> 3.5.3 (lisibilite) -> 3.5.4 (carreau) -> 3.5.5 (IA)
+Raison : la prediction necessite d'extraire `computeThrowParams()` qui est reutilise par le loft.
+
+---
+
+**Etape 3.5.1 - Controle du loft (profondeur de lancer) (3h)**
+> Le changement le plus transformateur. Actuellement `throwBall()` utilise des valeurs
+> hardcodees : POINTER = arc -30px + landingFactor 0.65, TIRER = arc -8px + landingFactor 0.3.
+> Le joueur n'a aucun controle sur la hauteur.
+
+- [ ] Ajouter 3 presets de loft dans `Constants.js` :
+```js
+LOFT_ROULETTE   = { landingFactor: 0.25, arcHeight: -4,  flyDurationMult: 0.6, rollEfficiency: 1.4 }
+LOFT_DEMI_PORTEE = { landingFactor: 0.50, arcHeight: -18, flyDurationMult: 0.9, rollEfficiency: 0.9 }
+LOFT_PLOMBEE    = { landingFactor: 0.75, arcHeight: -35, flyDurationMult: 1.3, rollEfficiency: 0.5 }
+LOFT_TIR        = { landingFactor: 0.30, arcHeight: -8,  flyDurationMult: 0.7, rollEfficiency: 1.2 }
+```
+- [ ] Le loft ne s'applique qu'en mode POINTER. En TIRER, c'est automatiquement LOFT_TIR
+- [ ] **UI : 3 boutons sous le texte de puissance** dans `AimingSystem.js`, affiches apres le choix POINTER
+  - Boutons : [ROULETTE] [DEMI-PORTEE] [PLOMBEE], selection par clic ou clavier (1/2/3 ou fleches haut/bas)
+  - NE PAS utiliser l'axe vertical du drag (conflit avec le calcul d'angle du slingshot)
+  - Defaut = DEMI-PORTEE pour les debutants
+- [ ] Modifier `PetanqueEngine.throwBall()` : remplacer les constantes hardcodees par le loft preset
+  - Signature : `throwBall(angle, power, team, shotMode, loftPreset)`
+  - Dans `_animateThrow()` : utiliser `loftPreset.arcHeight` et `loftPreset.flyDurationMult` au lieu de `isTir`
+- [ ] Modifier `PetanqueAI._throwBall()` : passer un loft preset selon personnalite + terrain
+  - Marcel prefere ROULETTE sur terre, DEMI_PORTEE sur herbe
+  - Fanny utilise toujours TIR
+  - Ricardo adapte au terrain (ROULETTE sur dalles, PLOMBEE sur sable)
+- [ ] **Attention** : le power-to-distance mapping change par loft. Roulette sur sable = arret rapide (friction 3.0 * rollEfficiency 1.4). A playtester.
+- [ ] **Attention** : `throwCochonnet()` doit passer un loft par defaut ou null pour ignorer l'arc
+
+**Etape 3.5.2 - Indicateur de point dynamique (2h)**
+> Le systeme actuel `_updateBestIndicator()` (PetanqueEngine.js ~ligne 550) dessine un halo
+> vert/rouge autour de la boule la plus proche. MAIS il ne s'affiche que quand TOUTES les
+> boules sont arretees (`if (anyMoving) return`). Pas assez lisible.
+
+- [ ] Supprimer le `if (anyMoving) return` pour que l'indicateur se mette a jour EN TEMPS REEL
+- [ ] Remplacer le simple halo 1px par un indicateur plus visible :
+  - Halo pulsant : utiliser un tween sur `{ t: 0->1 }` (Sine.easeInOut, yoyo, loop)
+  - Rayon pulse : `ball.radius + 3 + t * 2`, alpha pulse : `0.4 + t * 0.4`
+- [ ] Tracker `this._lastBestBallId` pour detecter les changements de point
+- [ ] Quand le point CHANGE :
+  - Flash d'anneau expansif sur la nouvelle boule (ring qui grandit + fade, 300ms)
+  - Couleur : vert (0x44CC44) si joueur gagne le point, rouge (0xCC4444) si adversaire
+  - Cela se voit clairement pendant que les boules roulent
+- [ ] Implementation : `scene.add.graphics()` (deja utilise), pas besoin de sprites/textures
+- [ ] Performance : 6 calculs de distance euclidienne par frame = negligeable (~0.001ms)
+
+**Etape 3.5.3 - Lisibilite strategique complete (2h)**
+> Le joueur doit comprendre la situation tactique d'un coup d'oeil.
+
+- [ ] **Distances boule-cochonnet** :
+  - Graphics object dedie (`_distGfx`), depth 9, lignes fines (0.5px, alpha 0.3)
+  - Labels texte : pre-allouer un pool de 6 `scene.add.text()` (7px monospace + ombre), repositionner chaque frame
+  - Convertir pixels en metres : `PIXELS_TO_METERS = 15 / TERRAIN_HEIGHT` (~0.07m/px)
+  - Afficher seulement quand toutes les boules sont arretees (pas pendant le roulement = trop de bruit visuel)
+
+- [ ] **Score projete en temps reel** :
+  - Extraire `calculateProjectedScore()` comme methode pure depuis `_scoreMene()` (PetanqueEngine.js ~ligne 353)
+  - Retourne `{ winner, points, scoringBalls }` sans effets de bord
+  - Refactorer `_scoreMene()` pour appeler `calculateProjectedScore()` en interne
+  - Afficher "+3" en vert ou "+1" en rouge a cote du score dans `ScorePanel`
+  - Pre-creer un `projectedText` (8px, depth 91) dans le constructeur de ScorePanel
+  - Appeler `calculateProjectedScore()` chaque frame dans `ScorePanel.update()` (18 distances = negligeable)
+
+- [ ] **Avantage de boules** :
+  - Remplacer les cercles Unicode par des vrais cercles Graphics colores (3px radius, remplis si restantes, semi-transparents si jouees)
+  - Quand l'ecart de boules restantes > 0, afficher "+N boules" a cote
+  - Flash d'animation quand une boule est jouee (alpha pulse sur les dots)
+
+**Etape 3.5.4 - Detection et celebration du carreau (1h30)**
+> Le carreau est quand la boule tiree remplace la position de la boule cible.
+> Actuellement c'est une collision normale. La detection utilise le code existant.
+
+- [ ] **Tracking** dans `PetanqueEngine` :
+  - Ajouter `this.lastThrownBall` (set dans `throwBall()`)
+  - Ajouter `this._pendingCarreauChecks = []`
+  - Dans `update()`, boucle collision (lignes ~526-532) : avant `Ball.resolveCollision(a, b)`, enregistrer la position de la cible. Apres collision (si `resolveCollision` retourne true ET un des deux est `lastThrownBall`), ajouter `{ thrownBall, targetOrigX, targetOrigY }`
+- [ ] **Verification** dans `_afterStopCallback` :
+  - Appeler `_checkCarreau()` AVANT les transitions d'etat
+  - Pour chaque check : `distance(thrownBall.position, targetOrigPosition) < CARREAU_THRESHOLD` (8px)
+  - ET la cible a ete significativement deplacee (moved > 16px)
+- [ ] **Celebration** dans `_celebrateCarreau(ball)` :
+  - Hitstop : `this._hitstopUntil = time + 100` (guard dans update loop)
+  - Texte "CARREAU !" : `scene.add.text()` 12px dore, tween y-20 + alpha 0, 1500ms
+  - 8 particules radiales : petits Graphics circles dores, tween angle * 15px + fade, 400ms
+  - Screen shake : `cameras.main.shake(200, 0.003)`
+  - Delayer le reste du callback de ~1s pour laisser la celebration jouer
+- [ ] **Gotchas** :
+  - Seules les collisions directes avec `lastThrownBall` comptent (pas les ricochets en chaine)
+  - Si la boule tiree sort du terrain apres le carreau = quand meme un carreau (verifier avant bounds check)
+  - Ajouter `CARREAU_THRESHOLD = 8` dans Constants.js
+
+**Etape 3.5.5 - Personnalites IA distinctes (2h)**
+> Le code actuel de PetanqueAI.js (119 lignes) est EXTENSIBLE sans rewrite.
+> Le changement principal est dans `_chooseTarget()` (~25 lignes -> ~60-80 lignes).
+
+- [ ] Ajouter `personality` dans les configs IA de `Constants.js` :
+```js
+AI_MARCEL  = { angleDev: 5, powerDev: 0.08, personality: 'pointeur',
+               shootProbability: 0.1, loftPref: 'roulette', targetsCocho: false }
+AI_FANNY   = { angleDev: 5, powerDev: 0.08, personality: 'tireur',
+               shootProbability: 0.85, loftPref: 'tir', targetsCocho: false }
+AI_RICARDO = { angleDev: 4, powerDev: 0.06, personality: 'stratege',
+               shootProbability: 0.5, loftPref: 'adaptatif', targetsCocho: true }
+AI_MARIUS  = { angleDev: 3, powerDev: 0.05, personality: 'complet',
+               shootProbability: 0.5, loftPref: 'adaptatif', targetsCocho: true }
+```
+- [ ] Recrire `_chooseTarget()` pour considerer :
+  1. Est-ce que l'IA a le point ? (comparer `_getMinDistance` des 2 equipes)
+  2. Preference de personnalite (shootProbability)
+  3. Avantage de boules (`this.engine.remaining`)
+  4. Pression de score (si perd de 5+ points -> plus agressif)
+  5. Variance aleatoire (15% de chances de faire l'inverse de sa tendance)
+- [ ] Ricardo : ajouter branche "tirer le cochonnet" quand il perd ET le cochonnet est accessible
+  - L'engine supporte deja les collisions boule-cochonnet et le deplacement du cochonnet
+  - Si cochonnet sort du terrain -> mene morte (gere par MENE_DEAD)
+- [ ] Anti-predictabilite :
+  - Marcel : "desperation shoot" a 20% si perd de 2+ boules de scoring
+  - Fanny : pointe au lieu de tirer si c'est sa derniere boule ET elle a le point
+  - Chaque personnalite a ~15% de variance (fait parfois le contraire de sa tendance)
+- [ ] Ajouter champ `"personality": "pointeur"` dans `npcs.json` pour chaque maitre/dresseur
+- [ ] Dresseurs de routes : donner des tendances variees (Jean-Pierre=tireur, Mireille=pointeuse, etc.)
+  pour que le joueur decouvre les styles avant les arenes
+
+**Etape 3.5.6 - Ligne de prediction de trajectoire (1h30)**
+> La prediction reutilise exactement le meme modele physique que Ball.update().
+> Performance validee : ~120 iterations de maths basiques + ~40 fillCircle = negligeable.
+
+- [ ] **Extraire `computeThrowParams()`** comme methode statique (PetanqueEngine ou nouveau utilitaire) :
+  - Prend : angle, power, throwCircleX/Y, terrainBounds, loftPreset, frictionMult
+  - Retourne : { targetX, targetY, rollVx, rollVy }
+  - C'est le meme calcul que `throwBall()` lignes 229-251, mais sans les effets de bord
+  - `throwBall()` appelle ensuite cette methode en interne (refactor)
+- [ ] **Ajouter `Ball.simulateTrajectory()`** comme methode statique :
+```js
+static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
+    // Meme integration Euler que Ball.update()
+    // Retourne un tableau de {x, y} tous les 3 frames
+    // S'arrete quand speed <= SPEED_THRESHOLD
+}
+```
+- [ ] **Dessiner dans `AimingSystem`** pendant le drag :
+  - `this._predictionGfx = scene.add.graphics().setDepth(49)`
+  - Appeler `computeThrowParams()` + `simulateTrajectory()` a chaque frame de drag
+  - ~40 petits cercles blancs (rayon 1px) en alpha decroissant (0.5 -> 0.1)
+  - `.clear()` + redraw chaque frame
+  - Nettoyer dans `cancel()` et `onPointerUp()`
+- [ ] La ligne change selon le loft (roulette = longue trainee, plombee = courte)
+- [ ] NE PAS predire les collisions avec les autres boules (standard dans les jeux similaires)
+- [ ] Ajouter dans Constants.js : `PREDICTION_STEPS = 120`, `PREDICTION_DOT_RADIUS = 1`
+
+---
+
+**Livrable Sprint 3.5** : gameplay petanque avec profondeur technique, lisibilite strategique, moments spectaculaires.
+**Estimation : ~12h**
+
+**GATE : playtester ces ameliorations avant de continuer. Le gameplay doit etre FUN et LISIBLE.**
+
+---
+
+### MIGRATION 32x32 (AVANT Sprint 4)
+> Objectif : passer de 16x16 tiles (416x240) a 32x32 tiles (832x480) pour sprites PixelLab.
+> Meme champ de vision (26x15 tiles), 4x plus de detail.
+> Voir research/16_migration_32x32.md pour l'analyse complete.
+
+**Etape M.1 - Constants.js : doubler toutes les valeurs pixel (30 min)**
+- [ ] `GAME_WIDTH` : 416 -> 832, `GAME_HEIGHT` : 240 -> 480, `TILE_SIZE` : 16 -> 32
+- [ ] Terrain : WIDTH 90->180, HEIGHT 210->420, COCHONNET_MIN/MAX x2
+- [ ] Boules : BALL_RADIUS 5->10, COCHONNET_RADIUS 2->4, THROW_CIRCLE x2
+- [ ] UI : DEAD_ZONE_PX 15->30, PREDICTION_DOT_RADIUS 1->2
+- [ ] Carreau : THRESHOLD 8->16, DISPLACED_MIN 16->32
+- [ ] Ne PAS modifier : FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION, ratios IA
+
+**Etape M.2 - SpriteGenerator.js : passer en 32x32 (2h)**
+- [ ] `SPRITE_W` : 16 -> 32, `SPRITE_H` : 24 -> 32
+- [ ] Doubler toutes les coordonnees de dessin dans drawCharacter()
+- [ ] Ajuster les proportions (tete, corps, jambes) pour le nouveau ratio 32x32
+- [ ] Les palettes et accessoires (chaine, lunettes, etc.) restent identiques
+- [ ] Phase 2 : remplacer par des sprites PixelLab PNG
+
+**Etape M.3 - TilesetGenerator.js : passer en 32x32 (1h30)**
+- [ ] Doubler toutes les coordonnees de dessin pour chaque type de tile
+- [ ] Plus de place = plus de detail (briques, feuilles, vagues)
+- [ ] Phase 2 : remplacer par des tilesets PixelLab PNG
+
+**Etape M.4 - Player.js et NPC.js : ajuster offsets (30 min)**
+- [ ] Offset sprite : `TILE_SIZE / 2 - 4` -> `TILE_SIZE / 2 - 8` (proportionnel)
+- [ ] Verifier que le mouvement grille fonctionne correctement
+
+**Etape M.5 - UI : font sizes et positions (1h30)**
+- [ ] TitleScene : font sizes x2 (24->48px titre, 8->16px menus)
+- [ ] IntroScene : positions et fonts x2
+- [ ] BootScene : position texte x2
+- [ ] DialogBox : font sizes x2, BOX_HEIGHT x2, positions
+- [ ] ScorePanel : panelX, font sizes, positions x2
+- [ ] AimingSystem : positions boutons loft, taille UI x2
+- [ ] OverworldScene : badge overlay, controles hint x2
+
+**Etape M.6 - PetanqueScene : verifier (30 min)**
+- [ ] Les positions terrain/cercle sont calculees depuis Constants -> auto
+- [ ] Verifier positions sprites joueur/adversaire
+- [ ] Verifier que les animations de lancer fonctionnent
+
+**Etape M.7 - Sprites PixelLab (3h)**
+- [ ] Script batch : generer chaque personnage en 64x64 face sud
+- [ ] API /rotate : generer les 3 autres directions
+- [ ] API /animate-with-text : 4 frames de marche par direction
+- [ ] sharp downscale 2x nearest-neighbor -> 32x32
+- [ ] Assembler en spritesheets PNG (4 frames x 4 directions = 128x128)
+- [ ] Modifier BootScene pour charger les PNG via Phaser loader
+- [ ] Modifier OverworldScene/PetanqueScene pour utiliser les vraies textures
+
+**Etape M.8 - Tilesets PixelLab (2h)**
+- [ ] Generer tiles 64x64 via API, downscale 2x -> 32x32
+- [ ] Types : herbe, chemin, eau, murs, toits, arbres, fleurs, pont, sable
+- [ ] Assembler en tileset PNG
+- [ ] Modifier TilesetGenerator pour charger PNG ou garder canvas ameliore
+
+**Etape M.9 - Tests et validation (1h)**
+- [ ] Tous les tests Playwright passent
+- [ ] Playtest complet : titre -> intro -> village -> route 1 -> arene Marcel -> victoire
+- [ ] Verifier : pas de pixel flou, pas de decalage, 60 FPS
+
+**Livrable Migration** : jeu identique en gameplay, 4x plus beau, pret pour vrais assets PixelLab.
+**Estimation : ~12h**
 
 ---
 

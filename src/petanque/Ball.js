@@ -1,6 +1,7 @@
 import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
-    RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS
+    RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
+    PREDICTION_STEPS, PREDICTION_SAMPLE_RATE
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -101,6 +102,32 @@ export default class Ball {
         const dx = this.x - other.x;
         const dy = this.y - other.y;
         return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = PREDICTION_STEPS) {
+        const points = [];
+        let x = startX, y = startY;
+        let cvx = vx, cvy = vy;
+        const dt = 1 / 60;
+
+        for (let i = 0; i < steps; i++) {
+            const speed = Math.sqrt(cvx * cvx + cvy * cvy);
+            if (speed <= SPEED_THRESHOLD) break;
+
+            const frictionDecel = FRICTION_BASE * frictionMult * 60;
+            const newSpeed = Math.max(0, speed - frictionDecel * dt);
+            const ratio = newSpeed / speed;
+            cvx *= ratio;
+            cvy *= ratio;
+
+            x += cvx * dt * 60;
+            y += cvy * dt * 60;
+
+            if (i % PREDICTION_SAMPLE_RATE === 0) {
+                points.push({ x, y });
+            }
+        }
+        return points;
     }
 
     static resolveCollision(a, b) {

@@ -37,6 +37,59 @@ export const THROW_FLY_DURATION = 300;
 export const THROW_SHAKE_INTENSITY = 2;
 export const THROW_SHAKE_DURATION = 150;
 
+// Petanque - loft presets (pointer only, tirer uses LOFT_TIR)
+export const LOFT_ROULETTE = {
+    id: 'roulette', label: 'ROULETTE',
+    landingFactor: 0.25, arcHeight: -4, flyDurationMult: 0.6, rollEfficiency: 1.4
+};
+export const LOFT_DEMI_PORTEE = {
+    id: 'demi_portee', label: 'DEMI-PORTEE',
+    landingFactor: 0.50, arcHeight: -18, flyDurationMult: 0.9, rollEfficiency: 0.9
+};
+export const LOFT_PLOMBEE = {
+    id: 'plombee', label: 'PLOMBEE',
+    landingFactor: 0.75, arcHeight: -35, flyDurationMult: 1.3, rollEfficiency: 0.5
+};
+export const LOFT_TIR = {
+    id: 'tir', label: 'TIR',
+    landingFactor: 0.30, arcHeight: -8, flyDurationMult: 0.7, rollEfficiency: 1.2
+};
+export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
+
+// Petanque - prediction trajectoire
+export const PREDICTION_STEPS = 120;
+export const PREDICTION_SAMPLE_RATE = 3;
+export const PREDICTION_DOT_RADIUS = 1;
+
+// Petanque - carreau
+export const CARREAU_THRESHOLD = 8;
+export const CARREAU_DISPLACED_MIN = 16;
+
+// Petanque - lisibilite
+export const PIXELS_TO_METERS = 15 / 210; // ~0.071 m/px
+
+// Petanque - IA personnalites
+export const AI_MARCEL = {
+    angleDev: 5, powerDev: 0.08,
+    personality: 'pointeur', shootProbability: 0.1,
+    loftPref: 'roulette', targetsCocho: false
+};
+export const AI_FANNY = {
+    angleDev: 5, powerDev: 0.08,
+    personality: 'tireur', shootProbability: 0.85,
+    loftPref: 'tir', targetsCocho: false
+};
+export const AI_RICARDO = {
+    angleDev: 4, powerDev: 0.06,
+    personality: 'stratege', shootProbability: 0.5,
+    loftPref: 'adaptatif', targetsCocho: true
+};
+export const AI_MARIUS = {
+    angleDev: 3, powerDev: 0.05,
+    personality: 'complet', shootProbability: 0.5,
+    loftPref: 'adaptatif', targetsCocho: true
+};
+
 // Victoire
 export const VICTORY_SCORE = 13;
 

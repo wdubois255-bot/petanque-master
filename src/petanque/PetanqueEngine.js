@@ -6,7 +6,9 @@ import {
     THROW_CIRCLE_RADIUS, MAX_THROW_SPEED,
     LANDING_FACTOR_POINT, ROLLING_EFFICIENCY, FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
-    TERRAIN_WIDTH, TERRAIN_HEIGHT
+    TERRAIN_WIDTH, TERRAIN_HEIGHT,
+    LOFT_DEMI_PORTEE, LOFT_TIR,
+    CARREAU_THRESHOLD, CARREAU_DISPLACED_MIN, PIXELS_TO_METERS
 } from '../utils/Constants.js';
 
 const STATES = {
@@ -54,6 +56,15 @@ export default class PetanqueEngine {
 
         // After-throw callback queue
         this._afterStopCallback = null;
+
+        // Carreau tracking
+        this.lastThrownBall = null;
+        this._pendingCarreauChecks = [];
+        this._hitstopUntil = 0;
+
+        // Point indicator
+        this._lastBestBallId = null;
+        this._bestPulse = { t: 0 };
     }
 
     startGame() {
@@ -205,7 +216,29 @@ export default class PetanqueEngine {
         });
     }
 
-    throwBall(angle, power, team, shotMode = 'pointer') {
+    static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult) {
+        const isTir = loftPreset.id === 'tir';
+        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85);
+        const totalDist = power * maxDist;
+        const landDist = totalDist * loftPreset.landingFactor;
+        const rollDist = totalDist * (1 - loftPreset.landingFactor);
+
+        const rawTargetX = originX + Math.cos(angle) * landDist;
+        const rawTargetY = originY + Math.sin(angle) * landDist;
+
+        const margin = 8;
+        const targetX = Phaser.Math.Clamp(rawTargetX, bounds.x + margin, bounds.x + bounds.w - margin);
+        const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + margin, bounds.y + bounds.h - margin);
+
+        const perFrameFriction = FRICTION_BASE * frictionMult;
+        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * loftPreset.rollEfficiency);
+        const rollVx = Math.cos(angle) * rollingSpeed;
+        const rollVy = Math.sin(angle) * rollingSpeed;
+
+        return { targetX, targetY, rollVx, rollVy };
+    }
+
+    throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null) {
         if (this.remaining[team] <= 0) return;
 
         const cx = this.scene.throwCircleX;
@@ -221,39 +254,24 @@ export default class PetanqueEngine {
         this.balls.push(ball);
         this.remaining[team]--;
         this.lastTeamPlayed = team;
+        this.lastThrownBall = ball;
+        this._pendingCarreauChecks = [];
 
-        // Calculate landing point and rolling velocity
-        // Power maps to total distance: 0 = short, 1 = max terrain length
-        // Tir = more energy in flight (flatter arc), less rolling
-        // Point = high arc, more rolling
+        // Resolve loft preset
         const isTir = shotMode === 'tirer';
-        const landingFactor = isTir ? LANDING_FACTOR_TIR : LANDING_FACTOR_POINT;
-        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85);
-        const totalDist = power * maxDist;
-        const landDist = totalDist * landingFactor;
-        const rollDist = totalDist * (1 - landingFactor);
+        const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
 
-        const rawTargetX = cx + Math.cos(angle) * landDist;
-        const rawTargetY = cy + Math.sin(angle) * landDist;
+        const { targetX, targetY, rollVx, rollVy } =
+            PetanqueEngine.computeThrowParams(angle, power, cx, cy, this.bounds, loft, this.frictionMult);
 
-        // Clamp landing inside terrain
-        const margin = 8;
-        const targetX = Phaser.Math.Clamp(rawTargetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
-        const targetY = Phaser.Math.Clamp(rawTargetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
-
-        // Rolling velocity: derive speed from desired roll distance and friction
-        // Tir: much higher rolling speed (carries through on impact)
-        // Point: gentle rolling
-        const perFrameFriction = FRICTION_BASE * this.frictionMult;
-        const rollEfficiency = isTir ? 1.2 : ROLLING_EFFICIENCY;
-        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * rollEfficiency);
-        const rollVx = Math.cos(angle) * rollingSpeed;
-        const rollVy = Math.sin(angle) * rollingSpeed;
+        // Notify scene for character throw animation
+        if (this.onThrow) this.onThrow(team);
 
         // Animate fly then physics
         this._animateThrow(ball, targetX, targetY, rollVx, rollVy, () => {
             this.setState(STATES.WAITING_STOP);
             this._afterStopCallback = () => {
+                this._checkCarreau();
                 this._checkBoundsAll();
                 if (!this.cochonnet.isAlive) {
                     this.setState(STATES.MENE_DEAD);
@@ -261,23 +279,21 @@ export default class PetanqueEngine {
                     this.setState(STATES.PLAY_LOOP);
                 }
             };
-        }, isTir);
+        }, loft);
     }
 
-    _animateThrow(ball, targetX, targetY, rollVx, rollVy, callback, isTir = false) {
-        // Fly tween
+    _animateThrow(ball, targetX, targetY, rollVx, rollVy, callback, loftPreset = LOFT_DEMI_PORTEE) {
         const startX = ball.x;
         const startY = ball.y;
+        const isTir = loftPreset.id === 'tir';
 
-        // Hide original during fly, use a tween circle
         const flyGfx = this.scene.add.graphics();
         const shadowGfx = this.scene.add.graphics();
         ball.gfx.setVisible(false);
         ball.shadow.setVisible(false);
 
-        // Tir = fast flat trajectory, Point = high arc (plombee)
-        const flyDuration = isTir ? THROW_FLY_DURATION * 0.7 : THROW_FLY_DURATION * 1.2;
-        const arcHeight = isTir ? -8 : -30; // Tir: rasant, Point: cloche
+        const flyDuration = THROW_FLY_DURATION * loftPreset.flyDurationMult;
+        const arcHeight = loftPreset.arcHeight;
         const ease = isTir ? 'Linear' : 'Quad.easeOut';
 
         const tween = { t: 0 };
@@ -289,17 +305,14 @@ export default class PetanqueEngine {
             onUpdate: () => {
                 const cx = Phaser.Math.Linear(startX, targetX, tween.t);
                 const cy = Phaser.Math.Linear(startY, targetY, tween.t);
-                // Arc: sin curve, height depends on tir/point
                 const arc = arcHeight * Math.sin(tween.t * Math.PI);
 
                 flyGfx.clear();
                 flyGfx.fillStyle(ball.color, 1);
                 flyGfx.fillCircle(cx, cy + arc, ball.radius);
-                // Highlight
                 flyGfx.fillStyle(0xFFFFFF, 0.3);
                 flyGfx.fillCircle(cx - ball.radius * 0.3, cy + arc - ball.radius * 0.3, ball.radius * 0.3);
 
-                // Shadow: for tir, shadow stays close (low flight); for point, shadow starts small
                 shadowGfx.clear();
                 const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
                 shadowGfx.fillStyle(0x000000, 0.15 * shadowScale);
@@ -315,12 +328,10 @@ export default class PetanqueEngine {
                 ball.shadow.setVisible(true);
                 ball.draw();
 
-                // Screen shake: stronger for tir (impact!)
                 const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2 : THROW_SHAKE_INTENSITY;
                 const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
                 this.scene.cameras.main.shake(shakeDuration, shakeIntensity / 1000);
 
-                // Impact flash for tir
                 if (isTir) {
                     const flash = this.scene.add.graphics().setDepth(60);
                     flash.fillStyle(0xFFFFFF, 0.6);
@@ -331,9 +342,7 @@ export default class PetanqueEngine {
                     });
                 }
 
-                // Apply rolling velocity
                 ball.launch(rollVx, rollVy);
-
                 if (callback) callback();
             }
         });
@@ -512,7 +521,44 @@ export default class PetanqueEngine {
         });
     }
 
+    calculateProjectedScore() {
+        if (!this.cochonnet || !this.cochonnet.isAlive) return null;
+        const aliveBalls = this.balls.filter(b => b.isAlive);
+        if (aliveBalls.length === 0) return null;
+
+        const playerDist = this._getMinDistance('player');
+        const opponentDist = this._getMinDistance('opponent');
+
+        if (playerDist === Infinity && opponentDist === Infinity) return null;
+        if (playerDist === opponentDist) return { winner: null, points: 0 };
+
+        let winner, loserDist;
+        if (playerDist < opponentDist) {
+            winner = 'player';
+            loserDist = opponentDist;
+        } else {
+            winner = 'opponent';
+            loserDist = playerDist;
+        }
+
+        const losingBallsAlive = this.balls.filter(b => b.team !== winner && b.team !== 'cochonnet' && b.isAlive);
+        let points = 0;
+        for (const ball of this.balls) {
+            if (ball.team === winner && ball.isAlive) {
+                if (losingBallsAlive.length === 0 || ball.distanceTo(this.cochonnet) < loserDist) {
+                    points++;
+                }
+            }
+        }
+
+        return { winner, points };
+    }
+
     update(delta) {
+        // Hitstop: freeze physics during celebration
+        if (this._hitstopUntil > 0 && Date.now() < this._hitstopUntil) return;
+        this._hitstopUntil = 0;
+
         // Update all balls physics
         let anyMoving = false;
         const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive);
@@ -522,11 +568,29 @@ export default class PetanqueEngine {
             if (ball.isMoving) anyMoving = true;
         }
 
-        // Check collisions between all pairs
+        // Check collisions between all pairs, track carreau candidates
         for (let i = 0; i < allBodies.length; i++) {
             for (let j = i + 1; j < allBodies.length; j++) {
                 if (allBodies[i].isAlive && allBodies[j].isAlive) {
-                    Ball.resolveCollision(allBodies[i], allBodies[j]);
+                    // Record positions before collision for carreau detection
+                    const ax = allBodies[i].x, ay = allBodies[i].y;
+                    const bx = allBodies[j].x, by = allBodies[j].y;
+
+                    const collided = Ball.resolveCollision(allBodies[i], allBodies[j]);
+
+                    if (collided && this.lastThrownBall && this._pendingCarreauChecks) {
+                        if (allBodies[i] === this.lastThrownBall) {
+                            this._pendingCarreauChecks.push({
+                                thrownBall: allBodies[i],
+                                targetOrigX: bx, targetOrigY: by
+                            });
+                        } else if (allBodies[j] === this.lastThrownBall) {
+                            this._pendingCarreauChecks.push({
+                                thrownBall: allBodies[j],
+                                targetOrigX: ax, targetOrigY: ay
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -534,8 +598,8 @@ export default class PetanqueEngine {
         // Check bounds
         this._checkBoundsAll();
 
-        // Update BEST indicator
-        this._updateBestIndicator(anyMoving);
+        // Update BEST indicator (now works in real-time!)
+        this._updateBestIndicator();
 
         // If waiting for stop and everything stopped
         if (this.state === STATES.WAITING_STOP && !anyMoving) {
@@ -547,13 +611,75 @@ export default class PetanqueEngine {
         }
     }
 
-    _updateBestIndicator(anyMoving) {
+    _checkCarreau() {
+        if (!this._pendingCarreauChecks || !this.lastThrownBall) return;
+
+        for (const check of this._pendingCarreauChecks) {
+            if (!check.thrownBall.isAlive) continue;
+            const dx = check.thrownBall.x - check.targetOrigX;
+            const dy = check.thrownBall.y - check.targetOrigY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist <= CARREAU_THRESHOLD) {
+                this._celebrateCarreau(check.thrownBall);
+                break;
+            }
+        }
+        this._pendingCarreauChecks = [];
+    }
+
+    _celebrateCarreau(ball) {
+        // Hitstop
+        this._hitstopUntil = Date.now() + 100;
+
+        // Screen shake
+        this.scene.cameras.main.shake(250, 0.004);
+
+        // Flash
+        this.scene.cameras.main.flash(80, 255, 255, 255);
+
+        // "CARREAU !" text
+        const txt = this.scene.add.text(ball.x, ball.y - 15, 'CARREAU !', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(65);
+
+        this.scene.tweens.add({
+            targets: txt,
+            y: txt.y - 25, alpha: 0, scaleX: 1.5, scaleY: 1.5,
+            duration: 1500, ease: 'Cubic.easeOut',
+            onComplete: () => txt.destroy()
+        });
+
+        // Radial particles (gold sparks)
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const spark = this.scene.add.graphics().setDepth(64);
+            spark.fillStyle(0xFFD700, 1);
+            spark.fillCircle(0, 0, 2);
+            spark.setPosition(ball.x, ball.y);
+            this.scene.tweens.add({
+                targets: spark,
+                x: ball.x + Math.cos(angle) * 18,
+                y: ball.y + Math.sin(angle) * 18,
+                alpha: 0, duration: 500,
+                onComplete: () => spark.destroy()
+            });
+        }
+    }
+
+    _updateBestIndicator() {
         if (!this._bestGfx) {
             this._bestGfx = this.scene.add.graphics().setDepth(10);
+            // Pulse tween
+            this.scene.tweens.add({
+                targets: this._bestPulse,
+                t: 1, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+            });
         }
         this._bestGfx.clear();
 
-        if (!this.cochonnet || !this.cochonnet.isAlive || anyMoving) return;
+        if (!this.cochonnet || !this.cochonnet.isAlive) return;
         if (this.balls.filter(b => b.isAlive).length === 0) return;
 
         let bestBall = null;
@@ -569,8 +695,33 @@ export default class PetanqueEngine {
 
         if (bestBall) {
             const color = bestBall.team === 'player' ? 0x44CC44 : 0xCC4444;
-            this._bestGfx.lineStyle(1, color, 0.7);
-            this._bestGfx.strokeCircle(bestBall.x, bestBall.y, bestBall.radius + 3);
+            const t = this._bestPulse.t;
+            const alpha = 0.4 + t * 0.4;
+            const radius = bestBall.radius + 3 + t * 2;
+
+            this._bestGfx.lineStyle(1.5, color, alpha);
+            this._bestGfx.strokeCircle(bestBall.x, bestBall.y, radius);
+
+            // Detect point change and flash
+            if (bestBall.id !== this._lastBestBallId) {
+                if (this._lastBestBallId !== null) {
+                    // Point changed! Flash ring animation
+                    const flash = this.scene.add.graphics().setDepth(11);
+                    const flashColor = color;
+                    const fx = bestBall.x, fy = bestBall.y;
+                    const anim = { s: 1 };
+                    this.scene.tweens.add({
+                        targets: anim, s: 2.5, duration: 350, ease: 'Cubic.easeOut',
+                        onUpdate: () => {
+                            flash.clear();
+                            flash.lineStyle(2, flashColor, 0.8 * (1 - (anim.s - 1) / 1.5));
+                            flash.strokeCircle(fx, fy, (bestBall.radius + 3) * anim.s);
+                        },
+                        onComplete: () => flash.destroy()
+                    });
+                }
+                this._lastBestBallId = bestBall.id;
+            }
         }
     }
 

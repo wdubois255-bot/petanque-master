@@ -96,8 +96,9 @@ npm run preview      # Preview du build
 
 ## Regles importantes
 - **Pixel art** : toujours utiliser `image-rendering: pixelated` et `imageSmoothingEnabled = false`
-- **Tile size** : 16x16 pixels partout
-- **Resolution du jeu** : 416x240 (26x15 tiles visibles), scale integer x3 ou x4 selon l'ecran
+- **Tile size** : 32x32 pixels partout (migre depuis 16x16)
+- **Sprites persos** : 32x32 (generes par PixelLab 64x64, downscale 2x nearest-neighbor)
+- **Resolution du jeu** : 832x480 (26x15 tiles visibles), scale integer x2 selon l'ecran
 - **Mouvement** : grid-based (snap au tile), animation smooth de transition ~200ms
 - **Physique petanque** : custom, PAS de Matter.js. Friction lineaire constante. Multiplicateurs terrain : terre=1.0, herbe=1.8, sable=3.0, dalles=0.7. Restitution boule-boule=0.85, boule-cochonnet=0.7
 - **IA petanque** : 3 niveaux (facile/moyen/difficile) definis par precision de visee et strategie

@@ -24,6 +24,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.opponentName = data.opponentName || 'Adversaire';
         this.opponentId = data.opponentId || null;
         this.returnScene = data.returnScene || null;
+        this.personality = data.personality || null;
     }
 
     create() {
@@ -58,8 +59,8 @@ export default class PetanqueScene extends Phaser.Scene {
         // Aiming
         this.aimingSystem = new AimingSystem(this, this.engine);
 
-        // AI
-        this.ai = new PetanqueAI(this, this.engine, this.difficulty);
+        // AI (with personality if provided)
+        this.ai = new PetanqueAI(this, this.engine, this.difficulty, this.personality);
 
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);
@@ -83,65 +84,177 @@ export default class PetanqueScene extends Phaser.Scene {
         if (!this.textures.exists('petanque_player')) {
             generateCharacterSprite(this, 'petanque_player', PALETTES.player);
         }
-        // Pick opponent palette based on opponentId
-        const opponentPalette = this._getOpponentPalette();
-        if (!this.textures.exists('petanque_opponent')) {
-            generateCharacterSprite(this, 'petanque_opponent', opponentPalette);
+        // Destroy old opponent texture to support different opponents per fight
+        if (this.textures.exists('petanque_opponent')) {
+            this.textures.remove('petanque_opponent');
         }
+        const opponentPalette = this._getOpponentPalette();
+        generateCharacterSprite(this, 'petanque_opponent', opponentPalette);
     }
 
     _getOpponentPalette() {
         const id = this.opponentId || '';
         if (id.includes('marcel')) return PALETTES.npc_marcel;
         if (id.includes('rival') || id.includes('bastien')) return PALETTES.npc_rival;
+        if (id.includes('fanny')) return PALETTES.npc_fanny;
+        if (id.includes('ricardo')) return PALETTES.npc_ricardo;
+        if (id.includes('marius')) return PALETTES.npc_marius;
         if (id.includes('maitre') || id.includes('papet')) return PALETTES.npc_vieux_maitre;
         if (id.includes('dresseur')) return PALETTES.npc_dresseur;
         return PALETTES.npc_dresseur;
     }
 
     _createPlayerSprites() {
-        // Player sprite: near throw circle, facing up (row 3, frame 0 = index 12)
-        const playerX = this.throwCircleX - 16;
-        const playerY = this.throwCircleY + 2;
-        this.playerSprite = this.add.sprite(playerX, playerY, 'petanque_player', 12)
+        // Player: in the throw circle, facing up toward terrain
+        const playerHomeX = this.throwCircleX;
+        const playerHomeY = this.throwCircleY + 8;
+        this.playerSprite = this.add.sprite(playerHomeX, playerHomeY, 'petanque_player', 12)
             .setOrigin(0.5, 1).setDepth(20).setScale(1);
+        this._playerHomeX = playerHomeX;
+        this._playerHomeY = playerHomeY;
 
-        // Opponent sprite: other side of terrain, facing down (row 0, frame 0 = index 0)
-        const opponentX = this.throwCircleX + 16;
-        const opponentY = this.terrainY + 20;
-        this.opponentSprite = this.add.sprite(opponentX, opponentY, 'petanque_opponent', 0)
+        // Opponent: waiting area, top-right of terrain
+        const opponentWaitX = this.terrainX + TERRAIN_WIDTH - 20;
+        const opponentWaitY = this.terrainY + 25;
+        const opponentCircleX = this.throwCircleX;
+        const opponentCircleY = this.throwCircleY + 8;
+        this.opponentSprite = this.add.sprite(opponentWaitX, opponentWaitY, 'petanque_opponent', 0)
             .setOrigin(0.5, 1).setDepth(20).setScale(1);
+        this._opponentWaitX = opponentWaitX;
+        this._opponentWaitY = opponentWaitY;
+        this._opponentCircleX = opponentCircleX;
+        this._opponentCircleY = opponentCircleY;
 
         // Turn indicator arrows
-        this.playerTurnArrow = this.add.text(playerX, playerY - 28, '\u25bc', {
+        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 28, '\u25bc', {
             fontFamily: 'monospace', fontSize: '8px', color: '#A8B5C2'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        this.opponentTurnArrow = this.add.text(opponentX, opponentY - 28, '\u25bc', {
+        this.opponentTurnArrow = this.add.text(opponentWaitX, opponentWaitY - 28, '\u25bc', {
             fontFamily: 'monospace', fontSize: '8px', color: '#C44B3F'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
         // Bounce animation for turn arrow
         this._playerArrowTween = this.tweens.add({
             targets: this.playerTurnArrow,
-            y: playerY - 24,
+            y: playerHomeY - 24,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
         this._opponentArrowTween = this.tweens.add({
             targets: this.opponentTurnArrow,
-            y: opponentY - 24,
+            y: opponentWaitY - 24,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
 
-        // Chain onTurnChange
+        // Hook into throw events for animations
         const existingTurnChange = this.engine.onTurnChange;
         this.engine.onTurnChange = (team) => {
             if (existingTurnChange) existingTurnChange(team);
             this._updateTurnIndicator(team);
+            this._animateToCircle(team);
         };
 
-        // Start with player turn indicator
+        const existingOnThrow = this.engine.onThrow;
+        this.engine.onThrow = (team) => {
+            if (existingOnThrow) existingOnThrow(team);
+            this._animateThrow(team);
+        };
+
         this._updateTurnIndicator('player');
+    }
+
+    _animateToCircle(team) {
+        if (team === 'ai') {
+            // Opponent walks to circle
+            // Walk animation: cycle through down frames
+            this.opponentSprite.setFrame(1); // walking frame
+            this.tweens.add({
+                targets: this.opponentSprite,
+                x: this._opponentCircleX,
+                y: this._opponentCircleY,
+                duration: 500,
+                ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    // Cycle walk frames (row 0: 0,1,2,3)
+                    const f = Math.floor(Date.now() / 150) % 4;
+                    this.opponentSprite.setFrame(f);
+                },
+                onComplete: () => {
+                    this.opponentSprite.setFrame(12); // face up (toward terrain)
+                }
+            });
+            // Move arrow with sprite
+            this.tweens.add({
+                targets: this.opponentTurnArrow,
+                x: this._opponentCircleX,
+                duration: 500
+            });
+            // Player walks away to wait
+            this.tweens.add({
+                targets: this.playerSprite,
+                x: this.terrainX + 20,
+                y: this.terrainY + TERRAIN_HEIGHT - 15,
+                duration: 400,
+                ease: 'Sine.easeInOut',
+                onComplete: () => {
+                    this.playerSprite.setFrame(12); // face up, watching
+                }
+            });
+        } else {
+            // Player to circle
+            this.tweens.add({
+                targets: this.playerSprite,
+                x: this._playerHomeX,
+                y: this._playerHomeY,
+                duration: 400,
+                ease: 'Sine.easeInOut',
+                onComplete: () => {
+                    this.playerSprite.setFrame(12); // face up
+                }
+            });
+            // Opponent walks back to wait area
+            this.tweens.add({
+                targets: this.opponentSprite,
+                x: this._opponentWaitX,
+                y: this._opponentWaitY,
+                duration: 500,
+                ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    const f = Math.floor(Date.now() / 150) % 4;
+                    this.opponentSprite.setFrame(f);
+                },
+                onComplete: () => {
+                    this.opponentSprite.setFrame(0); // face down, watching
+                }
+            });
+            this.tweens.add({
+                targets: this.opponentTurnArrow,
+                x: this._opponentWaitX,
+                duration: 500
+            });
+        }
+    }
+
+    _animateThrow(team) {
+        const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
+        const baseY = sprite.y;
+
+        // Flash the sprite white briefly for emphasis
+        sprite.setTint(0xFFFFFF);
+        this.time.delayedCall(80, () => sprite.clearTint());
+
+        // Throw animation: wind-up, release, recovery
+        this.tweens.chain({
+            targets: sprite,
+            tweens: [
+                // Wind up: lean back, compress
+                { scaleX: 0.9, scaleY: 1.1, y: baseY + 1, duration: 150, ease: 'Quad.easeOut' },
+                // Release: stretch forward, arm extends
+                { scaleX: 1.15, scaleY: 0.8, y: baseY - 4, duration: 100, ease: 'Quad.easeIn' },
+                // Recovery: bounce back to normal
+                { scaleX: 1.0, scaleY: 1.0, y: baseY, duration: 250, ease: 'Bounce.easeOut' }
+            ]
+        });
     }
 
     _updateTurnIndicator(team) {
@@ -150,23 +263,11 @@ export default class PetanqueScene extends Phaser.Scene {
             this._playerArrowTween.resume();
             this.opponentTurnArrow.setVisible(false);
             this._opponentArrowTween.pause();
-            // Player "ready" animation - slight bob
-            this.tweens.add({
-                targets: this.playerSprite,
-                y: this.playerSprite.y - 2,
-                duration: 200, yoyo: true
-            });
         } else {
             this.opponentTurnArrow.setVisible(true);
             this._opponentArrowTween.resume();
             this.playerTurnArrow.setVisible(false);
             this._playerArrowTween.pause();
-            // Opponent "ready" animation
-            this.tweens.add({
-                targets: this.opponentSprite,
-                y: this.opponentSprite.y - 2,
-                duration: 200, yoyo: true
-            });
         }
     }
 
