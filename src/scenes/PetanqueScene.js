@@ -120,15 +120,16 @@ export default class PetanqueScene extends Phaser.Scene {
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
 
-        // Opponent: waiting area, top-right of terrain
-        const opponentWaitX = this.terrainX + TERRAIN_WIDTH - 40;
-        const opponentWaitY = this.terrainY + 50;
+        // Opponent: NEAR COCHONNET (crouching, watching), not in waiting area
+        // Initial position = near center-top of terrain (cochonnet area)
+        const opponentCochoX = this.terrainX + TERRAIN_WIDTH / 2 + 30;
+        const opponentCochoY = this.terrainY + 120;
         const opponentCircleX = this.throwCircleX;
         const opponentCircleY = this.throwCircleY + 16;
-        this.opponentSprite = this.add.sprite(opponentWaitX, opponentWaitY, 'petanque_opponent', 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1);
-        this._opponentWaitX = opponentWaitX;
-        this._opponentWaitY = opponentWaitY;
+        this.opponentSprite = this.add.sprite(opponentCochoX, opponentCochoY, 'petanque_opponent', 0)
+            .setOrigin(0.5, 1).setDepth(20).setScale(1, 0.6); // crouching
+        this._opponentCochoX = opponentCochoX;
+        this._opponentCochoY = opponentCochoY;
         this._opponentCircleX = opponentCircleX;
         this._opponentCircleY = opponentCircleY;
 
@@ -137,7 +138,7 @@ export default class PetanqueScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '16px', color: '#A8B5C2'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        this.opponentTurnArrow = this.add.text(opponentWaitX, opponentWaitY - 56, '\u25bc', {
+        this.opponentTurnArrow = this.add.text(opponentCochoX, opponentCochoY - 40, '\u25bc', {
             fontFamily: 'monospace', fontSize: '16px', color: '#C44B3F'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
@@ -149,7 +150,7 @@ export default class PetanqueScene extends Phaser.Scene {
         });
         this._opponentArrowTween = this.tweens.add({
             targets: this.opponentTurnArrow,
-            y: opponentWaitY - 48,
+            y: opponentCochoY - 32,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
 
@@ -164,17 +165,35 @@ export default class PetanqueScene extends Phaser.Scene {
         const existingOnThrow = this.engine.onThrow;
         this.engine.onThrow = (team) => {
             if (existingOnThrow) existingOnThrow(team);
-            this._animateThrow(team);
+            this._animateCharThrow(team);
+        };
+
+        // Hook into after-stop for reactions
+        const existingAfterStop = this.engine.onAfterStop;
+        this.engine.onAfterStop = (lastTeam) => {
+            if (existingAfterStop) existingAfterStop(lastTeam);
+            this._animateReaction(lastTeam);
         };
 
         this._updateTurnIndicator('player');
     }
 
+    // Update opponent position near cochonnet (call after cochonnet lands)
+    _updateOpponentCochoPos() {
+        if (this.engine.cochonnet && this.engine.cochonnet.isAlive) {
+            this._opponentCochoX = this.engine.cochonnet.x + 30;
+            this._opponentCochoY = this.engine.cochonnet.y + 10;
+        }
+    }
+
     _animateToCircle(team) {
+        this._updateOpponentCochoPos();
+
         if (team === 'ai') {
-            this.opponentSprite.setFrame(1);
+            // Opponent stands up and walks to circle
             this.tweens.add({
                 targets: this.opponentSprite,
+                scaleY: 1.0, // stand up
                 x: this._opponentCircleX,
                 y: this._opponentCircleY,
                 duration: 500,
@@ -190,19 +209,22 @@ export default class PetanqueScene extends Phaser.Scene {
             this.tweens.add({
                 targets: this.opponentTurnArrow,
                 x: this._opponentCircleX,
+                y: this._opponentCircleY - 56,
                 duration: 500
             });
+            // Player steps aside near cochonnet
             this.tweens.add({
                 targets: this.playerSprite,
-                x: this.terrainX + 40,
-                y: this.terrainY + TERRAIN_HEIGHT - 30,
+                x: this._opponentCochoX - 60,
+                y: this._opponentCochoY,
                 duration: 400,
                 ease: 'Sine.easeInOut',
                 onComplete: () => {
-                    this.playerSprite.setFrame(12);
+                    this.playerSprite.setFrame(0);
                 }
             });
         } else {
+            // Player walks back to circle
             this.tweens.add({
                 targets: this.playerSprite,
                 x: this._playerHomeX,
@@ -213,10 +235,12 @@ export default class PetanqueScene extends Phaser.Scene {
                     this.playerSprite.setFrame(12);
                 }
             });
+            // Opponent goes back near cochonnet, crouches
             this.tweens.add({
                 targets: this.opponentSprite,
-                x: this._opponentWaitX,
-                y: this._opponentWaitY,
+                x: this._opponentCochoX,
+                y: this._opponentCochoY,
+                scaleY: 0.6, // crouch
                 duration: 500,
                 ease: 'Sine.easeInOut',
                 onUpdate: () => {
@@ -229,13 +253,14 @@ export default class PetanqueScene extends Phaser.Scene {
             });
             this.tweens.add({
                 targets: this.opponentTurnArrow,
-                x: this._opponentWaitX,
+                x: this._opponentCochoX,
+                y: this._opponentCochoY - 40,
                 duration: 500
             });
         }
     }
 
-    _animateThrow(team) {
+    _animateCharThrow(team) {
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
         const baseY = sprite.y;
 
@@ -250,6 +275,46 @@ export default class PetanqueScene extends Phaser.Scene {
                 { scaleX: 1.0, scaleY: 1.0, y: baseY, duration: 250, ease: 'Bounce.easeOut' }
             ]
         });
+    }
+
+    _animateReaction(lastTeam) {
+        if (!this.engine.cochonnet || !this.engine.cochonnet.isAlive) return;
+
+        // Find the last thrown ball's distance to cochonnet
+        const lastBall = this.engine.lastThrownBall;
+        if (!lastBall || !lastBall.isAlive) return;
+        const dist = lastBall.distanceTo(this.engine.cochonnet);
+
+        const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
+        const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
+
+        if (dist < 30) {
+            // Good shot! Thrower celebrates (small jump)
+            this.tweens.add({
+                targets: throwerSprite,
+                y: throwerSprite.y - 8,
+                duration: 200, ease: 'Bounce.easeOut', yoyo: true
+            });
+            // Watcher shakes head
+            this.tweens.chain({
+                targets: watcherSprite,
+                tweens: [
+                    { angle: -5, duration: 100 },
+                    { angle: 5, duration: 100 },
+                    { angle: 0, duration: 100 }
+                ]
+            });
+        } else if (dist > 80) {
+            // Bad shot — thrower shakes head
+            this.tweens.chain({
+                targets: throwerSprite,
+                tweens: [
+                    { angle: -5, duration: 100 },
+                    { angle: 5, duration: 100 },
+                    { angle: 0, duration: 100 }
+                ]
+            });
+        }
     }
 
     _updateTurnIndicator(team) {

@@ -54,6 +54,7 @@ export default class PetanqueEngine {
         this.onStateChange = null;
         this.onScore = null;
         this.onTurnChange = null;
+        this.onAfterStop = null;
 
         // Aiming enabled flag
         this.aimingEnabled = false;
@@ -717,6 +718,9 @@ export default class PetanqueEngine {
 
         // If waiting for stop and everything stopped
         if (this.state === STATES.WAITING_STOP && !anyMoving) {
+            // Trigger reaction animations
+            if (this.onAfterStop) this.onAfterStop(this.lastTeamPlayed);
+
             if (this._afterStopCallback) {
                 const cb = this._afterStopCallback;
                 this._afterStopCallback = null;
