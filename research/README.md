@@ -57,6 +57,11 @@ Chaque fichier est autonome et peut etre lu independamment.
 | 21 | [21_petanque_international.md](21_petanque_international.md) | Petanque mondiale : Thailande, Madagascar, 67 pays medailles |
 | 22 | [22_faisabilite_ameliorations_phaser3.md](22_faisabilite_ameliorations_phaser3.md) | Verification faisabilite : 7/7 features confirmees (gradient, camera, slow-mo, etc.) |
 
+### Game design et addiction (15 mars 2026)
+| # | Fichier | Contenu |
+|---|---------|---------|
+| 23 | [23_addictive_game_design.md](23_addictive_game_design.md) | Boucle addiction Pokemon, game feel Celeste/Stardew, courbe difficulte, UX mobile, art direction |
+
 ---
 
 ## Comment utiliser cette base
@@ -71,4 +76,4 @@ Chaque fichier est autonome et peut etre lu independamment.
 ## Historique
 - Session 1 (debut projet) : fichiers 01-12
 - Session 2 (14 mars 2026) : fichiers 13-15
-- Session 3 (15 mars 2026) : fichiers 16-21, migration 32x32, game feel, recherche approfondie
+- Session 3 (15 mars 2026) : fichiers 16-23, migration 32x32, game feel, recherche approfondie
