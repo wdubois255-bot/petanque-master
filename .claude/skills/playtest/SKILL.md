@@ -33,7 +33,7 @@ Launch the game in development mode for testing.
 ## Quick Checks After Launch
 
 - [ ] No console errors in browser DevTools
-- [ ] Game renders at correct resolution (416x240 scaled)
+- [ ] Game renders at correct resolution (832x480 scaled)
 - [ ] Pixel art is crisp (no blurring)
 - [ ] Audio plays after first click
 - [ ] 60 FPS in Performance tab

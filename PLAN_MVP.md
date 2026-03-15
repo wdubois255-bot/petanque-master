@@ -70,7 +70,7 @@ export default defineConfig({
 });
 ```
 - [ ] index.html avec CSS pixel art (`image-rendering: pixelated`)
-- [ ] main.js avec config Phaser minimale (416x240, Arcade, pixelArt: true)
+- [ ] main.js avec config Phaser minimale (832x480, Arcade, pixelArt: true)
 - [ ] `npm run dev` -> ecran vide Phaser = OK
 
 **Etape 0.2 - Structure de fichiers (10 min)**
@@ -648,7 +648,7 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Retour au titre apres credits
 
 **Etape 4.5 - Responsive et mobile (1h30)**
-- [ ] Scaling integer automatique : `Math.floor(Math.min(w/416, h/240))`
+- [ ] Scaling integer automatique : `Math.floor(Math.min(w/832, h/480))`
 - [ ] Letterboxing fond sombre (#3A2E28) avec flexbox
 - [ ] Touch controls : drag-to-aim = natif pointer events
 - [ ] D-pad virtuel pour exploration mobile (optionnel, Phase 2)
@@ -783,9 +783,9 @@ Deja cree dans `/src/data/boules.json` (3 sets + cochonnet + physics + 4 terrain
 
 ```javascript
 // Resolution
-export const GAME_WIDTH = 416;
-export const GAME_HEIGHT = 240;
-export const TILE_SIZE = 16;
+export const GAME_WIDTH = 832;
+export const GAME_HEIGHT = 480;
+export const TILE_SIZE = 32;
 
 // Mouvement joueur
 export const PLAYER_MOVE_DURATION = 200; // ms pour traverser 1 tile

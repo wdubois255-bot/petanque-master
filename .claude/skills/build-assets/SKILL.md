@@ -32,12 +32,12 @@ For each WAV in `assets/audio/`:
 
 ### 4. Verify tileset integrity
 For each PNG in `assets/tilesets/`:
-- Check dimensions are multiples of 16 (16x16 tile grid)
+- Check dimensions are multiples of 32 (32x32 tile grid)
 - Report any misaligned tilesets
 
 ### 5. Verify spritesheet integrity
 For each character spritesheet in `assets/sprites/`:
-- Check dimensions match expected format (e.g., 64x96 for 4x4 frames at 16x24)
+- Check dimensions match expected format (e.g., 128x128 for 4x4 frames at 32x32)
 - Report any issues
 
 ### 6. Size report

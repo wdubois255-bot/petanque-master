@@ -10,7 +10,7 @@
         "precision": 3,
         "puissance": 3,
         "masse": 700,
-        "rayon": 5
+        "rayon": 10
       },
       "bonus": null,
       "lore": "Les classiques du boulodrome. Fiables, sans surprise."
@@ -25,7 +25,7 @@
         "precision": 2,
         "puissance": 4,
         "masse": 800,
-        "rayon": 5.5
+        "rayon": 11
       },
       "bonus": "knockback_x1.2",
       "lore": "Forgees par le vieux Marcel lui-meme. Ca fait mal."
@@ -40,7 +40,7 @@
         "precision": 4,
         "puissance": 2,
         "masse": 620,
-        "rayon": 4.5
+        "rayon": 9
       },
       "bonus": "friction_x0.9",
       "lore": "Polies comme un miroir. Glissent sur le terrain comme du beurre."
@@ -48,7 +48,7 @@
   ],
   "cochonnet": {
     "masse": 30,
-    "rayon": 2,
+    "rayon": 4,
     "color": "#FFD700",
     "sprite": "cochonnet"
   },
