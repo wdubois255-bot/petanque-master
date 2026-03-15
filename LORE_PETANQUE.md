@@ -16,9 +16,12 @@
   - Inspiré de Fazzino pour la longévité et le statut de légende vivante
 
 ### Philippe Quintais - "Le Roi" 👑
-- Né en 1967, **13 titres de Champion du Monde**, 12 titres de Champion de France
-- Surnommé **"Le Roi"** de la pétanque, considéré comme LE plus grand compétiteur
-- Tireur d'exception : carreau à volonté, régularité surhumaine, mental de champion
+- Né le 30 décembre 1967 à Hanches (Eure-et-Loir), **14 titres de Champion du Monde** (record à égalité avec Suchaud), 12 titres de Champion de France
+- Surnommé **"Le Roi"** et **"Le Zidane de la pétanque"**
+- Joueur COMPLET (pas juste tireur) : milieu avec préférence pour le point. Intelligence tactique suprême. "Prend le contrôle du jeu et ne laisse que très peu de place à la décision pour ses adversaires"
+- Inscrit aux "Gloires du Sport" français
+- Personnalité : discret, n'aime pas les paillettes, déteste le mot "star"
+- Boules : Obut ATX, acier inoxydable semi-tendre, 74mm / 690g
 - Membre fondateur de la "Dream Team" avec Suchaud et Lacroix
 - A dominé la pétanque mondiale pendant plus de 20 ans (années 90 à 2010+)
 - Encore actif en compétition, toujours redouté par les jeunes générations
@@ -28,17 +31,23 @@
   - Sa longévité et domination → Marius règne sur le Canton depuis des décennies
   - Son aura d'invincibilité → le battre = accomplissement ultime du jeu
 
-### Philippe Suchaud - "L'Autre Philippe"
-- **13 titres de Champion du Monde**, 11 de Champion de France
-- Record de 8 victoires aux Masters de Pétanque
-- Partenaire de Quintais dans la Dream Team
-- **→ Parodie : inspiré pour la rivalité entre pointeurs et tireurs**
+### Philippe Suchaud - "La Science"
+- Né le 10 décembre 1970 à Cosne-d'Allier
+- **14 titres de Champion du Monde** (à égalité avec Quintais), 3 titres d'Europe
+- **Record de 8 victoires aux Masters de Pétanque** (record absolu)
+- **10 victoires en Coupe de France des clubs** (record, sur 26 éditions)
+- Style : essentiellement TIREUR, parfois milieu. Geste d'une régularité métronomique
+- "Le Suchaud Time" : sa capacité à élever son niveau dans les moments clés
+- Partenaire et ami de Quintais dans la Dream Team
+- **→ Parodie : inspiration pour Ricardo** - tireur scientifique, précision froide, dimension internationale
 
-### Henri Lacroix - "Le GOAT ?"
-- **17 titres de Champion de France** (record absolu seniors)
-- 7 fois Champion du Monde en triplettes
-- Encore actif à 50+ ans, considéré par beaucoup comme le meilleur de tous les temps
-- **→ Parodie : "Le Vieux Papet"** - le mentor du joueur, ancien champion retiré
+### Henri Lacroix - "Le GOAT Pointeur"
+- Né le 31 mai 1975 à La Seyne-sur-Mer (Var)
+- **13 titres de Champion du Monde**, 4 titres d'Europe
+- **20 titres de Champion de France** (record absolu, dont 4 en jeu provençal)
+- Pointeur de tête ou milieu, régularité exceptionnelle
+- Encore actif à 50+ ans, considéré par beaucoup comme le meilleur pointeur de tous les temps
+- **→ Parodie : "Le Vieux Papet"** - le mentor du joueur, ancien champion retiré, du Var
 
 ### Marco Foyot - "Le Showman"
 - Né en 1953, 7 fois Champion de France, Champion du Monde 1992
@@ -52,10 +61,13 @@
 - **→ Parodie : inspiré pour les légendes racontées par les villageois**
 
 ### Dylan Rocher - "Le Prodige"
-- Né en 1993, plus jeune Champion du Monde de l'histoire (2012, 19 ans)
-- 4 titres de Champion du Monde, multiple Champion de France
+- Né le 17 décembre 1991 au Mans. Fils de Bruno Rocher (champion du monde 2004)
+- Champion du monde junior à **10 ans** (2005, record de précocité)
+- Demi-finaliste du championnat de France seniors à **14 ans** (2006)
+- 4+ titres de Champion du Monde en triplette, 1 en doublette
+- Vit à Draguignan (Var)
 - Représente la nouvelle génération qui a bousculé les anciens
-- Style : agressif, tireur précis, mental d'acier
+- Style : considéré comme l'un des meilleurs tireurs au monde
 - **→ Parodie : inspiré pour Bastien "Le Fennec"** - le jeune prodige arrogant qui veut dépasser les anciens
   - L'idée du "petit-fils de légende" qui porte le poids d'un héritage
 
@@ -69,10 +81,12 @@
 ### La Dream Team : Quintais / Suchaud / Lacroix
 - Le trio le plus titré de l'histoire de la pétanque
 - Actifs ensemble principalement 2001-2003, mais se sont retrouvés régulièrement
-- Quintais (tireur) + Suchaud (milieu) + Lacroix (pointeur) = complémentarité parfaite
-- Record combiné : 30+ titres de Champion du Monde à eux trois
+- Lacroix (pointeur de tête) + Quintais (milieu/point/tactique) + Suchaud (tireur) = complémentarité parfaite
+- 3 titres mondiaux consécutifs (2001, 2002, 2003) + 4-5 titres de France consécutifs
+- Réunis en 2021 (avec Dylan Rocher) pour un titre mondial en Espagne
+- Record combiné : 40+ titres de Champion du Monde à eux trois
 - **→ Parodie : "La Triplette Légendaire du Canton"** - Le Papet en faisait partie dans sa jeunesse
-  - Marius (tireur, inspiré Fazzino/Quintais) + Le Papet (pointeur, inspiré Lacroix) + un 3ème mystérieux
+  - Marius (complet/milieu, inspiré Quintais) + Le Papet (pointeur, inspiré Lacroix) + un 3ème mystérieux
 
 ---
 
@@ -105,9 +119,10 @@
 
 ## ORIGINES DE LA PÉTANQUE
 
-- 1910 : Jules Lenoir, souffrant de rhumatismes, ne pouvait plus jouer à la Longue
-- Ernest Pitiot inventa le jeu "pieds tanqués" (pieds joints au sol)
-- Le mot "Pétanque" vient du provençal "pès tanquats" (pieds plantés)
+- 1907 : Jules Hugues, dit "Le Noir" (La Ciotat), souffrant de rhumatismes, ne pouvait plus prendre d'élan au jeu provençal
+- Les frères Pitiot, tenanciers du terrain de boules Béraud, l'autorisent à jouer pieds fixes au sol
+- Premier concours officiel : La Ciotat, 1910
+- Le mot "Pétanque" vient du provençal "pè tanca" (pieds ancrés/plantés)
 - **→ Dans le jeu : Le Papet raconte cette histoire pendant l'intro**
 
 ---
