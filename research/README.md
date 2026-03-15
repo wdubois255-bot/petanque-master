@@ -35,12 +35,26 @@ Chaque fichier est autonome et peut etre lu independamment.
 | 10 | [10_ai_pixel_art_tools.md](10_ai_pixel_art_tools.md) | PixelLab, Retro Diffusion, Aseprite, pipeline sprites IA |
 | 11 | [11_mcp_servers_gamedev.md](11_mcp_servers_gamedev.md) | Serveurs MCP pour game dev, ElevenLabs audio, integration |
 
-### Gameplay et polish (Sprint 3.5-4) — NOUVEAU (14 mars 2026)
+### Gameplay et polish (Sprint 3.5-4)
 | # | Fichier | Contenu |
 |---|---------|---------|
-| 13 | [13_gameplay_petanque_game_design.md](13_gameplay_petanque_game_design.md) | **Game design petanque** : game feel, techniques reelles (roulette/plombee/carreau), strategie, IA par personnalite, tension/comeback, erreurs a eviter. ~15 sources. |
-| 14 | [14_phaser3_polish_techniques.md](14_phaser3_polish_techniques.md) | **Polish Phaser 3** : camera shake/flash/zoom, particules par terrain, tweens/easing, prediction trajectoire, pixel art pro, performance, save system, checklist lancement. |
-| 15 | [15_implementation_verification.md](15_implementation_verification.md) | **Verification faisabilite** : audit code-by-code de chaque feature Sprint 3.5 (loft, indicateur point, lisibilite, carreau, IA, prediction). Fichiers/methodes/lignes a modifier, risques, ordre d'implementation. |
+| 13 | [13_gameplay_petanque_game_design.md](13_gameplay_petanque_game_design.md) | Game design petanque : game feel, techniques, strategie, IA, erreurs a eviter |
+| 14 | [14_phaser3_polish_techniques.md](14_phaser3_polish_techniques.md) | Polish Phaser 3 : camera, particules, tweens, performance, checklist |
+| 15 | [15_implementation_verification.md](15_implementation_verification.md) | Verification faisabilite de chaque feature Sprint 3.5 |
+
+### Migration 32x32 (15 mars 2026)
+| # | Fichier | Contenu |
+|---|---------|---------|
+| 16 | [16_migration_32x32.md](16_migration_32x32.md) | Analyse d'impact migration 16x16 → 32x32, fichiers a modifier |
+| 17 | [17_pixellab_spritesheet_workflow.md](17_pixellab_spritesheet_workflow.md) | Workflow PixelLab API : generate, rotate, animate, downscale, cout |
+
+### Scene petanque et lore (15 mars 2026)
+| # | Fichier | Contenu |
+|---|---------|---------|
+| 18 | [18_scene_petanque_visuelle.md](18_scene_petanque_visuelle.md) | Disposition terrain, atmosphere visuelle, jeux existants, techniques rendu |
+| 19 | [19_legendes_petanque.md](19_legendes_petanque.md) | Legendes : Quintais, Suchaud, Lacroix, Foyot, Fazzino, Rocher (faits verifies) |
+| 20 | [20_plan_amelioration_scene_petanque.md](20_plan_amelioration_scene_petanque.md) | Plan 6 priorites pour ameliorer la scene petanque |
+| 21 | [21_petanque_international.md](21_petanque_international.md) | Petanque mondiale : Thailande, Madagascar, 67 pays medailles |
 
 ---
 
@@ -48,10 +62,12 @@ Chaque fichier est autonome et peut etre lu independamment.
 
 1. **Avant de coder une feature** : lire le fichier de recherche correspondant
 2. **Pour les decisions techniques** : 07 (cross analysis) + 15 (verification)
-3. **Pour le gameplay** : 13 (game design) est le fichier le plus important
-4. **Pour le polish** : 14 (techniques Phaser) avec les snippets de code prets a l'emploi
+3. **Pour le gameplay petanque** : 13 (game design) + 18 (scene visuelle) + 20 (plan amelioration)
+4. **Pour le polish** : 14 (techniques Phaser) avec snippets prets a l'emploi
 5. **Pour les regles** : 09 (FIPJP formel) = la reference
+6. **Pour l'histoire/lore** : 19 (legendes) + 21 (international) + LORE_PETANQUE.md (racine)
 
 ## Historique
 - Session 1 (debut projet) : fichiers 01-12
-- Session recherche (14 mars 2026) : fichiers 13-15, cet index
+- Session 2 (14 mars 2026) : fichiers 13-15
+- Session 3 (15 mars 2026) : fichiers 16-21, migration 32x32, game feel, recherche approfondie

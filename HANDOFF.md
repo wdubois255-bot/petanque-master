@@ -120,8 +120,8 @@ Body: { image_size, description, action, reference_image, n_frames, direction }
 npm install          # Installer les dependances
 npm run dev          # Serveur dev -> http://localhost:8080
 npm run build        # Build production
-node test-sprint3.mjs    # Test Sprint 3 (PASS)
-node test-game.mjs       # Test petanque engine (0 erreurs)
+node tests/test-sprint3.mjs    # Test Sprint 3 (PASS)
+node tests/test-game.mjs       # Test petanque engine (0 erreurs)
 node scripts/generate-sprite.mjs <name> <desc> <dir> <w> <h>  # Generer sprite PixelLab
 ```
 

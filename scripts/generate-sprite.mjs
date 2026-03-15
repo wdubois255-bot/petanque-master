@@ -2,8 +2,14 @@
 // Usage: node scripts/generate-sprite.mjs <name> <description> [direction]
 
 import fs from 'fs';
+import { config } from 'dotenv';
+config();
 
-const API_KEY = '8c105f99-2b2c-45d1-b537-28ce76936441';
+const API_KEY = process.env.PIXELLAB_API_KEY;
+if (!API_KEY) {
+    console.error('PIXELLAB_API_KEY not found in .env file');
+    process.exit(1);
+}
 const API_URL = 'https://api.pixellab.ai/v1/generate-image-pixflux';
 
 const name = process.argv[2] || 'test';

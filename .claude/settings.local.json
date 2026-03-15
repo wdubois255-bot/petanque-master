@@ -37,7 +37,14 @@
       "WebFetch(domain:www.zebest-3000.com)",
       "Read(//c/Users/wdubo/AppData/**)",
       "Read(//c/Users/wdubo/**)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080)",
+      "Bash(uvx --version)",
+      "Bash(uv --version)",
+      "Bash(claude mcp:*)",
+      "Bash(curl -s -w \"\\\\nHTTP:%{http_code}\" \"https://api.pixellab.ai/v1/balance\" -H \"Authorization: Bearer 8c105f99-2b2c-45d1-b537-28ce76936441\")",
+      "Bash(find /c/Users/wdubo/AppData/Local/npm-cache/_npx/c90ef2985dbcbe4a/node_modules/@pixellab-code -name *.js)",
+      "Bash(curl --max-time 120 -s -w \"\\\\nHTTP:%{http_code}\" -X POST \"https://api.pixellab.ai/v1/generate-image-pixflux\" -H \"Authorization: Bearer 8c105f99-2b2c-45d1-b537-28ce76936441\" -H \"Content-Type: application/json\" -d '{\"\"\"\"description\"\"\"\":\"\"\"\"pixel art young man white shirt\"\"\"\",\"\"\"\"image_size\"\"\"\":{\"\"\"\"width\"\"\"\":32,\"\"\"\"height\"\"\"\":32},\"\"\"\"no_background\"\"\"\":true}')",
+      "Bash(start compare-tiles.html)"
     ],
     "deny": [
       "Bash(git push --force*)",
