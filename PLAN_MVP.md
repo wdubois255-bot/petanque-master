@@ -2,7 +2,10 @@
 ## Plan de developpement complet, valide, pret a executer
 
 > Resultat du croisement de 11 recherches independantes + audit CDC + schemas de donnees.
-> Derniere mise a jour : 13 mars 2026.
+> Derniere mise a jour : 15 mars 2026.
+>
+> **STATUT** : Sprints 0-3 + Sprint 3.5 + Migration 32x32 + Game Feel = COMPLETS.
+> Prochaine etape = Sprint 4.0 (scene petanque belle) puis Sprint 4.1 (sprites PixelLab) puis Sprint 4.2 (contenu).
 
 ---
 
@@ -596,10 +599,77 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 
 ---
 
-### SPRINT 4 : Arene Finale + Polish + Game Feel
-> Objectif : rendre le jeu beau, agreable, fini, et deploye.
+### SPRINT 4.0 : Scene Petanque Belle et Immersive (NOUVEAU - PRIORITE)
+> Objectif : transformer la scene de petanque d'un rectangle plat en une experience immersive.
+> Plan detaille : research/20_plan_amelioration_scene_petanque.md
+> Faisabilite verifiee : research/22_faisabilite_ameliorations_phaser3.md (7/7 OK)
 
-**Etape 4.1 - Sprites et tilesets definitifs (4h)**
+**Etape 4.0.1 - Terrain riche (3h)**
+- [ ] Fond de scene : ciel bleu Provence (gradient) + platanes en arriere-plan (sprites)
+- [ ] Texture terrain : CanvasTexture avec gravier detaille (pas juste bruit aleatoire)
+- [ ] Bordures en bois autour du terrain (planches, comme en vrai)
+- [ ] Decor lateral : banc avec spectateur silhouette, muret en pierre, pots de fleurs
+- [ ] Ombres coherentes (lumiere haut-gauche)
+
+**Etape 4.0.2 - Boules 3D realistes (2h)**
+- [ ] Generer textures boules au boot via CanvasTexture + ctx.createRadialGradient()
+- [ ] 4 textures : acier (argent), bronze (cuivre), chrome (blanc), cochonnet (bois)
+- [ ] Ombre portee decalee (pas juste +2px, vraie ellipse)
+- [ ] En vol : ombre au sol qui change de taille (parallaxe, plus petit quand haut)
+- [ ] Reflet speculaire (point blanc haut-gauche)
+
+**Etape 4.0.3 - Camera cinematique (2h)**
+- [ ] Camera follow boule en vol : sprite invisible dummy + startFollow(lerp 0.08)
+- [ ] Camera pan vers cochonnet apres chaque lancer (montrer le resultat)
+- [ ] Slow-motion (0.3x) quand boule < 40px du cochonnet et speed < 2
+  - Technique : multiplier delta manuellement (slowMotionFactor) + tweens.timeScale
+- [ ] Retour camera smooth vers le cercle quand c'est au joueur
+- [ ] IMPORTANT : stopFollow() AVANT de pan()
+
+**Etape 4.0.4 - Joueurs positionnes comme en vrai (2h)**
+- [ ] Adversaire se tient PRES DU COCHONNET (accroupi, regarde), pas en zone d'attente loin
+- [ ] Quand c'est son tour : il marche vers le cercle
+- [ ] Quand c'est pas son tour : retour accroupi pres du cochonnet
+- [ ] Reactions : joie (petit saut) quand bon point, deception (mains sur tete) quand rate
+- [ ] Le joueur aussi a des reactions apres son lancer
+
+**Etape 4.0.5 - Traces et effets permanents (1h)**
+- [ ] RenderTexture de la taille du terrain pour traces permanentes
+- [ ] A chaque impact boule : marque sombre qui reste tout le match
+- [ ] Trainee de roulement visible sur le terrain (marques de gravier deplace)
+
+**Etape 4.0.6 - Ambiance sonore (1h)**
+- [ ] Son cigales en boucle (generer .ogg court ou procedural)
+- [ ] Brise legere (bruit blanc filtre)
+- [ ] Musique chiptune fond tres leger (BeepBox)
+- [ ] Reactions vocales simples : "Oh!" sur boule proche, "Bien joue!" sur carreau
+
+**Livrable Sprint 4.0** : scene de petanque belle, immersive, avec ambiance Provence.
+**Estimation : ~11h**
+
+---
+
+### SPRINT 4.1 : Vrais Sprites PixelLab
+> Objectif : remplacer les sprites canvas par de vrais sprites pixel art generes par IA.
+> Workflow : research/17_pixellab_spritesheet_workflow.md
+
+- [ ] Generer chaque personnage : joueur, Papet, Marcel, Bastien, Fanny, Ricardo, Marius
+- [ ] Generer dresseurs (3 variantes) et villageois (2 variantes)
+- [ ] Generer tilesets provencaux (village, route, plage)
+- [ ] Modifier BootScene pour charger PNG via Phaser loader
+- [ ] Modifier OverworldScene/PetanqueScene pour utiliser les textures
+
+**Estimation : ~6h**
+
+---
+
+### SPRINT 4.2 : Contenu, Arene Finale et Deploy
+> Objectif : jeu complet avec tout le contenu, poli et en ligne.
+> (ancien Sprint 4, renumérote)
+
+**Etape 4.2.1 - Sprites et tilesets definitifs (4h)**
+
+**Etape 4.2.1 - Sprites et tilesets definitifs (4h)** (si pas fait en 4.1)
 - [ ] `/sprite joueur-definitif` : 4 directions x 4 frames, palette provencale
 - [ ] `/sprite marcel` `/sprite fanny` `/sprite ricardo` `/sprite marius` : maitres d'arene
 - [ ] 5+ sprites PNJ distincts (dresseurs, villageois, partenaires)
@@ -608,7 +678,7 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Portraits personnages pour panneau score (32x32 ou 48x48)
 - [ ] Retouche Aseprite sur tous les hero assets (palette, coherence)
 
-**Etape 4.2 - Effets visuels (2h30)**
+**Etape 4.2.2 - Effets visuels complementaires (2h30)** (si pas fait en 4.0)
 - [ ] Particules poussiere atterrissage (6-10 particules, cone, fade 400ms)
 - [ ] Trainee roulement (1-2 particules toutes les 3 frames)
 - [ ] Sparkle point parfait (8-12 particules radiales, jaune/blanc)
@@ -620,7 +690,7 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Camera suit boule en vol (lerp 0.08)
 - [ ] Object pooling particules (pre-allouer 100)
 
-**Etape 4.3 - Audio complet (2h30)**
+**Etape 4.2.3 - Audio complet (2h30)** (completer SoundManager existant)
 - [ ] SFX via `/sfx` et jsfxr :
   - Clac metallique (impact boule)
   - Roulement sur terrain (loop, pitch shift avec vitesse)
@@ -637,7 +707,7 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Reactions public : "ooh!", "aah!", applaudissements
 - [ ] Volume settings dans Options
 
-**Etape 4.4 - Arene finale + fin de jeu (2h30)**
+**Etape 4.2.4 - Arene finale + fin de jeu (2h30)**
 - [ ] Map 8 : Arene Finale (30x30) - place du Grand Marius
 - [ ] Terrain special : dalles de pierre (friction 0.7 = boules roulent loin)
 - [ ] Le Grand Marius : combat epique, IA difficile, **triplette** (3v3, 2 boules chacun)
@@ -647,7 +717,7 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Ecran credits avec stats (parties jouees, points marques, temps)
 - [ ] Retour au titre apres credits
 
-**Etape 4.5 - Responsive et mobile (1h30)**
+**Etape 4.2.5 - Responsive et mobile (1h30)**
 - [ ] Scaling integer automatique : `Math.floor(Math.min(w/832, h/480))`
 - [ ] Letterboxing fond sombre (#3A2E28) avec flexbox
 - [ ] Touch controls : drag-to-aim = natif pointer events
@@ -656,28 +726,33 @@ static simulateTrajectory(startX, startY, vx, vy, frictionMult, steps = 120) {
 - [ ] Forcer paysage si possible (Screen Orientation API)
 - [ ] Tester Chrome, Firefox, Safari, Edge
 
-**Etape 4.6 - Deploy final (30 min)**
+**Etape 4.2.6 - Deploy final (30 min)**
 - [ ] `npm run build` -> verifier dist/
 - [ ] Push sur GitHub -> Actions deploie automatiquement
 - [ ] Tester URL GitHub Pages
 - [ ] Verifier : assets charges, audio fonctionne, sauvegarde OK
 - [ ] Partager le lien !
 
-**Livrable Sprint 4** : jeu complet, poli, 4 arenes, 8 maps, son, responsive, en ligne.
+**Livrable Sprint 4.2** : jeu complet, poli, 4 arenes, 8 maps, son, responsive, en ligne.
 **Estimation : ~14h**
 
 ---
 
 ## ESTIMATION TOTALE
 
-| Sprint | Contenu | Estimation |
-|--------|---------|------------|
-| Sprint 0 | Setup, tooling, MCP, CI/CD | ~1h |
-| Sprint 1 | Moteur petanque jouable | ~18h |
-| Sprint 2 | Monde ouvert basique | ~14h |
-| Sprint 3 | Contenu et progression | ~18h |
-| Sprint 4 | Polish, arene finale, deploy | ~14h |
-| **TOTAL** | **MVP complet en ligne** | **~65h** |
+| Sprint | Contenu | Estimation | Statut |
+|--------|---------|------------|--------|
+| Sprint 0 | Setup, tooling, MCP, CI/CD | ~1h | FAIT |
+| Sprint 1 | Moteur petanque jouable | ~18h | FAIT |
+| Sprint 2 | Monde ouvert basique | ~14h | FAIT |
+| Sprint 3 | Contenu et progression | ~18h | FAIT |
+| Sprint 3.5 | Gameplay ameliore (loft, carreau, IA) | ~12h | FAIT |
+| Migration 32x32 | Resolution 832x480, tout double | ~12h | FAIT |
+| Game Feel | SFX, particules, zoom, stats boules | ~4h | FAIT |
+| **Sprint 4.0** | **Scene petanque belle et immersive** | **~11h** | **PROCHAIN** |
+| Sprint 4.1 | Vrais sprites PixelLab | ~6h | A faire |
+| Sprint 4.2 | Contenu, arene finale, deploy | ~14h | A faire |
+| **TOTAL** | **MVP complet en ligne** | **~110h** |
 
 ---
 

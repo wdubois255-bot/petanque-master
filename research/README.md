@@ -3,7 +3,14 @@
 Base de connaissances complete pour le developpement du jeu.
 Chaque fichier est autonome et peut etre lu independamment.
 
+**POUR DEMARRER UNE SESSION** : lire `00_synthese_etat_projet.md` en premier.
+
 ---
+
+## Synthese
+| # | Fichier | Contenu |
+|---|---------|---------|
+| 00 | [00_synthese_etat_projet.md](00_synthese_etat_projet.md) | **LIRE EN PREMIER** : etat du projet, priorites, guide de lecture research |
 
 ## Index par theme
 
