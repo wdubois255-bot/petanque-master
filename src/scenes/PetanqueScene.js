@@ -11,6 +11,7 @@ import AimingSystem from '../petanque/AimingSystem.js';
 import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
+import { startCigales, stopCigales } from '../utils/SoundManager.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -89,8 +90,15 @@ export default class PetanqueScene extends Phaser.Scene {
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
 
+        // Start ambiance
+        startCigales();
+
         // Start game
         this.engine.startGame();
+
+        // Stop cigales when scene shuts down
+        this.events.on('shutdown', () => stopCigales());
+        this.events.on('destroy', () => stopCigales());
     }
 
     _ensureSprites() {
