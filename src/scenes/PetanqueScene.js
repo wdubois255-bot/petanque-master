@@ -376,6 +376,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const bg = this.add.graphics().setDepth(0);
 
         // Ciel gradient vertical #87CEEB → #B8D8EB
+        if (this.textures.exists('sky_gradient')) this.textures.remove('sky_gradient');
         const skyTex = this.textures.createCanvas('sky_gradient', GAME_WIDTH, GAME_HEIGHT);
         const skyCtx = skyTex.getContext();
         const skyGrad = skyCtx.createLinearGradient(0, 0, 0, GAME_HEIGHT);

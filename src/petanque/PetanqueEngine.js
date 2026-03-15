@@ -327,7 +327,10 @@ export default class PetanqueEngine {
 
         const flyDuration = THROW_FLY_DURATION * loftPreset.flyDurationMult;
         const arcHeight = loftPreset.arcHeight;
-        const ease = isTir ? 'Linear' : 'Quad.easeOut';
+        const isPlombee = loftPreset.id === 'plombee';
+        const isRoulette = loftPreset.id === 'roulette';
+        // Roulette = smooth constant speed, Plombee = slow rise then fast drop, Tir = fast linear
+        const ease = isTir ? 'Linear' : isPlombee ? 'Sine.easeIn' : 'Quad.easeOut';
 
         const tween = { t: 0 };
         this.scene.tweens.add({
@@ -339,13 +342,21 @@ export default class PetanqueEngine {
                 const cx = Phaser.Math.Linear(startX, targetX, tween.t);
                 const cy = Phaser.Math.Linear(startY, targetY, tween.t);
                 const arc = arcHeight * Math.sin(tween.t * Math.PI);
+                // Height ratio (0 at ground, 1 at peak) — for shadow scaling
+                const heightRatio = Math.abs(Math.sin(tween.t * Math.PI));
 
                 if (flySprite) {
                     flySprite.setPosition(cx, cy + arc);
-                    const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
-                    flyShadow.setPosition(cx, cy);
-                    flyShadow.setScale(shadowScale);
-                    flyShadow.setAlpha(0.15 * shadowScale);
+                    // Scale ball slightly larger at peak to show height (parallax)
+                    const sizeBoost = 1 + heightRatio * 0.15 * (Math.abs(arcHeight) / 80);
+                    flySprite.setScale((ball.radius / 14) * sizeBoost);
+
+                    // Shadow: smaller & more offset when ball is higher
+                    const shadowShrink = 1 - heightRatio * 0.6;
+                    const shadowOffset = heightRatio * Math.abs(arcHeight) * 0.08;
+                    flyShadow.setPosition(cx + shadowOffset, cy + shadowOffset * 0.5);
+                    flyShadow.setScale(shadowShrink);
+                    flyShadow.setAlpha(0.12 * shadowShrink);
                 } else {
                     flyGfx.clear();
                     flyGfx.fillStyle(ball.color, 1);
@@ -354,9 +365,9 @@ export default class PetanqueEngine {
                     flyGfx.fillCircle(cx - ball.radius * 0.3, cy + arc - ball.radius * 0.3, ball.radius * 0.3);
 
                     flyShadow.clear();
-                    const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
-                    flyShadow.fillStyle(0x000000, 0.15 * shadowScale);
-                    flyShadow.fillCircle(cx, cy, ball.radius * shadowScale);
+                    const shadowShrink = 1 - heightRatio * 0.6;
+                    flyShadow.fillStyle(0x000000, 0.12 * shadowShrink);
+                    flyShadow.fillCircle(cx, cy, ball.radius * shadowShrink);
                 }
             },
             onComplete: () => {
@@ -369,12 +380,15 @@ export default class PetanqueEngine {
                 if (ball.gfx) { ball.gfx.setVisible(true); ball.shadow.setVisible(true); }
                 ball.draw();
 
-                // Light screen shake on landing
-                const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2 : THROW_SHAKE_INTENSITY;
+                // Landing effects vary by technique
+                const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2.5
+                    : isPlombee ? THROW_SHAKE_INTENSITY * 1.5
+                    : THROW_SHAKE_INTENSITY;
                 const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
                 this.scene.cameras.main.shake(shakeDuration, shakeIntensity / 1000);
 
                 if (isTir) {
+                    // Flash on tir impact
                     const flash = this.scene.add.graphics().setDepth(60);
                     flash.fillStyle(0xFFFFFF, 0.6);
                     flash.fillCircle(targetX, targetY, ball.radius + 4);
@@ -384,12 +398,14 @@ export default class PetanqueEngine {
                     });
                 }
 
-                // SFX landing + dust particles
+                // Dust proportional to technique (more for plombee, less for roulette)
+                const dustCount = isRoulette ? 2 : isPlombee ? 10 : isTir ? 8 : 6;
                 sfxLanding(this.terrainType);
-                this._spawnDust(targetX, targetY, 6);
+                this._spawnDust(targetX, targetY, dustCount);
 
-                // Impact trace on terrain
-                this._drawImpactTrace(targetX, targetY, ball.radius);
+                // Impact trace (bigger for plombee/tir)
+                const traceRadius = isPlombee ? ball.radius + 4 : isTir ? ball.radius + 3 : ball.radius;
+                this._drawImpactTrace(targetX, targetY, traceRadius);
 
                 ball.launch(rollVx, rollVy);
                 if (callback) callback();
