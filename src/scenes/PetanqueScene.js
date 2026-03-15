@@ -80,10 +80,6 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         ).setOrigin(0.5, 1).setDepth(5);
 
-        // Camera target for cinematic follow during throws
-        this.cameraTarget = this.add.rectangle(0, 0, 1, 1, 0x000000, 0).setDepth(0);
-        this.slowMotionFactor = 1.0;
-
         // Impact traces layer (RenderTexture, persistent marks on terrain)
         this.impactLayer = this.add.renderTexture(
             this.terrainX, this.terrainY,
@@ -203,7 +199,7 @@ export default class PetanqueScene extends Phaser.Scene {
     _animateToCircle(team) {
         this._updateOpponentCochoPos();
 
-        if (team === 'ai') {
+        if (team === 'opponent') {
             // Opponent stands up and walks to circle
             this.tweens.add({
                 targets: this.opponentSprite,
@@ -503,12 +499,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     update(time, delta) {
-        // Apply slow-motion factor to delta
-        const effectiveDelta = delta * this.slowMotionFactor;
-        this.tweens.timeScale = this.slowMotionFactor;
-
         if (this.engine) {
-            this.engine.update(effectiveDelta);
+            this.engine.update(delta);
         }
         if (this.aimingSystem) {
             this.aimingSystem.update();

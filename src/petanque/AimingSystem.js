@@ -51,13 +51,8 @@ export default class AimingSystem {
     _onEngineStateChange(state) {
         if (state === 'FIRST_BALL' || state === 'PLAY_LOOP') {
             if (this.engine.currentTeam === 'player' && this.engine.remaining.player > 0) {
-                const opponentBalls = this.engine.getTeamBallsAlive('opponent');
-                if (opponentBalls.length > 0) {
-                    this._showShotModeChoice();
-                } else {
-                    this.shotMode = 'pointer';
-                    this._showLoftChoice();
-                }
+                // Always show all 4 options (roulette, demi-portee, plombee, tir)
+                this._showShotModeChoice();
             }
         } else if (state === 'COCHONNET_THROW') {
             this.shotMode = null;
@@ -333,7 +328,9 @@ export default class AimingSystem {
         if (dist < DEAD_ZONE_PX) return;
 
         const angle = Math.atan2(dy, dx);
-        const power = Math.min(dist / 120, 1);
+        // Quadratic power curve: more control at low power, realistic feel
+        const rawPower = Math.min(dist / 150, 1);
+        const power = rawPower * rawPower;
 
         this.engine.aimingEnabled = false;
         this._clearTargetHighlights();
@@ -430,7 +427,9 @@ export default class AimingSystem {
 
         if (dist < DEAD_ZONE_PX) return;
 
-        const power = Math.min(dist / 120, 1);
+        // Quadratic power curve (same as onPointerUp)
+        const rawPower = Math.min(dist / 150, 1);
+        const power = rawPower * rawPower;
         const angle = Math.atan2(dy, dx);
 
         // Arrow color based on mode
@@ -473,29 +472,56 @@ export default class AimingSystem {
         );
         this.arrowGfx.strokePath();
 
-        // Trajectory prediction line
+        // Trajectory prediction
         const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
         const params = PetanqueEngine.computeThrowParams(
             angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult
         );
+
+        // Landing point marker (circle at impact point)
+        this._predictionGfx.lineStyle(2, color, 0.6);
+        this._predictionGfx.strokeCircle(params.targetX, params.targetY, 8);
+        this._predictionGfx.fillStyle(color, 0.15);
+        this._predictionGfx.fillCircle(params.targetX, params.targetY, 8);
+
+        // Dashed line from origin to landing point
+        const dashLen = 6;
+        const gapLen = 4;
+        const totalDist = Math.sqrt((params.targetX - originX) ** 2 + (params.targetY - originY) ** 2);
+        const dashAngle = Math.atan2(params.targetY - originY, params.targetX - originX);
+        let d = 0;
+        this._predictionGfx.lineStyle(1, color, 0.3);
+        while (d < totalDist) {
+            const sx = originX + Math.cos(dashAngle) * d;
+            const sy = originY + Math.sin(dashAngle) * d;
+            const ed = Math.min(d + dashLen, totalDist);
+            const ex = originX + Math.cos(dashAngle) * ed;
+            const ey = originY + Math.sin(dashAngle) * ed;
+            this._predictionGfx.beginPath();
+            this._predictionGfx.moveTo(sx, sy);
+            this._predictionGfx.lineTo(ex, ey);
+            this._predictionGfx.strokePath();
+            d += dashLen + gapLen;
+        }
+
+        // Rolling prediction dots (after landing)
         const points = Ball.simulateTrajectory(
             params.targetX, params.targetY,
             params.rollVx, params.rollVy,
             this.engine.frictionMult
         );
-
         for (let i = 0; i < points.length; i++) {
             const alpha = 0.5 - (i / points.length) * 0.4;
             this._predictionGfx.fillStyle(0xFFFFFF, alpha);
             this._predictionGfx.fillCircle(points[i].x, points[i].y, PREDICTION_DOT_RADIUS);
         }
 
-        // Power text with mode + loft label
+        // Power text — show raw % (what the player feels) not the quadratic value
         if (this._powerText) this._powerText.destroy();
         const modeLabel = this.shotMode === 'tirer' ? 'TIR' : loft.label;
         this._powerText = this.scene.add.text(
             originX, originY + 28,
-            `${modeLabel} ${Math.round(power * 100)}%`,
+            `${modeLabel} ${Math.round(rawPower * 100)}%`,
             {
                 fontFamily: 'monospace', fontSize: '20px',
                 color: this.shotMode === 'tirer' ? '#FF8844' : '#F5E6D0',
