@@ -79,6 +79,15 @@
 12. **research/17** : Workflow PixelLab API
 13. **research/10** : Outils IA pixel art (PixelLab, Aseprite, Retro Diffusion)
 
+## BOUCLE D'ADDICTION (extraits de research/archive/23)
+
+- **Matches 3-4 min max** pour la boucle "just one more"
+- **Collection de boules** avec rarete variable = instinct collectionneur
+- **Carnet du bouliste** (adversaires battus) = progression visible
+- **Defeat screen encourageant** ("Tu as place 2 boules mieux que Marcel !") + DDA subtil (-10% precision IA apres 3 defaites)
+- **Details vivants** : chat sur un mur, linge qui seche, dialogues qui changent = monde credible
+- **Recompenses variables** : parfois boule rare, parfois dialogue secret, parfois indice
+
 ## FAITS CLES A RETENIR
 
 - **Philippe Quintais** = "Le Roi", 14 titres mondiaux, joueur COMPLET (pas juste tireur)
