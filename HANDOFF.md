@@ -13,12 +13,25 @@
 - Tests Playwright PASS
 
 **Game feel (15 mars 2026) : IMPLEMENTE**
-- `src/utils/SoundManager.js` : 10 sons proceduraux Web Audio (boule-boule, landing, roulement, carreau, throw, victory, defeat, score, UI click)
+- `src/utils/SoundManager.js` : 12 sons proceduraux Web Audio + cigales ambiance
 - Particules : dust landing (6, couleur terrain), collision sparks (5 blancs), rolling trail
-- Camera : zoom dramatique 1.08x quand boule ralentit pres cochonnet
+- Camera : zoom dramatique 1.08x + slow-mo 0.4x pres cochonnet
 - Stats boules : boules.json (masse, rayon, friction) integre dans gameplay
 - UI combinee : 1 ecran (ROULETTE | DEMI-PORTEE | PLOMBEE | TIRER)
 - Squash flash sur collisions (ring blanc 6 frames)
+
+**Sprint 4.0 - Scene petanque belle (15 mars 2026) : COMPLET**
+- Fond ciel Provence gradient (#87CEEB→#B8D8EB) + sol terre seche + decor (platanes, banc, muret, table)
+- Terrain CanvasTexture avec 200 cailloux aleatoires par type + bordures bois (#6B5038)
+- Boules 3D : 5 textures CanvasTexture 32x32 (acier/bronze/chrome/opponent/cochonnet) gradient radial + reflet speculaire
+- Ball.js utilise Sprites au lieu de Graphics, ombre ellipse decalee
+- Camera cinematique : follow boule en vol (lerp 0.08), stopFollow + pan vers cochonnet, retour centre
+- Slow-motion 0.4x quand boule lente pres cochonnet (delta * slowMotionFactor)
+- Adversaire accroupi (scaleY 0.6) PRES DU COCHONNET, marche vers cercle pour lancer
+- Reactions : saut si bon lancer (<30px), secoue tete si rate (>80px)
+- Traces d'impact permanentes (RenderTexture.draw())
+- Cigales procedurales (bruit module 4kHz, enveloppe 4Hz, boucle)
+- SFX ameliores : 2eme harmonique boule-boule, crunch gravier landing, echo carreau
 
 **Recherche approfondie (15 mars 2026) : 21 fichiers dans research/**
 - Voir `research/README.md` pour l'index complet
@@ -29,42 +42,28 @@ node tests/test-sprint3.mjs    # Sprint 3 flow complet (PASS)
 node tests/test-game.mjs       # Moteur petanque (0 erreurs)
 ```
 
-## PRIORITE PROCHAINE SESSION : SCENE PETANQUE BELLE
+## PRIORITE PROCHAINE SESSION
 
-Le plan detaille est dans `research/20_plan_amelioration_scene_petanque.md`.
-
-### Ce qu'il faut faire (6 priorites)
-1. **Terrain riche** : fond ciel Provence, texture gravier, bordures bois, platanes, banc, muret
-2. **Boules realistes** : gradient radial 3D, ombre portee decalee, reflet metallique, stries
-3. **Camera cinematique** : follow boule en vol, slow-mo pres cochonnet, pan entre cercle et zone d'impact
-4. **Joueurs realistes** : adversaire accroupi PRES DU COCHONNET (pas loin), reactions (joie/deception)
-5. **Ambiance** : cigales (boucle), brise, musique chiptune fond
-6. **Effets** : traces au sol permanentes, ombre coherente, feuilles
-
-### Infos cles pour la scene (dans research/)
-- `research/18_scene_petanque_visuelle.md` : disposition reelle du terrain, positions joueurs, atmosphere
-- `research/19_legendes_petanque.md` : legendes corrigees (Quintais=complet, 14 titres)
-- `research/13_gameplay_petanque_game_design.md` : game design, moments dramatiques, erreurs a eviter
-- `research/14_phaser3_polish_techniques.md` : techniques camera/particules/tweens Phaser 3
-
-### Point crucial : position des joueurs
-En vrai, les adversaires se tiennent **pres du cochonnet** (pas dans une zone d'attente loin).
-Le lanceur est seul au cercle. Tout le monde regarde depuis la zone cochonnet.
-C'est ca qui rend la scene immersive.
-
-## AUSSI EN ATTENTE
-
-### Vrais sprites PixelLab
+### 1. Vrais sprites PixelLab
 Les sprites canvas sont temporaires. Workflow documente dans `research/17_pixellab_spritesheet_workflow.md`.
 - MCP PixelLab configure dans `.mcp.json`
 - Skills `/sprite` et `/tileset` prets
 - $10 credits PixelLab
+- Generer 64x64, rotate, animate, downscale 2x → 32x32
+- 10 personnages a generer
 
-### Contenu additionnel
+### 2. Contenu additionnel (Sprint 4 suite)
 - Route 2 + Arene 2 (Fanny, herbe)
 - Route 3 + Arene 3 (Ricardo, sable)
 - SFX ElevenLabs (skill `/sfx` pret)
 - Musique chiptune
+
+### 3. Boucle d'addiction (research/23)
+- Matches 3-4 min max
+- Collection de boules (rarete variable)
+- Carnet du bouliste (adversaires battus)
+- Defeat screen encourageant + DDA subtil
+- Details vivants (chat, linge, dialogues)
 
 ## COMMANDES
 
@@ -84,11 +83,11 @@ node tests/test-game.mjs      # Test petanque (0 erreurs)
 | `PLAN_MVP.md` | Plan complet 5 sprints |
 | `LORE_PETANQUE.md` | Histoire petanque + mapping personnages (corrige) |
 | `research/README.md` | Index des 21 fichiers de recherche |
-| `research/20_plan_amelioration_scene_petanque.md` | **PLAN PROCHAINE SESSION** |
 | `src/utils/Constants.js` | Epicentre (832x480, tiles 32) |
-| `src/utils/SoundManager.js` | Sons proceduraux Web Audio |
-| `src/scenes/PetanqueScene.js` | Scene combat (a ameliorer) |
-| `src/petanque/PetanqueEngine.js` | Moteur + SFX + particules + zoom |
+| `src/utils/SoundManager.js` | Sons proceduraux + cigales |
+| `src/scenes/PetanqueScene.js` | Scene combat (fond, decor, boules 3D, camera cine) |
+| `src/petanque/Ball.js` | Boule avec sprites 3D + ombre |
+| `src/petanque/PetanqueEngine.js` | Moteur + SFX + particules + zoom + traces |
 | `.env` | Cles API (gitignored) |
 | `.mcp.json` | MCP PixelLab + ElevenLabs |
 
