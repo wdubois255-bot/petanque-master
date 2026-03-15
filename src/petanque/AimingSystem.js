@@ -42,22 +42,35 @@ export default class AimingSystem {
             this.cancel();
         });
 
-        // Listen to state changes for shot mode selection
+        // Listen to state changes for cleanup
         this.engine.onStateChange = (state) => {
-            this._onEngineStateChange(state);
+            if (state === 'COCHONNET_THROW') {
+                this.shotMode = null;
+                this._clearModeUI();
+                this._clearLoftUI();
+            } else if (state === 'WAITING_STOP' || state === 'SCORE_MENE' || state === 'GAME_OVER') {
+                this._clearModeUI();
+                this._clearLoftUI();
+            }
+        };
+
+        // Listen to turn changes for shot mode selection
+        // This fires AFTER currentTeam is correctly set
+        const existingTurnChange = this.engine.onTurnChange;
+        this.engine.onTurnChange = (team) => {
+            if (existingTurnChange) existingTurnChange(team);
+            this._onTurnChange(team);
         };
     }
 
-    _onEngineStateChange(state) {
-        if (state === 'FIRST_BALL' || state === 'PLAY_LOOP') {
-            if (this.engine.currentTeam === 'player' && this.engine.remaining.player > 0) {
-                // Always show all 4 options (roulette, demi-portee, plombee, tir)
-                this._showShotModeChoice();
-            }
-        } else if (state === 'COCHONNET_THROW') {
-            this.shotMode = null;
-            this._clearModeUI();
-            this._clearLoftUI();
+    _onTurnChange(team) {
+        this._clearModeUI();
+        this._clearLoftUI();
+        // Show shot choice only when it's player's turn to throw a BALL (not cochonnet)
+        const state = this.engine.state;
+        if (team === 'player' && this.engine.remaining.player > 0 &&
+            state !== 'COCHONNET_THROW') {
+            this._showShotModeChoice();
         }
     }
 
@@ -291,6 +304,7 @@ export default class AimingSystem {
     _clearModeUI() {
         this._modeUI.forEach(e => e.destroy());
         this._modeUI = [];
+        this._combinedBtns = null;
         this._pointerBtn = null;
         this._tirerBtn = null;
     }
