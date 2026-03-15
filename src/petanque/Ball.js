@@ -20,6 +20,8 @@ export default class Ball {
         this.frictionMult = options.frictionMult || 1.0;
         this.id = options.id || `ball_${Date.now()}_${Math.random()}`;
 
+        this._squashTimer = 0;
+
         // Graphics
         this.gfx = scene.add.graphics();
         this.shadow = scene.add.graphics();
@@ -31,17 +33,30 @@ export default class Ball {
         this.shadow.clear();
         if (this.isAlive) {
             this.shadow.fillStyle(0x000000, 0.2);
-            this.shadow.fillCircle(this.x + 1, this.y + 1, this.radius);
+            this.shadow.fillCircle(this.x + 2, this.y + 2, this.radius);
         }
 
-        // Ball
+        // Ball with optional squash flash
         this.gfx.clear();
         if (this.isAlive) {
+            const isSquashed = this._squashTimer > 0;
+            if (isSquashed) this._squashTimer--;
+
+            const r = this.radius;
             this.gfx.fillStyle(this.color, 1);
-            this.gfx.fillCircle(this.x, this.y, this.radius);
+            this.gfx.fillCircle(this.x, this.y, r);
+
+            // Squash flash: bright ring + slight size boost
+            if (isSquashed) {
+                this.gfx.fillStyle(0xFFFFFF, 0.4);
+                this.gfx.fillCircle(this.x, this.y, r + 2);
+                this.gfx.fillStyle(this.color, 1);
+                this.gfx.fillCircle(this.x, this.y, r);
+            }
+
             // Highlight
             this.gfx.fillStyle(0xFFFFFF, 0.3);
-            this.gfx.fillCircle(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.3);
+            this.gfx.fillCircle(this.x - r * 0.3, this.y - r * 0.3, r * 0.3);
         }
     }
 
@@ -175,6 +190,14 @@ export default class Ball {
         // Mark both as moving
         a.isMoving = true;
         b.isMoving = true;
+
+        // Squash & stretch visual effect
+        if (a.scene && a.gfx) {
+            a._squashTimer = 6;
+        }
+        if (b.scene && b.gfx) {
+            b._squashTimer = 6;
+        }
 
         return true;
     }

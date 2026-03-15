@@ -10,6 +10,10 @@ import {
     LOFT_DEMI_PORTEE, LOFT_TIR,
     CARREAU_THRESHOLD, CARREAU_DISPLACED_MIN, PIXELS_TO_METERS
 } from '../utils/Constants.js';
+import {
+    sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
+    sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore
+} from '../utils/SoundManager.js';
 
 const STATES = {
     COCHONNET_THROW: 'COCHONNET_THROW',
@@ -65,6 +69,12 @@ export default class PetanqueEngine {
         // Point indicator
         this._lastBestBallId = null;
         this._bestPulse = { t: 0 };
+
+        // Rolling SFX throttle
+        this._rollSfxCooldown = 0;
+
+        // Dramatic zoom state
+        this._zoomActive = false;
     }
 
     startGame() {
@@ -245,10 +255,14 @@ export default class PetanqueEngine {
         const cy = this.scene.throwCircleY;
         const color = team === 'player' ? BALL_COLORS.player : BALL_COLORS.opponent;
 
+        // Use boule stats from game state if player
+        const bouleStats = this._getBouleStats(team);
         const ball = new Ball(this.scene, cx, cy, {
-            color,
+            color: bouleStats.color || color,
             team,
-            frictionMult: this.frictionMult,
+            mass: bouleStats.mass,
+            radius: bouleStats.radius,
+            frictionMult: this.frictionMult * (bouleStats.frictionMult || 1),
             id: `${team}_${this.ballsPerPlayer - this.remaining[team]}`
         });
         this.balls.push(ball);
@@ -263,6 +277,9 @@ export default class PetanqueEngine {
 
         const { targetX, targetY, rollVx, rollVy } =
             PetanqueEngine.computeThrowParams(angle, power, cx, cy, this.bounds, loft, this.frictionMult);
+
+        // SFX throw swoosh
+        sfxThrow();
 
         // Notify scene for character throw animation
         if (this.onThrow) this.onThrow(team);
@@ -342,6 +359,10 @@ export default class PetanqueEngine {
                     });
                 }
 
+                // SFX landing + dust particles
+                sfxLanding(this.terrainType);
+                this._spawnDust(targetX, targetY, 6);
+
                 ball.launch(rollVx, rollVy);
                 if (callback) callback();
             }
@@ -409,6 +430,7 @@ export default class PetanqueEngine {
         const winnerName = winner === 'player' ? 'Vous gagnez' : 'L\'adversaire gagne';
         this._showMessage(`${winnerName} ${points} point${points > 1 ? 's' : ''} !`);
 
+        sfxScore();
         if (this.onScore) this.onScore(this.scores, winner, points);
 
         this.scene.time.delayedCall(2500, () => {
@@ -452,6 +474,9 @@ export default class PetanqueEngine {
         const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
         const isVictory = winner === 'player';
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+
+        // SFX victory/defeat
+        if (isVictory) sfxVictory(); else sfxDefeat();
 
         // Overlay sombre
         const overlay = this.scene.add.graphics().setDepth(90);
@@ -578,6 +603,20 @@ export default class PetanqueEngine {
 
                     const collided = Ball.resolveCollision(allBodies[i], allBodies[j]);
 
+                    if (collided) {
+                        // SFX + particles on collision
+                        const isVsCochonnet = allBodies[i].team === 'cochonnet' || allBodies[j].team === 'cochonnet';
+                        if (isVsCochonnet) {
+                            sfxBouleCochonnet();
+                        } else {
+                            sfxBouleBoule();
+                        }
+                        // Collision sparks
+                        const mx = (allBodies[i].x + allBodies[j].x) / 2;
+                        const my = (allBodies[i].y + allBodies[j].y) / 2;
+                        this._spawnCollisionSparks(mx, my);
+                    }
+
                     if (collided && this.lastThrownBall && this._pendingCarreauChecks) {
                         if (allBodies[i] === this.lastThrownBall) {
                             this._pendingCarreauChecks.push({
@@ -595,11 +634,29 @@ export default class PetanqueEngine {
             }
         }
 
+        // Rolling SFX + trail particles (throttled)
+        this._rollSfxCooldown -= delta || 16;
+        for (const ball of allBodies) {
+            if (ball.isAlive && ball.isMoving) {
+                const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (speed > 1 && this._rollSfxCooldown <= 0) {
+                    sfxRoll();
+                    this._rollSfxCooldown = 120;
+                }
+                if (speed > 1.5 && Math.random() < 0.3) {
+                    this._spawnRollTrail(ball);
+                }
+            }
+        }
+
         // Check bounds
         this._checkBoundsAll();
 
         // Update BEST indicator (now works in real-time!)
         this._updateBestIndicator();
+
+        // Dramatic zoom near cochonnet
+        this._updateDramaticZoom();
 
         // If waiting for stop and everything stopped
         if (this.state === STATES.WAITING_STOP && !anyMoving) {
@@ -631,6 +688,9 @@ export default class PetanqueEngine {
     _celebrateCarreau(ball) {
         // Hitstop
         this._hitstopUntil = Date.now() + 100;
+
+        // SFX carreau
+        sfxCarreau();
 
         // Screen shake
         this.scene.cameras.main.shake(250, 0.004);
@@ -778,6 +838,131 @@ export default class PetanqueEngine {
                 if (this._msgText) this._msgText.destroy();
                 this._msgText = null;
             });
+        }
+    }
+    // --- DUST PARTICLES (landing) ---
+    _spawnDust(x, y, count = 6) {
+        const terrainColors = {
+            terre: [0xC4854A, 0xA87040, 0xD4955A],
+            herbe: [0x6B8E4E, 0x5E8A44, 0x7BA65E],
+            sable: [0xE8D5B7, 0xD4C0A0, 0xF0E0C8],
+            dalles: [0x9E9E8E, 0x808070, 0xB0A090]
+        };
+        const colors = terrainColors[this.terrainType] || terrainColors.terre;
+
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+            const dist = 8 + Math.random() * 16;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = 2 + Math.random() * 3;
+
+            const p = this.scene.add.graphics().setDepth(8);
+            p.fillStyle(color, 0.7);
+            p.fillCircle(0, 0, size);
+            p.setPosition(x, y);
+
+            this.scene.tweens.add({
+                targets: p,
+                x: x + Math.cos(angle) * dist,
+                y: y + Math.sin(angle) * dist - 8,
+                alpha: 0,
+                duration: 300 + Math.random() * 200,
+                ease: 'Quad.easeOut',
+                onComplete: () => p.destroy()
+            });
+        }
+    }
+
+    // --- COLLISION SPARKS ---
+    _spawnCollisionSparks(x, y) {
+        for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 6 + Math.random() * 12;
+            const spark = this.scene.add.graphics().setDepth(55);
+            spark.fillStyle(0xFFFFFF, 0.8);
+            spark.fillCircle(0, 0, 1.5);
+            spark.setPosition(x, y);
+
+            this.scene.tweens.add({
+                targets: spark,
+                x: x + Math.cos(angle) * dist,
+                y: y + Math.sin(angle) * dist,
+                alpha: 0,
+                duration: 200,
+                onComplete: () => spark.destroy()
+            });
+        }
+    }
+
+    // --- ROLLING TRAIL PARTICLES ---
+    _spawnRollTrail(ball) {
+        const color = this.terrainType === 'sable' ? 0xE8D5B7
+            : this.terrainType === 'herbe' ? 0x6B8E4E
+            : this.terrainType === 'dalles' ? 0x9E9E8E
+            : 0xC4854A;
+
+        const p = this.scene.add.graphics().setDepth(3);
+        p.fillStyle(color, 0.3);
+        p.fillCircle(0, 0, 2);
+        p.setPosition(ball.x, ball.y);
+
+        this.scene.tweens.add({
+            targets: p,
+            alpha: 0,
+            duration: 400,
+            onComplete: () => p.destroy()
+        });
+    }
+
+    // --- BOULE STATS from boules.json ---
+    _getBouleStats(team) {
+        if (team === 'player') {
+            const gameState = this.scene.registry?.get('gameState');
+            const bouleType = gameState?.bouleType;
+            const boulesData = this.scene.cache?.json?.get('boules');
+            if (boulesData && bouleType) {
+                const set = boulesData.sets?.find(s => s.id === bouleType);
+                if (set) {
+                    const colorNum = parseInt(set.color.replace('#', ''), 16);
+                    return {
+                        mass: set.stats.masse,
+                        radius: set.stats.rayon,
+                        color: colorNum,
+                        frictionMult: set.bonus === 'friction_x0.9' ? 0.9 : 1
+                    };
+                }
+            }
+        }
+        return {};
+    }
+
+    // --- DRAMATIC ZOOM near cochonnet ---
+    _updateDramaticZoom() {
+        if (!this.cochonnet || !this.cochonnet.isAlive) {
+            if (this._zoomActive) {
+                this.scene.cameras.main.zoomTo(1, 300);
+                this._zoomActive = false;
+            }
+            return;
+        }
+
+        // Check if any ball is rolling slowly near cochonnet
+        let nearestMovingDist = Infinity;
+        for (const ball of this.balls) {
+            if (!ball.isAlive || !ball.isMoving) continue;
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            if (speed < 3) {
+                const d = ball.distanceTo(this.cochonnet);
+                if (d < nearestMovingDist) nearestMovingDist = d;
+            }
+        }
+
+        if (nearestMovingDist < 80 && !this._zoomActive) {
+            this._zoomActive = true;
+            this.scene.cameras.main.zoomTo(1.08, 400, 'Sine.easeInOut');
+        } else if (nearestMovingDist >= 80 && this._zoomActive) {
+            this._zoomActive = false;
+            this.scene.cameras.main.zoomTo(1, 400, 'Sine.easeInOut');
         }
     }
 }
