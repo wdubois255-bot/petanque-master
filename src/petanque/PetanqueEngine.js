@@ -325,6 +325,13 @@ export default class PetanqueEngine {
         const arcHeight = loftPreset.arcHeight;
         const ease = isTir ? 'Linear' : 'Quad.easeOut';
 
+        // Camera follow during flight
+        const cam = this.scene.cameras.main;
+        if (this.scene.cameraTarget) {
+            this.scene.cameraTarget.setPosition(startX, startY);
+            cam.startFollow(this.scene.cameraTarget, true, 0.08, 0.08);
+        }
+
         const tween = { t: 0 };
         this.scene.tweens.add({
             targets: tween,
@@ -336,9 +343,13 @@ export default class PetanqueEngine {
                 const cy = Phaser.Math.Linear(startY, targetY, tween.t);
                 const arc = arcHeight * Math.sin(tween.t * Math.PI);
 
+                // Update camera target to follow ball
+                if (this.scene.cameraTarget) {
+                    this.scene.cameraTarget.setPosition(cx, cy + arc);
+                }
+
                 if (flySprite) {
                     flySprite.setPosition(cx, cy + arc);
-                    // Shadow grows as ball descends
                     const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
                     flyShadow.setPosition(cx, cy);
                     flyShadow.setScale(shadowScale);
@@ -357,19 +368,21 @@ export default class PetanqueEngine {
                 }
             },
             onComplete: () => {
+                // Stop follow BEFORE pan
+                cam.stopFollow();
+
                 if (flySprite) { flySprite.destroy(); flyShadow.destroy(); }
                 if (flyGfx) { flyGfx.destroy(); flyShadow.destroy(); }
 
                 ball.x = targetX;
                 ball.y = targetY;
-                // Show ball at landing
                 if (ball.sprite) { ball.sprite.setVisible(true); ball.shadowSprite.setVisible(true); }
                 if (ball.gfx) { ball.gfx.setVisible(true); ball.shadow.setVisible(true); }
                 ball.draw();
 
                 const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2 : THROW_SHAKE_INTENSITY;
                 const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
-                this.scene.cameras.main.shake(shakeDuration, shakeIntensity / 1000);
+                cam.shake(shakeDuration, shakeIntensity / 1000);
 
                 if (isTir) {
                     const flash = this.scene.add.graphics().setDepth(60);
@@ -386,6 +399,28 @@ export default class PetanqueEngine {
                 this._spawnDust(targetX, targetY, 6);
 
                 ball.launch(rollVx, rollVy);
+
+                // Pan to cochonnet area after landing, then back to center
+                if (this.cochonnet && this.cochonnet.isAlive) {
+                    this.scene.time.delayedCall(300, () => {
+                        cam.pan(
+                            this.cochonnet.x, this.cochonnet.y,
+                            800, 'Sine.easeInOut', false,
+                            (c, progress) => {
+                                if (progress === 1) {
+                                    this.scene.time.delayedCall(800, () => {
+                                        cam.pan(
+                                            this.scene.scale.width / 2,
+                                            this.scene.scale.height / 2,
+                                            600, 'Sine.easeInOut'
+                                        );
+                                    });
+                                }
+                            }
+                        );
+                    });
+                }
+
                 if (callback) callback();
             }
         });
@@ -982,9 +1017,12 @@ export default class PetanqueEngine {
         if (nearestMovingDist < 80 && !this._zoomActive) {
             this._zoomActive = true;
             this.scene.cameras.main.zoomTo(1.08, 400, 'Sine.easeInOut');
+            // Slow-mo near cochonnet
+            this.scene.slowMotionFactor = 0.4;
         } else if (nearestMovingDist >= 80 && this._zoomActive) {
             this._zoomActive = false;
             this.scene.cameras.main.zoomTo(1, 400, 'Sine.easeInOut');
+            this.scene.slowMotionFactor = 1.0;
         }
     }
 }

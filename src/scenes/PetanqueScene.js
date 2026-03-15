@@ -79,6 +79,10 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         ).setOrigin(0.5, 1).setDepth(5);
 
+        // Camera target for cinematic follow during throws
+        this.cameraTarget = this.add.rectangle(0, 0, 1, 1, 0x000000, 0).setDepth(0);
+        this.slowMotionFactor = 1.0;
+
         // Start game
         this.engine.startGame();
     }
@@ -420,8 +424,12 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+        // Apply slow-motion factor to delta
+        const effectiveDelta = delta * this.slowMotionFactor;
+        this.tweens.timeScale = this.slowMotionFactor;
+
         if (this.engine) {
-            this.engine.update(delta);
+            this.engine.update(effectiveDelta);
         }
         if (this.aimingSystem) {
             this.aimingSystem.update();
