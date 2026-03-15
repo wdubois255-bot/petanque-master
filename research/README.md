@@ -55,6 +55,7 @@ Chaque fichier est autonome et peut etre lu independamment.
 | 19 | [19_legendes_petanque.md](19_legendes_petanque.md) | Legendes : Quintais, Suchaud, Lacroix, Foyot, Fazzino, Rocher (faits verifies) |
 | 20 | [20_plan_amelioration_scene_petanque.md](20_plan_amelioration_scene_petanque.md) | Plan 6 priorites pour ameliorer la scene petanque |
 | 21 | [21_petanque_international.md](21_petanque_international.md) | Petanque mondiale : Thailande, Madagascar, 67 pays medailles |
+| 22 | [22_faisabilite_ameliorations_phaser3.md](22_faisabilite_ameliorations_phaser3.md) | Verification faisabilite : 7/7 features confirmees (gradient, camera, slow-mo, etc.) |
 
 ---
 

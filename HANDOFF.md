@@ -5,172 +5,118 @@
 
 ### Ce qui est FAIT et FONCTIONNEL
 
-**Sprint 0 (complet):**
-- Vite 8 + Phaser 3.90.0 + phaser3-rex-plugins installes
-- `vite.config.js` : `assetsInlineLimit: 0`, manualChunks phaser, `base: './'`
-- `index.html` : CSS pixel art, letterboxing `#3A2E28`
-- `src/main.js` + `src/config.js` : resolution 832x480, Arcade Physics, pixelArt: true
-- `src/utils/Constants.js` : toutes les constantes du PLAN_MVP.md
-- `public/data/` : boules.json, npcs.json, progression.json
-- `.github/workflows/deploy.yml` : GitHub Actions -> GitHub Pages
-- Git sur GitHub : https://github.com/wdubois255-bot/petanque-master
+**Sprint 0-3 + Sprint 3.5 : COMPLETS** (voir PLAN_MVP.md pour details)
 
-**Sprint 1 (moteur petanque - fonctionnel):**
-- `src/petanque/Ball.js` : physique custom, friction lineaire, collisions elastiques
-- `src/petanque/Cochonnet.js` : herite Ball, masse 30g, petit rayon
-- `src/petanque/PetanqueEngine.js` : state machine FIPJP complete, scoring correct, victoire a 13 pts
-- `src/petanque/AimingSystem.js` : drag-and-release slingshot, fleche coloree, dead zone 30px
-- `src/petanque/PetanqueAI.js` : 3 niveaux (EASY/MEDIUM/HARD), pointer vs tirer
-- `src/ui/ScorePanel.js` : panneau score, boules restantes, numero de mene
-- Indicateur BEST : halo pulsant vert/rouge
-- Ecran Game Over : overlay sombre, score final, bouton Rejouer/Continuer
+**Migration 32x32 (15 mars 2026) : COMPLETE**
+- Resolution 832x480 (26x15 tiles, 4x plus de detail)
+- TILE_SIZE=32, tous les sprites/tiles/UI/positions doubles
+- Tests Playwright PASS
 
-**Sprint 2 (monde ouvert - fonctionnel):**
-- `src/world/TilesetGenerator.js` : 14 types de tiles generes en canvas 32x32
-- `src/world/SpriteGenerator.js` : generation de spritesheets 32x32, 10+ palettes avec details signature
-- `src/world/MapManager.js` : carte village_depart 30x30 tiles procedural
-- `src/world/NPCManager.js` : gestion des PNJ par map
-- `src/entities/Player.js` : mouvement grid-based, animations, input fleches + ZQSD
-- `src/entities/NPC.js` : idle, line-of-sight, encounter, dialogue, battle trigger
-- `src/ui/DialogBox.js` : typewriter effect
-- `src/scenes/OverworldScene.js` : maps, NPC, joueur, camera, dialogue, transition combat
+**Game feel (15 mars 2026) : IMPLEMENTE**
+- `src/utils/SoundManager.js` : 10 sons proceduraux Web Audio (boule-boule, landing, roulement, carreau, throw, victory, defeat, score, UI click)
+- Particules : dust landing (6, couleur terrain), collision sparks (5 blancs), rolling trail
+- Camera : zoom dramatique 1.08x quand boule ralentit pres cochonnet
+- Stats boules : boules.json (masse, rayon, friction) integre dans gameplay
+- UI combinee : 1 ecran (ROULETTE | DEMI-PORTEE | PLOMBEE | TIRER)
+- Squash flash sur collisions (ring blanc 6 frames)
 
-**Sprint 3 (contenu et progression - fonctionnel):**
-- **SaveManager.js** : localStorage, 3 slots, auto-save
-- **TitleScene.js** : ecran titre PETANQUE MASTER dore
-- **IntroScene.js** : dialogue Papet, choix de 3 sets de boules
-- **3 maps procedurales** : village_depart, route_1, village_arene_1
-- **Transitions de maps** : fadeOut/fadeIn, exits bidirectionnels
-- **Systeme de badges** : obtention apres victoire d'arene
-- **Systeme de gates** : PNJ garde bloque passage sans badge
-- **Maitre Marcel** : terrain terre, difficulte easy
-- **Rival Bastien** : dialogue evolue
-- **13 PNJ dans npcs.json** avec dialogues riches
+**Recherche approfondie (15 mars 2026) : 21 fichiers dans research/**
+- Voir `research/README.md` pour l'index complet
 
-**Sprint 3.5 (ameliorations gameplay - fonctionnel):**
-- **Controle du loft** : choix ROULETTE / DEMI-PORTEE / PLOMBEE avant chaque lancer pointer
-- **Prediction de trajectoire** : ligne pointillee pendant le drag
-- **Detection carreau** : hitstop + texte "CARREAU !" + particules + camera shake
-- **Indicateur de point dynamique** : halo pulsant en temps reel
-- **Score projete** : "+N" affiche en temps reel dans le ScorePanel
-- **Distances boule-cochonnet** : labels en metres
-- **Personnalites IA** : Marcel=pointeur, Fanny=tireuse, Ricardo=stratege, Marius=complet
-- **computeThrowParams()** : methode statique extraite pour prediction + IA
-- **Ball.simulateTrajectory()** : simulation physique pour prediction
-
-**Migration 32x32 (FAIT - 15 mars 2026):**
-- **Resolution** : 832x480 (26x15 tiles, meme champ de vision, 4x plus de detail)
-- **TILE_SIZE** : 32 (etait 16)
-- **Constants.js** : toutes les valeurs pixel doublees (terrain, boules, cercle, dead zone, etc.)
-- **SpriteGenerator.js** : sprites 32x32 via technique px()/rect() qui scalent x2
-- **TilesetGenerator.js** : tiles 32x32 via meme technique de scaling x2
-- **Player.js / NPC.js** : offsets ajustes, origin(0.5, 0.5) centre dans le tile
-- **UI** : toutes les fonts x2, positions x2 (ScorePanel, DialogBox, AimingSystem)
-- **Scenes** : TitleScene, IntroScene, BootScene, PetanqueScene, OverworldScene ajustes
-- **PetanqueEngine.js** : fonts x2, margins x2, positions x2, particules x2
-- **Skills** `/sprite` et `/tileset` : mis a jour pour generer en 64x64 -> downscale 32x32
-- **Tests Playwright** : TOUS PASSENT apres migration
-
-### Tests Playwright (TOUS PASSENT)
-- `test-sprint3.mjs` : TitleScene -> IntroScene -> choix boules -> OverworldScene -> Route 1 -> sauvegarde **PASS**
-- `test-game.mjs` : petanque engine (menes, scoring, IA, lancers) **0 erreurs**
-
-## PROCHAINES ETAPES
-
-### 1. Vrais sprites PixelLab (PRIORITE)
-Les sprites canvas 32x32 sont temporaires. Remplacer par de vrais sprites PixelLab :
-1. `generate-image-pixflux` 64x64 face sud
-2. `/rotate` -> est, ouest, nord
-3. `/animate-with-text` "walking" -> 4 frames par direction
-4. `sharp` downscale 2x nearest-neighbor -> 32x32
-5. Assembler spritesheet 128x128 (4 frames x 4 directions)
-6. Charger via Phaser loader (plus de canvas)
-
-**Personnages a generer :** joueur, Papet, Marcel, Bastien, Fanny, Ricardo, Marius, dresseurs, villageois
-
-### 2. Contenu et Audio
-- Route 2 + Village Arene 2 : Maitre Fanny (terrain herbe, tireuse agressive)
-- Route 3 + Village Arene 3 : Maitre Ricardo (terrain sable, stratege)
-- SFX ElevenLabs : impacts boule-boule, boule-cochonnet, atterrissage, carreau
-- Musique chiptune : monde ouvert, combat, victoire
-
-### API PixelLab - Workflow sprites
-```
-POST https://api.pixellab.ai/v1/generate-image-pixflux
-Headers: Authorization: Bearer <PIXELLAB_API_KEY>
-Body: { description, image_size: {width, height}, no_background, view, direction, outline, shading, detail }
-Response: { image: { base64: "data:..." }, usage: { usd: N } }
-
-POST https://api.pixellab.ai/v1/rotate
-Body: { image_size, from_image, from_direction, to_direction, from_view, to_view }
-
-POST https://api.pixellab.ai/v1/animate-with-text
-Body: { image_size, description, action, reference_image, n_frames, direction }
+### Tests Playwright (TOUS PASSENT - dans /tests/)
+```bash
+node tests/test-sprint3.mjs    # Sprint 3 flow complet (PASS)
+node tests/test-game.mjs       # Moteur petanque (0 erreurs)
 ```
 
-### Cles API
-- `.env` : PIXELLAB_API_KEY + ELEVENLABS_API_KEY (dans .gitignore)
-- PixelLab balance : $10.00
-- ElevenLabs : compte creator actif
+## PRIORITE PROCHAINE SESSION : SCENE PETANQUE BELLE
+
+Le plan detaille est dans `research/20_plan_amelioration_scene_petanque.md`.
+
+### Ce qu'il faut faire (6 priorites)
+1. **Terrain riche** : fond ciel Provence, texture gravier, bordures bois, platanes, banc, muret
+2. **Boules realistes** : gradient radial 3D, ombre portee decalee, reflet metallique, stries
+3. **Camera cinematique** : follow boule en vol, slow-mo pres cochonnet, pan entre cercle et zone d'impact
+4. **Joueurs realistes** : adversaire accroupi PRES DU COCHONNET (pas loin), reactions (joie/deception)
+5. **Ambiance** : cigales (boucle), brise, musique chiptune fond
+6. **Effets** : traces au sol permanentes, ombre coherente, feuilles
+
+### Infos cles pour la scene (dans research/)
+- `research/18_scene_petanque_visuelle.md` : disposition reelle du terrain, positions joueurs, atmosphere
+- `research/19_legendes_petanque.md` : legendes corrigees (Quintais=complet, 14 titres)
+- `research/13_gameplay_petanque_game_design.md` : game design, moments dramatiques, erreurs a eviter
+- `research/14_phaser3_polish_techniques.md` : techniques camera/particules/tweens Phaser 3
+
+### Point crucial : position des joueurs
+En vrai, les adversaires se tiennent **pres du cochonnet** (pas dans une zone d'attente loin).
+Le lanceur est seul au cercle. Tout le monde regarde depuis la zone cochonnet.
+C'est ca qui rend la scene immersive.
+
+## AUSSI EN ATTENTE
+
+### Vrais sprites PixelLab
+Les sprites canvas sont temporaires. Workflow documente dans `research/17_pixellab_spritesheet_workflow.md`.
 - MCP PixelLab configure dans `.mcp.json`
+- Skills `/sprite` et `/tileset` prets
+- $10 credits PixelLab
+
+### Contenu additionnel
+- Route 2 + Arene 2 (Fanny, herbe)
+- Route 3 + Arene 3 (Ricardo, sable)
+- SFX ElevenLabs (skill `/sfx` pret)
+- Musique chiptune
 
 ## COMMANDES
 
 ```bash
-npm install          # Installer les dependances
+npm install          # Dependances
 npm run dev          # Serveur dev -> http://localhost:8080
 npm run build        # Build production
-node tests/test-sprint3.mjs    # Test Sprint 3 (PASS)
-node tests/test-game.mjs       # Test petanque engine (0 erreurs)
-node scripts/generate-sprite.mjs <name> <desc> <dir> <w> <h>  # Generer sprite PixelLab
+node tests/test-sprint3.mjs   # Test Sprint 3 (PASS)
+node tests/test-game.mjs      # Test petanque (0 erreurs)
 ```
 
 ## FICHIERS CLES
 
-1. `CLAUDE.md` - conventions, stack, regles
-2. `PLAN_MVP.md` - plan complet (Sprints 0-4 + 3.5 + migration 32x32)
-3. `LORE_PETANQUE.md` - histoire petanque + mapping personnages
-4. `research/16_migration_32x32.md` - analyse complete migration
-5. `src/utils/Constants.js` - EPICENTRE (832x480, tiles 32, tout double)
-6. `src/world/SpriteGenerator.js` - sprites 32x32 canvas (temporaire, sera PixelLab)
-7. `src/world/TilesetGenerator.js` - tiles 32x32 canvas (temporaire)
-8. `src/scenes/PetanqueScene.js` - combat avec animations de lancer
-9. `src/petanque/PetanqueEngine.js` - moteur regles + carreau + loft + onThrow
-10. `scripts/generate-sprite.mjs` - script generation sprites PixelLab
-11. `.env` - cles API (gitignored)
-12. `.mcp.json` - MCP servers (PixelLab + ElevenLabs)
-13. `.claude/skills/` - 5 custom skills (/sprite, /tileset, /sfx, /playtest, /build-assets)
+| Fichier | Role |
+|---------|------|
+| `CLAUDE.md` | Conventions, stack, regles |
+| `PLAN_MVP.md` | Plan complet 5 sprints |
+| `LORE_PETANQUE.md` | Histoire petanque + mapping personnages (corrige) |
+| `research/README.md` | Index des 21 fichiers de recherche |
+| `research/20_plan_amelioration_scene_petanque.md` | **PLAN PROCHAINE SESSION** |
+| `src/utils/Constants.js` | Epicentre (832x480, tiles 32) |
+| `src/utils/SoundManager.js` | Sons proceduraux Web Audio |
+| `src/scenes/PetanqueScene.js` | Scene combat (a ameliorer) |
+| `src/petanque/PetanqueEngine.js` | Moteur + SFX + particules + zoom |
+| `.env` | Cles API (gitignored) |
+| `.mcp.json` | MCP PixelLab + ElevenLabs |
 
 ## ARCHITECTURE
 
 ```
 src/
-  main.js              -> new Phaser.Game(config)
-  config.js            -> 832x480, Arcade, scenes
-  scenes/
-    BootScene.js       -> Preload JSON
-    TitleScene.js      -> Menu dore (fonts 48/24/20px)
-    IntroScene.js      -> Dialogue Papet + choix boules (cards 230x210)
-    OverworldScene.js  -> Monde ouvert, maps, NPC, dialogue, transitions, auto-save
-    PetanqueScene.js   -> Combat petanque avec sprites animees, 4 terrains, carreau
-  entities/
-    Player.js          -> Mouvement grille 32x32, animation, origin(0.5,0.5)
-    NPC.js             -> Idle, line-of-sight, encounter, dialogue, origin(0.5,0.5)
-  petanque/
-    Ball.js            -> Physique custom + simulateTrajectory(), radius 10px
-    Cochonnet.js       -> Ball specialise, radius 4px
-    PetanqueEngine.js  -> State machine FIPJP, scoring, carreau, loft, onThrow
-    AimingSystem.js    -> Drag slingshot, POINTER/TIRER, loft, prediction trajectoire
-    PetanqueAI.js      -> 3 niveaux + personnalites (pointeur/tireur/stratege/complet)
-  world/
-    TilesetGenerator.js -> 14 tiles 32x32 (scaled x2 from 16x16 design)
-    SpriteGenerator.js  -> 10+ palettes, sprites 32x32 (scaled x2)
-    MapManager.js       -> 3 maps procedurales + exits
-    NPCManager.js       -> Gestion PNJ par map
-  ui/
-    DialogBox.js       -> Typewriter, font 20px, box 116px
-    ScorePanel.js      -> Score + score projete + distances + boules graphiques
-  utils/
-    Constants.js       -> TOUTES LES VALEURS DOUBLEES (migration complete)
-    SaveManager.js     -> localStorage, 3 slots
+  main.js / config.js      -> 832x480, Arcade, pixelArt
+  scenes/                   -> Boot, Title, Intro, Overworld, Petanque
+  entities/                 -> Player, NPC (32x32, origin 0.5)
+  petanque/                 -> Ball, Cochonnet, Engine, AI, Aiming
+  world/                    -> TilesetGen, SpriteGen, MapManager, NPCManager
+  ui/                       -> DialogBox, ScorePanel
+  utils/                    -> Constants, SaveManager, SoundManager
+tests/                      -> 5 tests Playwright
+research/                   -> 21 fichiers de recherche (voir README.md)
+scripts/                    -> generate-sprite.mjs (PixelLab API)
+public/data/                -> boules.json, npcs.json, progression.json
+.claude/skills/             -> /sprite, /tileset, /sfx, /playtest, /build-assets
 ```
+
+## PERSONNAGES (lore corrige)
+
+| PNJ | Inspire de | Archetype |
+|-----|-----------|-----------|
+| Le Papet | Henri Lacroix (20 titres France, pointeur GOAT) | Mentor, pointeur |
+| Marcel | Marco Foyot (showman, chaine or, 6 Marseillaise) | 1er maitre, terre |
+| Bastien | Dylan Rocher (champion a 10 ans) | Rival, prodige |
+| Fanny | Legende de Fanny (13-0) | 2e maitre, herbe |
+| Ricardo | Philippe Suchaud (14 titres, tireur scientifique) | 3e maitre, sable |
+| Grand Marius | Philippe Quintais (Le Roi, 14 titres, complet) + Fazzino | Boss final |
