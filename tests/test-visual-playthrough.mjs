@@ -79,7 +79,7 @@ async function run() {
                 e.throwCochonnet(angle, power);
             } else {
                 const loft = mode === 'tir'
-                    ? { id: 'tir', label: 'TIR', landingFactor: 0.95, arcHeight: -55, flyDurationMult: 0.5, rollEfficiency: 0.1 }
+                    ? { id: 'tir', label: 'TIR', landingFactor: 0.60, arcHeight: -30, flyDurationMult: 0.4, rollEfficiency: 2.5 }
                     : mode === 'plombee'
                     ? { id: 'plombee', label: 'PLOMBEE', landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15 }
                     : mode === 'roulette'

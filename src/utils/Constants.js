@@ -57,9 +57,13 @@ export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
     landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15
 };
+// Tir au fer : la boule vole sur ~60% de la distance puis ROULE VITE sur les 40% restants
+// C'est cette haute vitesse de roulement qui percute la boule adverse
+// Power controle la distance totale, rollEfficiency donne la vitesse d'impact
+// Si le joueur rate, la boule file loin = risque du tir (comme en vrai)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -55, flyDurationMult: 0.5, rollEfficiency: 0.1
+    landingFactor: 0.60, arcHeight: -30, flyDurationMult: 0.4, rollEfficiency: 2.5
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
