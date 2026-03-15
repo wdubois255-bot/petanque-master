@@ -399,6 +399,9 @@ export default class PetanqueEngine {
                 sfxLanding(this.terrainType);
                 this._spawnDust(targetX, targetY, 6);
 
+                // Impact trace on terrain
+                this._drawImpactTrace(targetX, targetY, ball.radius);
+
                 ball.launch(rollVx, rollVy);
 
                 // Pan to cochonnet area after landing, then back to center
@@ -973,6 +976,16 @@ export default class PetanqueEngine {
             duration: 400,
             onComplete: () => p.destroy()
         });
+    }
+
+    // --- IMPACT TRACES on terrain ---
+    _drawImpactTrace(x, y, radius) {
+        if (!this.scene.impactLayer) return;
+        const crater = this.scene.add.graphics();
+        crater.fillStyle(0x000000, 0.15);
+        crater.fillCircle(0, 0, radius + 2);
+        this.scene.impactLayer.draw(crater, x - this.bounds.x, y - this.bounds.y);
+        crater.destroy();
     }
 
     // --- BOULE STATS from boules.json ---

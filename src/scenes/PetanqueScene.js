@@ -83,6 +83,12 @@ export default class PetanqueScene extends Phaser.Scene {
         this.cameraTarget = this.add.rectangle(0, 0, 1, 1, 0x000000, 0).setDepth(0);
         this.slowMotionFactor = 1.0;
 
+        // Impact traces layer (RenderTexture, persistent marks on terrain)
+        this.impactLayer = this.add.renderTexture(
+            this.terrainX, this.terrainY,
+            TERRAIN_WIDTH, TERRAIN_HEIGHT
+        ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
+
         // Start game
         this.engine.startGame();
     }
