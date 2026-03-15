@@ -110,16 +110,16 @@ export default class ScorePanel {
         this.ballsGfx = scene.add.graphics().setDepth(92);
         this.ballsBg = scene.add.graphics().setDepth(91);
 
-        // Distance lines graphics (shown when balls stopped)
+        // Distance indicators: only 1st and 2nd closest balls
         this._distGfx = scene.add.graphics().setDepth(9);
-        this._distLabels = [];
-        for (let i = 0; i < 6; i++) {
+        this._rankLabels = [];
+        for (let i = 0; i < 2; i++) {
             const label = scene.add.text(0, 0, '', {
-                fontFamily: 'monospace', fontSize: '14px',
+                fontFamily: 'monospace', fontSize: '11px',
                 color: '#F5E6D0',
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(12).setVisible(false);
-            this._distLabels.push(label);
+            this._rankLabels.push(label);
         }
 
         this._prevPlayerRemaining = -1;
@@ -211,36 +211,46 @@ export default class ScorePanel {
         const anyMoving = e.balls.some(b => b.isAlive && b.isMoving) ||
             (e.cochonnet && e.cochonnet.isAlive && e.cochonnet.isMoving);
         if (anyMoving || !e.cochonnet || !e.cochonnet.isAlive) {
-            for (const label of this._distLabels) label.setVisible(false);
+            for (const label of this._rankLabels) label.setVisible(false);
             return;
         }
 
-        let labelIdx = 0;
-        for (const ball of e.balls) {
-            if (!ball.isAlive || labelIdx >= this._distLabels.length) continue;
-            const dist = ball.distanceTo(e.cochonnet);
-            const color = ball.team === 'player' ? 0xA8B5C2 : 0xC44B3F;
+        // Sort alive balls by distance to cochonnet
+        const alive = e.balls.filter(b => b.isAlive);
+        if (alive.length === 0) {
+            for (const label of this._rankLabels) label.setVisible(false);
+            return;
+        }
+        const sorted = alive
+            .map(b => ({ ball: b, dist: b.distanceTo(e.cochonnet) }))
+            .sort((a, b) => a.dist - b.dist);
 
-            // Dashed line
-            this._distGfx.lineStyle(1, color, 0.25);
+        // Show only 1st and 2nd closest
+        for (let i = 0; i < 2 && i < sorted.length; i++) {
+            const { ball, dist } = sorted[i];
+            const color = ball.team === 'player' ? 0xA8B5C2 : 0xC44B3F;
+            const colorHex = ball.team === 'player' ? '#A8B5C2' : '#C44B3F';
+
+            // Thin line from ball to cochonnet
+            this._distGfx.lineStyle(1, color, i === 0 ? 0.35 : 0.2);
             this._distGfx.beginPath();
             this._distGfx.moveTo(ball.x, ball.y);
             this._distGfx.lineTo(e.cochonnet.x, e.cochonnet.y);
             this._distGfx.strokePath();
 
-            // Distance label at midpoint
-            const mx = (ball.x + e.cochonnet.x) / 2;
-            const my = (ball.y + e.cochonnet.y) / 2;
+            // Small rank badge next to ball
+            const label = this._rankLabels[i];
             const meters = (dist * PIXELS_TO_METERS).toFixed(1);
-            const label = this._distLabels[labelIdx++];
-            label.setPosition(mx, my - 8);
+            label.setPosition(ball.x + ball.radius + 6, ball.y - 4);
             label.setText(`${meters}m`);
-            label.setColor(ball.team === 'player' ? '#A8B5C2' : '#C44B3F');
+            label.setColor(colorHex);
+            label.setAlpha(i === 0 ? 0.9 : 0.6);
             label.setVisible(true);
         }
-        // Hide unused labels
-        for (let i = labelIdx; i < this._distLabels.length; i++) {
-            this._distLabels[i].setVisible(false);
+
+        // Hide unused
+        for (let i = Math.min(2, sorted.length); i < this._rankLabels.length; i++) {
+            this._rankLabels[i].setVisible(false);
         }
     }
 
@@ -257,6 +267,6 @@ export default class ScorePanel {
         this.ballsGfx.destroy();
         this.ballsBg.destroy();
         this._distGfx.destroy();
-        for (const label of this._distLabels) label.destroy();
+        for (const label of this._rankLabels) label.destroy();
     }
 }
