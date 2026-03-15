@@ -37,6 +37,9 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.drawTerrain(terrainColor);
 
+        // Generate 3D ball textures (CanvasTexture with radial gradient)
+        this._createBallTextures();
+
         // Generate character sprites for petanque scene
         this._ensureSprites();
 
@@ -256,6 +259,36 @@ export default class PetanqueScene extends Phaser.Scene {
             this._opponentArrowTween.resume();
             this.playerTurnArrow.setVisible(false);
             this._playerArrowTween.pause();
+        }
+    }
+
+    _createBallTextures() {
+        const defs = [
+            { key: 'ball_acier',     base: '#A8B5C2', hi: '#E0E8F0', shadow: '#606870' },
+            { key: 'ball_bronze',    base: '#CD7F32', hi: '#E8A050', shadow: '#8B5A20' },
+            { key: 'ball_chrome',    base: '#DCDCDC', hi: '#FFFFFF', shadow: '#909090' },
+            { key: 'ball_opponent',  base: '#C44B3F', hi: '#E87060', shadow: '#8A2A20' },
+            { key: 'ball_cochonnet', base: '#D4A574', hi: '#F0D0A0', shadow: '#8B6B4A' }
+        ];
+        for (const { key, base, hi, shadow } of defs) {
+            if (this.textures.exists(key)) continue;
+            const tex = this.textures.createCanvas(key, 32, 32);
+            const ctx = tex.getContext();
+            // Radial gradient for 3D sphere
+            const grad = ctx.createRadialGradient(12, 10, 2, 16, 16, 14);
+            grad.addColorStop(0, hi);
+            grad.addColorStop(0.4, base);
+            grad.addColorStop(1, shadow);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, Math.PI * 2);
+            ctx.fill();
+            // Specular highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.beginPath();
+            ctx.arc(11, 9, 3, 0, Math.PI * 2);
+            ctx.fill();
+            tex.refresh();
         }
     }
 

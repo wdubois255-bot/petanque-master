@@ -304,10 +304,22 @@ export default class PetanqueEngine {
         const startY = ball.y;
         const isTir = loftPreset.id === 'tir';
 
-        const flyGfx = this.scene.add.graphics();
-        const shadowGfx = this.scene.add.graphics();
-        ball.gfx.setVisible(false);
-        ball.shadow.setVisible(false);
+        // Hide ball during flight
+        if (ball.sprite) { ball.sprite.setVisible(false); ball.shadowSprite.setVisible(false); }
+        if (ball.gfx) { ball.gfx.setVisible(false); ball.shadow.setVisible(false); }
+
+        // Fly sprite: use 3D texture if available, else Graphics fallback
+        let flySprite = null;
+        let flyGfx = null;
+        let flyShadow = null;
+        if (ball.textureKey && this.scene.textures.exists(ball.textureKey)) {
+            const scale = ball.radius / 14;
+            flySprite = this.scene.add.image(startX, startY, ball.textureKey).setScale(scale).setDepth(50);
+            flyShadow = this.scene.add.ellipse(startX, startY, ball.radius * 1.8, ball.radius * 0.8, 0x000000, 0.15).setDepth(49);
+        } else {
+            flyGfx = this.scene.add.graphics().setDepth(50);
+            flyShadow = this.scene.add.graphics().setDepth(49);
+        }
 
         const flyDuration = THROW_FLY_DURATION * loftPreset.flyDurationMult;
         const arcHeight = loftPreset.arcHeight;
@@ -324,25 +336,35 @@ export default class PetanqueEngine {
                 const cy = Phaser.Math.Linear(startY, targetY, tween.t);
                 const arc = arcHeight * Math.sin(tween.t * Math.PI);
 
-                flyGfx.clear();
-                flyGfx.fillStyle(ball.color, 1);
-                flyGfx.fillCircle(cx, cy + arc, ball.radius);
-                flyGfx.fillStyle(0xFFFFFF, 0.3);
-                flyGfx.fillCircle(cx - ball.radius * 0.3, cy + arc - ball.radius * 0.3, ball.radius * 0.3);
+                if (flySprite) {
+                    flySprite.setPosition(cx, cy + arc);
+                    // Shadow grows as ball descends
+                    const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
+                    flyShadow.setPosition(cx, cy);
+                    flyShadow.setScale(shadowScale);
+                    flyShadow.setAlpha(0.15 * shadowScale);
+                } else {
+                    flyGfx.clear();
+                    flyGfx.fillStyle(ball.color, 1);
+                    flyGfx.fillCircle(cx, cy + arc, ball.radius);
+                    flyGfx.fillStyle(0xFFFFFF, 0.3);
+                    flyGfx.fillCircle(cx - ball.radius * 0.3, cy + arc - ball.radius * 0.3, ball.radius * 0.3);
 
-                shadowGfx.clear();
-                const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
-                shadowGfx.fillStyle(0x000000, 0.15 * shadowScale);
-                shadowGfx.fillCircle(cx, cy, ball.radius * shadowScale);
+                    flyShadow.clear();
+                    const shadowScale = isTir ? (0.6 + tween.t * 0.4) : (0.2 + tween.t * 0.8);
+                    flyShadow.fillStyle(0x000000, 0.15 * shadowScale);
+                    flyShadow.fillCircle(cx, cy, ball.radius * shadowScale);
+                }
             },
             onComplete: () => {
-                flyGfx.destroy();
-                shadowGfx.destroy();
+                if (flySprite) { flySprite.destroy(); flyShadow.destroy(); }
+                if (flyGfx) { flyGfx.destroy(); flyShadow.destroy(); }
 
                 ball.x = targetX;
                 ball.y = targetY;
-                ball.gfx.setVisible(true);
-                ball.shadow.setVisible(true);
+                // Show ball at landing
+                if (ball.sprite) { ball.sprite.setVisible(true); ball.shadowSprite.setVisible(true); }
+                if (ball.gfx) { ball.gfx.setVisible(true); ball.shadow.setVisible(true); }
                 ball.draw();
 
                 const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2 : THROW_SHAKE_INTENSITY;
