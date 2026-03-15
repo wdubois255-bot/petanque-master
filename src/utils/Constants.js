@@ -37,22 +37,27 @@ export const THROW_FLY_DURATION = 300;
 export const THROW_SHAKE_INTENSITY = 4;
 export const THROW_SHAKE_DURATION = 150;
 
-// Petanque - loft presets (pointer only, tirer uses LOFT_TIR)
+// Petanque - loft presets
+// Valeurs basees sur la vraie petanque :
+// - Roulette : 15% vol, 85% roulement, arc tres bas, roule longtemps
+// - Demi-portee : 50/50 vol/roulement, arc moyen (1.5-2m reel)
+// - Plombee : 90% vol, 10% roulement, arc haut (3-4m reel), boule "meurt" a l'impact
+// - Tir au fer : 95% vol, 5% roulement, arc moyen-haut, 2.5x plus rapide que pointage
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.25, arcHeight: -8, flyDurationMult: 0.6, rollEfficiency: 1.4
+    landingFactor: 0.15, arcHeight: -6, flyDurationMult: 0.5, rollEfficiency: 1.6
 };
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
-    landingFactor: 0.50, arcHeight: -36, flyDurationMult: 0.9, rollEfficiency: 0.9
+    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 0.8
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.75, arcHeight: -70, flyDurationMult: 1.3, rollEfficiency: 0.5
+    landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15
 };
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.30, arcHeight: -16, flyDurationMult: 0.7, rollEfficiency: 1.2
+    landingFactor: 0.95, arcHeight: -55, flyDurationMult: 0.5, rollEfficiency: 0.1
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
