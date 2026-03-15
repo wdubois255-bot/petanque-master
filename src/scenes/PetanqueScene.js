@@ -130,14 +130,13 @@ export default class PetanqueScene extends Phaser.Scene {
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
 
-        // Opponent: NEAR COCHONNET (crouching, watching), not in waiting area
-        // Initial position = near center-top of terrain (cochonnet area)
-        const opponentCochoX = this.terrainX + TERRAIN_WIDTH / 2 + 30;
+        // Opponent: on the RIGHT EDGE of terrain, at cochonnet height, watching
+        const opponentCochoX = this.terrainX + TERRAIN_WIDTH + 16;
         const opponentCochoY = this.terrainY + 120;
         const opponentCircleX = this.throwCircleX;
         const opponentCircleY = this.throwCircleY + 16;
         this.opponentSprite = this.add.sprite(opponentCochoX, opponentCochoY, 'petanque_opponent', 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1, 0.6); // crouching
+            .setOrigin(0.5, 1).setDepth(20).setScale(1); // standing on sideline
         this._opponentCochoX = opponentCochoX;
         this._opponentCochoY = opponentCochoY;
         this._opponentCircleX = opponentCircleX;
@@ -191,7 +190,8 @@ export default class PetanqueScene extends Phaser.Scene {
     // Update opponent position near cochonnet (call after cochonnet lands)
     _updateOpponentCochoPos() {
         if (this.engine.cochonnet && this.engine.cochonnet.isAlive) {
-            this._opponentCochoX = this.engine.cochonnet.x + 30;
+            // Opponent stands on the RIGHT EDGE of terrain, at cochonnet height
+            this._opponentCochoX = this.terrainX + TERRAIN_WIDTH + 16;
             this._opponentCochoY = this.engine.cochonnet.y + 10;
         }
     }
@@ -222,10 +222,10 @@ export default class PetanqueScene extends Phaser.Scene {
                 y: this._opponentCircleY - 56,
                 duration: 500
             });
-            // Player steps aside near cochonnet
+            // Player steps to LEFT EDGE of terrain, at cochonnet height
             this.tweens.add({
                 targets: this.playerSprite,
-                x: this._opponentCochoX - 60,
+                x: this.terrainX - 16,
                 y: this._opponentCochoY,
                 duration: 400,
                 ease: 'Sine.easeInOut',
@@ -245,12 +245,12 @@ export default class PetanqueScene extends Phaser.Scene {
                     this.playerSprite.setFrame(12);
                 }
             });
-            // Opponent goes back near cochonnet, crouches
+            // Opponent goes back to sideline
             this.tweens.add({
                 targets: this.opponentSprite,
                 x: this._opponentCochoX,
                 y: this._opponentCochoY,
-                scaleY: 0.6, // crouch
+                scaleY: 1.0, // standing
                 duration: 500,
                 ease: 'Sine.easeInOut',
                 onUpdate: () => {
