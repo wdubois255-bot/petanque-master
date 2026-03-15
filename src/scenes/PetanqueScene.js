@@ -98,15 +98,49 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _ensureSprites() {
-        if (!this.textures.exists('petanque_player')) {
+        // Use preloaded Pipoya PNG spritesheets instead of canvas generation
+        const playerKey = this._getPipoyaKey('player');
+        if (this.textures.exists(playerKey)) {
+            if (!this.textures.exists('petanque_player')) {
+                this.textures.addSpriteSheet('petanque_player',
+                    this.textures.get(playerKey).getSourceImage(),
+                    { frameWidth: 32, frameHeight: 32 }
+                );
+            }
+        } else if (!this.textures.exists('petanque_player')) {
             generateCharacterSprite(this, 'petanque_player', PALETTES.player);
         }
-        // Destroy old opponent texture to support different opponents per fight
+
+        // Opponent - always recreate to support different opponents per fight
         if (this.textures.exists('petanque_opponent')) {
             this.textures.remove('petanque_opponent');
         }
-        const opponentPalette = this._getOpponentPalette();
-        generateCharacterSprite(this, 'petanque_opponent', opponentPalette);
+        const opponentKey = this._getOpponentPipoyaKey();
+        if (this.textures.exists(opponentKey)) {
+            this.textures.addSpriteSheet('petanque_opponent',
+                this.textures.get(opponentKey).getSourceImage(),
+                { frameWidth: 32, frameHeight: 32 }
+            );
+        } else {
+            const opponentPalette = this._getOpponentPalette();
+            generateCharacterSprite(this, 'petanque_opponent', opponentPalette);
+        }
+    }
+
+    _getPipoyaKey(type) {
+        if (type === 'player') return 'player_pipoya';
+        return 'npc_dresseur_1';
+    }
+
+    _getOpponentPipoyaKey() {
+        const id = this.opponentId || '';
+        if (id.includes('marcel')) return 'npc_marcel';
+        if (id.includes('rival') || id.includes('bastien')) return 'npc_rival';
+        if (id.includes('fanny')) return 'npc_fanny';
+        if (id.includes('maitre') || id.includes('papet')) return 'npc_maitre';
+        if (id.includes('dresseur')) return 'npc_dresseur_1';
+        if (id.includes('gate')) return 'npc_gate';
+        return 'npc_dresseur_1';
     }
 
     _getOpponentPalette() {

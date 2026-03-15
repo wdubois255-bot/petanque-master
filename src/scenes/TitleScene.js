@@ -14,51 +14,154 @@ export default class TitleScene extends Phaser.Scene {
         this._selectedIndex = 0;
         this._mode = 'main'; // main | slots
 
-        // Background gradient feel
+        // ============================================
+        // BACKGROUND - Provencal sky + ground scene
+        // ============================================
         const bg = this.add.graphics();
-        bg.fillGradientStyle(0x5A3E28, 0x5A3E28, COLORS.OMBRE, COLORS.OMBRE, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Title with shadow
-        this.add.text(GAME_WIDTH / 2, 76, 'PETANQUE\nMASTER', {
+        // Sky gradient (top: bright blue -> warm horizon)
+        bg.fillGradientStyle(0x5B9BD5, 0x5B9BD5, 0xE8C890, 0xE8C890, 1);
+        bg.fillRect(0, 0, GAME_WIDTH, 300);
+
+        // Warm horizon glow
+        bg.fillGradientStyle(0xE8C890, 0xE8C890, 0xD4A574, 0xD4A574, 1);
+        bg.fillRect(0, 280, GAME_WIDTH, 40);
+
+        // Ground (terre battue)
+        bg.fillGradientStyle(0xC4854A, 0xC4854A, 0xA87040, 0xA87040, 1);
+        bg.fillRect(0, 310, GAME_WIDTH, 170);
+
+        // Gravel texture on ground
+        for (let i = 0; i < 120; i++) {
+            const gx = Phaser.Math.Between(0, GAME_WIDTH);
+            const gy = Phaser.Math.Between(315, 475);
+            const shade = Phaser.Math.Between(0, 1) ? 0xB0905A : 0xD4A574;
+            bg.fillStyle(shade, 0.4);
+            bg.fillRect(gx, gy, 2, 2);
+        }
+
+        // Distant hills silhouette
+        bg.fillStyle(0x8BAA6E, 0.6);
+        for (let x = 0; x < GAME_WIDTH; x += 2) {
+            const h = Math.sin(x * 0.008) * 25 + Math.sin(x * 0.003) * 15 + 270;
+            bg.fillRect(x, h, 2, 310 - h);
+        }
+
+        // ============================================
+        // DECORATIVE TREES (background, simplified)
+        // ============================================
+        const trees = this.add.graphics();
+        const drawTree = (tx, ty, scale) => {
+            // Trunk
+            trees.fillStyle(0x8B6B4A, 1);
+            trees.fillRect(tx - 3 * scale, ty - 10 * scale, 6 * scale, 14 * scale);
+            // Canopy
+            trees.fillStyle(0x5A8A4A, 1);
+            trees.fillCircle(tx, ty - 16 * scale, 14 * scale);
+            trees.fillStyle(0x4A7A3A, 1);
+            trees.fillCircle(tx - 4 * scale, ty - 20 * scale, 10 * scale);
+            trees.fillStyle(0x6A9A5A, 0.6);
+            trees.fillCircle(tx + 5 * scale, ty - 22 * scale, 7 * scale);
+        };
+        drawTree(80, 296, 1.2);
+        drawTree(180, 300, 0.8);
+        drawTree(650, 294, 1.4);
+        drawTree(760, 302, 0.9);
+        drawTree(30, 304, 0.6);
+
+        // ============================================
+        // PETANQUE TERRAIN MARKINGS
+        // ============================================
+        const terrain = this.add.graphics();
+        // Terrain rectangle (subtle lighter area)
+        terrain.fillStyle(0xD4955A, 0.3);
+        terrain.fillRect(280, 340, 270, 120);
+        // Border lines
+        terrain.lineStyle(1, 0xFFFFFF, 0.3);
+        terrain.strokeRect(280, 340, 270, 120);
+
+        // ============================================
+        // DECORATIVE BOULES on terrain
+        // ============================================
+        const boules = this.add.graphics();
+        // Silver boule 1
+        boules.fillStyle(0x909EAA, 1); boules.fillCircle(380, 400, 8);
+        boules.fillStyle(0xC8D4E0, 1); boules.fillCircle(380, 400, 7);
+        boules.fillStyle(0xFFFFFF, 0.5); boules.fillCircle(377, 397, 3);
+        // Silver boule 2
+        boules.fillStyle(0x909EAA, 1); boules.fillCircle(410, 388, 8);
+        boules.fillStyle(0xC8D4E0, 1); boules.fillCircle(410, 388, 7);
+        boules.fillStyle(0xFFFFFF, 0.5); boules.fillCircle(407, 385, 3);
+        // Red boule (opponent)
+        boules.fillStyle(0x8B3030, 1); boules.fillCircle(460, 395, 8);
+        boules.fillStyle(0xC44B3F, 1); boules.fillCircle(460, 395, 7);
+        boules.fillStyle(0xFFFFFF, 0.4); boules.fillCircle(457, 392, 3);
+        // Red boule 2
+        boules.fillStyle(0x8B3030, 1); boules.fillCircle(435, 420, 8);
+        boules.fillStyle(0xC44B3F, 1); boules.fillCircle(435, 420, 7);
+        boules.fillStyle(0xFFFFFF, 0.4); boules.fillCircle(432, 417, 3);
+        // Cochonnet (gold, small)
+        boules.fillStyle(0xB8960A, 1); boules.fillCircle(430, 390, 4);
+        boules.fillStyle(0xFFD700, 1); boules.fillCircle(430, 390, 3);
+        boules.fillStyle(0xFFFFFF, 0.6); boules.fillCircle(429, 389, 1);
+
+        // ============================================
+        // CHARACTERS (Pipoya sprites on screen)
+        // ============================================
+        if (this.textures.exists('player_pipoya')) {
+            // Player standing near terrain
+            const player = this.add.sprite(340, 416, 'player_pipoya', 0).setScale(2);
+            this.tweens.add({ targets: player, y: 414, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        }
+        if (this.textures.exists('npc_maitre')) {
+            // Papet watching
+            const papet = this.add.sprite(500, 418, 'npc_maitre', 4).setScale(2);
+            this.tweens.add({ targets: papet, y: 416, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 300 });
+        }
+        if (this.textures.exists('npc_rival')) {
+            // Rival in background
+            const rival = this.add.sprite(560, 380, 'npc_rival', 4).setScale(1.5).setAlpha(0.7);
+            this.tweens.add({ targets: rival, y: 378, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600 });
+        }
+
+        // ============================================
+        // TITLE
+        // ============================================
+        const titleText = this.add.text(GAME_WIDTH / 2, 80, 'PETANQUE\nMASTER', {
             fontFamily: 'monospace',
-            fontSize: '48px',
+            fontSize: '52px',
             color: '#FFD700',
             align: 'center',
-            lineSpacing: 8,
+            lineSpacing: 4,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
+        // Title breathing animation
+        this.tweens.add({
+            targets: titleText, scaleX: 1.02, scaleY: 1.02,
+            duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+        });
+
         // Subtitle
-        this.add.text(GAME_WIDTH / 2, 176, 'Devenez le meilleur bouliste du canton !', {
+        this.add.text(GAME_WIDTH / 2, 172, 'Devenez le meilleur bouliste du canton !', {
             fontFamily: 'monospace',
-            fontSize: '16px',
-            color: '#D4A574',
+            fontSize: '14px',
+            color: '#F5E6D0',
             align: 'center',
             shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Decorative boules (bigger)
-        const g = this.add.graphics();
-        // Silver boule
-        g.fillStyle(0xA8B5C2, 1);
-        g.fillCircle(250, 420, 16);
-        g.fillStyle(0xFFFFFF, 0.3);
-        g.fillCircle(244, 414, 6);
-        // Red boule
-        g.fillStyle(0xC44B3F, 1);
-        g.fillCircle(296, 432, 16);
-        g.fillStyle(0xFFFFFF, 0.3);
-        g.fillCircle(290, 426, 6);
-        // Cochonnet
-        g.fillStyle(0xFFD700, 1);
-        g.fillCircle(274, 448, 6);
+        // Version tag
+        this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v0.5', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E',
+            shadow: SHADOW
+        }).setOrigin(1, 1);
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32, '\u2191\u2193  Naviguer     Espace  Confirmer', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193  Naviguer     Espace  Confirmer', {
             fontFamily: 'monospace',
-            fontSize: '16px',
-            color: '#9E9E8E',
+            fontSize: '13px',
+            color: '#D4A574',
             align: 'center',
             shadow: SHADOW
         }).setOrigin(0.5);
@@ -80,11 +183,20 @@ export default class TitleScene extends Phaser.Scene {
         const items = ['Nouvelle Partie'];
         if (hasSaveData()) items.push('Continuer');
 
-        const startY = 240;
+        const startY = 218;
         items.forEach((label, i) => {
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 48, label, {
+            // Menu background pill
+            const pillW = 260;
+            const pillH = 36;
+            const pillY = startY + i * 46;
+            const pill = this.add.graphics();
+            pill.fillStyle(0x3A2E28, 0.7);
+            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+            this._menuItems.push(pill);
+
+            const txt = this.add.text(GAME_WIDTH / 2, pillY, label, {
                 fontFamily: 'monospace',
-                fontSize: '24px',
+                fontSize: '22px',
                 color: '#F5E6D0',
                 align: 'center',
                 shadow: SHADOW
@@ -101,7 +213,8 @@ export default class TitleScene extends Phaser.Scene {
         this._selectedIndex = 0;
 
         const slots = getAllSlots();
-        const startY = 220;
+        const startY = 210;
+        const allItems = [];
 
         for (let i = 0; i < 3; i++) {
             const s = slots[i];
@@ -113,24 +226,28 @@ export default class TitleScene extends Phaser.Scene {
             } else {
                 label = `Slot ${i + 1}: ---`;
             }
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 44, label, {
+            allItems.push({ label, color: s ? '#F5E6D0' : '#9E9E8E' });
+        }
+        allItems.push({ label: 'Retour', color: '#D4A574' });
+
+        allItems.forEach((item, i) => {
+            const pillW = 320;
+            const pillH = 32;
+            const pillY = startY + i * 40;
+            const pill = this.add.graphics();
+            pill.fillStyle(0x3A2E28, 0.7);
+            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+            this._menuItems.push(pill);
+
+            const txt = this.add.text(GAME_WIDTH / 2, pillY, item.label, {
                 fontFamily: 'monospace',
-                fontSize: '20px',
-                color: s ? '#F5E6D0' : '#9E9E8E',
+                fontSize: '18px',
+                color: item.color,
                 align: 'center',
                 shadow: SHADOW
             }).setOrigin(0.5);
             this._menuItems.push(txt);
-        }
-
-        const back = this.add.text(GAME_WIDTH / 2, startY + 148, 'Retour', {
-            fontFamily: 'monospace',
-            fontSize: '20px',
-            color: '#D4A574',
-            align: 'center',
-            shadow: SHADOW
-        }).setOrigin(0.5);
-        this._menuItems.push(back);
+        });
 
         this._updateCursor();
     }
@@ -143,14 +260,17 @@ export default class TitleScene extends Phaser.Scene {
 
     _updateCursor() {
         if (this._cursor) this._cursor.destroy();
-        const item = this._menuItems[this._selectedIndex];
-        if (!item) return;
+        // Menu items alternate: [graphics, text, graphics, text, ...]
+        // Find the text item at the selected index
+        const textIndex = this._selectedIndex * 2 + 1;
+        const item = this._menuItems[textIndex];
+        if (!item || !item.style) return;
         this._cursor = this.add.text(
-            item.x - item.width / 2 - 28, item.y,
+            item.x - item.width / 2 - 24, item.y,
             '\u25b6', {
                 fontFamily: 'monospace',
                 fontSize: item.style.fontSize,
-                color: '#C44B3F',
+                color: '#FFD700',
                 shadow: SHADOW
             }
         ).setOrigin(0.5);
@@ -162,12 +282,13 @@ export default class TitleScene extends Phaser.Scene {
         const confirm = Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
         const back = Phaser.Input.Keyboard.JustDown(this.escKey);
 
+        const itemCount = Math.floor(this._menuItems.length / 2);
         if (up) {
             this._selectedIndex = Math.max(0, this._selectedIndex - 1);
             this._updateCursor();
         }
         if (down) {
-            this._selectedIndex = Math.min(this._menuItems.length - 1, this._selectedIndex + 1);
+            this._selectedIndex = Math.min(itemCount - 1, this._selectedIndex + 1);
             this._updateCursor();
         }
 

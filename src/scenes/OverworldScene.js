@@ -21,26 +21,52 @@ export default class OverworldScene extends Phaser.Scene {
     }
 
     create() {
-        // Generate assets only once
+        // Generate tileset (still canvas-based for now)
         if (!this._assetsGenerated) {
             generateTileset(this);
-            const spriteKeys = [
-                ['player', PALETTES.player],
-                ['npc_maitre', PALETTES.npc_vieux_maitre],
-                ['npc_marcel', PALETTES.npc_marcel],
-                ['npc_dresseur_1', PALETTES.npc_dresseur],
-                ['npc_dresseur_2', PALETTES.npc_dresseur_2],
-                ['npc_dresseur_3', PALETTES.npc_dresseur_3],
-                ['npc_villager_1', PALETTES.npc_villager_1],
-                ['npc_villager_2', PALETTES.npc_villager_2],
-                ['npc_rival', PALETTES.npc_rival],
-                ['npc_gate', PALETTES.npc_gate],
+
+            // Use preloaded PNG spritesheets - map old keys to new Pipoya keys
+            // If PNG loaded successfully, create alias; otherwise fallback to canvas
+            const pngMapping = [
+                ['player', 'player_pipoya'],
+                ['npc_maitre', 'npc_maitre'],
+                ['npc_marcel', 'npc_marcel'],
+                ['npc_dresseur_1', 'npc_dresseur_1'],
+                ['npc_dresseur_2', 'npc_dresseur_2'],
+                ['npc_dresseur_3', 'npc_dresseur_3'],
+                ['npc_villager_1', 'npc_villager_1'],
+                ['npc_villager_2', 'npc_villager_2'],
+                ['npc_rival', 'npc_rival'],
+                ['npc_gate', 'npc_gate'],
             ];
-            for (const [key, palette] of spriteKeys) {
-                if (!this.textures.exists(key)) {
-                    generateCharacterSprite(this, key, palette);
+            const paletteMap = {
+                player: PALETTES.player,
+                npc_maitre: PALETTES.npc_vieux_maitre,
+                npc_marcel: PALETTES.npc_marcel,
+                npc_dresseur_1: PALETTES.npc_dresseur,
+                npc_dresseur_2: PALETTES.npc_dresseur_2,
+                npc_dresseur_3: PALETTES.npc_dresseur_3,
+                npc_villager_1: PALETTES.npc_villager_1,
+                npc_villager_2: PALETTES.npc_villager_2,
+                npc_rival: PALETTES.npc_rival,
+                npc_gate: PALETTES.npc_gate,
+            };
+
+            for (const [gameKey, pngKey] of pngMapping) {
+                if (this.textures.exists(pngKey) && gameKey !== pngKey) {
+                    // PNG loaded - copy texture reference under game key
+                    const srcTex = this.textures.get(pngKey);
+                    if (!this.textures.exists(gameKey)) {
+                        this.textures.addSpriteSheet(gameKey, srcTex.getSourceImage(), {
+                            frameWidth: 32, frameHeight: 32
+                        });
+                    }
+                } else if (!this.textures.exists(gameKey)) {
+                    // Fallback: canvas generation
+                    generateCharacterSprite(this, gameKey, paletteMap[gameKey]);
                 }
             }
+
             this._assetsGenerated = true;
         }
 
