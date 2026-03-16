@@ -25,7 +25,7 @@ export default class OverworldScene extends Phaser.Scene {
             // Use preloaded PNG spritesheets - map old keys to new Pipoya keys
             // If PNG loaded successfully, create alias; otherwise fallback to canvas
             const pngMapping = [
-                ['player', 'player_pipoya'],
+                // player uses PixelLab animated sprite (preloaded in BootScene)
                 ['npc_maitre', 'npc_maitre'],
                 ['npc_marcel', 'npc_marcel'],
                 ['npc_dresseur_1', 'npc_dresseur_1'],
