@@ -1,7 +1,7 @@
 import {
     DEAD_ZONE_PX, MAX_THROW_SPEED, COLORS, GAME_WIDTH, GAME_HEIGHT,
     LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, PREDICTION_DOT_RADIUS,
-    FRICTION_BASE
+    FRICTION_BASE, COCHONNET_MIN_DIST, COCHONNET_MAX_DIST
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import Ball from './Ball.js';
@@ -348,7 +348,10 @@ export default class AimingSystem {
 
         this.engine.aimingEnabled = false;
         this._clearTargetHighlights();
-        this._executeThrow(angle, power);
+        // Cochonnet uses linear power for full range control (6-10m)
+        // Boules use quadratic for precision at low power
+        const isCochonnet = this.engine.state === 'COCHONNET_THROW';
+        this._executeThrow(angle, isCochonnet ? rawPower : power);
     }
 
     _executeThrow(angle, power) {
@@ -492,28 +495,46 @@ export default class AimingSystem {
         );
         this.arrowGfx.strokePath();
 
-        // Trajectory prediction
-        const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
-        const params = PetanqueEngine.computeThrowParams(
-            angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult
-        );
+        // Landing point marker
+        const isCochonnetThrow = this.engine.state === 'COCHONNET_THROW';
+        let markerX, markerY;
 
-        // Landing point marker only — no trajectory, no rolling dots
-        // Real petanque: you choose your "donnée" (landing spot), the rest is skill
+        if (isCochonnetThrow) {
+            // Cochonnet: linear power, simple distance calc
+            const cochDist = COCHONNET_MIN_DIST + rawPower * (COCHONNET_MAX_DIST - COCHONNET_MIN_DIST);
+            const margin = 20;
+            markerX = Phaser.Math.Clamp(
+                originX + Math.cos(angle) * cochDist,
+                this.engine.bounds.x + margin, this.engine.bounds.x + this.engine.bounds.w - margin
+            );
+            markerY = Phaser.Math.Clamp(
+                originY + Math.sin(angle) * cochDist,
+                this.engine.bounds.y + margin, this.engine.bounds.y + this.engine.bounds.h - margin
+            );
+        } else {
+            const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
+            const params = PetanqueEngine.computeThrowParams(
+                angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult
+            );
+            markerX = params.targetX;
+            markerY = params.targetY;
+        }
+
+        // Show landing marker (cross) — no trajectory, the rest is skill
         this._predictionGfx.lineStyle(1.5, color, 0.5);
-        this._predictionGfx.strokeCircle(params.targetX, params.targetY, 6);
-        // Small cross inside landing marker
-        const cx = params.targetX, cy = params.targetY;
+        this._predictionGfx.strokeCircle(markerX, markerY, 6);
         this._predictionGfx.beginPath();
-        this._predictionGfx.moveTo(cx - 4, cy);
-        this._predictionGfx.lineTo(cx + 4, cy);
-        this._predictionGfx.moveTo(cx, cy - 4);
-        this._predictionGfx.lineTo(cx, cy + 4);
+        this._predictionGfx.moveTo(markerX - 4, markerY);
+        this._predictionGfx.lineTo(markerX + 4, markerY);
+        this._predictionGfx.moveTo(markerX, markerY - 4);
+        this._predictionGfx.lineTo(markerX, markerY + 4);
         this._predictionGfx.strokePath();
 
         // Power text — show raw % (what the player feels) not the quadratic value
         if (this._powerText) this._powerText.destroy();
-        const modeLabel = this.shotMode === 'tirer' ? 'TIR' : loft.label;
+        const modeLabel = isCochonnetThrow ? 'COCHONNET'
+            : this.shotMode === 'tirer' ? 'TIR'
+            : this.loftPreset?.label || 'DEMI-PORTEE';
         this._powerText = this.scene.add.text(
             originX, originY + 28,
             `${modeLabel} ${Math.round(rawPower * 100)}%`,
