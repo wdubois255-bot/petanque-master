@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import {
     DEAD_ZONE_PX, MAX_THROW_SPEED, COLORS, GAME_WIDTH, GAME_HEIGHT,
     LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, PREDICTION_DOT_RADIUS,
@@ -503,14 +504,10 @@ export default class AimingSystem {
             // Cochonnet: linear power, simple distance calc
             const cochDist = COCHONNET_MIN_DIST + rawPower * (COCHONNET_MAX_DIST - COCHONNET_MIN_DIST);
             const margin = 20;
-            markerX = Phaser.Math.Clamp(
-                originX + Math.cos(angle) * cochDist,
-                this.engine.bounds.x + margin, this.engine.bounds.x + this.engine.bounds.w - margin
-            );
-            markerY = Phaser.Math.Clamp(
-                originY + Math.sin(angle) * cochDist,
-                this.engine.bounds.y + margin, this.engine.bounds.y + this.engine.bounds.h - margin
-            );
+            const bx = this.engine.bounds.x, by = this.engine.bounds.y;
+            const bw = this.engine.bounds.w, bh = this.engine.bounds.h;
+            markerX = Math.max(bx + margin, Math.min(bx + bw - margin, originX + Math.cos(angle) * cochDist));
+            markerY = Math.max(by + margin, Math.min(by + bh - margin, originY + Math.sin(angle) * cochDist));
         } else {
             const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
             const params = PetanqueEngine.computeThrowParams(
