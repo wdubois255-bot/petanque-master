@@ -628,50 +628,63 @@ export default class PetanqueEngine {
         if (this._hitstopUntil > 0 && Date.now() < this._hitstopUntil) return;
         this._hitstopUntil = 0;
 
-        // Update all balls physics
-        let anyMoving = false;
         const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive);
 
-        for (const ball of allBodies) {
-            ball.update(delta);
-            if (ball.isMoving) anyMoving = true;
+        // Sub-stepping: fast balls need multiple small steps to avoid tunneling
+        // A ball moving at speed 10+ can skip over a target between frames
+        let maxSpeed = 0;
+        for (const b of allBodies) {
+            if (b.isMoving) {
+                const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+                if (spd > maxSpeed) maxSpeed = spd;
+            }
         }
+        // substeps = how many mini-steps we need so no ball moves more than 4px per step
+        const subSteps = maxSpeed > 4 ? Math.min(Math.ceil(maxSpeed / 4), 8) : 1;
+        const subDelta = delta / subSteps;
 
-        // Check collisions between all pairs, track carreau candidates
-        for (let i = 0; i < allBodies.length; i++) {
-            for (let j = i + 1; j < allBodies.length; j++) {
-                if (allBodies[i].isAlive && allBodies[j].isAlive) {
-                    // Record positions before collision for carreau detection
-                    const ax = allBodies[i].x, ay = allBodies[i].y;
-                    const bx = allBodies[j].x, by = allBodies[j].y;
+        let anyMoving = false;
 
-                    const collided = Ball.resolveCollision(allBodies[i], allBodies[j]);
+        for (let step = 0; step < subSteps; step++) {
+            // Update all balls physics
+            for (const ball of allBodies) {
+                ball.update(subDelta);
+                if (ball.isMoving) anyMoving = true;
+            }
 
-                    if (collided) {
-                        // SFX + particles on collision
-                        const isVsCochonnet = allBodies[i].team === 'cochonnet' || allBodies[j].team === 'cochonnet';
-                        if (isVsCochonnet) {
-                            sfxBouleCochonnet();
-                        } else {
-                            sfxBouleBoule();
+            // Check collisions between all pairs
+            for (let i = 0; i < allBodies.length; i++) {
+                for (let j = i + 1; j < allBodies.length; j++) {
+                    if (allBodies[i].isAlive && allBodies[j].isAlive) {
+                        const ax = allBodies[i].x, ay = allBodies[i].y;
+                        const bx = allBodies[j].x, by = allBodies[j].y;
+
+                        const collided = Ball.resolveCollision(allBodies[i], allBodies[j]);
+
+                        if (collided) {
+                            const isVsCochonnet = allBodies[i].team === 'cochonnet' || allBodies[j].team === 'cochonnet';
+                            if (isVsCochonnet) {
+                                sfxBouleCochonnet();
+                            } else {
+                                sfxBouleBoule();
+                            }
+                            const mx = (allBodies[i].x + allBodies[j].x) / 2;
+                            const my = (allBodies[i].y + allBodies[j].y) / 2;
+                            this._spawnCollisionSparks(mx, my);
                         }
-                        // Collision sparks
-                        const mx = (allBodies[i].x + allBodies[j].x) / 2;
-                        const my = (allBodies[i].y + allBodies[j].y) / 2;
-                        this._spawnCollisionSparks(mx, my);
-                    }
 
-                    if (collided && this.lastThrownBall && this._pendingCarreauChecks) {
-                        if (allBodies[i] === this.lastThrownBall) {
-                            this._pendingCarreauChecks.push({
-                                thrownBall: allBodies[i],
-                                targetOrigX: bx, targetOrigY: by
-                            });
-                        } else if (allBodies[j] === this.lastThrownBall) {
-                            this._pendingCarreauChecks.push({
-                                thrownBall: allBodies[j],
-                                targetOrigX: ax, targetOrigY: ay
-                            });
+                        if (collided && this.lastThrownBall && this._pendingCarreauChecks) {
+                            if (allBodies[i] === this.lastThrownBall) {
+                                this._pendingCarreauChecks.push({
+                                    thrownBall: allBodies[i],
+                                    targetOrigX: bx, targetOrigY: by
+                                });
+                            } else if (allBodies[j] === this.lastThrownBall) {
+                                this._pendingCarreauChecks.push({
+                                    thrownBall: allBodies[j],
+                                    targetOrigX: ax, targetOrigY: ay
+                                });
+                            }
                         }
                     }
                 }
