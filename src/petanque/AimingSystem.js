@@ -371,6 +371,12 @@ export default class AimingSystem {
     // --- UPDATE LOOP ---
 
     update() {
+        // Safety: hide shot buttons if it's not the player's turn
+        if (this.engine.currentTeam !== 'player' && this._combinedBtns) {
+            this._clearModeUI();
+            this._clearLoftUI();
+        }
+
         // Handle keyboard for combined mode+loft selection
         if (this._modeUI.length > 0 && this._combinedBtns) {
             if (this._keyLeft && Phaser.Input.Keyboard.JustDown(this._keyLeft)) {

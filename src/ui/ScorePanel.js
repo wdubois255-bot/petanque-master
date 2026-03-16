@@ -225,27 +225,26 @@ export default class ScorePanel {
             .map(b => ({ ball: b, dist: b.distanceTo(e.cochonnet) }))
             .sort((a, b) => a.dist - b.dist);
 
-        // Show only 1st and 2nd closest
+        // Show only 1st and 2nd closest — small discrete rank badge, no lines
         for (let i = 0; i < 2 && i < sorted.length; i++) {
-            const { ball, dist } = sorted[i];
+            const { ball } = sorted[i];
             const color = ball.team === 'player' ? 0xA8B5C2 : 0xC44B3F;
             const colorHex = ball.team === 'player' ? '#A8B5C2' : '#C44B3F';
 
-            // Thin line from ball to cochonnet
-            this._distGfx.lineStyle(1, color, i === 0 ? 0.35 : 0.2);
-            this._distGfx.beginPath();
-            this._distGfx.moveTo(ball.x, ball.y);
-            this._distGfx.lineTo(e.cochonnet.x, e.cochonnet.y);
-            this._distGfx.strokePath();
-
-            // Small rank badge next to ball
+            // Small rank number next to ball
             const label = this._rankLabels[i];
-            const meters = (dist * PIXELS_TO_METERS).toFixed(1);
-            label.setPosition(ball.x + ball.radius + 6, ball.y - 4);
-            label.setText(`${meters}m`);
+            label.setPosition(ball.x + ball.radius + 4, ball.y - 6);
+            label.setText(i === 0 ? '1' : '2');
             label.setColor(colorHex);
-            label.setAlpha(i === 0 ? 0.9 : 0.6);
+            label.setFontSize('10px');
+            label.setAlpha(i === 0 ? 0.8 : 0.5);
             label.setVisible(true);
+
+            // Tiny dot connecting to cochonnet (very subtle)
+            if (i === 0) {
+                this._distGfx.fillStyle(color, 0.25);
+                this._distGfx.fillCircle(e.cochonnet.x, e.cochonnet.y, 3);
+            }
         }
 
         // Hide unused

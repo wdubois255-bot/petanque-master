@@ -74,7 +74,7 @@ export const PREDICTION_SAMPLE_RATE = 3;
 export const PREDICTION_DOT_RADIUS = 2;
 
 // Petanque - carreau
-export const CARREAU_THRESHOLD = 16;
+export const CARREAU_THRESHOLD = 24;
 export const CARREAU_DISPLACED_MIN = 32;
 // Tir au fer : collision quasi-plastique (boule tirée s'arrête, cible éjectée)
 export const RESTITUTION_TIR = 0.15;
