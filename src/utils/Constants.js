@@ -67,7 +67,7 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 3.0
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 10.0
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
