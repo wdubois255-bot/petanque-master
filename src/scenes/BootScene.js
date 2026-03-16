@@ -15,12 +15,20 @@ export default class BootScene extends Phaser.Scene {
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
-        // Player spritesheet (PixelLab animated, 128x128: 4 cols x 4 rows of 32x32)
+        // Player spritesheet (PixelLab chibi animated, 128x128: 4 cols x 4 rows of 32x32)
         this.load.spritesheet('player', `${BASE}assets/sprites/player_animated.png`, {
             frameWidth: 32, frameHeight: 32
         });
 
-        // Character spritesheets (Pipoya 128x128: 4 cols x 4 rows of 32x32)
+        // Story characters (PixelLab chibi animated, same format)
+        const storySprites = ['bastien_animated', 'marcel_animated', 'papet_animated'];
+        for (const key of storySprites) {
+            this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
+                frameWidth: 32, frameHeight: 32
+            });
+        }
+
+        // Generic NPC spritesheets (Pipoya 128x128: 4 cols x 4 rows of 32x32)
         const spriteKeys = [
             'player_pipoya', 'npc_maitre', 'npc_marcel', 'npc_rival',
             'npc_dresseur_1', 'npc_dresseur_2', 'npc_dresseur_3',

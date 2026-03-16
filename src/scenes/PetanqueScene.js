@@ -128,16 +128,16 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _getPipoyaKey(type) {
-        if (type === 'player') return 'player_pipoya';
+        if (type === 'player') return 'player'; // PixelLab chibi player
         return 'npc_dresseur_1';
     }
 
     _getOpponentPipoyaKey() {
         const id = this.opponentId || '';
-        if (id.includes('marcel')) return 'npc_marcel';
-        if (id.includes('rival') || id.includes('bastien')) return 'npc_rival';
+        if (id.includes('marcel')) return 'marcel_animated';
+        if (id.includes('rival') || id.includes('bastien')) return 'bastien_animated';
         if (id.includes('fanny')) return 'npc_fanny';
-        if (id.includes('maitre') || id.includes('papet')) return 'npc_maitre';
+        if (id.includes('maitre') || id.includes('papet')) return 'papet_animated';
         if (id.includes('dresseur')) return 'npc_dresseur_1';
         if (id.includes('gate')) return 'npc_gate';
         return 'npc_dresseur_1';
@@ -164,8 +164,8 @@ export default class PetanqueScene extends Phaser.Scene {
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
 
-        // Opponent: on the RIGHT EDGE of terrain, at cochonnet height, watching
-        const opponentCochoX = this.terrainX + TERRAIN_WIDTH + 16;
+        // Opponent: on the RIGHT EDGE of terrain (inside), at cochonnet height, watching
+        const opponentCochoX = this.terrainX + TERRAIN_WIDTH - 20;
         const opponentCochoY = this.terrainY + 120;
         const opponentCircleX = this.throwCircleX;
         const opponentCircleY = this.throwCircleY + 16;

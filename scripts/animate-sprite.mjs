@@ -20,9 +20,17 @@ try {
   sharp = (await import('sharp')).default;
 }
 
-// PixelLab API config
-const MCP_CONFIG = JSON.parse(fs.readFileSync('.mcp.json', 'utf8'));
-const API_KEY = MCP_CONFIG.mcpServers.pixellab.headers.Authorization.replace('Bearer ', '');
+// PixelLab API config - read from env or .mcp.json (not committed)
+let API_KEY = process.env.PIXELLAB_API_KEY;
+if (!API_KEY) {
+  try {
+    const mcp = JSON.parse(fs.readFileSync('.mcp.json', 'utf8'));
+    API_KEY = mcp.mcpServers.pixellab.headers.Authorization.replace('Bearer ', '');
+  } catch {
+    console.error('Set PIXELLAB_API_KEY env var or have .mcp.json');
+    process.exit(1);
+  }
+}
 const API_BASE = 'https://api.pixellab.ai/v1';
 
 const INPUT = process.argv[2] || 'assets/sprites/generated/joueur_south_v2.png';

@@ -7,7 +7,7 @@
       "map": "village_depart",
       "tile_x": 14, "tile_y": 10,
       "facing": "down",
-      "sprite": "npc_maitre",
+      "sprite": "papet_animated",
       "view_distance": 0,
       "dialogue_default": [
         "Ah, te voila gamin ! Je t'attendais.",
@@ -35,7 +35,7 @@
       "map": "village_depart",
       "tile_x": 17, "tile_y": 10,
       "facing": "left",
-      "sprite": "npc_rival",
+      "sprite": "bastien_animated",
       "view_distance": 0,
       "dialogue_default": [
         "Tiens tiens... le fameux protege du Papet.",
@@ -266,7 +266,7 @@
       "map": "village_arene_1",
       "tile_x": 15, "tile_y": 8,
       "facing": "down",
-      "sprite": "npc_marcel",
+      "sprite": "marcel_animated",
       "view_distance": 0,
       "difficulty": "easy",
       "terrain": "terre",

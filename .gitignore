@@ -8,4 +8,4 @@ Thumbs.db
 .vite/
 screenshots/
 .mcp.json
-assets/
+/assets/

@@ -43,7 +43,9 @@
       "Bash(done)",
       "Bash(for cat:*)",
       "Bash(do echo:*)",
-      "Read(//c/Users/wdubo/OneDrive/Bureau/Projets/Projet jeux web petanque Pokémon/assets/free_packs/PIPOYA FREE RPG Character Sprites 32x32/PIPOYA FREE RPG Character Sprites 32x32/**)"
+      "Read(//c/Users/wdubo/OneDrive/Bureau/Projets/Projet jeux web petanque Pokémon/assets/free_packs/PIPOYA FREE RPG Character Sprites 32x32/PIPOYA FREE RPG Character Sprites 32x32/**)",
+      "Read(//c/Users/wdubo/.claude/projects/c--Users-wdubo-OneDrive-Bureau-Projets-Projet-jeux-web-petanque-Pok-mon/memory/**)",
+      "Bash(node -e \":*)"
     ],
     "deny": [
       "Bash(git push --force*)",
