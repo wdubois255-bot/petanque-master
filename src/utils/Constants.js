@@ -11,8 +11,9 @@ export const PLAYER_ANIM_FPS = 8;
 // Display: narrow & tall, ratio ~15:4 FIPJP
 export const TERRAIN_WIDTH = 180;
 export const TERRAIN_HEIGHT = 420;
-export const COCHONNET_MIN_DIST = 200;
-export const COCHONNET_MAX_DIST = 340;
+// 6m = 168px, 10m = 280px (terrain 420px = 15m)
+export const COCHONNET_MIN_DIST = 168;
+export const COCHONNET_MAX_DIST = 280;
 
 // Petanque - physique
 // Valeurs basees sur la physique reelle (acier sur acier COR ~0.60-0.65, bois sur acier ~0.50)
@@ -42,7 +43,7 @@ export const THROW_SHAKE_DURATION = 150;
 // Petanque - loft presets (research/25_cahier_des_charges_realisme.md)
 // - Roulette : 15% vol, 85% roulement, arc tres bas (~0.3-0.5m reel)
 // - Demi-portee : 50/50, arc moyen (1.5-2m reel)
-// - Plombee : 85% vol, 15% roulement (PAS une boule morte, roule ~10-15% de sa trajectoire)
+// - Plombee : 80% vol, 20% roulement (PAS une boule morte, roule ~20% de sa trajectoire)
 // - Tir au fer : 95% vol, arc haut (2-3m), impact violent
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
@@ -54,7 +55,7 @@ export const LOFT_DEMI_PORTEE = {
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.85, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.35
+    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.45
 };
 // Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
 // Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :

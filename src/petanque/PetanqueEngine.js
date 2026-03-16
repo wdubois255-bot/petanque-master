@@ -273,6 +273,7 @@ export default class PetanqueEngine {
         this.remaining[team]--;
         this.lastTeamPlayed = team;
         this.lastThrownBall = ball;
+        this.lastShotWasTir = shotMode === 'tirer';
         this._pendingCarreauChecks = [];
 
         // Resolve loft preset
@@ -727,6 +728,8 @@ export default class PetanqueEngine {
 
     _checkCarreau() {
         if (!this._pendingCarreauChecks || !this.lastThrownBall) return;
+        // Le carreau n'existe qu'au tir (pas au pointage)
+        if (!this.lastShotWasTir) { this._pendingCarreauChecks = []; return; }
 
         for (const check of this._pendingCarreauChecks) {
             if (!check.thrownBall.isAlive) continue;
