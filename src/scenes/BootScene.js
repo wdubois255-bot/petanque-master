@@ -43,6 +43,15 @@ export default class BootScene extends Phaser.Scene {
             });
         }
 
+        // House sprites (Schwarnhild)
+        const houseTypes = [
+            'house_small_green', 'house_small_blue', 'house_small_brown',
+            'house_large_green', 'house_large_blue', 'house_large_brown'
+        ];
+        for (const key of houseTypes) {
+            this.load.image(key, `${BASE}assets/sprites/${key}.png`);
+        }
+
         // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {
             fontFamily: 'monospace',

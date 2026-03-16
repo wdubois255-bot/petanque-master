@@ -46,12 +46,11 @@ function createVillageMap() {
         buildings[y][x] = tile;
     }
 
-    // House 1 (joueur) - top left
-    placeHouse(buildings, collisions, above, 3, 3, 5, 4);
-    // House 2 - top right
-    placeHouse(buildings, collisions, above, 20, 3, 5, 4);
-    // House 3 - left of road
-    placeHouse(buildings, collisions, above, 3, 9, 4, 3);
+    // Houses (sprite-based)
+    const houses = [];
+    placeHouse(buildings, collisions, above, 3, 3, 5, 4, houses, 'house_large_green');
+    placeHouse(buildings, collisions, above, 20, 3, 5, 4, houses, 'house_large_blue');
+    placeHouse(buildings, collisions, above, 3, 9, 4, 3, houses, 'house_small_brown');
 
     // Terrain de petanque (bas droite)
     for (let y = 18; y < 24; y++) {
@@ -97,7 +96,7 @@ function createVillageMap() {
     collisions[H - 1][14] = 0;
     collisions[H - 1][15] = 0;
 
-    return { ground, buildings, collisions, above, width: W, height: H };
+    return { ground, buildings, collisions, above, houses, width: W, height: H };
 }
 
 // ===== ROUTE 1: 20x60 (long vertical road) =====
@@ -248,11 +247,12 @@ function createVillageArene1Map() {
     buildings[11][14] = -1; collisions[11][14] = 0;
     buildings[11][15] = -1; collisions[11][15] = 0;
 
-    // Houses
-    placeHouse(buildings, collisions, above, 2, 3, 4, 3);
-    placeHouse(buildings, collisions, above, 24, 3, 4, 3);
-    placeHouse(buildings, collisions, above, 2, 18, 5, 4);
-    placeHouse(buildings, collisions, above, 23, 18, 5, 4);
+    // Houses (sprite-based)
+    const houses = [];
+    placeHouse(buildings, collisions, above, 2, 3, 4, 3, houses, 'house_small_green');
+    placeHouse(buildings, collisions, above, 24, 3, 4, 3, houses, 'house_small_blue');
+    placeHouse(buildings, collisions, above, 2, 18, 5, 4, houses, 'house_large_brown');
+    placeHouse(buildings, collisions, above, 23, 18, 5, 4, houses, 'house_large_green');
 
     // Trees
     const trees = [
@@ -273,7 +273,7 @@ function createVillageArene1Map() {
     collisions[H - 1][14] = 0;
     collisions[H - 1][15] = 0;
 
-    return { ground, buildings, collisions, above, width: W, height: H };
+    return { ground, buildings, collisions, above, houses, width: W, height: H };
 }
 
 // ===== ROUTE 2: 35x20 (horizontal road) =====
@@ -377,11 +377,12 @@ function createVillageArene2Map() {
     buildings[8][12] = -1; collisions[8][12] = 0;
     buildings[8][13] = -1; collisions[8][13] = 0;
 
-    // Houses
-    placeHouse(buildings, collisions, above, 2, 10, 4, 3);
-    placeHouse(buildings, collisions, above, 19, 10, 4, 3);
-    placeHouse(buildings, collisions, above, 2, 17, 4, 3);
-    placeHouse(buildings, collisions, above, 19, 17, 4, 3);
+    // Houses (sprite-based)
+    const houses = [];
+    placeHouse(buildings, collisions, above, 2, 10, 4, 3, houses, 'house_small_blue');
+    placeHouse(buildings, collisions, above, 19, 10, 4, 3, houses, 'house_small_green');
+    placeHouse(buildings, collisions, above, 2, 17, 4, 3, houses, 'house_small_brown');
+    placeHouse(buildings, collisions, above, 19, 17, 4, 3, houses, 'house_small_blue');
 
     // Trees
     const trees = [
@@ -408,7 +409,7 @@ function createVillageArene2Map() {
     collisions[H - 1][12] = 0;
     collisions[H - 1][13] = 0;
 
-    return { ground, buildings, collisions, above, width: W, height: H };
+    return { ground, buildings, collisions, above, houses, width: W, height: H };
 }
 
 // ===== ROUTE 3: 35x20 (horizontal road) =====
@@ -504,11 +505,12 @@ function createVillageArene3Map() {
     buildings[9][12] = -1; collisions[9][12] = 0;
     buildings[9][13] = -1; collisions[9][13] = 0;
 
-    // Houses
-    placeHouse(buildings, collisions, above, 1, 10, 4, 3);
-    placeHouse(buildings, collisions, above, 20, 10, 4, 3);
-    placeHouse(buildings, collisions, above, 1, 17, 5, 4);
-    placeHouse(buildings, collisions, above, 19, 17, 5, 4);
+    // Houses (sprite-based)
+    const houses = [];
+    placeHouse(buildings, collisions, above, 1, 10, 4, 3, houses, 'house_small_green');
+    placeHouse(buildings, collisions, above, 20, 10, 4, 3, houses, 'house_small_brown');
+    placeHouse(buildings, collisions, above, 1, 17, 5, 4, houses, 'house_large_blue');
+    placeHouse(buildings, collisions, above, 19, 17, 5, 4, houses, 'house_large_brown');
 
     // Trees
     const trees = [
@@ -526,7 +528,7 @@ function createVillageArene3Map() {
     collisions[H - 1][12] = 0;
     collisions[H - 1][13] = 0;
 
-    return { ground, buildings, collisions, above, width: W, height: H };
+    return { ground, buildings, collisions, above, houses, width: W, height: H };
 }
 
 // ===== ARENE FINALE: 30x25 =====
@@ -604,21 +606,30 @@ function emptyMap(W, H) {
     return { ground, buildings, collisions, above };
 }
 
-function placeHouse(buildings, collisions, above, startX, startY, w, h) {
-    for (let x = startX; x < startX + w; x++) {
-        above[startY][x] = TILES.HOUSE_ROOF;
-        collisions[startY][x] = 1;
-    }
-    for (let y = startY + 1; y < startY + h; y++) {
+// House sprite types for visual placement
+const HOUSE_SPRITES = [
+    'house_small_green', 'house_small_blue', 'house_small_brown',
+    'house_large_green', 'house_large_blue', 'house_large_brown'
+];
+
+function placeHouse(buildings, collisions, above, startX, startY, w, h, houseList, spriteKey) {
+    // Only set collisions (no ugly tile visuals anymore)
+    for (let y = startY; y < startY + h; y++) {
         for (let x = startX; x < startX + w; x++) {
-            buildings[y][x] = TILES.HOUSE_FRONT;
             collisions[y][x] = 1;
         }
     }
-    const doorX = startX + Math.floor(w / 2);
-    const doorY = startY + h - 1;
-    buildings[doorY][doorX] = TILES.DOOR;
-    collisions[doorY][doorX] = 1;
+    // Leave door tile walkable? No - house is a sprite, player can't enter
+    // Record house position for sprite placement
+    if (houseList) {
+        houseList.push({
+            spriteKey: spriteKey || HOUSE_SPRITES[houseList.length % 3],
+            tileX: startX,
+            tileY: startY,
+            tileW: w,
+            tileH: h
+        });
+    }
 }
 
 function placeTrees(positions, buildings, collisions, above) {
@@ -710,6 +721,11 @@ export default class MapManager {
         if (this.layers.ground) this.layers.ground.destroy();
         if (this.layers.buildings) this.layers.buildings.destroy();
         if (this.layers.above) this.layers.above.destroy();
+        // Destroy previous house sprites
+        if (this.houseSprites) {
+            for (const s of this.houseSprites) s.destroy();
+        }
+        this.houseSprites = [];
 
         const mapData = MAPS[mapName]();
         this.currentMap = mapData;
@@ -738,6 +754,20 @@ export default class MapManager {
         });
         const aTileset = aboveMap.addTilesetImage(TILESET_NAME, TILESET_NAME, TILE_SIZE, TILE_SIZE);
         this.layers.above = aboveMap.createLayer(0, aTileset).setDepth(20);
+
+        // Place house sprites
+        if (mapData.houses) {
+            for (const h of mapData.houses) {
+                if (!this.scene.textures.exists(h.spriteKey)) continue;
+                // Position: bottom-center of the collision footprint
+                const footprintCenterX = (h.tileX + h.tileW / 2) * TILE_SIZE;
+                const footprintBottomY = (h.tileY + h.tileH) * TILE_SIZE;
+                const sprite = this.scene.add.image(footprintCenterX, footprintBottomY, h.spriteKey);
+                sprite.setOrigin(0.5, 1); // anchor at bottom-center
+                sprite.setDepth(8); // between buildings (5) and above (20)
+                this.houseSprites.push(sprite);
+            }
+        }
 
         return mapData;
     }
