@@ -57,13 +57,14 @@ export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
     landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15
 };
-// Tir au fer : la boule vole 85% de la distance puis frappe a haute vitesse
-// landingFactor eleve = atterrit tres pres de la cible
-// rollEfficiency = vitesse d'impact (si rate, boule file loin = risque reel du tir)
+// Tir au fer : la boule vole 95% de la distance puis frappe a haute vitesse
+// landingFactor tres eleve = atterrit quasi sur la cible (tir au fer = frappe directe)
+// rollEfficiency eleve = vitesse d'impact forte malgre courte distance de roulement
 // maxDist du tir = 0.95 * TERRAIN_HEIGHT dans computeThrowParams
+// Collision quasi-plastique (RESTITUTION_TIR=0.15) : boule tiree s'arrete, cible ejectee
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.85, arcHeight: -45, flyDurationMult: 0.4, rollEfficiency: 3.0
+    landingFactor: 0.95, arcHeight: -45, flyDurationMult: 0.4, rollEfficiency: 8.0
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
@@ -75,6 +76,8 @@ export const PREDICTION_DOT_RADIUS = 2;
 // Petanque - carreau
 export const CARREAU_THRESHOLD = 16;
 export const CARREAU_DISPLACED_MIN = 32;
+// Tir au fer : collision quasi-plastique (boule tirée s'arrête, cible éjectée)
+export const RESTITUTION_TIR = 0.15;
 
 // Petanque - lisibilite
 export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)

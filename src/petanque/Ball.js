@@ -1,6 +1,6 @@
 import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
-    RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
+    RESTITUTION_COCHONNET, RESTITUTION_TIR, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE
 } from '../utils/Constants.js';
 
@@ -19,6 +19,7 @@ export default class Ball {
         this.isMoving = false;
         this.frictionMult = options.frictionMult || 1.0;
         this.id = options.id || `ball_${Date.now()}_${Math.random()}`;
+        this.isTirShot = false; // Set true when this ball is thrown as a tir
 
         this._squashTimer = 0;
 
@@ -207,7 +208,9 @@ export default class Ball {
         if (dvn <= 0) return false;
 
         const isBouleVsCochonnet = Math.abs(a.mass - b.mass) > 200;
-        const restitution = isBouleVsCochonnet ? RESTITUTION_COCHONNET : RESTITUTION_BOULE;
+        const isTir = a.isTirShot || b.isTirShot;
+        const restitution = isBouleVsCochonnet ? RESTITUTION_COCHONNET
+            : isTir ? RESTITUTION_TIR : RESTITUTION_BOULE;
 
         const totalMass = a.mass + b.mass;
         const impulse = (1 + restitution) * dvn / totalMass;
@@ -216,6 +219,14 @@ export default class Ball {
         a.vy -= impulse * b.mass * ny;
         b.vx += impulse * a.mass * nx;
         b.vy += impulse * a.mass * ny;
+
+        // Tir au fer: the shooting ball loses most energy (stops near impact)
+        if (isTir) {
+            const tirBall = a.isTirShot ? a : b;
+            tirBall.vx *= 0.1;
+            tirBall.vy *= 0.1;
+            tirBall.isTirShot = false; // Only first collision gets tir treatment
+        }
 
         const overlap = minDist - dist;
         const sepX = (overlap / 2 + 0.5) * nx;
