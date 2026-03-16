@@ -1,6 +1,10 @@
 import { TILE_SIZE } from '../utils/Constants.js';
 import { TILES } from './TilesetGenerator.js';
 
+// Tileset constants
+const TILESET_NAME = 'basechip_combined';
+const TILESET_COLS = 8;
+
 // ===== VILLAGE DE DEPART: 30x30 =====
 function createVillageMap() {
     const W = 30, H = 30;
@@ -22,13 +26,24 @@ function createVillageMap() {
         ground[y][15] = TILES.PATH;
     }
 
+    // Some grass variety
+    const darkGrassSpots = [
+        [4, 5], [7, 8], [18, 4], [22, 8], [3, 18], [8, 22],
+        [20, 19], [25, 23], [10, 25], [16, 27]
+    ];
+    for (const [x, y] of darkGrassSpots) {
+        ground[y][x] = TILES.GRASS_DARK;
+    }
+
     // Flowers along paths
     const flowerSpots = [
-        [12, 13], [17, 13], [12, 16], [17, 16],
-        [6, 13], [8, 16], [20, 13], [22, 16]
+        [12, 13, TILES.FLOWER], [17, 13, TILES.FLOWER_YELLOW],
+        [12, 16, TILES.FLOWER_BLUE], [17, 16, TILES.FLOWER],
+        [6, 13, TILES.FLOWER_WHITE], [8, 16, TILES.FLOWER_YELLOW],
+        [20, 13, TILES.FLOWER], [22, 16, TILES.FLOWER_BLUE]
     ];
-    for (const [x, y] of flowerSpots) {
-        ground[y][x] = TILES.FLOWER;
+    for (const [x, y, tile] of flowerSpots) {
+        buildings[y][x] = tile;
     }
 
     // House 1 (joueur) - top left
@@ -46,8 +61,8 @@ function createVillageMap() {
     }
     // Fence around terrain
     for (let x = 18; x < 28; x++) {
-        buildings[17][x] = TILES.FENCE; collisions[17][x] = 1;
-        buildings[24][x] = TILES.FENCE; collisions[24][x] = 1;
+        buildings[17][x] = TILES.FENCE_H; collisions[17][x] = 1;
+        buildings[24][x] = TILES.FENCE_H; collisions[24][x] = 1;
     }
     for (let y = 17; y < 25; y++) {
         buildings[y][18] = TILES.FENCE; collisions[y][18] = 1;
@@ -71,6 +86,10 @@ function createVillageMap() {
             collisions[y][x] = 1;
         }
     }
+
+    // Small rocks for decoration
+    buildings[7][18] = TILES.ROCK_SMALL;
+    buildings[20][8] = TILES.ROCK_SMALL;
 
     // World borders
     setBorders(collisions, W, H);
@@ -100,12 +119,24 @@ function createRoute1Map() {
         ground[35][x] = TILES.PATH;
     }
 
+    // Grass variety along the route
+    for (let y = 0; y < H; y += 3) {
+        for (let x = 0; x < W; x += 4) {
+            if (ground[y][x] === TILES.GRASS && Math.abs(x - 9.5) > 2) {
+                ground[y][x] = TILES.GRASS_DARK;
+            }
+        }
+    }
+
     // Flowers
     const flowers = [
-        [3, 5], [16, 8], [4, 18], [15, 25], [6, 38], [14, 48], [3, 52], [17, 55]
+        [3, 5, TILES.FLOWER], [16, 8, TILES.FLOWER_YELLOW],
+        [4, 18, TILES.FLOWER_BLUE], [15, 25, TILES.FLOWER],
+        [6, 38, TILES.FLOWER_WHITE], [14, 48, TILES.FLOWER_YELLOW],
+        [3, 52, TILES.FLOWER], [17, 55, TILES.FLOWER_BLUE]
     ];
-    for (const [x, y] of flowers) {
-        ground[y][x] = TILES.FLOWER;
+    for (const [x, y, tile] of flowers) {
+        buildings[y][x] = tile;
     }
 
     // Trees along the route
@@ -128,7 +159,7 @@ function createRoute1Map() {
 
     // Small rest area with bench-like fences
     for (let x = 12; x < 16; x++) {
-        buildings[20][x] = TILES.FENCE;
+        buildings[20][x] = TILES.FENCE_H;
         collisions[20][x] = 1;
     }
 
@@ -145,6 +176,10 @@ function createRoute1Map() {
     ground[40][10] = TILES.PATH;
     ground[41][9] = TILES.PATH;
     ground[41][10] = TILES.PATH;
+
+    // Rocks near stream
+    buildings[39][4] = TILES.ROCK_LARGE;
+    buildings[42][15] = TILES.ROCK_SMALL;
 
     // World borders
     setBorders(collisions, W, H);
@@ -173,14 +208,24 @@ function createVillageArene1Map() {
         ground[y][15] = TILES.PATH;
     }
 
+    // Cobblestone plaza around arena entrance
+    for (let y = 12; y < 17; y++) {
+        for (let x = 12; x < 18; x++) {
+            ground[y][x] = TILES.COBBLESTONE;
+        }
+    }
+
     // Flowers
     const flowers = [
-        [12, 13], [17, 13], [12, 16], [17, 16],
-        [5, 13], [8, 16], [20, 13], [24, 16],
-        [10, 7], [19, 7], [10, 22], [19, 22]
+        [12, 13, TILES.FLOWER], [17, 13, TILES.FLOWER_YELLOW],
+        [12, 16, TILES.FLOWER_BLUE], [17, 16, TILES.FLOWER],
+        [5, 13, TILES.FLOWER_WHITE], [8, 16, TILES.FLOWER_YELLOW],
+        [20, 13, TILES.FLOWER], [24, 16, TILES.FLOWER_BLUE],
+        [10, 7, TILES.FLOWER], [19, 7, TILES.FLOWER_YELLOW],
+        [10, 22, TILES.FLOWER_WHITE], [19, 22, TILES.FLOWER]
     ];
-    for (const [x, y] of flowers) {
-        ground[y][x] = TILES.FLOWER;
+    for (const [x, y, tile] of flowers) {
+        buildings[y][x] = tile;
     }
 
     // === ARENE DE MARCEL (centre-haut) ===
@@ -192,8 +237,8 @@ function createVillageArene1Map() {
     }
     // Fence around arene
     for (let x = 7; x < 23; x++) {
-        buildings[2][x] = TILES.FENCE; collisions[2][x] = 1;
-        buildings[11][x] = TILES.FENCE; collisions[11][x] = 1;
+        buildings[2][x] = TILES.FENCE_H; collisions[2][x] = 1;
+        buildings[11][x] = TILES.FENCE_H; collisions[11][x] = 1;
     }
     for (let y = 2; y < 12; y++) {
         buildings[y][7] = TILES.FENCE; collisions[y][7] = 1;
@@ -225,6 +270,319 @@ function createVillageArene1Map() {
     collisions[0][14] = 0;
     collisions[0][15] = 0;
     // South exit (to route_2 - blocked by gate until badge_marcel)
+    collisions[H - 1][14] = 0;
+    collisions[H - 1][15] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ROUTE 2: 35x20 (horizontal road) =====
+function createRoute2Map() {
+    const W = 35, H = 20;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Horizontal path (y=9-10)
+    for (let x = 0; x < W; x++) {
+        ground[9][x] = TILES.PATH;
+        ground[10][x] = TILES.PATH;
+    }
+
+    // Some sand patches
+    for (let y = 6; y < 8; y++) {
+        for (let x = 20; x < 26; x++) {
+            ground[y][x] = TILES.SAND;
+        }
+    }
+
+    // Grass variety
+    for (let y = 0; y < H; y += 3) {
+        for (let x = 2; x < W; x += 5) {
+            if (ground[y][x] === TILES.GRASS) ground[y][x] = TILES.GRASS_DARK;
+        }
+    }
+
+    // Flowers
+    const flowers = [
+        [5, 7, TILES.FLOWER], [12, 12, TILES.FLOWER_YELLOW],
+        [25, 7, TILES.FLOWER_BLUE], [30, 12, TILES.FLOWER]
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (x < W && y < H) buildings[y][x] = tile;
+    }
+
+    // Trees
+    const trees = [
+        [0, 0], [5, 0], [10, 0], [15, 0], [20, 0], [25, 0], [30, 0], [34, 0],
+        [0, 19], [5, 19], [10, 19], [15, 19], [20, 19], [25, 19], [30, 19], [34, 19],
+        [3, 4], [8, 14], [18, 5], [28, 14],
+    ];
+    placeTrees(trees, buildings, collisions, above);
+
+    // Water (small pond)
+    for (let y = 13; y < 16; y++) {
+        for (let x = 14; x < 18; x++) {
+            ground[y][x] = TILES.WATER;
+            collisions[y][x] = 1;
+        }
+    }
+
+    // Borders
+    setBorders(collisions, W, H);
+    // West entrance (from village_arene_1) - path at y=9-10
+    collisions[9][0] = 0;
+    collisions[10][0] = 0;
+    // East exit (to village_arene_2) - path at y=9-10
+    collisions[9][W - 1] = 0;
+    collisions[10][W - 1] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== VILLAGE ARENE 2: 25x25 =====
+function createVillageArene2Map() {
+    const W = 25, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Main paths
+    for (let x = 0; x < W; x++) {
+        ground[12][x] = TILES.PATH;
+        ground[13][x] = TILES.PATH;
+    }
+    for (let y = 0; y < H; y++) {
+        ground[y][12] = TILES.PATH;
+        ground[y][13] = TILES.PATH;
+    }
+
+    // Cobblestone central plaza
+    for (let y = 10; y < 15; y++) {
+        for (let x = 10; x < 16; x++) {
+            ground[y][x] = TILES.COBBLESTONE;
+        }
+    }
+
+    // Arena terrain (top area)
+    for (let y = 2; y < 8; y++) {
+        for (let x = 6; x < 20; x++) {
+            ground[y][x] = TILES.PETANQUE_TERRAIN;
+        }
+    }
+    for (let x = 5; x < 21; x++) {
+        buildings[1][x] = TILES.FENCE_H; collisions[1][x] = 1;
+        buildings[8][x] = TILES.FENCE_H; collisions[8][x] = 1;
+    }
+    for (let y = 1; y < 9; y++) {
+        buildings[y][5] = TILES.FENCE; collisions[y][5] = 1;
+        buildings[y][20] = TILES.FENCE; collisions[y][20] = 1;
+    }
+    buildings[8][12] = -1; collisions[8][12] = 0;
+    buildings[8][13] = -1; collisions[8][13] = 0;
+
+    // Houses
+    placeHouse(buildings, collisions, above, 2, 10, 4, 3);
+    placeHouse(buildings, collisions, above, 19, 10, 4, 3);
+    placeHouse(buildings, collisions, above, 2, 17, 4, 3);
+    placeHouse(buildings, collisions, above, 19, 17, 4, 3);
+
+    // Trees
+    const trees = [
+        [0, 0], [1, 0], [23, 0], [24, 0],
+        [0, 5], [0, 10], [0, 15], [0, 20], [0, 24],
+        [24, 5], [24, 10], [24, 15], [24, 20], [24, 24],
+        [8, 20], [16, 20],
+    ];
+    placeTrees(trees, buildings, collisions, above);
+
+    // Flowers
+    const flowers = [
+        [10, 11, TILES.FLOWER], [15, 11, TILES.FLOWER_BLUE],
+        [10, 14, TILES.FLOWER_YELLOW], [15, 14, TILES.FLOWER],
+    ];
+    for (const [x, y, tile] of flowers) {
+        buildings[y][x] = tile;
+    }
+
+    // Borders
+    setBorders(collisions, W, H);
+    collisions[12][0] = 0;
+    collisions[13][0] = 0;
+    collisions[H - 1][12] = 0;
+    collisions[H - 1][13] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ROUTE 3: 35x20 (horizontal road) =====
+function createRoute3Map() {
+    const W = 35, H = 20;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Horizontal path
+    for (let x = 0; x < W; x++) {
+        ground[9][x] = TILES.PATH;
+        ground[10][x] = TILES.PATH;
+    }
+
+    // Sandy area
+    for (let y = 3; y < 7; y++) {
+        for (let x = 10; x < 18; x++) {
+            ground[y][x] = TILES.SAND;
+        }
+    }
+
+    // Grass variety
+    for (let y = 1; y < H; y += 4) {
+        for (let x = 1; x < W; x += 3) {
+            if (ground[y][x] === TILES.GRASS) ground[y][x] = TILES.GRASS_DARK;
+        }
+    }
+
+    // Trees
+    const trees = [
+        [0, 0], [4, 0], [8, 0], [20, 0], [26, 0], [34, 0],
+        [0, 19], [6, 19], [14, 19], [22, 19], [28, 19], [34, 19],
+        [2, 6], [32, 14], [15, 15],
+    ];
+    placeTrees(trees, buildings, collisions, above);
+
+    // Water stream crossing
+    for (let y = 0; y < H; y++) {
+        if (y === 9 || y === 10) continue;
+        ground[y][25] = TILES.WATER;
+        collisions[y][25] = 1;
+    }
+
+    // Flowers
+    buildings[7][5] = TILES.FLOWER;
+    buildings[13][30] = TILES.FLOWER_YELLOW;
+
+    // Borders
+    setBorders(collisions, W, H);
+    collisions[9][0] = 0;
+    collisions[10][0] = 0;
+    collisions[9][W - 1] = 0;
+    collisions[10][W - 1] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== VILLAGE ARENE 3: 25x25 =====
+function createVillageArene3Map() {
+    const W = 25, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Main paths
+    for (let x = 0; x < W; x++) {
+        ground[12][x] = TILES.PATH;
+        ground[13][x] = TILES.PATH;
+    }
+    for (let y = 0; y < H; y++) {
+        ground[y][12] = TILES.PATH;
+        ground[y][13] = TILES.PATH;
+    }
+
+    // Stone slab plaza
+    for (let y = 10; y < 15; y++) {
+        for (let x = 10; x < 16; x++) {
+            ground[y][x] = TILES.STONE_SLAB;
+        }
+    }
+
+    // Arena terrain
+    for (let y = 2; y < 9; y++) {
+        for (let x = 5; x < 21; x++) {
+            ground[y][x] = TILES.PETANQUE_TERRAIN;
+        }
+    }
+    for (let x = 4; x < 22; x++) {
+        buildings[1][x] = TILES.FENCE_H; collisions[1][x] = 1;
+        buildings[9][x] = TILES.FENCE_H; collisions[9][x] = 1;
+    }
+    for (let y = 1; y < 10; y++) {
+        buildings[y][4] = TILES.FENCE; collisions[y][4] = 1;
+        buildings[y][21] = TILES.FENCE; collisions[y][21] = 1;
+    }
+    buildings[9][12] = -1; collisions[9][12] = 0;
+    buildings[9][13] = -1; collisions[9][13] = 0;
+
+    // Houses
+    placeHouse(buildings, collisions, above, 1, 10, 4, 3);
+    placeHouse(buildings, collisions, above, 20, 10, 4, 3);
+    placeHouse(buildings, collisions, above, 1, 17, 5, 4);
+    placeHouse(buildings, collisions, above, 19, 17, 5, 4);
+
+    // Trees
+    const trees = [
+        [0, 0], [1, 0], [2, 0], [22, 0], [23, 0], [24, 0],
+        [0, 5], [0, 15], [0, 20], [0, 24],
+        [24, 5], [24, 15], [24, 20], [24, 24],
+        [7, 22], [17, 22],
+    ];
+    placeTrees(trees, buildings, collisions, above);
+
+    // Borders
+    setBorders(collisions, W, H);
+    collisions[12][0] = 0;
+    collisions[13][0] = 0;
+    collisions[H - 1][12] = 0;
+    collisions[H - 1][13] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ARENE FINALE: 30x25 =====
+function createAreneFinaleMap() {
+    const W = 30, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Grand stone slab plaza
+    for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+            ground[y][x] = TILES.COBBLESTONE;
+        }
+    }
+
+    // Central petanque arena
+    for (let y = 4; y < 18; y++) {
+        for (let x = 5; x < 25; x++) {
+            ground[y][x] = TILES.PETANQUE_TERRAIN;
+        }
+    }
+
+    // Fence around grand arena
+    for (let x = 4; x < 26; x++) {
+        buildings[3][x] = TILES.FENCE_H; collisions[3][x] = 1;
+        buildings[18][x] = TILES.FENCE_H; collisions[18][x] = 1;
+    }
+    for (let y = 3; y < 19; y++) {
+        buildings[y][4] = TILES.FENCE; collisions[y][4] = 1;
+        buildings[y][25] = TILES.FENCE; collisions[y][25] = 1;
+    }
+    // Entrance
+    buildings[18][14] = -1; collisions[18][14] = 0;
+    buildings[18][15] = -1; collisions[18][15] = 0;
+
+    // Path to entrance
+    for (let y = 19; y < H; y++) {
+        ground[y][14] = TILES.PATH;
+        ground[y][15] = TILES.PATH;
+    }
+
+    // Decorative trees in corners
+    const trees = [
+        [0, 0], [1, 0], [28, 0], [29, 0],
+        [0, 24], [1, 24], [28, 24], [29, 24],
+        [2, 20], [27, 20],
+    ];
+    placeTrees(trees, buildings, collisions, above);
+
+    // Flowers along entrance
+    buildings[20][12] = TILES.FLOWER;
+    buildings[20][17] = TILES.FLOWER_YELLOW;
+    buildings[22][12] = TILES.FLOWER_BLUE;
+    buildings[22][17] = TILES.FLOWER;
+
+    // Borders
+    setBorders(collisions, W, H);
     collisions[H - 1][14] = 0;
     collisions[H - 1][15] = 0;
 
@@ -289,7 +647,12 @@ function setBorders(collisions, W, H) {
 export const MAPS = {
     village_depart: createVillageMap,
     route_1: createRoute1Map,
-    village_arene_1: createVillageArene1Map
+    village_arene_1: createVillageArene1Map,
+    route_2: createRoute2Map,
+    village_arene_2: createVillageArene2Map,
+    route_3: createRoute3Map,
+    village_arene_3: createVillageArene3Map,
+    arene_finale: createAreneFinaleMap,
 };
 
 // ===== MAP EXITS =====
@@ -303,7 +666,34 @@ const MAP_EXITS = {
     ],
     village_arene_1: [
         { tileX: [14, 15], tileY: 0, target: { map: 'route_1', spawnX: 9, spawnY: 58 } },
-        { tileX: [14, 15], tileY: 29, target: null } // Blocked until badge_marcel
+        { tileX: [14, 15], tileY: 29, target: { map: 'route_2', spawnX: 1, spawnY: 9 } }
+    ],
+    route_2: [
+        // West entrance (from village_arene_1) - left edge, path at y=9-10
+        { tileX: 0, tileY: [9, 10], target: { map: 'village_arene_1', spawnX: 14, spawnY: 28 } },
+        // East exit (to village_arene_2) - right edge
+        { tileX: 34, tileY: [9, 10], target: { map: 'village_arene_2', spawnX: 1, spawnY: 12 } }
+    ],
+    village_arene_2: [
+        // West entrance (from route_2)
+        { tileX: 0, tileY: [12, 13], target: { map: 'route_2', spawnX: 33, spawnY: 9 } },
+        // South exit (to route_3)
+        { tileX: [12, 13], tileY: 24, target: { map: 'route_3', spawnX: 1, spawnY: 9 } }
+    ],
+    route_3: [
+        // West entrance (from village_arene_2)
+        { tileX: 0, tileY: [9, 10], target: { map: 'village_arene_2', spawnX: 12, spawnY: 23 } },
+        // East exit (to village_arene_3)
+        { tileX: 34, tileY: [9, 10], target: { map: 'village_arene_3', spawnX: 1, spawnY: 12 } }
+    ],
+    village_arene_3: [
+        // West entrance (from route_3)
+        { tileX: 0, tileY: [12, 13], target: { map: 'route_3', spawnX: 33, spawnY: 9 } },
+        // South exit (to arene_finale)
+        { tileX: [12, 13], tileY: 24, target: { map: 'arene_finale', spawnX: 14, spawnY: 23 } }
+    ],
+    arene_finale: [
+        { tileX: [14, 15], tileY: 24, target: { map: 'village_arene_3', spawnX: 12, spawnY: 23 } }
     ]
 };
 
@@ -330,7 +720,7 @@ export default class MapManager {
             tileWidth: TILE_SIZE,
             tileHeight: TILE_SIZE
         });
-        const tileset = map.addTilesetImage('village_tileset', 'village_tileset', TILE_SIZE, TILE_SIZE);
+        const tileset = map.addTilesetImage(TILESET_NAME, TILESET_NAME, TILE_SIZE, TILE_SIZE);
         this.layers.ground = map.createLayer(0, tileset);
 
         const buildingsMap = this.scene.make.tilemap({
@@ -338,7 +728,7 @@ export default class MapManager {
             tileWidth: TILE_SIZE,
             tileHeight: TILE_SIZE
         });
-        const bTileset = buildingsMap.addTilesetImage('village_tileset', 'village_tileset', TILE_SIZE, TILE_SIZE);
+        const bTileset = buildingsMap.addTilesetImage(TILESET_NAME, TILESET_NAME, TILE_SIZE, TILE_SIZE);
         this.layers.buildings = buildingsMap.createLayer(0, bTileset).setDepth(5);
 
         const aboveMap = this.scene.make.tilemap({
@@ -346,7 +736,7 @@ export default class MapManager {
             tileWidth: TILE_SIZE,
             tileHeight: TILE_SIZE
         });
-        const aTileset = aboveMap.addTilesetImage('village_tileset', 'village_tileset', TILE_SIZE, TILE_SIZE);
+        const aTileset = aboveMap.addTilesetImage(TILESET_NAME, TILESET_NAME, TILE_SIZE, TILE_SIZE);
         this.layers.above = aboveMap.createLayer(0, aTileset).setDepth(20);
 
         return mapData;
@@ -376,7 +766,10 @@ export default class MapManager {
             const matchX = Array.isArray(exit.tileX)
                 ? exit.tileX.includes(tileX)
                 : exit.tileX === tileX;
-            if (matchX && tileY === exit.tileY) {
+            const matchY = Array.isArray(exit.tileY)
+                ? exit.tileY.includes(tileY)
+                : exit.tileY === tileY;
+            if (matchX && matchY) {
                 return exit.target;
             }
         }

@@ -12,6 +12,9 @@ export default class BootScene extends Phaser.Scene {
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
 
+        // Tileset (Pipoya basechip + water tiles combined)
+        this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
+
         // Character spritesheets (Pipoya 128x128: 4 cols x 4 rows of 32x32)
         const spriteKeys = [
             'player_pipoya', 'npc_maitre', 'npc_marcel', 'npc_rival',

@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, CAMERA_LERP } from '../utils/Constants.js';
-import { generateTileset } from '../world/TilesetGenerator.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import MapManager from '../world/MapManager.js';
 import NPCManager from '../world/NPCManager.js';
@@ -21,10 +20,8 @@ export default class OverworldScene extends Phaser.Scene {
     }
 
     create() {
-        // Generate tileset (still canvas-based for now)
+        // Map sprite keys for compatibility
         if (!this._assetsGenerated) {
-            generateTileset(this);
-
             // Use preloaded PNG spritesheets - map old keys to new Pipoya keys
             // If PNG loaded successfully, create alias; otherwise fallback to canvas
             const pngMapping = [
