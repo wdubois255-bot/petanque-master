@@ -277,7 +277,6 @@ export default class PetanqueEngine {
 
         // Resolve loft preset
         const isTir = shotMode === 'tirer';
-        ball.isTirShot = isTir; // Mark for quasi-plastic collision
         const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
 
         const { targetX, targetY, rollVx, rollVy } =

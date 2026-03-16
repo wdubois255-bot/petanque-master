@@ -15,10 +15,12 @@ export const COCHONNET_MIN_DIST = 200;
 export const COCHONNET_MAX_DIST = 340;
 
 // Petanque - physique
+// Valeurs basees sur la physique reelle (acier sur acier COR ~0.60-0.65, bois sur acier ~0.50)
+// Sources: NIST, Engineering Toolbox, Rolling Resistance Wikipedia
 export const FRICTION_BASE = 0.15;
 export const SPEED_THRESHOLD = 0.3;
-export const RESTITUTION_BOULE = 0.85;
-export const RESTITUTION_COCHONNET = 0.7;
+export const RESTITUTION_BOULE = 0.62;     // Acier sur acier (reel: 0.60-0.65)
+export const RESTITUTION_COCHONNET = 0.50; // Bois/synthétique sur acier
 export const MAX_THROW_SPEED = 12;
 export const LANDING_FACTOR_POINT = 0.65;
 export const LANDING_FACTOR_TIR = 0.3;
@@ -57,14 +59,15 @@ export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
     landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15
 };
-// Tir au fer : la boule vole 95% de la distance puis frappe a haute vitesse
-// landingFactor tres eleve = atterrit quasi sur la cible (tir au fer = frappe directe)
-// rollEfficiency eleve = vitesse d'impact forte malgre courte distance de roulement
-// maxDist du tir = 0.95 * TERRAIN_HEIGHT dans computeThrowParams
-// Collision quasi-plastique (RESTITUTION_TIR=0.15) : boule tiree s'arrete, cible ejectee
+// Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
+// Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :
+// - Tireur perd ~81% de son energie au contact (retient 19%)
+// - Cible recoit ~81% de l'energie → ejectee loin
+// - Friction arrete le tireur en ~15cm = carreau naturel
+// arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -45, flyDurationMult: 0.4, rollEfficiency: 8.0
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 3.0
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
@@ -73,11 +76,9 @@ export const PREDICTION_STEPS = 120;
 export const PREDICTION_SAMPLE_RATE = 3;
 export const PREDICTION_DOT_RADIUS = 2;
 
-// Petanque - carreau
+// Petanque - carreau (detecte naturellement grace au COR 0.62)
 export const CARREAU_THRESHOLD = 24;
 export const CARREAU_DISPLACED_MIN = 32;
-// Tir au fer : collision quasi-plastique (boule tirée s'arrête, cible éjectée)
-export const RESTITUTION_TIR = 0.15;
 
 // Petanque - lisibilite
 export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
@@ -139,8 +140,8 @@ export const TERRAIN_COLORS = {
 export const TERRAIN_FRICTION = {
     terre: 1.0,
     herbe: 1.8,
-    sable: 3.0,
-    dalles: 0.7
+    sable: 3.5,
+    dalles: 0.4
 };
 
 // Ball colors (placeholder)
