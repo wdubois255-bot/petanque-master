@@ -5,45 +5,24 @@ import { TILES } from './TilesetGenerator.js';
 const TILESET_NAME = 'basechip_combined';
 const TILESET_COLS = 8;
 
-// ===== HOUSE STYLE DEFINITIONS =====
-// Based on actual Pipoya sample map analysis:
-// - Roof = dark horizontal planks (BUILDING_BL/BM row 42)
-// - Wall = lighter vertical planks (BUILDING_FRONT_L/M row 43)
-// - Windows = small white windows (row 73)
-// - Door = wooden door (row 43 col 7)
-const HOUSE_STYLES = {
-    red: {
-        roof: TILES.BUILDING_BL,        // row 42 col 0 - brown horizontal planks (roof)
-        roofM: TILES.BUILDING_BM,       // row 42 col 1 - brown planks middle
-        wall: TILES.BUILDING_FRONT_L,   // row 43 col 0 - beige vertical planks
-        wallM: TILES.BUILDING_FRONT_M,  // row 43 col 1 - beige planks middle
-        window: TILES.WINDOW_GRID,      // row 73 col 1 - small white window
-        door: TILES.EXT_DOOR,           // row 43 col 7 - exterior wooden door
-    },
-    blue: {
-        roof: TILES.BUILDING_BR,        // row 42 col 2 - grey horizontal planks
-        roofM: TILES.BUILDING_BR,
-        wall: TILES.BUILDING_FRONT_L,
-        wallM: TILES.BUILDING_FRONT_M,
-        window: TILES.WINDOW_BROWN,     // row 73 col 0 - brown frame window
-        door: TILES.EXT_DOOR,
-    },
-    wood: {
-        roof: TILES.BUILDING_BL,
-        roofM: TILES.BUILDING_BM,
-        wall: TILES.FACADE_WOOD_L,      // row 35 col 0 - wood facade
-        wallM: TILES.FACADE_WOOD_M,     // row 35 col 1 - wood facade middle
-        window: TILES.WINDOW_GRID,
-        door: TILES.FACADE_DOOR,        // row 35 col 3 - facade door
-    },
-    white: {
-        roof: TILES.BUILDING_BR,
-        roofM: TILES.BUILDING_BR,
-        wall: TILES.BUILDING_FRONT_R,   // row 43 col 2 - right facade variant
-        wallM: TILES.BUILDING_FRONT_M,
-        window: TILES.WINDOW_CROSS,     // row 74 col 1 - cross-pane window
-        door: TILES.EXT_DOOR,
-    },
+// ===== HOUSE TILE INDICES (extracted from Pipoya sample map TMX) =====
+// Real Pipoya houses use rows 19-23 of basechip:
+const H = {
+    ROOF_BORDER_TL: 178,  // row 22 col 2
+    ROOF_BORDER_H:  184,  // row 23 col 0 - horizontal roof border
+    ROOF_BORDER_TR: 179,  // row 22 col 3
+    WALL_EDGE:      176,  // row 22 col 0 - vertical frame/edge
+    ATTIC_L:        152,  // row 19 col 0 - roof/attic left
+    ATTIC_M:        153,  // row 19 col 1 - roof/attic middle
+    ATTIC_R:        154,  // row 19 col 2 - roof/attic right
+    WALL_L:         160,  // row 20 col 0 - wall panel left
+    WALL_M:         161,  // row 20 col 1 - wall panel middle
+    WALL_R:         162,  // row 20 col 2 - wall panel right
+    WIN_L:          168,  // row 21 col 0 - wall+window left
+    WIN_M:          169,  // row 21 col 1 - wall+window middle
+    WIN_R:          170,  // row 21 col 2 - wall+window right
+    BASE_TL:        186,  // row 23 col 2 - base border left
+    BASE_TR:        180,  // row 22 col 4 - base border right
 };
 
 // ===== LARGE TREE DEFINITIONS =====
@@ -80,55 +59,52 @@ function setBorders(collisions, W, H) {
     }
 }
 
-// Place a tile-based house matching Pipoya sample map style.
-// Rows from top:
-//   Row 0: roof edge (above layer - dark planks)
-//   Row 1: roof body (above layer - dark planks)
-//   Row 2: wall with windows (buildings layer - lighter planks)
-//   Row 3: wall with door (buildings layer - lighter planks)
-// w must be >= 3, h is always 4 rows
+// Place a house using EXACT Pipoya sample map tile structure.
+// Layout (7 rows tall for a proper house, but we compact to fit):
+//   Row 0: roof border (above layer) - ROOF_BORDER_TL + H + TR
+//   Row 1: attic (above layer) - WALL_EDGE + ATTIC_L/M/R + WALL_EDGE
+//   Row 2: wall panels (buildings layer) - WALL_EDGE + WALL_L/M/R + WALL_EDGE
+//   Row 3: windows row (buildings layer) - WALL_EDGE + WIN_L/M/R + WALL_EDGE
+//   Row 4: base border (buildings layer) - BASE_TL + ROOF_BORDER_H + BASE_TR
+// w must be >= 3
 function placeHouse(buildings, collisions, above, startX, startY, w, h, style) {
-    const s = HOUSE_STYLES[style] || HOUSE_STYLES.red;
+    const endX = startX + w - 1;
 
-    // Row 0: roof edge (above layer)
-    above[startY][startX] = s.roof;
-    for (let x = startX + 1; x < startX + w - 1; x++) {
-        above[startY][x] = s.roofM;
-    }
-    above[startY][startX + w - 1] = s.roof;
-    for (let x = startX; x < startX + w; x++) collisions[startY][x] = 1;
+    // Row 0: roof border (above layer)
+    above[startY][startX] = H.ROOF_BORDER_TL;
+    for (let x = startX + 1; x < endX; x++) above[startY][x] = H.ROOF_BORDER_H;
+    above[startY][endX] = H.ROOF_BORDER_TR;
+    for (let x = startX; x <= endX; x++) collisions[startY][x] = 1;
 
-    // Row 1: roof body (above layer)
-    above[startY + 1][startX] = s.roof;
-    for (let x = startX + 1; x < startX + w - 1; x++) {
-        above[startY + 1][x] = s.roofM;
-    }
-    above[startY + 1][startX + w - 1] = s.roof;
-    for (let x = startX; x < startX + w; x++) collisions[startY + 1][x] = 1;
+    // Row 1: attic/roof interior (above layer)
+    above[startY + 1][startX] = H.WALL_EDGE;
+    above[startY + 1][startX + 1] = H.ATTIC_L;
+    for (let x = startX + 2; x < endX - 1; x++) above[startY + 1][x] = H.ATTIC_M;
+    if (w >= 4) above[startY + 1][endX - 1] = H.ATTIC_R;
+    above[startY + 1][endX] = H.WALL_EDGE;
+    for (let x = startX; x <= endX; x++) collisions[startY + 1][x] = 1;
 
-    // Row 2: wall with windows (buildings layer)
-    buildings[startY + 2][startX] = s.wall;
-    for (let x = startX + 1; x < startX + w - 1; x++) {
-        buildings[startY + 2][x] = s.wallM;
-    }
-    buildings[startY + 2][startX + w - 1] = s.wall;
-    // Place windows symmetrically
-    if (w >= 3) {
-        buildings[startY + 2][startX + 1] = s.window;
-        if (w >= 5) buildings[startY + 2][startX + w - 2] = s.window;
-        if (w >= 7) buildings[startY + 2][startX + Math.floor(w / 2)] = s.window;
-    }
-    for (let x = startX; x < startX + w; x++) collisions[startY + 2][x] = 1;
+    // Row 2: wall panels (buildings layer)
+    buildings[startY + 2][startX] = H.WALL_EDGE;
+    buildings[startY + 2][startX + 1] = H.WALL_L;
+    for (let x = startX + 2; x < endX - 1; x++) buildings[startY + 2][x] = H.WALL_M;
+    if (w >= 4) buildings[startY + 2][endX - 1] = H.WALL_R;
+    buildings[startY + 2][endX] = H.WALL_EDGE;
+    for (let x = startX; x <= endX; x++) collisions[startY + 2][x] = 1;
 
-    // Row 3: wall with door (buildings layer)
-    const doorX = startX + Math.floor(w / 2);
-    buildings[startY + 3][startX] = s.wall;
-    for (let x = startX + 1; x < startX + w - 1; x++) {
-        buildings[startY + 3][x] = s.wallM;
-    }
-    buildings[startY + 3][startX + w - 1] = s.wall;
-    buildings[startY + 3][doorX] = s.door;
-    for (let x = startX; x < startX + w; x++) collisions[startY + 3][x] = 1;
+    // Row 3: wall with windows (buildings layer)
+    buildings[startY + 3][startX] = H.WALL_EDGE;
+    buildings[startY + 3][startX + 1] = H.WIN_L;
+    for (let x = startX + 2; x < endX - 1; x++) buildings[startY + 3][x] = H.WIN_M;
+    if (w >= 4) buildings[startY + 3][endX - 1] = H.WIN_R;
+    buildings[startY + 3][endX] = H.WALL_EDGE;
+    for (let x = startX; x <= endX; x++) collisions[startY + 3][x] = 1;
+
+    // Row 4: base border (buildings layer)
+    buildings[startY + 4][startX] = H.BASE_TL;
+    for (let x = startX + 1; x < endX; x++) buildings[startY + 4][x] = H.ROOF_BORDER_H;
+    buildings[startY + 4][endX] = H.BASE_TR;
+    for (let x = startX; x <= endX; x++) collisions[startY + 4][x] = 1;
 }
 
 // Place a 2x2 well
