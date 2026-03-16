@@ -15,8 +15,8 @@ export default class BootScene extends Phaser.Scene {
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
-        // Player spritesheet (PixelLab chibi animated, 128x128: 4 cols x 4 rows of 32x32)
-        this.load.spritesheet('player', `${BASE}assets/sprites/player_animated.png`, {
+        // Player spritesheet (Pipoya chibi, 128x128: 4 cols x 4 rows of 32x32)
+        this.load.spritesheet('player', `${BASE}assets/sprites/player_pipoya.png`, {
             frameWidth: 32, frameHeight: 32
         });
 
@@ -41,15 +41,6 @@ export default class BootScene extends Phaser.Scene {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
                 frameWidth: 32, frameHeight: 32
             });
-        }
-
-        // House sprites (Schwarnhild)
-        const houseTypes = [
-            'house_small_green', 'house_small_blue', 'house_small_brown',
-            'house_large_green', 'house_large_blue', 'house_large_brown'
-        ];
-        for (const key of houseTypes) {
-            this.load.image(key, `${BASE}assets/sprites/${key}.png`);
         }
 
         // Loading text

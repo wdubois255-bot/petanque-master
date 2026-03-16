@@ -5,591 +5,53 @@ import { TILES } from './TilesetGenerator.js';
 const TILESET_NAME = 'basechip_combined';
 const TILESET_COLS = 8;
 
-// ===== VILLAGE DE DEPART: 30x30 =====
-function createVillageMap() {
-    const W = 30, H = 30;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Paths (horizontal main road y=14-15, vertical road x=14-15)
-    for (let x = 0; x < W; x++) {
-        ground[14][x] = TILES.PATH;
-        ground[15][x] = TILES.PATH;
-    }
-    for (let y = 0; y < H; y++) {
-        ground[y][14] = TILES.PATH;
-        ground[y][15] = TILES.PATH;
-    }
-
-    // Path to south exit
-    for (let y = 26; y < H; y++) {
-        ground[y][14] = TILES.PATH;
-        ground[y][15] = TILES.PATH;
-    }
-
-    // Some grass variety
-    const darkGrassSpots = [
-        [4, 5], [7, 8], [18, 4], [22, 8], [3, 18], [8, 22],
-        [20, 19], [25, 23], [10, 25], [16, 27]
-    ];
-    for (const [x, y] of darkGrassSpots) {
-        ground[y][x] = TILES.GRASS_DARK;
-    }
-
-    // Flowers along paths
-    const flowerSpots = [
-        [12, 13, TILES.FLOWER], [17, 13, TILES.FLOWER_YELLOW],
-        [12, 16, TILES.FLOWER_BLUE], [17, 16, TILES.FLOWER],
-        [6, 13, TILES.FLOWER_WHITE], [8, 16, TILES.FLOWER_YELLOW],
-        [20, 13, TILES.FLOWER], [22, 16, TILES.FLOWER_BLUE]
-    ];
-    for (const [x, y, tile] of flowerSpots) {
-        buildings[y][x] = tile;
-    }
-
-    // Houses (sprite-based)
-    const houses = [];
-    placeHouse(buildings, collisions, above, 3, 3, 5, 4, houses, 'house_large_green');
-    placeHouse(buildings, collisions, above, 20, 3, 5, 4, houses, 'house_large_blue');
-    placeHouse(buildings, collisions, above, 3, 9, 4, 3, houses, 'house_small_brown');
-
-    // Terrain de petanque (bas droite)
-    for (let y = 18; y < 24; y++) {
-        for (let x = 19; x < 27; x++) {
-            ground[y][x] = TILES.PETANQUE_TERRAIN;
-        }
-    }
-    // Fence around terrain
-    for (let x = 18; x < 28; x++) {
-        buildings[17][x] = TILES.FENCE_H; collisions[17][x] = 1;
-        buildings[24][x] = TILES.FENCE_H; collisions[24][x] = 1;
-    }
-    for (let y = 17; y < 25; y++) {
-        buildings[y][18] = TILES.FENCE; collisions[y][18] = 1;
-        buildings[y][27] = TILES.FENCE; collisions[y][27] = 1;
-    }
-
-    // Trees
-    const treePositions = [
-        [0, 0], [1, 0], [2, 0], [5, 0], [9, 0], [10, 0],
-        [16, 0], [17, 0], [25, 0], [26, 0], [27, 0], [28, 0], [29, 0],
-        [0, 1], [0, 5], [0, 8], [0, 12], [0, 18], [0, 22], [0, 26],
-        [29, 5], [29, 10], [29, 15], [29, 20], [29, 25],
-        [10, 5], [11, 9], [25, 10], [9, 20], [5, 24],
-    ];
-    placeTrees(treePositions, buildings, collisions, above);
-
-    // Water (small pond top-center)
-    for (let y = 2; y < 4; y++) {
-        for (let x = 12; x < 16; x++) {
-            ground[y][x] = TILES.WATER;
-            collisions[y][x] = 1;
-        }
-    }
-
-    // Small rocks for decoration
-    buildings[7][18] = TILES.ROCK_SMALL;
-    buildings[20][8] = TILES.ROCK_SMALL;
-
-    // World borders
-    setBorders(collisions, W, H);
-    // South exit opening
-    collisions[H - 1][14] = 0;
-    collisions[H - 1][15] = 0;
-
-    return { ground, buildings, collisions, above, houses, width: W, height: H };
-}
-
-// ===== ROUTE 1: 20x60 (long vertical road) =====
-function createRoute1Map() {
-    const W = 20, H = 60;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Central path (x=9-10)
-    for (let y = 0; y < H; y++) {
-        ground[y][9] = TILES.PATH;
-        ground[y][10] = TILES.PATH;
-    }
-
-    // Side paths
-    for (let x = 3; x < 9; x++) {
-        ground[20][x] = TILES.PATH;
-    }
-    for (let x = 11; x < 17; x++) {
-        ground[35][x] = TILES.PATH;
-    }
-
-    // Grass variety along the route
-    for (let y = 0; y < H; y += 3) {
-        for (let x = 0; x < W; x += 4) {
-            if (ground[y][x] === TILES.GRASS && Math.abs(x - 9.5) > 2) {
-                ground[y][x] = TILES.GRASS_DARK;
-            }
-        }
-    }
-
-    // Flowers
-    const flowers = [
-        [3, 5, TILES.FLOWER], [16, 8, TILES.FLOWER_YELLOW],
-        [4, 18, TILES.FLOWER_BLUE], [15, 25, TILES.FLOWER],
-        [6, 38, TILES.FLOWER_WHITE], [14, 48, TILES.FLOWER_YELLOW],
-        [3, 52, TILES.FLOWER], [17, 55, TILES.FLOWER_BLUE]
-    ];
-    for (const [x, y, tile] of flowers) {
-        buildings[y][x] = tile;
-    }
-
-    // Trees along the route
-    const trees = [
-        // Left border trees
-        [0, 0], [1, 0], [0, 4], [0, 8], [1, 12], [0, 16],
-        [0, 22], [1, 26], [0, 30], [0, 34], [1, 40], [0, 44],
-        [0, 48], [1, 52], [0, 56],
-        // Right border trees
-        [19, 0], [18, 0], [19, 6], [19, 10], [18, 14],
-        [19, 20], [19, 24], [18, 28], [19, 32], [19, 38],
-        [18, 42], [19, 46], [19, 50], [18, 54], [19, 58],
-        // Decorative inner trees
-        [4, 10], [15, 12], [3, 28], [16, 33],
-        [5, 42], [14, 44], [3, 55], [16, 57],
-        // Dense section middle
-        [6, 25], [7, 25], [13, 25], [14, 25],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Small rest area with bench-like fences
-    for (let x = 12; x < 16; x++) {
-        buildings[20][x] = TILES.FENCE_H;
-        collisions[20][x] = 1;
-    }
-
-    // Water crossing (small stream)
-    for (let x = 0; x < W; x++) {
-        if (x === 9 || x === 10) continue; // Bridge on path
-        ground[40][x] = TILES.WATER;
-        collisions[40][x] = 1;
-        ground[41][x] = TILES.WATER;
-        collisions[41][x] = 1;
-    }
-    // Bridge tiles on path
-    ground[40][9] = TILES.PATH;
-    ground[40][10] = TILES.PATH;
-    ground[41][9] = TILES.PATH;
-    ground[41][10] = TILES.PATH;
-
-    // Rocks near stream
-    buildings[39][4] = TILES.ROCK_LARGE;
-    buildings[42][15] = TILES.ROCK_SMALL;
-
-    // World borders
-    setBorders(collisions, W, H);
-    // North entrance (from village_depart)
-    collisions[0][9] = 0;
-    collisions[0][10] = 0;
-    // South exit (to village_arene_1)
-    collisions[H - 1][9] = 0;
-    collisions[H - 1][10] = 0;
-
-    return { ground, buildings, collisions, above, width: W, height: H };
-}
-
-// ===== VILLAGE ARENE 1: 30x30 =====
-function createVillageArene1Map() {
-    const W = 30, H = 30;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Central paths
-    for (let x = 0; x < W; x++) {
-        ground[14][x] = TILES.PATH;
-        ground[15][x] = TILES.PATH;
-    }
-    for (let y = 0; y < H; y++) {
-        ground[y][14] = TILES.PATH;
-        ground[y][15] = TILES.PATH;
-    }
-
-    // Cobblestone plaza around arena entrance
-    for (let y = 12; y < 17; y++) {
-        for (let x = 12; x < 18; x++) {
-            ground[y][x] = TILES.COBBLESTONE;
-        }
-    }
-
-    // Flowers
-    const flowers = [
-        [12, 13, TILES.FLOWER], [17, 13, TILES.FLOWER_YELLOW],
-        [12, 16, TILES.FLOWER_BLUE], [17, 16, TILES.FLOWER],
-        [5, 13, TILES.FLOWER_WHITE], [8, 16, TILES.FLOWER_YELLOW],
-        [20, 13, TILES.FLOWER], [24, 16, TILES.FLOWER_BLUE],
-        [10, 7, TILES.FLOWER], [19, 7, TILES.FLOWER_YELLOW],
-        [10, 22, TILES.FLOWER_WHITE], [19, 22, TILES.FLOWER]
-    ];
-    for (const [x, y, tile] of flowers) {
-        buildings[y][x] = tile;
-    }
-
-    // === ARENE DE MARCEL (centre-haut) ===
-    // Grand terrain de petanque (arene)
-    for (let y = 3; y < 11; y++) {
-        for (let x = 8; x < 22; x++) {
-            ground[y][x] = TILES.PETANQUE_TERRAIN;
-        }
-    }
-    // Fence around arene
-    for (let x = 7; x < 23; x++) {
-        buildings[2][x] = TILES.FENCE_H; collisions[2][x] = 1;
-        buildings[11][x] = TILES.FENCE_H; collisions[11][x] = 1;
-    }
-    for (let y = 2; y < 12; y++) {
-        buildings[y][7] = TILES.FENCE; collisions[y][7] = 1;
-        buildings[y][22] = TILES.FENCE; collisions[y][22] = 1;
-    }
-    // Entrance to arene
-    buildings[11][14] = -1; collisions[11][14] = 0;
-    buildings[11][15] = -1; collisions[11][15] = 0;
-
-    // Houses (sprite-based)
-    const houses = [];
-    placeHouse(buildings, collisions, above, 2, 3, 4, 3, houses, 'house_small_green');
-    placeHouse(buildings, collisions, above, 24, 3, 4, 3, houses, 'house_small_blue');
-    placeHouse(buildings, collisions, above, 2, 18, 5, 4, houses, 'house_large_brown');
-    placeHouse(buildings, collisions, above, 23, 18, 5, 4, houses, 'house_large_green');
-
-    // Trees
-    const trees = [
-        [0, 0], [1, 0], [2, 0], [3, 0], [26, 0], [27, 0], [28, 0], [29, 0],
-        [0, 1], [0, 6], [0, 10], [0, 16], [0, 22], [0, 26],
-        [29, 1], [29, 6], [29, 10], [29, 16], [29, 22], [29, 26],
-        [5, 14], [24, 14], [10, 24], [19, 24],
-        [3, 26], [26, 26],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // World borders
-    setBorders(collisions, W, H);
-    // North entrance (from route_1)
-    collisions[0][14] = 0;
-    collisions[0][15] = 0;
-    // South exit (to route_2 - blocked by gate until badge_marcel)
-    collisions[H - 1][14] = 0;
-    collisions[H - 1][15] = 0;
-
-    return { ground, buildings, collisions, above, houses, width: W, height: H };
-}
-
-// ===== ROUTE 2: 35x20 (horizontal road) =====
-function createRoute2Map() {
-    const W = 35, H = 20;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Horizontal path (y=9-10)
-    for (let x = 0; x < W; x++) {
-        ground[9][x] = TILES.PATH;
-        ground[10][x] = TILES.PATH;
-    }
-
-    // Some sand patches
-    for (let y = 6; y < 8; y++) {
-        for (let x = 20; x < 26; x++) {
-            ground[y][x] = TILES.SAND;
-        }
-    }
-
-    // Grass variety
-    for (let y = 0; y < H; y += 3) {
-        for (let x = 2; x < W; x += 5) {
-            if (ground[y][x] === TILES.GRASS) ground[y][x] = TILES.GRASS_DARK;
-        }
-    }
-
-    // Flowers
-    const flowers = [
-        [5, 7, TILES.FLOWER], [12, 12, TILES.FLOWER_YELLOW],
-        [25, 7, TILES.FLOWER_BLUE], [30, 12, TILES.FLOWER]
-    ];
-    for (const [x, y, tile] of flowers) {
-        if (x < W && y < H) buildings[y][x] = tile;
-    }
-
-    // Trees
-    const trees = [
-        [0, 0], [5, 0], [10, 0], [15, 0], [20, 0], [25, 0], [30, 0], [34, 0],
-        [0, 19], [5, 19], [10, 19], [15, 19], [20, 19], [25, 19], [30, 19], [34, 19],
-        [3, 4], [8, 14], [18, 5], [28, 14],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Water (small pond)
-    for (let y = 13; y < 16; y++) {
-        for (let x = 14; x < 18; x++) {
-            ground[y][x] = TILES.WATER;
-            collisions[y][x] = 1;
-        }
-    }
-
-    // Borders
-    setBorders(collisions, W, H);
-    // West entrance (from village_arene_1) - path at y=9-10
-    collisions[9][0] = 0;
-    collisions[10][0] = 0;
-    // East exit (to village_arene_2) - path at y=9-10
-    collisions[9][W - 1] = 0;
-    collisions[10][W - 1] = 0;
-
-    return { ground, buildings, collisions, above, width: W, height: H };
-}
-
-// ===== VILLAGE ARENE 2: 25x25 =====
-function createVillageArene2Map() {
-    const W = 25, H = 25;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Main paths
-    for (let x = 0; x < W; x++) {
-        ground[12][x] = TILES.PATH;
-        ground[13][x] = TILES.PATH;
-    }
-    for (let y = 0; y < H; y++) {
-        ground[y][12] = TILES.PATH;
-        ground[y][13] = TILES.PATH;
-    }
-
-    // Cobblestone central plaza
-    for (let y = 10; y < 15; y++) {
-        for (let x = 10; x < 16; x++) {
-            ground[y][x] = TILES.COBBLESTONE;
-        }
-    }
-
-    // Arena terrain (top area)
-    for (let y = 2; y < 8; y++) {
-        for (let x = 6; x < 20; x++) {
-            ground[y][x] = TILES.PETANQUE_TERRAIN;
-        }
-    }
-    for (let x = 5; x < 21; x++) {
-        buildings[1][x] = TILES.FENCE_H; collisions[1][x] = 1;
-        buildings[8][x] = TILES.FENCE_H; collisions[8][x] = 1;
-    }
-    for (let y = 1; y < 9; y++) {
-        buildings[y][5] = TILES.FENCE; collisions[y][5] = 1;
-        buildings[y][20] = TILES.FENCE; collisions[y][20] = 1;
-    }
-    buildings[8][12] = -1; collisions[8][12] = 0;
-    buildings[8][13] = -1; collisions[8][13] = 0;
-
-    // Houses (sprite-based)
-    const houses = [];
-    placeHouse(buildings, collisions, above, 2, 10, 4, 3, houses, 'house_small_blue');
-    placeHouse(buildings, collisions, above, 19, 10, 4, 3, houses, 'house_small_green');
-    placeHouse(buildings, collisions, above, 2, 17, 4, 3, houses, 'house_small_brown');
-    placeHouse(buildings, collisions, above, 19, 17, 4, 3, houses, 'house_small_blue');
-
-    // Trees
-    const trees = [
-        [0, 0], [1, 0], [23, 0], [24, 0],
-        [0, 5], [0, 10], [0, 15], [0, 20], [0, 24],
-        [24, 5], [24, 10], [24, 15], [24, 20], [24, 24],
-        [8, 20], [16, 20],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Flowers
-    const flowers = [
-        [10, 11, TILES.FLOWER], [15, 11, TILES.FLOWER_BLUE],
-        [10, 14, TILES.FLOWER_YELLOW], [15, 14, TILES.FLOWER],
-    ];
-    for (const [x, y, tile] of flowers) {
-        buildings[y][x] = tile;
-    }
-
-    // Borders
-    setBorders(collisions, W, H);
-    collisions[12][0] = 0;
-    collisions[13][0] = 0;
-    collisions[H - 1][12] = 0;
-    collisions[H - 1][13] = 0;
-
-    return { ground, buildings, collisions, above, houses, width: W, height: H };
-}
-
-// ===== ROUTE 3: 35x20 (horizontal road) =====
-function createRoute3Map() {
-    const W = 35, H = 20;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Horizontal path
-    for (let x = 0; x < W; x++) {
-        ground[9][x] = TILES.PATH;
-        ground[10][x] = TILES.PATH;
-    }
-
-    // Sandy area
-    for (let y = 3; y < 7; y++) {
-        for (let x = 10; x < 18; x++) {
-            ground[y][x] = TILES.SAND;
-        }
-    }
-
-    // Grass variety
-    for (let y = 1; y < H; y += 4) {
-        for (let x = 1; x < W; x += 3) {
-            if (ground[y][x] === TILES.GRASS) ground[y][x] = TILES.GRASS_DARK;
-        }
-    }
-
-    // Trees
-    const trees = [
-        [0, 0], [4, 0], [8, 0], [20, 0], [26, 0], [34, 0],
-        [0, 19], [6, 19], [14, 19], [22, 19], [28, 19], [34, 19],
-        [2, 6], [32, 14], [15, 15],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Water stream crossing
-    for (let y = 0; y < H; y++) {
-        if (y === 9 || y === 10) continue;
-        ground[y][25] = TILES.WATER;
-        collisions[y][25] = 1;
-    }
-
-    // Flowers
-    buildings[7][5] = TILES.FLOWER;
-    buildings[13][30] = TILES.FLOWER_YELLOW;
-
-    // Borders
-    setBorders(collisions, W, H);
-    collisions[9][0] = 0;
-    collisions[10][0] = 0;
-    collisions[9][W - 1] = 0;
-    collisions[10][W - 1] = 0;
-
-    return { ground, buildings, collisions, above, width: W, height: H };
-}
-
-// ===== VILLAGE ARENE 3: 25x25 =====
-function createVillageArene3Map() {
-    const W = 25, H = 25;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Main paths
-    for (let x = 0; x < W; x++) {
-        ground[12][x] = TILES.PATH;
-        ground[13][x] = TILES.PATH;
-    }
-    for (let y = 0; y < H; y++) {
-        ground[y][12] = TILES.PATH;
-        ground[y][13] = TILES.PATH;
-    }
-
-    // Stone slab plaza
-    for (let y = 10; y < 15; y++) {
-        for (let x = 10; x < 16; x++) {
-            ground[y][x] = TILES.STONE_SLAB;
-        }
-    }
-
-    // Arena terrain
-    for (let y = 2; y < 9; y++) {
-        for (let x = 5; x < 21; x++) {
-            ground[y][x] = TILES.PETANQUE_TERRAIN;
-        }
-    }
-    for (let x = 4; x < 22; x++) {
-        buildings[1][x] = TILES.FENCE_H; collisions[1][x] = 1;
-        buildings[9][x] = TILES.FENCE_H; collisions[9][x] = 1;
-    }
-    for (let y = 1; y < 10; y++) {
-        buildings[y][4] = TILES.FENCE; collisions[y][4] = 1;
-        buildings[y][21] = TILES.FENCE; collisions[y][21] = 1;
-    }
-    buildings[9][12] = -1; collisions[9][12] = 0;
-    buildings[9][13] = -1; collisions[9][13] = 0;
-
-    // Houses (sprite-based)
-    const houses = [];
-    placeHouse(buildings, collisions, above, 1, 10, 4, 3, houses, 'house_small_green');
-    placeHouse(buildings, collisions, above, 20, 10, 4, 3, houses, 'house_small_brown');
-    placeHouse(buildings, collisions, above, 1, 17, 5, 4, houses, 'house_large_blue');
-    placeHouse(buildings, collisions, above, 19, 17, 5, 4, houses, 'house_large_brown');
-
-    // Trees
-    const trees = [
-        [0, 0], [1, 0], [2, 0], [22, 0], [23, 0], [24, 0],
-        [0, 5], [0, 15], [0, 20], [0, 24],
-        [24, 5], [24, 15], [24, 20], [24, 24],
-        [7, 22], [17, 22],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Borders
-    setBorders(collisions, W, H);
-    collisions[12][0] = 0;
-    collisions[13][0] = 0;
-    collisions[H - 1][12] = 0;
-    collisions[H - 1][13] = 0;
-
-    return { ground, buildings, collisions, above, houses, width: W, height: H };
-}
-
-// ===== ARENE FINALE: 30x25 =====
-function createAreneFinaleMap() {
-    const W = 30, H = 25;
-    const { ground, buildings, collisions, above } = emptyMap(W, H);
-
-    // Grand stone slab plaza
-    for (let y = 0; y < H; y++) {
-        for (let x = 0; x < W; x++) {
-            ground[y][x] = TILES.COBBLESTONE;
-        }
-    }
-
-    // Central petanque arena
-    for (let y = 4; y < 18; y++) {
-        for (let x = 5; x < 25; x++) {
-            ground[y][x] = TILES.PETANQUE_TERRAIN;
-        }
-    }
-
-    // Fence around grand arena
-    for (let x = 4; x < 26; x++) {
-        buildings[3][x] = TILES.FENCE_H; collisions[3][x] = 1;
-        buildings[18][x] = TILES.FENCE_H; collisions[18][x] = 1;
-    }
-    for (let y = 3; y < 19; y++) {
-        buildings[y][4] = TILES.FENCE; collisions[y][4] = 1;
-        buildings[y][25] = TILES.FENCE; collisions[y][25] = 1;
-    }
-    // Entrance
-    buildings[18][14] = -1; collisions[18][14] = 0;
-    buildings[18][15] = -1; collisions[18][15] = 0;
-
-    // Path to entrance
-    for (let y = 19; y < H; y++) {
-        ground[y][14] = TILES.PATH;
-        ground[y][15] = TILES.PATH;
-    }
-
-    // Decorative trees in corners
-    const trees = [
-        [0, 0], [1, 0], [28, 0], [29, 0],
-        [0, 24], [1, 24], [28, 24], [29, 24],
-        [2, 20], [27, 20],
-    ];
-    placeTrees(trees, buildings, collisions, above);
-
-    // Flowers along entrance
-    buildings[20][12] = TILES.FLOWER;
-    buildings[20][17] = TILES.FLOWER_YELLOW;
-    buildings[22][12] = TILES.FLOWER_BLUE;
-    buildings[22][17] = TILES.FLOWER;
-
-    // Borders
-    setBorders(collisions, W, H);
-    collisions[H - 1][14] = 0;
-    collisions[H - 1][15] = 0;
-
-    return { ground, buildings, collisions, above, width: W, height: H };
-}
+// ===== HOUSE STYLE DEFINITIONS =====
+const HOUSE_STYLES = {
+    red: {
+        roof: TILES.ROOF_RED,
+        wallUpper: TILES.HOUSE_UPPER,
+        wallUpperM: TILES.HOUSE_UPPER_M,
+        wallFront: TILES.HOUSE_FRONT,
+        wallFrontM: TILES.HOUSE_FRONT_M,
+        window: TILES.WINDOW_BROWN,
+        door: TILES.DOOR,
+    },
+    blue: {
+        roof: TILES.ROOF_BLUE,
+        wallUpper: TILES.WALL_GREY_L,
+        wallUpperM: TILES.WALL_GREY_M,
+        wallFront: TILES.WALL_GREY_L,
+        wallFrontM: TILES.WALL_GREY_M,
+        window: TILES.WINDOW_GRID,
+        door: TILES.DOOR_BROWN,
+    },
+    wood: {
+        roof: TILES.ROOF_WOOD,
+        wallUpper: TILES.WALL_YELLOW_L,
+        wallUpperM: TILES.WALL_YELLOW_M,
+        wallFront: TILES.WALL_YELLOW_L,
+        wallFrontM: TILES.WALL_YELLOW_M,
+        window: TILES.WINDOW_DARK,
+        door: TILES.DOOR_WOOD,
+    },
+    white: {
+        roof: TILES.ROOF_GREY,
+        wallUpper: TILES.WALL_WHITE_L,
+        wallUpperM: TILES.WALL_WHITE_M,
+        wallFront: TILES.WALL_WHITE_L,
+        wallFrontM: TILES.WALL_WHITE_M,
+        window: TILES.WINDOW_CROSS,
+        door: TILES.DOOR_GREY,
+    },
+};
+
+// ===== LARGE TREE DEFINITIONS =====
+const LARGE_TREES = {
+    green:  [TILES.TREE_GREEN_TL,  TILES.TREE_GREEN_TR,  TILES.TREE_GREEN_BL,  TILES.TREE_GREEN_BR],
+    dark:   [TILES.TREE_DARK_TL,   TILES.TREE_DARK_TR,   TILES.TREE_DARK_BL,   TILES.TREE_DARK_BR],
+    autumn: [TILES.TREE_AUTUMN_TL, TILES.TREE_AUTUMN_TR, TILES.TREE_AUTUMN_BL, TILES.TREE_AUTUMN_BR],
+    dead:   [TILES.TREE_DEAD_TL,   TILES.TREE_DEAD_TR,   TILES.TREE_DEAD_BL,   TILES.TREE_DEAD_BR],
+};
 
 // ===== UTILITY FUNCTIONS =====
 function emptyMap(W, H) {
@@ -606,32 +68,114 @@ function emptyMap(W, H) {
     return { ground, buildings, collisions, above };
 }
 
-// House sprite types for visual placement
-const HOUSE_SPRITES = [
-    'house_small_green', 'house_small_blue', 'house_small_brown',
-    'house_large_green', 'house_large_blue', 'house_large_brown'
-];
-
-function placeHouse(buildings, collisions, above, startX, startY, w, h, houseList, spriteKey) {
-    // Only set collisions (no ugly tile visuals anymore)
-    for (let y = startY; y < startY + h; y++) {
-        for (let x = startX; x < startX + w; x++) {
-            collisions[y][x] = 1;
-        }
+function setBorders(collisions, W, H) {
+    for (let x = 0; x < W; x++) {
+        collisions[0][x] = 1;
+        collisions[H - 1][x] = 1;
     }
-    // Leave door tile walkable? No - house is a sprite, player can't enter
-    // Record house position for sprite placement
-    if (houseList) {
-        houseList.push({
-            spriteKey: spriteKey || HOUSE_SPRITES[houseList.length % 3],
-            tileX: startX,
-            tileY: startY,
-            tileW: w,
-            tileH: h
-        });
+    for (let y = 0; y < H; y++) {
+        collisions[y][0] = 1;
+        collisions[y][W - 1] = 1;
     }
 }
 
+// Place a tile-based house. Rows from top:
+//   Row 0-1: roof (above layer)
+//   Row 2: upper wall with windows (buildings layer)
+//   Row 3: front wall with door in center (buildings layer)
+// w must be >= 3, h is always 4 rows
+function placeHouse(buildings, collisions, above, startX, startY, w, h, style) {
+    const s = HOUSE_STYLES[style] || HOUSE_STYLES.red;
+
+    // Row 0: roof top (above layer)
+    for (let x = startX; x < startX + w; x++) {
+        above[startY][x] = s.roof;
+        collisions[startY][x] = 1;
+    }
+
+    // Row 1: roof bottom (above layer)
+    for (let x = startX; x < startX + w; x++) {
+        above[startY + 1][x] = s.roof;
+        collisions[startY + 1][x] = 1;
+    }
+
+    // Row 2: upper wall with windows (buildings layer)
+    for (let x = startX; x < startX + w; x++) {
+        buildings[startY + 2][x] = s.wallUpper;
+        collisions[startY + 2][x] = 1;
+    }
+    // Place windows symmetrically on upper wall row
+    if (w >= 3) {
+        buildings[startY + 2][startX + 1] = s.window;
+        if (w >= 5) {
+            buildings[startY + 2][startX + w - 2] = s.window;
+        }
+        if (w >= 7) {
+            buildings[startY + 2][startX + Math.floor(w / 2)] = s.window;
+        }
+    }
+
+    // Row 3: front wall with door (buildings layer)
+    const doorX = startX + Math.floor(w / 2);
+    for (let x = startX; x < startX + w; x++) {
+        buildings[startY + 3][x] = s.wallFront;
+        collisions[startY + 3][x] = 1;
+    }
+    // Door in center - walkable
+    buildings[startY + 3][doorX] = s.door;
+    // Door is NOT walkable (player can't enter houses)
+    collisions[startY + 3][doorX] = 1;
+}
+
+// Place a 2x2 well
+function placeWell(buildings, collisions, x, y) {
+    buildings[y][x] = TILES.WELL_TL;
+    buildings[y][x + 1] = TILES.WELL_TR;
+    buildings[y + 1][x] = TILES.WELL_BL;
+    buildings[y + 1][x + 1] = TILES.WELL_BR;
+    collisions[y][x] = 1;
+    collisions[y][x + 1] = 1;
+    collisions[y + 1][x] = 1;
+    collisions[y + 1][x + 1] = 1;
+}
+
+// Place a horizontal bridge over water (2 rows tall, length tiles wide)
+function placeBridge(ground, buildings, collisions, x, y, length) {
+    for (let i = 0; i < length; i++) {
+        const bx = x + i;
+        // Top row of bridge
+        if (i === 0) {
+            buildings[y][bx] = TILES.BRIDGE_TL;
+            buildings[y + 1][bx] = TILES.BRIDGE_BL;
+        } else if (i === length - 1) {
+            buildings[y][bx] = TILES.BRIDGE_TR;
+            buildings[y + 1][bx] = TILES.BRIDGE_BR;
+        } else {
+            buildings[y][bx] = TILES.BRIDGE_TM;
+            buildings[y + 1][bx] = TILES.BRIDGE_BM;
+        }
+        // Make bridge walkable (override water collision)
+        collisions[y][bx] = 0;
+        collisions[y + 1][bx] = 0;
+    }
+}
+
+// Place a 2x2 large tree. Top in above layer, bottom in buildings layer.
+function placeLargeTree(buildings, collisions, above, x, y, type) {
+    const t = LARGE_TREES[type] || LARGE_TREES.green;
+    // Top row (above layer - rendered above player)
+    above[y][x] = t[0];       // TL
+    above[y][x + 1] = t[1];   // TR
+    collisions[y][x] = 1;
+    collisions[y][x + 1] = 1;
+    // Bottom row (buildings layer)
+    buildings[y + 1][x] = t[2];     // BL
+    buildings[y + 1][x + 1] = t[3]; // BR
+    collisions[y + 1][x] = 1;
+    collisions[y + 1][x + 1] = 1;
+}
+
+// Legacy 1x1 tree placement (tree_top above, tree_trunk in buildings)
 function placeTrees(positions, buildings, collisions, above) {
     for (const [x, y] of positions) {
         if (y > 0) {
@@ -643,15 +187,997 @@ function placeTrees(positions, buildings, collisions, above) {
     }
 }
 
-function setBorders(collisions, W, H) {
-    for (let x = 0; x < W; x++) {
-        collisions[0][x] = 1;
-        collisions[H - 1][x] = 1;
+// Place iron fence rectangle (with opening at specified side)
+function placeIronFenceRect(buildings, collisions, x1, y1, x2, y2, openX1, openX2, openY) {
+    // Top horizontal
+    for (let x = x1; x <= x2; x++) {
+        buildings[y1][x] = TILES.IRON_FENCE_H;
+        collisions[y1][x] = 1;
     }
+    // Bottom horizontal
+    for (let x = x1; x <= x2; x++) {
+        buildings[y2][x] = TILES.IRON_FENCE_H;
+        collisions[y2][x] = 1;
+    }
+    // Left vertical
+    for (let y = y1; y <= y2; y++) {
+        buildings[y][x1] = TILES.IRON_FENCE_POST;
+        collisions[y][x1] = 1;
+    }
+    // Right vertical
+    for (let y = y1; y <= y2; y++) {
+        buildings[y][x2] = TILES.IRON_FENCE_POST;
+        collisions[y][x2] = 1;
+    }
+    // Corners
+    buildings[y1][x1] = TILES.IRON_FENCE_CORNER;
+    buildings[y1][x2] = TILES.IRON_FENCE_CORNER;
+    buildings[y2][x1] = TILES.IRON_FENCE_CORNER;
+    buildings[y2][x2] = TILES.IRON_FENCE_CORNER;
+
+    // Opening
+    if (openX1 !== undefined && openX2 !== undefined && openY !== undefined) {
+        for (let x = openX1; x <= openX2; x++) {
+            buildings[openY][x] = -1;
+            collisions[openY][x] = 0;
+        }
+    }
+}
+
+// Scatter grass variety on a ground layer
+function scatterGrassVariety(ground, W, H) {
+    const variants = [TILES.GRASS_MEDIUM, TILES.GRASS_LIGHT, TILES.GRASS_DARK, TILES.GRASS_YELLOW];
     for (let y = 0; y < H; y++) {
-        collisions[y][0] = 1;
-        collisions[y][W - 1] = 1;
+        for (let x = 0; x < W; x++) {
+            if (ground[y][x] === TILES.GRASS) {
+                // ~25% chance of variation
+                const hash = ((x * 7 + y * 13 + x * y) % 100);
+                if (hash < 8) ground[y][x] = TILES.GRASS_MEDIUM;
+                else if (hash < 14) ground[y][x] = TILES.GRASS_LIGHT;
+                else if (hash < 18) ground[y][x] = TILES.GRASS_DARK;
+                else if (hash < 22) ground[y][x] = TILES.GRASS_YELLOW;
+            }
+        }
     }
+}
+
+// Draw a winding path on the ground layer
+function drawPath(ground, points, width, tile) {
+    tile = tile || TILES.PATH;
+    for (let i = 0; i < points.length - 1; i++) {
+        const [x1, y1] = points[i];
+        const [x2, y2] = points[i + 1];
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const steps = Math.max(Math.abs(dx), Math.abs(dy));
+        for (let s = 0; s <= steps; s++) {
+            const px = Math.round(x1 + (dx * s) / (steps || 1));
+            const py = Math.round(y1 + (dy * s) / (steps || 1));
+            for (let wy = 0; wy < width; wy++) {
+                for (let wx = 0; wx < width; wx++) {
+                    const tx = px + wx;
+                    const ty = py + wy;
+                    if (ty >= 0 && ty < ground.length && tx >= 0 && tx < ground[0].length) {
+                        ground[ty][tx] = tile;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Fill a rectangular area of ground
+function fillRect(layer, x1, y1, x2, y2, tile) {
+    for (let y = y1; y <= y2; y++) {
+        for (let x = x1; x <= x2; x++) {
+            if (y >= 0 && y < layer.length && x >= 0 && x < layer[0].length) {
+                layer[y][x] = tile;
+            }
+        }
+    }
+}
+
+// Place water body with edges
+function placeWaterBody(ground, collisions, x1, y1, x2, y2) {
+    for (let y = y1; y <= y2; y++) {
+        for (let x = x1; x <= x2; x++) {
+            if (y >= 0 && y < ground.length && x >= 0 && x < ground[0].length) {
+                ground[y][x] = TILES.WATER;
+                collisions[y][x] = 1;
+            }
+        }
+    }
+}
+
+// Place a vertical river (full width of map, 2-3 tiles wide)
+function placeVerticalRiver(ground, collisions, centerX, y1, y2, width) {
+    width = width || 2;
+    for (let y = y1; y <= y2; y++) {
+        for (let w = 0; w < width; w++) {
+            const x = centerX + w;
+            if (y >= 0 && y < ground.length && x >= 0 && x < ground[0].length) {
+                ground[y][x] = TILES.WATER;
+                collisions[y][x] = 1;
+            }
+        }
+    }
+}
+
+// Place a horizontal river
+function placeHorizontalRiver(ground, collisions, x1, x2, centerY, width) {
+    width = width || 2;
+    for (let x = x1; x <= x2; x++) {
+        for (let w = 0; w < width; w++) {
+            const y = centerY + w;
+            if (y >= 0 && y < ground.length && x >= 0 && x < ground[0].length) {
+                ground[y][x] = TILES.WATER;
+                collisions[y][x] = 1;
+            }
+        }
+    }
+}
+
+// Place a clothesline (3 tiles wide)
+function placeClothesline(buildings, x, y) {
+    buildings[y][x] = TILES.CLOTHESLINE_L;
+    buildings[y][x + 1] = TILES.CLOTHESLINE_M;
+    buildings[y][x + 2] = TILES.CLOTHESLINE_R;
+}
+
+// ===== VILLAGE DE DEPART: 30x30 =====
+function createVillageMap() {
+    const W = 30, H = 30;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // --- Base terrain: grass variety ---
+    scatterGrassVariety(ground, W, H);
+
+    // --- Winding sand paths ---
+    // Main east-west path (winding slightly)
+    drawPath(ground, [[0, 14], [6, 14], [10, 13], [16, 13], [20, 14], [29, 14]], 2);
+    // Main north-south path
+    drawPath(ground, [[14, 0], [14, 8], [13, 12], [14, 16], [14, 29]], 2);
+    // Path to south exit
+    drawPath(ground, [[14, 26], [14, 29]], 2);
+
+    // --- Central town square with cobblestone ---
+    fillRect(ground, 11, 12, 17, 16, TILES.COBBLESTONE);
+
+    // --- River on the east side ---
+    placeVerticalRiver(ground, collisions, 24, 0, 29, 3);
+    // Bridge over the river at path height
+    placeBridge(ground, buildings, collisions, 24, 13, 3);
+    placeBridge(ground, buildings, collisions, 24, 14, 3);
+    // Lily pads in river
+    buildings[4][25] = TILES.LILY_PAD_GREEN;
+    buildings[8][24] = TILES.LILY_PAD_BLUE;
+    buildings[18][25] = TILES.LILY_PAD_GREEN;
+    buildings[22][24] = TILES.LILY_PAD_BLUE;
+
+    // --- Tile-based houses ---
+    // House 1: red house, top-left area (5 wide)
+    placeHouse(buildings, collisions, above, 2, 3, 5, 4, 'red');
+    // House 2: blue house, top-right area (before river)
+    placeHouse(buildings, collisions, above, 18, 3, 5, 4, 'blue');
+    // House 3: wood house, left side
+    placeHouse(buildings, collisions, above, 2, 9, 4, 4, 'wood');
+    // House 4: white house, south-left
+    placeHouse(buildings, collisions, above, 2, 18, 5, 4, 'white');
+    // House 5: red house, south area
+    placeHouse(buildings, collisions, above, 8, 18, 4, 4, 'red');
+
+    // --- Clotheslines between houses ---
+    placeClothesline(buildings, 7, 5);
+    placeClothesline(buildings, 7, 20);
+
+    // --- Well in the town square ---
+    placeWell(buildings, collisions, 13, 14);
+
+    // --- Terrain de petanque (bottom right, before river) ---
+    fillRect(ground, 17, 20, 22, 25, TILES.PETANQUE_TERRAIN);
+    // Iron fence around petanque terrain
+    placeIronFenceRect(buildings, collisions, 16, 19, 23, 26, 19, 20, 26);
+
+    // --- Large 2x2 trees (mixed types for variety) ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 8, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 16, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 0, 14, 'dark');
+    placeLargeTree(buildings, collisions, above, 0, 24, 'autumn');
+    placeLargeTree(buildings, collisions, above, 8, 26, 'green');
+    placeLargeTree(buildings, collisions, above, 28, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 28, 8, 'green');
+    placeLargeTree(buildings, collisions, above, 28, 18, 'autumn');
+    placeLargeTree(buildings, collisions, above, 28, 26, 'green');
+
+    // --- Small 1x1 trees for density ---
+    const smallTrees = [
+        [3, 0], [5, 1], [10, 1], [12, 1],
+        [0, 7], [0, 12], [0, 17],
+        [11, 8], [17, 8],
+        [6, 27], [11, 27],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Flowers everywhere ---
+    const flowerSpots = [
+        [10, 12, TILES.FLOWER], [17, 12, TILES.FLOWER_YELLOW],
+        [10, 17, TILES.FLOWER_BLUE], [17, 17, TILES.FLOWER],
+        [5, 8, TILES.FLOWER_WHITE], [7, 16, TILES.FLOWER_YELLOW],
+        [20, 10, TILES.FLOWER], [22, 10, TILES.FLOWER_BLUE],
+        [4, 14, TILES.ROSE], [9, 14, TILES.FLOWER_CLUSTER],
+        [12, 8, TILES.FLOWER_WHITE], [16, 8, TILES.FLOWER_YELLOW],
+        [3, 24, TILES.FLOWER], [5, 26, TILES.FLOWER_BLUE],
+    ];
+    for (const [x, y, tile] of flowerSpots) {
+        if (buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Benches in the square ---
+    buildings[13][11] = TILES.BENCH;
+    buildings[13][12] = TILES.BENCH_R;
+    buildings[16][15] = TILES.BENCH;
+    buildings[16][16] = TILES.BENCH_R;
+
+    // --- Sign posts ---
+    buildings[12][14] = TILES.SIGN_POST;
+    collisions[12][14] = 1;
+    buildings[17][11] = TILES.SIGN_DIRECTION;
+    collisions[17][11] = 1;
+
+    // --- Barrels near houses ---
+    buildings[7][7] = TILES.BARREL;
+    collisions[7][7] = 1;
+    buildings[7][8] = TILES.BARREL;
+    collisions[7][8] = 1;
+    buildings[7][22] = TILES.BARREL;
+    collisions[7][22] = 1;
+
+    // --- Farm area (south-west corner) ---
+    fillRect(ground, 2, 24, 6, 27, TILES.GRASS_YELLOW);
+    buildings[24][3] = TILES.SCARECROW;
+    collisions[24][3] = 1;
+    buildings[25][2] = TILES.CORN;
+    buildings[25][4] = TILES.PUMPKIN;
+    buildings[26][2] = TILES.WHEAT;
+    buildings[26][3] = TILES.CABBAGE;
+    buildings[26][4] = TILES.CORN;
+    buildings[25][5] = TILES.HAY_BALE;
+    collisions[25][5] = 1;
+
+    // --- Rocks and pebbles ---
+    buildings[10][20] = TILES.ROCK_LARGE;
+    collisions[10][20] = 1;
+    buildings[22][10] = TILES.ROCK_SMALL;
+    buildings[5][15] = TILES.PEBBLES;
+    buildings[19][12] = TILES.PEBBLES;
+
+    // --- Mushrooms ---
+    buildings[9][10] = TILES.MUSHROOM_BROWN;
+    buildings[26][10] = TILES.MUSHROOM_RED;
+
+    // --- World borders ---
+    setBorders(collisions, W, H);
+    // South exit opening
+    collisions[H - 1][14] = 0;
+    collisions[H - 1][15] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ROUTE 1: 20x60 (long vertical road) =====
+function createRoute1Map() {
+    const W = 20, H = 60;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Winding central path ---
+    drawPath(ground, [
+        [9, 0], [9, 6], [8, 10], [9, 15], [10, 20], [9, 25],
+        [8, 30], [9, 35], [10, 40], [9, 45], [9, 50], [9, 55], [9, 59]
+    ], 2);
+
+    // Side paths branching off
+    drawPath(ground, [[9, 20], [4, 20], [3, 20]], 2);
+    drawPath(ground, [[11, 35], [15, 35], [16, 35]], 2);
+
+    // --- Dense forest sections with 2x2 trees ---
+    // Northern dense forest (y=3-8)
+    placeLargeTree(buildings, collisions, above, 0, 2, 'green');
+    placeLargeTree(buildings, collisions, above, 2, 4, 'dark');
+    placeLargeTree(buildings, collisions, above, 4, 2, 'green');
+    placeLargeTree(buildings, collisions, above, 14, 2, 'dark');
+    placeLargeTree(buildings, collisions, above, 16, 4, 'green');
+    placeLargeTree(buildings, collisions, above, 18, 2, 'green');
+
+    // Mid-section forest cluster (y=22-28)
+    placeLargeTree(buildings, collisions, above, 0, 22, 'green');
+    placeLargeTree(buildings, collisions, above, 2, 25, 'dark');
+    placeLargeTree(buildings, collisions, above, 4, 23, 'autumn');
+    placeLargeTree(buildings, collisions, above, 14, 23, 'green');
+    placeLargeTree(buildings, collisions, above, 16, 25, 'dark');
+    placeLargeTree(buildings, collisions, above, 18, 22, 'green');
+
+    // Southern forest (y=48-55)
+    placeLargeTree(buildings, collisions, above, 0, 48, 'dark');
+    placeLargeTree(buildings, collisions, above, 2, 50, 'green');
+    placeLargeTree(buildings, collisions, above, 4, 52, 'autumn');
+    placeLargeTree(buildings, collisions, above, 14, 48, 'green');
+    placeLargeTree(buildings, collisions, above, 16, 50, 'dark');
+    placeLargeTree(buildings, collisions, above, 18, 52, 'green');
+
+    // Scattered border trees (1x1)
+    const smallTrees = [
+        [0, 8], [0, 14], [0, 30], [0, 36], [0, 42], [0, 56],
+        [19, 8], [19, 14], [19, 30], [19, 36], [19, 42], [19, 56],
+        [5, 10], [14, 12], [3, 32], [16, 33],
+        [5, 44], [14, 46], [3, 57], [16, 58],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Stream crossing (y=38-39) with proper bridge ---
+    placeHorizontalRiver(ground, collisions, 0, W - 1, 38, 2);
+    // Bridge on the path (at x=8-11, y=38-39)
+    placeBridge(ground, buildings, collisions, 8, 38, 4);
+    placeBridge(ground, buildings, collisions, 8, 39, 4);
+
+    // Rocks near stream
+    buildings[37][3] = TILES.ROCK_LARGE;
+    collisions[37][3] = 1;
+    buildings[37][4] = TILES.ROCK_SMALL;
+    buildings[40][15] = TILES.ROCK_SMALL;
+    buildings[40][16] = TILES.ROCK_LARGE;
+    collisions[40][16] = 1;
+
+    // --- Flower meadows ---
+    const flowerMeadow1 = [
+        [3, 8, TILES.FLOWER], [4, 8, TILES.FLOWER_YELLOW], [5, 7, TILES.FLOWER_BLUE],
+        [3, 9, TILES.FLOWER_WHITE], [4, 9, TILES.FLOWER], [5, 9, TILES.FLOWER_CLUSTER],
+    ];
+    const flowerMeadow2 = [
+        [14, 15, TILES.FLOWER], [15, 15, TILES.FLOWER_YELLOW], [16, 14, TILES.FLOWER_BLUE],
+        [14, 16, TILES.ROSE], [15, 16, TILES.FLOWER_WHITE], [16, 16, TILES.FLOWER],
+    ];
+    const flowerMeadow3 = [
+        [3, 44, TILES.FLOWER_BLUE], [4, 44, TILES.FLOWER], [5, 43, TILES.FLOWER_YELLOW],
+        [3, 45, TILES.FLOWER_WHITE], [4, 45, TILES.ROSE],
+    ];
+    for (const spots of [flowerMeadow1, flowerMeadow2, flowerMeadow3]) {
+        for (const [x, y, tile] of spots) {
+            if (buildings[y][x] === -1) buildings[y][x] = tile;
+        }
+    }
+
+    // --- Mushroom patches ---
+    buildings[28][2] = TILES.MUSHROOM_BROWN;
+    buildings[28][3] = TILES.MUSHROOM_RED;
+    buildings[29][2] = TILES.MUSHROOM_GREY;
+
+    // --- Rest area with benches and sign (y=18-21) ---
+    fillRect(ground, 3, 18, 7, 21, TILES.COBBLESTONE);
+    buildings[18][3] = TILES.BENCH;
+    buildings[18][4] = TILES.BENCH_R;
+    buildings[21][3] = TILES.BENCH;
+    buildings[21][4] = TILES.BENCH_R;
+    buildings[19][7] = TILES.SIGN_POST;
+    collisions[19][7] = 1;
+    buildings[20][6] = TILES.BARREL;
+    collisions[20][6] = 1;
+
+    // --- Pebble patches ---
+    buildings[12][6] = TILES.PEBBLES;
+    buildings[34][13] = TILES.PEBBLES;
+    buildings[52][5] = TILES.PEBBLES;
+
+    // --- World borders ---
+    setBorders(collisions, W, H);
+    // North entrance (from village_depart)
+    collisions[0][9] = 0;
+    collisions[0][10] = 0;
+    // South exit (to village_arene_1)
+    collisions[H - 1][9] = 0;
+    collisions[H - 1][10] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== VILLAGE ARENE 1: 30x30 (Marcel's village) =====
+function createVillageArene1Map() {
+    const W = 30, H = 30;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Cobblestone plaza in center ---
+    fillRect(ground, 10, 12, 19, 17, TILES.COBBLESTONE);
+
+    // --- Main paths ---
+    // North-south through center
+    drawPath(ground, [[14, 0], [14, 11]], 2);
+    drawPath(ground, [[14, 18], [14, 29]], 2);
+    // East-west through center
+    drawPath(ground, [[0, 14], [9, 14]], 2);
+    drawPath(ground, [[20, 14], [29, 14]], 2);
+
+    // --- Petanque arena (center-top) ---
+    fillRect(ground, 8, 3, 21, 10, TILES.PETANQUE_TERRAIN);
+    placeIronFenceRect(buildings, collisions, 7, 2, 22, 11, 14, 15, 11);
+
+    // --- Houses in different styles ---
+    // Left side houses
+    placeHouse(buildings, collisions, above, 2, 3, 4, 4, 'red');
+    placeHouse(buildings, collisions, above, 2, 18, 5, 4, 'wood');
+    // Right side houses
+    placeHouse(buildings, collisions, above, 24, 3, 4, 4, 'blue');
+    placeHouse(buildings, collisions, above, 23, 18, 5, 4, 'white');
+
+    // --- Market stall area (south-east plaza) ---
+    buildings[13][20] = TILES.MARKET_STALL;
+    collisions[13][20] = 1;
+    buildings[13][21] = TILES.MARKET_STALL;
+    collisions[13][21] = 1;
+    buildings[14][20] = TILES.BARREL;
+    collisions[14][20] = 1;
+    buildings[14][21] = TILES.BARREL;
+    collisions[14][21] = 1;
+    buildings[13][22] = TILES.SIGN_POST;
+    collisions[13][22] = 1;
+
+    // --- Well in the plaza ---
+    placeWell(buildings, collisions, 13, 14);
+
+    // --- Benches around plaza ---
+    buildings[12][10] = TILES.BENCH;
+    buildings[12][11] = TILES.BENCH_R;
+    buildings[17][10] = TILES.BENCH;
+    buildings[17][11] = TILES.BENCH_R;
+    buildings[17][17] = TILES.BENCH;
+    buildings[17][18] = TILES.BENCH_R;
+
+    // --- Large 2x2 trees ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 4, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 26, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 28, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 0, 10, 'green');
+    placeLargeTree(buildings, collisions, above, 0, 24, 'autumn');
+    placeLargeTree(buildings, collisions, above, 28, 10, 'dark');
+    placeLargeTree(buildings, collisions, above, 28, 24, 'green');
+
+    // Small trees
+    const smallTrees = [
+        [0, 16], [0, 22], [29, 16], [29, 22],
+        [8, 24], [21, 24], [10, 28], [19, 28],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Flowers ---
+    const flowers = [
+        [10, 12, TILES.FLOWER], [19, 12, TILES.FLOWER_YELLOW],
+        [10, 17, TILES.FLOWER_BLUE], [19, 17, TILES.FLOWER],
+        [5, 14, TILES.FLOWER_WHITE], [8, 16, TILES.FLOWER_YELLOW],
+        [22, 16, TILES.FLOWER], [25, 14, TILES.FLOWER_BLUE],
+        [12, 8, TILES.ROSE], [17, 8, TILES.FLOWER_CLUSTER],
+        [3, 15, TILES.FLOWER], [26, 15, TILES.FLOWER_YELLOW],
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Barrels near market ---
+    buildings[15][22] = TILES.BARREL;
+    collisions[15][22] = 1;
+
+    // --- Sign post at entrance ---
+    buildings[12][14] = TILES.SIGN_DIRECTION;
+    collisions[12][14] = 1;
+
+    // --- Clothesline between houses ---
+    placeClothesline(buildings, 2, 15);
+
+    // --- Pebbles and rocks ---
+    buildings[20][10] = TILES.PEBBLES;
+    buildings[24][20] = TILES.ROCK_SMALL;
+    buildings[26][5] = TILES.ROCK_LARGE;
+    collisions[26][5] = 1;
+
+    // --- World borders ---
+    setBorders(collisions, W, H);
+    // North entrance (from route_1)
+    collisions[0][14] = 0;
+    collisions[0][15] = 0;
+    // South exit (to route_2)
+    collisions[H - 1][14] = 0;
+    collisions[H - 1][15] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ROUTE 2: 35x20 (horizontal road) =====
+function createRoute2Map() {
+    const W = 35, H = 20;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Winding horizontal path ---
+    drawPath(ground, [
+        [0, 9], [5, 9], [10, 8], [15, 9], [20, 10], [25, 9], [30, 9], [34, 9]
+    ], 2);
+
+    // --- Sandy beach area (south) ---
+    fillRect(ground, 20, 14, 28, 17, TILES.SAND);
+    // Small pond near sand
+    placeWaterBody(ground, collisions, 22, 15, 26, 17);
+    // Lily pads
+    buildings[16][23] = TILES.LILY_PAD_GREEN;
+    buildings[15][25] = TILES.LILY_PAD_BLUE;
+
+    // --- Rock formations (north side) ---
+    buildings[3][8] = TILES.ROCK_LARGE;
+    collisions[3][8] = 1;
+    buildings[3][9] = TILES.ROCK_SMALL;
+    buildings[4][8] = TILES.ROCK_SMALL;
+    buildings[4][9] = TILES.PEBBLES;
+
+    buildings[5][24] = TILES.ROCK_LARGE;
+    collisions[5][24] = 1;
+    buildings[5][25] = TILES.ROCK_SMALL;
+    buildings[4][25] = TILES.PEBBLES;
+
+    // --- Dense trees on borders ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 4, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 10, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 16, 0, 'autumn');
+    placeLargeTree(buildings, collisions, above, 28, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 32, 0, 'dark');
+
+    placeLargeTree(buildings, collisions, above, 0, 16, 'dark');
+    placeLargeTree(buildings, collisions, above, 4, 18, 'green');
+    placeLargeTree(buildings, collisions, above, 10, 16, 'green');
+    placeLargeTree(buildings, collisions, above, 14, 18, 'autumn');
+    placeLargeTree(buildings, collisions, above, 30, 16, 'dark');
+    placeLargeTree(buildings, collisions, above, 33, 18, 'green');
+
+    // Inner decorative trees
+    const smallTrees = [
+        [3, 5], [7, 4], [18, 4], [30, 5],
+        [6, 14], [12, 13], [18, 14], [32, 13],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Flower meadow (north-west) ---
+    const flowers = [
+        [5, 6, TILES.FLOWER], [6, 6, TILES.FLOWER_YELLOW], [5, 7, TILES.FLOWER_BLUE],
+        [13, 6, TILES.FLOWER_WHITE], [14, 5, TILES.FLOWER],
+        [25, 12, TILES.ROSE], [26, 12, TILES.FLOWER_CLUSTER],
+        [30, 7, TILES.FLOWER], [31, 8, TILES.FLOWER_YELLOW],
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (y < H && x < W && buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Rest area with bench ---
+    fillRect(ground, 14, 12, 17, 14, TILES.COBBLESTONE);
+    buildings[12][14] = TILES.BENCH;
+    buildings[12][15] = TILES.BENCH_R;
+    buildings[13][17] = TILES.SIGN_POST;
+    collisions[13][17] = 1;
+
+    // --- Mushroom patch ---
+    buildings[13][3] = TILES.MUSHROOM_BROWN;
+    buildings[14][3] = TILES.MUSHROOM_RED;
+    buildings[13][4] = TILES.MUSHROOM_GREY;
+
+    // --- Borders ---
+    setBorders(collisions, W, H);
+    // West entrance (from village_arene_1) - path at y=9-10
+    collisions[9][0] = 0;
+    collisions[10][0] = 0;
+    // East exit (to village_arene_2) - path at y=9-10
+    collisions[9][W - 1] = 0;
+    collisions[10][W - 1] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== VILLAGE ARENE 2: 25x25 =====
+function createVillageArene2Map() {
+    const W = 25, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Main paths ---
+    drawPath(ground, [[0, 12], [10, 12], [12, 12]], 2);
+    drawPath(ground, [[14, 12], [24, 12]], 2);
+    drawPath(ground, [[12, 0], [12, 10]], 2);
+    drawPath(ground, [[12, 15], [12, 24]], 2);
+
+    // --- Cobblestone central plaza ---
+    fillRect(ground, 9, 10, 16, 16, TILES.COBBLESTONE);
+
+    // --- Petanque arena (top area) ---
+    fillRect(ground, 6, 2, 19, 7, TILES.PETANQUE_TERRAIN);
+    placeIronFenceRect(buildings, collisions, 5, 1, 20, 8, 12, 13, 8);
+
+    // --- Houses in different styles ---
+    placeHouse(buildings, collisions, above, 1, 10, 4, 4, 'blue');
+    placeHouse(buildings, collisions, above, 20, 10, 4, 4, 'red');
+    placeHouse(buildings, collisions, above, 1, 17, 5, 4, 'wood');
+    placeHouse(buildings, collisions, above, 19, 17, 5, 4, 'white');
+
+    // --- Well/fountain in plaza ---
+    placeWell(buildings, collisions, 12, 12);
+
+    // --- Benches in plaza ---
+    buildings[10][9] = TILES.BENCH;
+    buildings[10][10] = TILES.BENCH_R;
+    buildings[15][14] = TILES.BENCH;
+    buildings[15][15] = TILES.BENCH_R;
+
+    // --- Market area (south-east of plaza) ---
+    buildings[16][17] = TILES.MARKET_STALL;
+    collisions[16][17] = 1;
+    buildings[16][18] = TILES.BARREL;
+    collisions[16][18] = 1;
+    buildings[15][17] = TILES.SIGN_POST;
+    collisions[15][17] = 1;
+
+    // --- Large trees ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 2, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 22, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 0, 22, 'autumn');
+    placeLargeTree(buildings, collisions, above, 23, 22, 'dark');
+
+    // Small trees
+    const smallTrees = [
+        [0, 6], [0, 16], [24, 6], [24, 16],
+        [7, 22], [17, 22],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Flowers ---
+    const flowers = [
+        [9, 10, TILES.FLOWER], [16, 10, TILES.FLOWER_BLUE],
+        [9, 16, TILES.FLOWER_YELLOW], [16, 16, TILES.FLOWER],
+        [5, 14, TILES.ROSE], [19, 14, TILES.FLOWER_CLUSTER],
+        [10, 9, TILES.FLOWER_WHITE], [15, 9, TILES.FLOWER],
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Clothesline ---
+    placeClothesline(buildings, 6, 14);
+
+    // --- Decorations ---
+    buildings[9][8] = TILES.BARREL;
+    collisions[9][8] = 1;
+    buildings[16][7] = TILES.PEBBLES;
+    buildings[21][12] = TILES.SIGN_DIRECTION;
+    collisions[21][12] = 1;
+
+    // --- Borders ---
+    setBorders(collisions, W, H);
+    collisions[12][0] = 0;
+    collisions[13][0] = 0;
+    collisions[H - 1][12] = 0;
+    collisions[H - 1][13] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ROUTE 3: 35x20 (horizontal road) =====
+function createRoute3Map() {
+    const W = 35, H = 20;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Winding horizontal path ---
+    drawPath(ground, [
+        [0, 9], [4, 10], [10, 9], [16, 8], [22, 9], [28, 10], [34, 9]
+    ], 2);
+
+    // --- Vertical stream with bridge ---
+    placeVerticalRiver(ground, collisions, 24, 0, 19, 2);
+    // Bridge at path crossing
+    placeBridge(ground, buildings, collisions, 24, 8, 2);
+    placeBridge(ground, buildings, collisions, 24, 9, 2);
+    placeBridge(ground, buildings, collisions, 24, 10, 2);
+
+    // --- Sandy area (south-west) ---
+    fillRect(ground, 8, 13, 15, 17, TILES.SAND);
+    // Sandy path branching south
+    drawPath(ground, [[10, 10], [10, 13]], 2, TILES.SAND);
+
+    // --- Dense forest (both sides) ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 4, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 8, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 18, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 28, 0, 'autumn');
+    placeLargeTree(buildings, collisions, above, 33, 0, 'green');
+
+    placeLargeTree(buildings, collisions, above, 0, 16, 'green');
+    placeLargeTree(buildings, collisions, above, 4, 18, 'dark');
+    placeLargeTree(buildings, collisions, above, 18, 16, 'autumn');
+    placeLargeTree(buildings, collisions, above, 28, 18, 'green');
+    placeLargeTree(buildings, collisions, above, 33, 16, 'dark');
+
+    // Small trees
+    const smallTrees = [
+        [2, 6], [14, 4], [22, 4], [32, 6],
+        [2, 14], [16, 14], [30, 14],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Rock formation near stream ---
+    buildings[6][22] = TILES.ROCK_LARGE;
+    collisions[6][22] = 1;
+    buildings[6][23] = TILES.ROCK_SMALL;
+    buildings[12][26] = TILES.ROCK_LARGE;
+    collisions[12][26] = 1;
+    buildings[12][27] = TILES.ROCK_SMALL;
+
+    // --- Flower patches ---
+    const flowers = [
+        [5, 7, TILES.FLOWER], [6, 7, TILES.FLOWER_YELLOW],
+        [13, 12, TILES.FLOWER_BLUE], [14, 12, TILES.FLOWER_WHITE],
+        [30, 7, TILES.ROSE], [31, 7, TILES.FLOWER_CLUSTER],
+        [10, 5, TILES.FLOWER], [20, 13, TILES.FLOWER_YELLOW],
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (y < H && x < W && buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Mushroom patch in sand area ---
+    buildings[14][9] = TILES.MUSHROOM_BROWN;
+    buildings[14][10] = TILES.MUSHROOM_RED;
+    buildings[15][9] = TILES.MUSHROOM_GREY;
+
+    // --- Rest bench ---
+    fillRect(ground, 14, 4, 16, 6, TILES.COBBLESTONE);
+    buildings[4][14] = TILES.BENCH;
+    buildings[4][15] = TILES.BENCH_R;
+    buildings[6][16] = TILES.SIGN_DIRECTION;
+    collisions[6][16] = 1;
+
+    // --- Pebbles ---
+    buildings[8][3] = TILES.PEBBLES;
+    buildings[15][30] = TILES.PEBBLES;
+
+    // --- Borders ---
+    setBorders(collisions, W, H);
+    collisions[9][0] = 0;
+    collisions[10][0] = 0;
+    collisions[9][W - 1] = 0;
+    collisions[10][W - 1] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== VILLAGE ARENE 3: 25x25 =====
+function createVillageArene3Map() {
+    const W = 25, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // Base grass variety
+    scatterGrassVariety(ground, W, H);
+
+    // --- Main paths ---
+    drawPath(ground, [[0, 12], [10, 12]], 2);
+    drawPath(ground, [[14, 12], [24, 12]], 2);
+    drawPath(ground, [[12, 0], [12, 10]], 2);
+    drawPath(ground, [[12, 15], [12, 24]], 2);
+
+    // --- Stone slab grand plaza ---
+    fillRect(ground, 8, 10, 17, 16, TILES.STONE_SLAB);
+
+    // --- Petanque arena (top, larger and grander) ---
+    fillRect(ground, 5, 2, 20, 8, TILES.PETANQUE_TERRAIN);
+    placeIronFenceRect(buildings, collisions, 4, 1, 21, 9, 12, 13, 9);
+
+    // Decorative iron railings along arena path
+    for (let x = 10; x <= 15; x++) {
+        buildings[10][x] = TILES.IRON_RAIL_BM;
+    }
+
+    // --- Houses (grander, varied styles) ---
+    placeHouse(buildings, collisions, above, 1, 10, 5, 4, 'red');
+    placeHouse(buildings, collisions, above, 19, 10, 5, 4, 'blue');
+    placeHouse(buildings, collisions, above, 1, 17, 5, 4, 'wood');
+    placeHouse(buildings, collisions, above, 19, 17, 5, 4, 'white');
+
+    // --- Fountain/well in plaza center ---
+    placeWell(buildings, collisions, 12, 12);
+
+    // --- Benches around plaza ---
+    buildings[11][8] = TILES.BENCH;
+    buildings[11][9] = TILES.BENCH_R;
+    buildings[11][16] = TILES.BENCH;
+    buildings[11][17] = TILES.BENCH_R;
+    buildings[15][8] = TILES.BENCH;
+    buildings[15][9] = TILES.BENCH_R;
+    buildings[15][16] = TILES.BENCH;
+    buildings[15][17] = TILES.BENCH_R;
+
+    // --- Market stalls ---
+    buildings[16][8] = TILES.MARKET_STALL;
+    collisions[16][8] = 1;
+    buildings[16][9] = TILES.MARKET_STALL;
+    collisions[16][9] = 1;
+    buildings[16][10] = TILES.BARREL;
+    collisions[16][10] = 1;
+
+    // --- Notice board ---
+    buildings[10][8] = TILES.NOTICE_BOARD;
+    collisions[10][8] = 1;
+    buildings[10][9] = TILES.NOTICE_BOARD_R;
+    collisions[10][9] = 1;
+
+    // --- Decorative sign ---
+    buildings[22][12] = TILES.SIGN_DIRECTION;
+    collisions[22][12] = 1;
+
+    // --- Large trees in symmetrical arrangement ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 2, 0, 'dark');
+    placeLargeTree(buildings, collisions, above, 22, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 0, 22, 'dark');
+    placeLargeTree(buildings, collisions, above, 23, 22, 'green');
+
+    // Small trees for density
+    const smallTrees = [
+        [0, 6], [0, 16], [24, 6], [24, 16],
+        [7, 22], [17, 22], [7, 0], [17, 0],
+    ];
+    placeTrees(smallTrees, buildings, collisions, above);
+
+    // --- Flowers ---
+    const flowers = [
+        [8, 10, TILES.FLOWER], [17, 10, TILES.FLOWER_YELLOW],
+        [8, 16, TILES.FLOWER_BLUE], [17, 16, TILES.FLOWER],
+        [6, 14, TILES.ROSE], [18, 14, TILES.FLOWER_CLUSTER],
+        [10, 22, TILES.FLOWER_WHITE], [14, 22, TILES.FLOWER],
+    ];
+    for (const [x, y, tile] of flowers) {
+        if (buildings[y][x] === -1) buildings[y][x] = tile;
+    }
+
+    // --- Clotheslines ---
+    placeClothesline(buildings, 6, 14);
+    placeClothesline(buildings, 15, 20);
+
+    // --- Barrels ---
+    buildings[14][7] = TILES.BARREL;
+    collisions[14][7] = 1;
+    buildings[14][18] = TILES.BARREL;
+    collisions[14][18] = 1;
+
+    // --- Pebbles ---
+    buildings[20][10] = TILES.PEBBLES;
+    buildings[20][15] = TILES.PEBBLES;
+
+    // --- Borders ---
+    setBorders(collisions, W, H);
+    collisions[12][0] = 0;
+    collisions[13][0] = 0;
+    collisions[H - 1][12] = 0;
+    collisions[H - 1][13] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
+}
+
+// ===== ARENE FINALE: 30x25 (Grand finale arena) =====
+function createAreneFinaleMap() {
+    const W = 30, H = 25;
+    const { ground, buildings, collisions, above } = emptyMap(W, H);
+
+    // --- Entirely cobblestone ground ---
+    fillRect(ground, 0, 0, W - 1, H - 1, TILES.COBBLESTONE);
+
+    // --- Stone slab border trim ---
+    fillRect(ground, 0, 0, W - 1, 0, TILES.STONE_SLAB);
+    fillRect(ground, 0, H - 1, W - 1, H - 1, TILES.STONE_SLAB);
+    for (let y = 0; y < H; y++) {
+        ground[y][0] = TILES.STONE_SLAB;
+        ground[y][W - 1] = TILES.STONE_SLAB;
+    }
+
+    // --- Grand petanque arena (center) ---
+    fillRect(ground, 5, 4, 24, 17, TILES.PETANQUE_TERRAIN);
+    placeIronFenceRect(buildings, collisions, 4, 3, 25, 18, 14, 15, 18);
+
+    // --- Decorative iron railings around perimeter ---
+    // Top railing
+    for (let x = 2; x <= 27; x++) {
+        if (buildings[1][x] === -1) {
+            buildings[1][x] = TILES.IRON_RAIL_BM;
+            collisions[1][x] = 1;
+        }
+    }
+    // Bottom railing (before entrance path)
+    for (let x = 2; x <= 12; x++) {
+        buildings[22][x] = TILES.IRON_RAIL_BM;
+        collisions[22][x] = 1;
+    }
+    for (let x = 17; x <= 27; x++) {
+        buildings[22][x] = TILES.IRON_RAIL_BM;
+        collisions[22][x] = 1;
+    }
+
+    // --- Path to entrance ---
+    fillRect(ground, 13, 19, 16, H - 1, TILES.STONE_SLAB);
+
+    // --- Symmetrical large trees ---
+    placeLargeTree(buildings, collisions, above, 0, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 28, 0, 'green');
+    placeLargeTree(buildings, collisions, above, 0, 22, 'dark');
+    placeLargeTree(buildings, collisions, above, 28, 22, 'dark');
+    // Inner decorative trees
+    placeLargeTree(buildings, collisions, above, 1, 8, 'green');
+    placeLargeTree(buildings, collisions, above, 1, 14, 'dark');
+    placeLargeTree(buildings, collisions, above, 27, 8, 'green');
+    placeLargeTree(buildings, collisions, above, 27, 14, 'dark');
+
+    // --- Benches for spectators ---
+    // Left side spectator benches
+    buildings[6][2] = TILES.BENCH;
+    buildings[6][3] = TILES.BENCH_R;
+    buildings[10][2] = TILES.BENCH;
+    buildings[10][3] = TILES.BENCH_R;
+    buildings[14][2] = TILES.BENCH;
+    buildings[14][3] = TILES.BENCH_R;
+    // Right side spectator benches
+    buildings[6][26] = TILES.BENCH;
+    buildings[6][27] = TILES.BENCH_R;
+    buildings[10][26] = TILES.BENCH;
+    buildings[10][27] = TILES.BENCH_R;
+    buildings[14][26] = TILES.BENCH;
+    buildings[14][27] = TILES.BENCH_R;
+
+    // --- Entrance area decorations ---
+    buildings[20][12] = TILES.FLOWER;
+    buildings[20][17] = TILES.FLOWER_YELLOW;
+    buildings[22][12] = TILES.FLOWER_BLUE;
+    buildings[22][17] = TILES.FLOWER;
+
+    // --- Barrels at corners ---
+    buildings[2][2] = TILES.BARREL;
+    collisions[2][2] = 1;
+    buildings[2][27] = TILES.BARREL;
+    collisions[2][27] = 1;
+
+    // --- Gold posts at entrance ---
+    buildings[19][13] = TILES.GOLD_POST;
+    collisions[19][13] = 1;
+    buildings[19][16] = TILES.GOLD_POST;
+    collisions[19][16] = 1;
+
+    // --- Sign at entrance ---
+    buildings[21][14] = TILES.SIGN_POST;
+    collisions[21][14] = 1;
+
+    // --- Pebble decorations ---
+    buildings[20][8] = TILES.PEBBLES;
+    buildings[20][21] = TILES.PEBBLES;
+
+    // --- Borders ---
+    setBorders(collisions, W, H);
+    collisions[H - 1][14] = 0;
+    collisions[H - 1][15] = 0;
+
+    return { ground, buildings, collisions, above, width: W, height: H };
 }
 
 // ===== MAP REGISTRY =====
@@ -721,11 +1247,6 @@ export default class MapManager {
         if (this.layers.ground) this.layers.ground.destroy();
         if (this.layers.buildings) this.layers.buildings.destroy();
         if (this.layers.above) this.layers.above.destroy();
-        // Destroy previous house sprites
-        if (this.houseSprites) {
-            for (const s of this.houseSprites) s.destroy();
-        }
-        this.houseSprites = [];
 
         const mapData = MAPS[mapName]();
         this.currentMap = mapData;
@@ -754,20 +1275,6 @@ export default class MapManager {
         });
         const aTileset = aboveMap.addTilesetImage(TILESET_NAME, TILESET_NAME, TILE_SIZE, TILE_SIZE);
         this.layers.above = aboveMap.createLayer(0, aTileset).setDepth(20);
-
-        // Place house sprites
-        if (mapData.houses) {
-            for (const h of mapData.houses) {
-                if (!this.scene.textures.exists(h.spriteKey)) continue;
-                // Position: bottom-center of the collision footprint
-                const footprintCenterX = (h.tileX + h.tileW / 2) * TILE_SIZE;
-                const footprintBottomY = (h.tileY + h.tileH) * TILE_SIZE;
-                const sprite = this.scene.add.image(footprintCenterX, footprintBottomY, h.spriteKey);
-                sprite.setOrigin(0.5, 1); // anchor at bottom-center
-                sprite.setDepth(8); // between buildings (5) and above (20)
-                this.houseSprites.push(sprite);
-            }
-        }
 
         return mapData;
     }
