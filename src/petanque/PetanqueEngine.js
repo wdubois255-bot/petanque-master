@@ -381,6 +381,24 @@ export default class PetanqueEngine {
                 if (ball.gfx) { ball.gfx.setVisible(true); ball.shadow.setVisible(true); }
                 ball.draw();
 
+                // Check immediate collision at landing (ball may have landed ON another ball)
+                const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive && b !== ball);
+                for (const other of allBodies) {
+                    const cdx = ball.x - other.x;
+                    const cdy = ball.y - other.y;
+                    const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+                    if (cdist < ball.radius + other.radius) {
+                        // Ball landed on top of another — give it velocity if it has none
+                        if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
+                            // Plombée/demi-portée with low roll: use landing direction as impulse
+                            const landAngle = Math.atan2(targetY - startY, targetX - startX);
+                            const minSpeed = 2.0; // Minimum impact speed
+                            rollVx = Math.cos(landAngle) * minSpeed;
+                            rollVy = Math.sin(landAngle) * minSpeed;
+                        }
+                    }
+                }
+
                 // Landing effects vary by technique
                 const shakeIntensity = isTir ? THROW_SHAKE_INTENSITY * 2.5
                     : isPlombee ? THROW_SHAKE_INTENSITY * 1.5
