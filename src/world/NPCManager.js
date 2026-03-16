@@ -8,8 +8,28 @@ export default class NPCManager {
 
     loadNPCs(mapName, npcData) {
         this.clear();
+
+        // If the MapManager loaded a Tiled map with embedded NPC data, use that
+        const mapManager = this.scene.mapManager;
+        if (mapManager && mapManager.isTiled && mapManager.tiledNpcData.length > 0) {
+            this.loadFromTiledData(mapManager.tiledNpcData);
+            return;
+        }
+
+        // Fallback: load from npcs.json
         const mapNPCs = npcData.npcs.filter(n => n.map === mapName);
         for (const data of mapNPCs) {
+            const npc = new NPC(this.scene, data);
+            this.npcs.push(npc);
+        }
+    }
+
+    /**
+     * Load NPCs from Tiled object layer data (already parsed by MapManager).
+     * Each entry has: id, name, map, tile_x, tile_y, sprite, type, difficulty, etc.
+     */
+    loadFromTiledData(tiledNpcArray) {
+        for (const data of tiledNpcArray) {
             const npc = new NPC(this.scene, data);
             this.npcs.push(npc);
         }

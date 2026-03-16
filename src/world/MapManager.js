@@ -1205,6 +1205,10 @@ export default class MapManager {
         this.currentMap = null;
         this.currentMapName = null;
         this.layers = {};
+        this.isTiled = false;
+        this.tiledMap = null;
+        this.tiledExits = [];
+        this.tiledNpcData = [];
     }
 
     loadMap(mapName) {
@@ -1212,7 +1216,19 @@ export default class MapManager {
         if (this.layers.ground) this.layers.ground.destroy();
         if (this.layers.buildings) this.layers.buildings.destroy();
         if (this.layers.above) this.layers.above.destroy();
+        if (this.layers.collisions) { this.layers.collisions.destroy(); this.layers.collisions = null; }
+        this.tiledMap = null;
+        this.tiledExits = [];
+        this.tiledNpcData = [];
+        this.isTiled = false;
 
+        // Check if a Tiled map exists in the cache
+        const tiledKey = mapName + '_tiled';
+        if (this.scene.cache.tilemap.has(tiledKey)) {
+            return this.loadTiledMap(mapName);
+        }
+
+        // Fallback: procedural generation
         const mapData = MAPS[mapName]();
         this.currentMap = mapData;
         this.currentMapName = mapName;
@@ -1244,15 +1260,170 @@ export default class MapManager {
         return mapData;
     }
 
+    /**
+     * Load a Tiled .tmj map. Returns an object with { npcData } for NPCManager.
+     * Expected layers: Ground, Buildings, Above, Collisions (optional), NPCs (object), Exits (object)
+     */
+    loadTiledMap(mapName) {
+        const tiledKey = mapName + '_tiled';
+        this.isTiled = true;
+        this.currentMapName = mapName;
+
+        const map = this.scene.make.tilemap({ key: tiledKey });
+        this.tiledMap = map;
+
+        // Add tileset - Tiled tileset name MUST be 'basechip_combined'
+        const tileset = map.addTilesetImage('basechip_combined', 'basechip_combined', 32, 32);
+
+        // Create tile layers
+        const groundLayer = map.createLayer('Ground', tileset);
+        if (groundLayer) {
+            groundLayer.setDepth(0);
+            this.layers.ground = groundLayer;
+        }
+
+        const buildingsLayer = map.createLayer('Buildings', tileset);
+        if (buildingsLayer) {
+            buildingsLayer.setDepth(5);
+            this.layers.buildings = buildingsLayer;
+        }
+
+        const aboveLayer = map.createLayer('Above', tileset);
+        if (aboveLayer) {
+            aboveLayer.setDepth(20);
+            this.layers.above = aboveLayer;
+        }
+
+        // Optional Collisions layer (hidden, used for walkability)
+        const collisionsLayer = map.createLayer('Collisions', tileset);
+        if (collisionsLayer) {
+            collisionsLayer.setVisible(false);
+            this.layers.collisions = collisionsLayer;
+        }
+
+        // Build a compatible currentMap object for width/height
+        this.currentMap = {
+            width: map.width,
+            height: map.height,
+            collisions: null  // handled by tiledMap layers
+        };
+
+        // Parse Exits object layer
+        this.tiledExits = [];
+        const exitsLayer = map.getObjectLayer('Exits');
+        if (exitsLayer) {
+            for (const obj of exitsLayer.objects) {
+                const props = this._objectProperties(obj);
+                // Rectangle exit zone: convert pixel coords to tile range
+                const startTileX = Math.floor(obj.x / TILE_SIZE);
+                const startTileY = Math.floor(obj.y / TILE_SIZE);
+                const endTileX = Math.floor((obj.x + (obj.width || TILE_SIZE)) / TILE_SIZE);
+                const endTileY = Math.floor((obj.y + (obj.height || TILE_SIZE)) / TILE_SIZE);
+
+                const tilePositions = [];
+                for (let tx = startTileX; tx < endTileX; tx++) {
+                    for (let ty = startTileY; ty < endTileY; ty++) {
+                        tilePositions.push({ x: tx, y: ty });
+                    }
+                }
+
+                this.tiledExits.push({
+                    tiles: tilePositions,
+                    target: {
+                        map: props.target_map || 'village_depart',
+                        spawnX: parseInt(props.spawn_x, 10) || 0,
+                        spawnY: parseInt(props.spawn_y, 10) || 0
+                    }
+                });
+            }
+        }
+
+        // Parse NPCs object layer
+        this.tiledNpcData = [];
+        const npcsLayer = map.getObjectLayer('NPCs');
+        if (npcsLayer) {
+            for (const obj of npcsLayer.objects) {
+                const props = this._objectProperties(obj);
+                this.tiledNpcData.push({
+                    id: props.npc_id || obj.name || `tiled_npc_${obj.id}`,
+                    name: obj.name || 'PNJ',
+                    map: mapName,
+                    tile_x: Math.floor(obj.x / TILE_SIZE),
+                    tile_y: Math.floor(obj.y / TILE_SIZE),
+                    sprite: props.sprite_key || 'npc_villager_1',
+                    type: props.type || obj.type || 'villager',
+                    difficulty: props.difficulty || 'easy',
+                    terrain: props.terrain || 'terre',
+                    format: props.format || 'tete_a_tete',
+                    badge: props.badge || null,
+                    facing: props.facing || 'down',
+                    view_distance: parseInt(props.view_distance, 10) || 0,
+                    dialogue_before: props.dialogue ? props.dialogue.split('|') : ['...'],
+                    dialogue_after: props.dialogue_after ? props.dialogue_after.split('|') : ['...'],
+                    dialogue_default: props.dialogue_default ? props.dialogue_default.split('|') : undefined,
+                    requires_badge: props.requires_badge || null
+                });
+            }
+        }
+
+        return { npcData: this.tiledNpcData };
+    }
+
+    /**
+     * Convert Tiled object properties array to a flat key-value object.
+     * Tiled stores custom properties as [{name, value, type}].
+     */
+    _objectProperties(obj) {
+        const result = {};
+        if (obj.properties) {
+            for (const prop of obj.properties) {
+                result[prop.name] = prop.value;
+            }
+        }
+        return result;
+    }
+
     isWalkable(tileX, tileY) {
         if (!this.currentMap) return false;
         if (tileX < 0 || tileX >= this.currentMap.width) return false;
         if (tileY < 0 || tileY >= this.currentMap.height) return false;
+
+        // Tiled map: check Collisions layer and tile properties
+        if (this.isTiled) {
+            // Check dedicated Collisions layer (any tile present = blocked)
+            if (this.layers.collisions) {
+                const colTile = this.layers.collisions.getTileAt(tileX, tileY);
+                if (colTile) return false;
+            }
+            // Check Buildings layer for tiles with collides property
+            if (this.layers.buildings) {
+                const bTile = this.layers.buildings.getTileAt(tileX, tileY);
+                if (bTile && bTile.properties && bTile.properties.collides) return false;
+            }
+            // Check Above layer for tiles with collides property
+            if (this.layers.above) {
+                const aTile = this.layers.above.getTileAt(tileX, tileY);
+                if (aTile && aTile.properties && aTile.properties.collides) return false;
+            }
+            return true;
+        }
+
+        // Procedural map
         return this.currentMap.collisions[tileY][tileX] === 0;
     }
 
     getMapPixelSize() {
         if (!this.currentMap) return { w: 0, h: 0 };
+
+        // Tiled map: use tilemap pixel dimensions
+        if (this.isTiled && this.tiledMap) {
+            return {
+                w: this.tiledMap.widthInPixels,
+                h: this.tiledMap.heightInPixels
+            };
+        }
+
+        // Procedural map
         return {
             w: this.currentMap.width * TILE_SIZE,
             h: this.currentMap.height * TILE_SIZE
@@ -1261,6 +1432,20 @@ export default class MapManager {
 
     isExit(tileX, tileY) {
         if (!this.currentMapName) return null;
+
+        // Tiled map: check parsed exits
+        if (this.isTiled) {
+            for (const exit of this.tiledExits) {
+                for (const tile of exit.tiles) {
+                    if (tile.x === tileX && tile.y === tileY) {
+                        return exit.target;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Procedural map: check MAP_EXITS
         const exits = MAP_EXITS[this.currentMapName];
         if (!exits) return null;
 

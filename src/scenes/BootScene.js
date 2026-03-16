@@ -43,6 +43,21 @@ export default class BootScene extends Phaser.Scene {
             });
         }
 
+        // Tiled maps (.tmj) - try to load for each map, will silently fail if not found
+        const mapNames = [
+            'village_depart', 'route_1', 'village_arene_1', 'route_2',
+            'village_arene_2', 'route_3', 'village_arene_3', 'arene_finale'
+        ];
+        for (const name of mapNames) {
+            this.load.tilemapTiledJSON(`${name}_tiled`, `${BASE}assets/maps/${name}.tmj`);
+        }
+        // Don't fail the whole boot if .tmj files are missing
+        this.load.on('loaderror', (file) => {
+            if (file.key && file.key.endsWith('_tiled')) {
+                console.log(`[BootScene] No Tiled map for ${file.key}, will use procedural`);
+            }
+        });
+
         // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {
             fontFamily: 'monospace',
