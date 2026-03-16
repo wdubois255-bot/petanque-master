@@ -5,24 +5,16 @@ import { TILES } from './TilesetGenerator.js';
 const TILESET_NAME = 'basechip_combined';
 const TILESET_COLS = 8;
 
-// ===== HOUSE TILE INDICES (extracted from Pipoya sample map TMX) =====
-// Real Pipoya houses use rows 19-23 of basechip:
-const H = {
-    ROOF_BORDER_TL: 178,  // row 22 col 2
-    ROOF_BORDER_H:  184,  // row 23 col 0 - horizontal roof border
-    ROOF_BORDER_TR: 179,  // row 22 col 3
-    WALL_EDGE:      176,  // row 22 col 0 - vertical frame/edge
-    ATTIC_L:        152,  // row 19 col 0 - roof/attic left
-    ATTIC_M:        153,  // row 19 col 1 - roof/attic middle
-    ATTIC_R:        154,  // row 19 col 2 - roof/attic right
-    WALL_L:         160,  // row 20 col 0 - wall panel left
-    WALL_M:         161,  // row 20 col 1 - wall panel middle
-    WALL_R:         162,  // row 20 col 2 - wall panel right
-    WIN_L:          168,  // row 21 col 0 - wall+window left
-    WIN_M:          169,  // row 21 col 1 - wall+window middle
-    WIN_R:          170,  // row 21 col 2 - wall+window right
-    BASE_TL:        186,  // row 23 col 2 - base border left
-    BASE_TR:        180,  // row 22 col 4 - base border right
+// ===== HOUSE STYLES (from Pipoya TMX building layer analysis) =====
+// Each style is a column in the basechip rows 70-73 (roof+wall) and 44-45 (base+door)
+// Structure: roof_top(row70), roof_bot(row71), wall(row72), wall_windows(row73), base(row44), base_door(row45)
+const HOUSE_STYLES = {
+    wood:  { roof: 560, roofB: 568, wall: 576, winWall: 584, base: 352, baseM: 353, door: 359, baseR: 354 },
+    tan:   { roof: 561, roofB: 569, wall: 577, winWall: 585, base: 352, baseM: 353, door: 359, baseR: 354 },
+    blue:  { roof: 562, roofB: 570, wall: 578, winWall: 586, base: 352, baseM: 353, door: 359, baseR: 354 },
+    red:   { roof: 563, roofB: 571, wall: 579, winWall: 587, base: 352, baseM: 353, door: 359, baseR: 354 },
+    grey:  { roof: 564, roofB: 572, wall: 580, winWall: 588, base: 352, baseM: 353, door: 359, baseR: 354 },
+    straw: { roof: 566, roofB: 574, wall: 582, winWall: 590, base: 352, baseM: 353, door: 359, baseR: 354 },
 };
 
 // ===== LARGE TREE DEFINITIONS =====
@@ -59,52 +51,45 @@ function setBorders(collisions, W, H) {
     }
 }
 
-// Place a house using EXACT Pipoya sample map tile structure.
-// Layout (7 rows tall for a proper house, but we compact to fit):
-//   Row 0: roof border (above layer) - ROOF_BORDER_TL + H + TR
-//   Row 1: attic (above layer) - WALL_EDGE + ATTIC_L/M/R + WALL_EDGE
-//   Row 2: wall panels (buildings layer) - WALL_EDGE + WALL_L/M/R + WALL_EDGE
-//   Row 3: windows row (buildings layer) - WALL_EDGE + WIN_L/M/R + WALL_EDGE
-//   Row 4: base border (buildings layer) - BASE_TL + ROOF_BORDER_H + BASE_TR
-// w must be >= 3
+// Place a house using EXACT Pipoya TMX tile structure.
+// 5 rows: roof_top, roof_bottom, wall, wall_with_windows, base_with_door
+// w >= 3, style = 'wood'|'tan'|'blue'|'red'|'grey'|'straw'
 function placeHouse(buildings, collisions, above, startX, startY, w, h, style) {
-    const endX = startX + w - 1;
+    const s = HOUSE_STYLES[style] || HOUSE_STYLES.wood;
 
-    // Row 0: roof border (above layer)
-    above[startY][startX] = H.ROOF_BORDER_TL;
-    for (let x = startX + 1; x < endX; x++) above[startY][x] = H.ROOF_BORDER_H;
-    above[startY][endX] = H.ROOF_BORDER_TR;
-    for (let x = startX; x <= endX; x++) collisions[startY][x] = 1;
+    // Row 0: roof top (above layer, same tile repeated)
+    for (let x = startX; x < startX + w; x++) {
+        above[startY][x] = s.roof;
+        collisions[startY][x] = 1;
+    }
 
-    // Row 1: attic/roof interior (above layer)
-    above[startY + 1][startX] = H.WALL_EDGE;
-    above[startY + 1][startX + 1] = H.ATTIC_L;
-    for (let x = startX + 2; x < endX - 1; x++) above[startY + 1][x] = H.ATTIC_M;
-    if (w >= 4) above[startY + 1][endX - 1] = H.ATTIC_R;
-    above[startY + 1][endX] = H.WALL_EDGE;
-    for (let x = startX; x <= endX; x++) collisions[startY + 1][x] = 1;
+    // Row 1: roof bottom (above layer)
+    for (let x = startX; x < startX + w; x++) {
+        above[startY + 1][x] = s.roofB;
+        collisions[startY + 1][x] = 1;
+    }
 
-    // Row 2: wall panels (buildings layer)
-    buildings[startY + 2][startX] = H.WALL_EDGE;
-    buildings[startY + 2][startX + 1] = H.WALL_L;
-    for (let x = startX + 2; x < endX - 1; x++) buildings[startY + 2][x] = H.WALL_M;
-    if (w >= 4) buildings[startY + 2][endX - 1] = H.WALL_R;
-    buildings[startY + 2][endX] = H.WALL_EDGE;
-    for (let x = startX; x <= endX; x++) collisions[startY + 2][x] = 1;
+    // Row 2: wall (buildings layer, same tile repeated)
+    for (let x = startX; x < startX + w; x++) {
+        buildings[startY + 2][x] = s.wall;
+        collisions[startY + 2][x] = 1;
+    }
 
     // Row 3: wall with windows (buildings layer)
-    buildings[startY + 3][startX] = H.WALL_EDGE;
-    buildings[startY + 3][startX + 1] = H.WIN_L;
-    for (let x = startX + 2; x < endX - 1; x++) buildings[startY + 3][x] = H.WIN_M;
-    if (w >= 4) buildings[startY + 3][endX - 1] = H.WIN_R;
-    buildings[startY + 3][endX] = H.WALL_EDGE;
-    for (let x = startX; x <= endX; x++) collisions[startY + 3][x] = 1;
+    for (let x = startX; x < startX + w; x++) {
+        buildings[startY + 3][x] = s.winWall;
+        collisions[startY + 3][x] = 1;
+    }
 
-    // Row 4: base border (buildings layer)
-    buildings[startY + 4][startX] = H.BASE_TL;
-    for (let x = startX + 1; x < endX; x++) buildings[startY + 4][x] = H.ROOF_BORDER_H;
-    buildings[startY + 4][endX] = H.BASE_TR;
-    for (let x = startX; x <= endX; x++) collisions[startY + 4][x] = 1;
+    // Row 4: base with door in center (buildings layer)
+    const doorX = startX + Math.floor(w / 2);
+    for (let x = startX; x < startX + w; x++) {
+        buildings[startY + 4][x] = s.baseM;
+        collisions[startY + 4][x] = 1;
+    }
+    buildings[startY + 4][startX] = s.base;
+    buildings[startY + 4][startX + w - 1] = s.baseR;
+    buildings[startY + 4][doorX] = s.door;
 }
 
 // Place a 2x2 well
@@ -336,15 +321,15 @@ function createVillageMap() {
 
     // --- Tile-based houses ---
     // House 1: red house, top-left area (5 wide)
-    placeHouse(buildings, collisions, above, 2, 3, 5, 4, 'red');
+    placeHouse(buildings, collisions, above, 2, 2, 5, 5, 'wood');
     // House 2: blue house, top-right area (before river)
-    placeHouse(buildings, collisions, above, 18, 3, 5, 4, 'blue');
+    placeHouse(buildings, collisions, above, 18, 2, 5, 5, 'red');
     // House 3: wood house, left side
-    placeHouse(buildings, collisions, above, 2, 9, 4, 4, 'wood');
+    placeHouse(buildings, collisions, above, 2, 8, 4, 5, 'blue');
     // House 4: white house, south-left
-    placeHouse(buildings, collisions, above, 2, 18, 5, 4, 'white');
+    placeHouse(buildings, collisions, above, 2, 17, 5, 5, 'tan');
     // House 5: red house, south area
-    placeHouse(buildings, collisions, above, 8, 18, 4, 4, 'red');
+    placeHouse(buildings, collisions, above, 8, 17, 4, 5, 'grey');
 
     // --- Clotheslines between houses ---
     placeClothesline(buildings, 7, 5);
@@ -588,11 +573,11 @@ function createVillageArene1Map() {
 
     // --- Houses in different styles ---
     // Left side houses
-    placeHouse(buildings, collisions, above, 2, 3, 4, 4, 'red');
-    placeHouse(buildings, collisions, above, 2, 18, 5, 4, 'wood');
+    placeHouse(buildings, collisions, above, 2, 2, 4, 5, 'wood');
+    placeHouse(buildings, collisions, above, 2, 17, 5, 5, 'tan');
     // Right side houses
-    placeHouse(buildings, collisions, above, 24, 3, 4, 4, 'blue');
-    placeHouse(buildings, collisions, above, 23, 18, 5, 4, 'white');
+    placeHouse(buildings, collisions, above, 24, 2, 4, 5, 'blue');
+    placeHouse(buildings, collisions, above, 23, 17, 5, 5, 'grey');
 
     // --- Market stall area (south-east plaza) ---
     buildings[13][20] = TILES.MARKET_STALL;
@@ -788,10 +773,10 @@ function createVillageArene2Map() {
     placeIronFenceRect(buildings, collisions, 5, 1, 20, 8, 12, 13, 8);
 
     // --- Houses in different styles ---
-    placeHouse(buildings, collisions, above, 1, 10, 4, 4, 'blue');
-    placeHouse(buildings, collisions, above, 20, 10, 4, 4, 'red');
-    placeHouse(buildings, collisions, above, 1, 17, 5, 4, 'wood');
-    placeHouse(buildings, collisions, above, 19, 17, 5, 4, 'white');
+    placeHouse(buildings, collisions, above, 1, 9, 4, 5, 'blue');
+    placeHouse(buildings, collisions, above, 20, 9, 4, 5, 'red');
+    placeHouse(buildings, collisions, above, 1, 16, 5, 5, 'wood');
+    placeHouse(buildings, collisions, above, 19, 16, 5, 5, 'straw');
 
     // --- Well/fountain in plaza ---
     placeWell(buildings, collisions, 12, 12);
@@ -973,10 +958,10 @@ function createVillageArene3Map() {
     }
 
     // --- Houses (grander, varied styles) ---
-    placeHouse(buildings, collisions, above, 1, 10, 5, 4, 'red');
-    placeHouse(buildings, collisions, above, 19, 10, 5, 4, 'blue');
-    placeHouse(buildings, collisions, above, 1, 17, 5, 4, 'wood');
-    placeHouse(buildings, collisions, above, 19, 17, 5, 4, 'white');
+    placeHouse(buildings, collisions, above, 1, 9, 5, 5, 'red');
+    placeHouse(buildings, collisions, above, 19, 9, 5, 5, 'blue');
+    placeHouse(buildings, collisions, above, 1, 16, 5, 5, 'wood');
+    placeHouse(buildings, collisions, above, 19, 16, 5, 5, 'straw');
 
     // --- Fountain/well in plaza center ---
     placeWell(buildings, collisions, 12, 12);
