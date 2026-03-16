@@ -498,43 +498,18 @@ export default class AimingSystem {
             angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult
         );
 
-        // Landing point marker (circle at impact point)
-        this._predictionGfx.lineStyle(2, color, 0.6);
-        this._predictionGfx.strokeCircle(params.targetX, params.targetY, 8);
-        this._predictionGfx.fillStyle(color, 0.15);
-        this._predictionGfx.fillCircle(params.targetX, params.targetY, 8);
-
-        // Dashed line from origin to landing point
-        const dashLen = 6;
-        const gapLen = 4;
-        const totalDist = Math.sqrt((params.targetX - originX) ** 2 + (params.targetY - originY) ** 2);
-        const dashAngle = Math.atan2(params.targetY - originY, params.targetX - originX);
-        let d = 0;
-        this._predictionGfx.lineStyle(1, color, 0.3);
-        while (d < totalDist) {
-            const sx = originX + Math.cos(dashAngle) * d;
-            const sy = originY + Math.sin(dashAngle) * d;
-            const ed = Math.min(d + dashLen, totalDist);
-            const ex = originX + Math.cos(dashAngle) * ed;
-            const ey = originY + Math.sin(dashAngle) * ed;
-            this._predictionGfx.beginPath();
-            this._predictionGfx.moveTo(sx, sy);
-            this._predictionGfx.lineTo(ex, ey);
-            this._predictionGfx.strokePath();
-            d += dashLen + gapLen;
-        }
-
-        // Rolling prediction dots (after landing)
-        const points = Ball.simulateTrajectory(
-            params.targetX, params.targetY,
-            params.rollVx, params.rollVy,
-            this.engine.frictionMult
-        );
-        for (let i = 0; i < points.length; i++) {
-            const alpha = 0.5 - (i / points.length) * 0.4;
-            this._predictionGfx.fillStyle(0xFFFFFF, alpha);
-            this._predictionGfx.fillCircle(points[i].x, points[i].y, PREDICTION_DOT_RADIUS);
-        }
+        // Landing point marker only — no trajectory, no rolling dots
+        // Real petanque: you choose your "donnée" (landing spot), the rest is skill
+        this._predictionGfx.lineStyle(1.5, color, 0.5);
+        this._predictionGfx.strokeCircle(params.targetX, params.targetY, 6);
+        // Small cross inside landing marker
+        const cx = params.targetX, cy = params.targetY;
+        this._predictionGfx.beginPath();
+        this._predictionGfx.moveTo(cx - 4, cy);
+        this._predictionGfx.lineTo(cx + 4, cy);
+        this._predictionGfx.moveTo(cx, cy - 4);
+        this._predictionGfx.lineTo(cx, cy + 4);
+        this._predictionGfx.strokePath();
 
         // Power text — show raw % (what the player feels) not the quadratic value
         if (this._powerText) this._powerText.destroy();

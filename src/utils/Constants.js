@@ -39,17 +39,14 @@ export const THROW_FLY_DURATION = 300;
 export const THROW_SHAKE_INTENSITY = 4;
 export const THROW_SHAKE_DURATION = 150;
 
-// Petanque - loft presets
-// Valeurs basees sur la vraie petanque (research/24) :
-// - Roulette : 15% vol, 85% roulement, arc tres bas, roule longtemps
-// - Demi-portee : 50/50 vol/roulement, arc moyen (1.5-2m reel)
-// - Plombee : 90% vol, 10% roulement, arc haut (3-4m reel), boule "meurt" a l'impact
-// - Tir au fer : 95% vol, 5% roulement, arc moyen-haut, 2.5x plus rapide que pointage
-//
-// rollEfficiency calibre pour que totalDist (vol+roll) atteigne le cochonnet a ~70% power
+// Petanque - loft presets (research/25_cahier_des_charges_realisme.md)
+// - Roulette : 15% vol, 85% roulement, arc tres bas (~0.3-0.5m reel)
+// - Demi-portee : 50/50, arc moyen (1.5-2m reel)
+// - Plombee : 85% vol, 15% roulement (PAS une boule morte, roule ~10-15% de sa trajectoire)
+// - Tir au fer : 95% vol, arc haut (2-3m), impact violent
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.15, arcHeight: -6, flyDurationMult: 0.5, rollEfficiency: 0.7
+    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 0.7
 };
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
@@ -57,7 +54,7 @@ export const LOFT_DEMI_PORTEE = {
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15
+    landingFactor: 0.85, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.35
 };
 // Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
 // Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :
@@ -67,7 +64,7 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 10.0
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 14.0
 };
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
