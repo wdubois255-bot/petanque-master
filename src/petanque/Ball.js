@@ -18,6 +18,8 @@ export default class Ball {
         this.isAlive = true;
         this.isMoving = false;
         this.frictionMult = options.frictionMult || 1.0;
+        this._terrain = options.terrain || null;   // terrain data (slope, zones, walls)
+        this._bounds = options.bounds || null;      // terrain bounds {x, y, w, h}
         this.id = options.id || `ball_${Date.now()}_${Math.random()}`;
 
         this._squashTimer = 0;
@@ -131,10 +133,43 @@ export default class Ball {
         if (!this.isAlive || !this.isMoving) return;
 
         const cappedDt = Math.min(dt, 50) / 1000;
+        const terrain = this._terrain;
+
+        // --- Slope: apply gravity component (terrain Colline) ---
+        if (terrain?.slope) {
+            const s = terrain.slope;
+            // "down" = boules roll toward +Y (bottom of screen)
+            const slopeForce = s.gravity_component * 60;
+            if (s.direction === 'down') {
+                this.vy += slopeForce * cappedDt;
+            } else if (s.direction === 'up') {
+                this.vy -= slopeForce * cappedDt;
+            } else if (s.direction === 'left') {
+                this.vx -= slopeForce * cappedDt;
+            } else if (s.direction === 'right') {
+                this.vx += slopeForce * cappedDt;
+            }
+        }
+
+        // --- Dynamic friction: check if ball is in a zone (terrain Parc) ---
+        let effectiveFriction = this.frictionMult;
+        if (terrain?.zones?.length && this._bounds) {
+            const b = this._bounds;
+            for (const zone of terrain.zones) {
+                const zx = b.x + zone.rect.x * b.w;
+                const zy = b.y + zone.rect.y * b.h;
+                const zw = zone.rect.w * b.w;
+                const zh = zone.rect.h * b.h;
+                if (this.x >= zx && this.x <= zx + zw && this.y >= zy && this.y <= zy + zh) {
+                    effectiveFriction = zone.friction;
+                    break;
+                }
+            }
+        }
 
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > SPEED_THRESHOLD) {
-            const frictionDecel = FRICTION_BASE * this.frictionMult * 60;
+            const frictionDecel = FRICTION_BASE * effectiveFriction * 60;
             const newSpeed = Math.max(0, speed - frictionDecel * cappedDt);
             const ratio = newSpeed / speed;
             this.vx *= ratio;
@@ -150,6 +185,31 @@ export default class Ball {
 
         this.x += this.vx * cappedDt * 60;
         this.y += this.vy * cappedDt * 60;
+
+        // --- Wall rebounds (terrain Docks) ---
+        if (terrain?.walls && this._bounds) {
+            const b = this._bounds;
+            const r = this.radius;
+            const wallRestitution = 0.7; // lose 30% speed on wall bounce
+            if (this.x - r < b.x) {
+                this.x = b.x + r;
+                this.vx = Math.abs(this.vx) * wallRestitution;
+                this._squashTimer = 4;
+            } else if (this.x + r > b.x + b.w) {
+                this.x = b.x + b.w - r;
+                this.vx = -Math.abs(this.vx) * wallRestitution;
+                this._squashTimer = 4;
+            }
+            if (this.y - r < b.y) {
+                this.y = b.y + r;
+                this.vy = Math.abs(this.vy) * wallRestitution;
+                this._squashTimer = 4;
+            } else if (this.y + r > b.y + b.h) {
+                this.y = b.y + b.h - r;
+                this.vy = -Math.abs(this.vy) * wallRestitution;
+                this._squashTimer = 4;
+            }
+        }
 
         this.draw();
     }

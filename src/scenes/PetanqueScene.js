@@ -39,6 +39,12 @@ export default class PetanqueScene extends Phaser.Scene {
         const terrainColor = TERRAIN_COLORS[this.terrainType];
         this.frictionMult = TERRAIN_FRICTION[this.terrainType];
 
+        // Load full terrain data from JSON (slope, zones, walls)
+        const terrainsJson = this.cache.json.get('terrains');
+        const surfaceToTerrain = { terre: 'village', herbe: 'parc', sable: 'plage', dalles: 'docks' };
+        const terrainId = surfaceToTerrain[this.terrainType] || 'village';
+        this.terrainFullData = terrainsJson?.stages?.find(s => s.id === terrainId) || null;
+
         this.terrainX = (GAME_WIDTH - TERRAIN_WIDTH) / 2;
         this.terrainY = (GAME_HEIGHT - TERRAIN_HEIGHT) / 2;
 
@@ -51,6 +57,7 @@ export default class PetanqueScene extends Phaser.Scene {
             terrainType: this.terrainType,
             frictionMult: this.frictionMult,
             format: this.format,
+            terrainData: this.terrainFullData,
             terrainBounds: {
                 x: this.terrainX,
                 y: this.terrainY,
@@ -88,6 +95,16 @@ export default class PetanqueScene extends Phaser.Scene {
             this.terrainX, this.terrainY,
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
+
+        // Camera follow setup: invisible target that tracks the active ball
+        this._cameraTarget = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 1, 1, 0, 0).setDepth(0);
+        this._cameraFollowing = false;
+        this._cameraDefaultX = GAME_WIDTH / 2;
+        this._cameraDefaultY = GAME_HEIGHT / 2;
+
+        // Set camera bounds to allow slight panning beyond game area
+        const camPad = 60;
+        this.cameras.main.setBounds(-camPad, -camPad, GAME_WIDTH + camPad * 2, GAME_HEIGHT + camPad * 2);
 
         startCigales();
         this.engine.startGame();
@@ -649,6 +666,50 @@ export default class PetanqueScene extends Phaser.Scene {
         tCtx.fillStyle = edgeGrad;
         tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
+        // Draw friction zones (Parc: gravel paths)
+        if (this.terrainFullData?.zones?.length) {
+            for (const zone of this.terrainFullData.zones) {
+                const zx = zone.rect.x * TERRAIN_WIDTH;
+                const zy = zone.rect.y * TERRAIN_HEIGHT;
+                const zw = zone.rect.w * TERRAIN_WIDTH;
+                const zh = zone.rect.h * TERRAIN_HEIGHT;
+                tCtx.fillStyle = zone.color || '#B8A888';
+                tCtx.globalAlpha = 0.6;
+                tCtx.fillRect(zx, zy, zw, zh);
+                // Add gravel texture to zone
+                tCtx.globalAlpha = 0.4;
+                for (let i = 0; i < 60; i++) {
+                    tCtx.fillStyle = Math.random() > 0.5 ? '#C4B498' : '#A89878';
+                    const s = 1 + Math.random() * 1.5;
+                    tCtx.fillRect(zx + Math.random() * zw, zy + Math.random() * zh, s, s);
+                }
+                tCtx.globalAlpha = 1;
+            }
+        }
+
+        // Draw slope indicator (Colline: arrow showing direction)
+        if (this.terrainFullData?.slope) {
+            tCtx.save();
+            tCtx.globalAlpha = 0.15;
+            tCtx.fillStyle = '#000000';
+            const cx = TERRAIN_WIDTH / 2;
+            const cy = TERRAIN_HEIGHT / 2;
+            // Draw several small arrows pointing down
+            for (let i = 0; i < 5; i++) {
+                const ax = 30 + i * (TERRAIN_WIDTH - 60) / 4;
+                for (let j = 0; j < 3; j++) {
+                    const ay = 80 + j * 130;
+                    tCtx.beginPath();
+                    tCtx.moveTo(ax, ay);
+                    tCtx.lineTo(ax - 4, ay - 8);
+                    tCtx.lineTo(ax + 4, ay - 8);
+                    tCtx.closePath();
+                    tCtx.fill();
+                }
+            }
+            tCtx.restore();
+        }
+
         terrainTex.refresh();
 
         // Drop shadow under terrain
@@ -818,5 +879,53 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.engine) this.engine.update(delta);
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
+
+        // Camera follow: track the fastest moving ball
+        this._updateCameraFollow();
+    }
+
+    _updateCameraFollow() {
+        const allBalls = this.engine ? [...this.engine.balls, this.engine.cochonnet].filter(b => b?.isAlive) : [];
+        let fastestBall = null;
+        let maxSpeed = 0;
+
+        for (const ball of allBalls) {
+            if (ball.isMoving) {
+                const spd = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (spd > maxSpeed) {
+                    maxSpeed = spd;
+                    fastestBall = ball;
+                }
+            }
+        }
+
+        const cam = this.cameras.main;
+        const lerp = 0.08;
+
+        if (fastestBall && maxSpeed > 1.5) {
+            // Follow the ball with smooth lerp
+            this._cameraTarget.x += (fastestBall.x - this._cameraTarget.x) * lerp;
+            this._cameraTarget.y += (fastestBall.y - this._cameraTarget.y) * lerp;
+
+            if (!this._cameraFollowing) {
+                cam.startFollow(this._cameraTarget, true, lerp, lerp);
+                this._cameraFollowing = true;
+            }
+        } else if (this._cameraFollowing) {
+            // Smooth return to center
+            this._cameraTarget.x += (this._cameraDefaultX - this._cameraTarget.x) * 0.05;
+            this._cameraTarget.y += (this._cameraDefaultY - this._cameraTarget.y) * 0.05;
+
+            const distToCenter = Math.abs(this._cameraTarget.x - this._cameraDefaultX) +
+                                 Math.abs(this._cameraTarget.y - this._cameraDefaultY);
+            if (distToCenter < 2) {
+                cam.stopFollow();
+                cam.scrollX = 0;
+                cam.scrollY = 0;
+                this._cameraTarget.x = this._cameraDefaultX;
+                this._cameraTarget.y = this._cameraDefaultY;
+                this._cameraFollowing = false;
+            }
+        }
     }
 }

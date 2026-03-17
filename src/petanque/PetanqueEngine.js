@@ -32,6 +32,7 @@ export default class PetanqueEngine {
         this.frictionMult = config.frictionMult;
         this.format = config.format;
         this.bounds = config.terrainBounds;
+        this.terrainData = config.terrainData || null; // full terrain JSON (slope, zones, walls)
 
         this.state = null;
         this.balls = [];
@@ -253,7 +254,7 @@ export default class PetanqueEngine {
         // Resolve cochonnet texture from selection
         const cochonnetTexMap = { classique: 'ball_cochonnet', bleu: 'ball_cochonnet_bleu', vert: 'ball_cochonnet_vert' };
         const cochonnetTex = cochonnetTexMap[this.scene.cochonnetType] || 'ball_cochonnet';
-        this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex);
+        this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
 
         // Animate fly
         this._animateThrow(this.cochonnet, clampedX, clampedY, 0, 0, () => {
@@ -301,6 +302,8 @@ export default class PetanqueEngine {
             radius: bouleStats.radius,
             frictionMult: this.frictionMult * (bouleStats.frictionMult || 1),
             textureKey: bouleStats.textureKey || null,
+            terrain: this.terrainData,
+            bounds: this.bounds,
             id: `${team}_${this.ballsPerPlayer - this.remaining[team]}`
         });
         this.balls.push(ball);
@@ -471,6 +474,10 @@ export default class PetanqueEngine {
     }
 
     _checkBoundsAll() {
+        // On wall terrains (Docks), balls bounce off walls instead of dying
+        // Ball.update() handles the actual bounce — skip kill check
+        if (this.terrainData?.walls) return;
+
         for (const ball of this.balls) {
             if (ball.isAlive && ball.checkOutOfBounds(this.bounds)) {
                 ball.kill();
