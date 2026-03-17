@@ -511,10 +511,36 @@ export default class TitleScene extends Phaser.Scene {
             pill.on('pointerdown', clickHandler);
         });
 
-        // Animate menu in
-        this.tweens.add({
-            targets: this._menuContainer, alpha: 1,
-            duration: 400, ease: 'Power2'
+        // Animate menu items in with stagger
+        this._menuContainer.setAlpha(1);
+        const allMenuChildren = this._menuContainer.list;
+        allMenuChildren.forEach(child => child.setAlpha(0));
+        // Stagger: each pill+text pair fades in 80ms apart
+        for (let i = 0; i < items.length; i++) {
+            const pillIdx = i * 2;
+            const txtIdx = i * 2 + 1;
+            const delay = i * 80;
+            if (this._menuItems[pillIdx]) {
+                this._menuItems[pillIdx].setAlpha(0);
+                this.tweens.add({
+                    targets: this._menuItems[pillIdx], alpha: 1,
+                    duration: 250, delay, ease: 'Power2'
+                });
+            }
+            if (this._menuItems[txtIdx]) {
+                this._menuItems[txtIdx].setAlpha(0).setY(this._menuItems[txtIdx].y + 10);
+                this.tweens.add({
+                    targets: this._menuItems[txtIdx], alpha: 1,
+                    y: this._menuItems[txtIdx].y - 10,
+                    duration: 250, delay, ease: 'Back.easeOut'
+                });
+            }
+        }
+
+        // Delay input slightly to let stagger finish
+        this._inputEnabled = false;
+        this.time.delayedCall(items.length * 80 + 250, () => {
+            this._inputEnabled = true;
         });
 
         this._updateSelection();
@@ -724,10 +750,12 @@ export default class TitleScene extends Phaser.Scene {
         const itemCount = Math.floor(this._menuItems.length / 2);
         if (up) {
             this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
+            sfxUIClick();
             this._updateSelection();
         }
         if (down) {
             this._selectedIndex = (this._selectedIndex + 1) % itemCount;
+            sfxUIClick();
             this._updateSelection();
         }
 

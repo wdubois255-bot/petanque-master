@@ -860,6 +860,8 @@ export default class PetanqueEngine {
                                 sfxBouleCochonnet();
                             } else {
                                 sfxBouleBoule();
+                                // Hit stop: brief freeze on boule-boule collision
+                                this._hitstopUntil = Math.max(this._hitstopUntil, Date.now() + 60);
                             }
                             const mx = (allBodies[i].x + allBodies[j].x) / 2;
                             const my = (allBodies[i].y + allBodies[j].y) / 2;

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
+import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -22,6 +23,7 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     create() {
+        setSoundScene(this);
         const chars = this.cache.json.get('characters');
         this.roster = chars.roster.filter(c => c.unlocked || this._isUnlocked(c.id));
         this.allRoster = chars.roster;
@@ -101,15 +103,19 @@ export default class CharSelectScene extends Phaser.Scene {
             cellBg.fillStyle(isLocked ? 0x2A2420 : 0x3A2E28, 0.8);
             cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 8);
 
-            // Portrait placeholder (colored circle with initial, will be replaced by sprites later)
             if (isLocked) {
-                // Locked: show silhouette
-                this.add.text(cx, cy - 10, '?', {
-                    fontFamily: 'monospace', fontSize: '40px', color: '#5A4A38', shadow: SHADOW
-                }).setOrigin(0.5);
-
-                this.add.text(cx, cy + 30, 'VERROUILLE', {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
+                // Locked: show dark silhouette of the character sprite
+                const spriteKey = this._getCharSpriteKey(char);
+                if (this.textures.exists(spriteKey)) {
+                    const sil = this.add.sprite(cx, cy - 12, spriteKey, 0)
+                        .setScale(0.5).setOrigin(0.5).setTint(0x1A1510).setAlpha(0.6);
+                } else {
+                    this.add.text(cx, cy - 10, '?', {
+                        fontFamily: 'monospace', fontSize: '40px', color: '#2A2420', shadow: SHADOW
+                    }).setOrigin(0.5);
+                }
+                this.add.text(cx, cy + 30, '???', {
+                    fontFamily: 'monospace', fontSize: '12px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
             } else {
                 // Character portrait: colored circle with sprite if available
@@ -232,6 +238,9 @@ export default class CharSelectScene extends Phaser.Scene {
 
         // Large sprite preview
         this._previewSprite = null;
+
+        // Portrait image
+        this._portraitImage = null;
     }
 
     _updateSelection() {
@@ -260,19 +269,40 @@ export default class CharSelectScene extends Phaser.Scene {
         this._previewCatchphrase.setText(`"${char.catchphrase}"`);
         this._previewDesc.setText(char.description);
 
-        // Update stat bars
+        // Update stat bars with animated fill
         const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
         for (const stat of statNames) {
             const bar = this._statBars[stat];
             const value = char.stats[stat];
+            const targetWidth = (value / 10) * 120;
+            const bx = GAME_WIDTH - 220 - 40;
+            const by = bar.y - 6;
+
+            // Animate bar fill from 0 to target
             bar.fill.clear();
-            bar.fill.fillStyle(bar.color, 0.8);
-            const barWidth = (value / 10) * 120;
-            bar.fill.fillRoundedRect(GAME_WIDTH - 220 - 40, bar.y - 6, barWidth, 12, 3);
+            const anim = { w: 0 };
+            this.tweens.add({
+                targets: anim,
+                w: targetWidth,
+                duration: 300,
+                ease: 'Quad.easeOut',
+                onUpdate: () => {
+                    bar.fill.clear();
+                    bar.fill.fillStyle(bar.color, 0.8);
+                    bar.fill.fillRoundedRect(bx, by, anim.w, 12, 3);
+                    // Highlight on top half
+                    bar.fill.fillStyle(0xFFFFFF, 0.15);
+                    bar.fill.fillRoundedRect(bx, by, anim.w, 6, 3);
+                }
+            });
             bar.num.setText(value.toString());
         }
 
-        // Update preview sprite with idle animation
+        // Update preview: portrait image or sprite fallback
+        if (this._portraitImage) {
+            this._portraitImage.destroy();
+            this._portraitImage = null;
+        }
         if (this._previewSprite) {
             this._previewSprite.destroy();
             this._previewSprite = null;
@@ -281,9 +311,21 @@ export default class CharSelectScene extends Phaser.Scene {
             this._previewShadow.destroy();
             this._previewShadow = null;
         }
+
+        // Try portrait first
+        const portraitKey = char.portrait || `portrait_${char.id}`;
         const spriteKey = this._getCharSpriteKey(char);
-        if (this.textures.exists(spriteKey)) {
-            // Shadow under sprite
+        if (this.textures.exists(portraitKey)) {
+            this._portraitImage = this.add.image(GAME_WIDTH - 220, 365, portraitKey)
+                .setScale(0.7).setOrigin(0.5).setDepth(5);
+            // Entrance scale animation
+            this._portraitImage.setScale(0);
+            this.tweens.add({
+                targets: this._portraitImage,
+                scale: 0.7, duration: 250, ease: 'Back.easeOut'
+            });
+        } else if (this.textures.exists(spriteKey)) {
+            // Fallback to sprite
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
             this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);
@@ -340,7 +382,10 @@ export default class CharSelectScene extends Phaser.Scene {
             changed = true;
         }
 
-        if (changed) this._updateSelection();
+        if (changed) {
+            sfxUIClick();
+            this._updateSelection();
+        }
 
         if (confirm) {
             this._confirmSelection();
@@ -362,6 +407,7 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _confirmSelection() {
+        sfxUIClick();
         this._confirmed = true;
         const availableCells = this._cells.filter(c => !c.isLocked);
         const cell = availableCells[this._selectedIndex % availableCells.length];

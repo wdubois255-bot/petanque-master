@@ -199,6 +199,13 @@ export function sfxScore() {
     setTimeout(() => playTone(1100, 0.2, 'sine', 0.12), 100);
 }
 
+export function sfxVSSlam() {
+    // Heavy impact for VS screen slam
+    playTone(100, 0.2, 'square', 0.3);
+    playTone(60, 0.3, 'sawtooth', 0.2);
+    playNoise(0.15, 0.25, 1200);
+}
+
 // === AMBIANCE ===
 
 export function startCigales() {

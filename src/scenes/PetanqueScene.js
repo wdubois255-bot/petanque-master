@@ -148,6 +148,10 @@ export default class PetanqueScene extends Phaser.Scene {
         setSoundScene(this);
         startCigales();
         startMusic('music_match', 0.2);
+
+        // Iris wipe opening (circle expands from center)
+        this._playIrisOpen();
+
         this.engine.startGame();
 
         // First-time tutorial overlay
@@ -681,6 +685,40 @@ export default class PetanqueScene extends Phaser.Scene {
 
     // drawTerrain, _placeTerrainDecor, _drawTerrainBorders, _darkenHex
     // replaced by TerrainRenderer.js
+
+    _playIrisOpen() {
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const maxRadius = Math.sqrt(cx * cx + cy * cy) + 20;
+
+        const overlay = this.add.graphics().setDepth(200);
+        const shape = this.make.graphics({ add: false });
+        shape.fillStyle(0xffffff);
+        shape.fillCircle(cx, cy, 1);
+        const mask = shape.createGeometryMask();
+        mask.invertAlpha = true;
+
+        overlay.fillStyle(0x1A1510, 1);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.setMask(mask);
+
+        const anim = { r: 0 };
+        this.tweens.add({
+            targets: anim,
+            r: maxRadius,
+            duration: 600,
+            ease: 'Quad.easeOut',
+            onUpdate: () => {
+                shape.clear();
+                shape.fillStyle(0xffffff);
+                shape.fillCircle(cx, cy, anim.r);
+            },
+            onComplete: () => {
+                overlay.clearMask(true);
+                overlay.destroy();
+            }
+        });
+    }
 
     update(time, delta) {
         if (this.engine) this.engine.update(delta);

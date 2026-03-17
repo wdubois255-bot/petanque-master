@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -87,6 +88,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     create() {
+        setSoundScene(this);
         this._selections = OPTIONS.map(() => 0);
         this._selectedRow = 0;
         this._totalRows = OPTIONS.length + 1;
@@ -557,11 +559,13 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         if (up) {
             this._selectedRow = Math.max(0, this._selectedRow - 1);
+            sfxUIClick();
             this._updateDisplay();
             this._updateInfoPanel();
         }
         if (down) {
             this._selectedRow = Math.min(this._totalRows - 1, this._selectedRow + 1);
+            sfxUIClick();
             this._updateDisplay();
             this._updateInfoPanel();
         }
@@ -570,17 +574,20 @@ export default class QuickPlayScene extends Phaser.Scene {
             const opt = OPTIONS[this._selectedRow];
             if (left) {
                 this._selections[this._selectedRow] = (this._selections[this._selectedRow] - 1 + opt.values.length) % opt.values.length;
+                sfxUIClick();
                 this._updateDisplay();
                 this._updateInfoPanel();
             }
             if (right) {
                 this._selections[this._selectedRow] = (this._selections[this._selectedRow] + 1) % opt.values.length;
+                sfxUIClick();
                 this._updateDisplay();
                 this._updateInfoPanel();
             }
         }
 
         if (confirm && this._selectedRow === OPTIONS.length) {
+            sfxUIClick();
             this._launchGame();
         }
     }

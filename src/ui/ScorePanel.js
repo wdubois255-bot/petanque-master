@@ -36,8 +36,11 @@ export default class ScorePanel {
         this.bg.lineTo(this.panelX + pw - 12, this.panelY + 36);
         this.bg.strokePath();
 
-        // Player section
-        this.playerLabel = scene.add.text(cx - 24, this.panelY + 44, 'VOUS', {
+        // Player section — use character name if available
+        const playerName = scene.playerCharacter?.name
+            ? scene.playerCharacter.name.toUpperCase().substring(0, 8)
+            : 'VOUS';
+        this.playerLabel = scene.add.text(cx - 24, this.panelY + 44, playerName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
@@ -56,8 +59,11 @@ export default class ScorePanel {
         this.bg.lineTo(this.panelX + pw - 12, this.panelY + 96);
         this.bg.strokePath();
 
-        // Opponent section
-        this.opponentLabel = scene.add.text(cx - 24, this.panelY + 102, 'ADV.', {
+        // Opponent section — use character name if available
+        const opponentName = scene.opponentCharacter?.name
+            ? scene.opponentCharacter.name.toUpperCase().substring(0, 8)
+            : 'ADV.';
+        this.opponentLabel = scene.add.text(cx - 24, this.panelY + 102, opponentName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
@@ -108,17 +114,21 @@ export default class ScorePanel {
     update() {
         const e = this.engine;
 
-        // Score with pulse animation on change
+        // Score with animated counting + floating "+N" on change
         const newPlayerScore = e.scores.player;
         const newOpponentScore = e.scores.opponent;
         if (newPlayerScore !== this._prevPlayerScore) {
-            this.playerScore.setText(String(newPlayerScore));
+            const diff = newPlayerScore - this._prevPlayerScore;
+            this._animateScoreCount(this.playerScore, this._prevPlayerScore, newPlayerScore);
             this._pulseText(this.playerScore);
+            if (diff > 0) this._showFloatingPoints(this.playerScore, diff, '#87CEEB');
             this._prevPlayerScore = newPlayerScore;
         }
         if (newOpponentScore !== this._prevOpponentScore) {
-            this.opponentScore.setText(String(newOpponentScore));
+            const diff = newOpponentScore - this._prevOpponentScore;
+            this._animateScoreCount(this.opponentScore, this._prevOpponentScore, newOpponentScore);
             this._pulseText(this.opponentScore);
+            if (diff > 0) this._showFloatingPoints(this.opponentScore, diff, '#C44B3F');
             this._prevOpponentScore = newOpponentScore;
         }
 
@@ -154,6 +164,36 @@ export default class ScorePanel {
             yoyo: true,
             onStart: () => textObj.setShadow(0, 0, '#FFD700', 8, true, true),
             onComplete: () => textObj.setShadow(2, 2, '#1A1510', 0, true, false)
+        });
+    }
+
+    _animateScoreCount(textObj, from, to) {
+        // Animate score counting up from old to new value
+        const counter = { val: from };
+        this.scene.tweens.add({
+            targets: counter,
+            val: to,
+            duration: Math.abs(to - from) * 200,
+            ease: 'Stepped',
+            onUpdate: () => {
+                textObj.setText(String(Math.round(counter.val)));
+            }
+        });
+    }
+
+    _showFloatingPoints(scoreTextObj, points, color) {
+        const x = scoreTextObj.x + 40;
+        const y = scoreTextObj.y + 10;
+        const floater = this.scene.add.text(x, y, `+${points}`, {
+            fontFamily: 'monospace', fontSize: '20px', color,
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(95).setAlpha(1);
+
+        this.scene.tweens.add({
+            targets: floater,
+            y: y - 40, alpha: 0,
+            duration: 1200, ease: 'Cubic.easeOut',
+            onComplete: () => floater.destroy()
         });
     }
 

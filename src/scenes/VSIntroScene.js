@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
+import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true };
 
@@ -23,6 +24,7 @@ export default class VSIntroScene extends Phaser.Scene {
     }
 
     create() {
+        setSoundScene(this);
         const player = this.playerCharacter;
         const opponent = this.opponentCharacter;
 
@@ -145,12 +147,14 @@ export default class VSIntroScene extends Phaser.Scene {
             x: opponentX, duration: 500, ease: 'Back.easeOut', delay: 200
         });
 
-        // 3. VS text slam in
+        // 3. VS text slam in with flash + SFX
         this.tweens.add({
             targets: vsText,
             scale: 1, duration: 300, ease: 'Back.easeOut', delay: 500,
             onComplete: () => {
-                this.cameras.main.shake(150, 0.005);
+                sfxVSSlam();
+                this.cameras.main.shake(150, 0.008);
+                this.cameras.main.flash(80, 255, 255, 255);
             }
         });
 
@@ -193,8 +197,8 @@ export default class VSIntroScene extends Phaser.Scene {
         if (this._started) return;
         this._started = true;
 
-        this.cameras.main.fadeOut(300);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
+        // Iris wipe transition (circle closing to center)
+        this._irisWipe(() => {
             this.scene.start('PetanqueScene', {
                 terrain: this.terrain,
                 difficulty: this.matchData.difficulty || 'medium',
@@ -208,6 +212,45 @@ export default class VSIntroScene extends Phaser.Scene {
                 arcadeRound: this.roundNumber,
                 ...this.matchData
             });
+        });
+    }
+
+    _irisWipe(callback) {
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const maxRadius = Math.sqrt(cx * cx + cy * cy) + 20;
+
+        // Black overlay that covers everything
+        const overlay = this.add.graphics().setDepth(200);
+        // Circle shape used as mask (inverted: overlay is visible OUTSIDE the circle)
+        const shape = this.make.graphics({ add: false });
+        shape.fillStyle(0xffffff);
+        shape.fillCircle(cx, cy, maxRadius);
+        const mask = shape.createGeometryMask();
+        mask.invertAlpha = true;
+
+        overlay.fillStyle(0x1A1510, 1);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.setMask(mask);
+
+        const anim = { r: maxRadius };
+        this.tweens.add({
+            targets: anim,
+            r: 0,
+            duration: 500,
+            ease: 'Quad.easeIn',
+            onUpdate: () => {
+                shape.clear();
+                shape.fillStyle(0xffffff);
+                shape.fillCircle(cx, cy, Math.max(0, anim.r));
+            },
+            onComplete: () => {
+                overlay.clearMask(true);
+                overlay.clear();
+                overlay.fillStyle(0x1A1510, 1);
+                overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                callback();
+            }
         });
     }
 }
