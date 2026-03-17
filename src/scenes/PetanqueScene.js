@@ -187,19 +187,23 @@ export default class PetanqueScene extends Phaser.Scene {
     // === PLAYER SPRITES & ANIMATIONS ===
 
     _createPlayerSprites() {
+        // Character sprite scale: 2x for better visibility on the petanque terrain
+        const CHAR_SCALE = 2;
+
         // Player: in throw circle
         const playerHomeX = this.throwCircleX;
-        const playerHomeY = this.throwCircleY + 16;
+        const playerHomeY = this.throwCircleY + 20;
         this.playerSprite = this.add.sprite(playerHomeX, playerHomeY, 'petanque_player', 12)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1);
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
+        this._charScale = CHAR_SCALE;
 
         // Opponent: right edge of terrain, watching
-        const opponentCochoX = this.terrainX + TERRAIN_WIDTH - 20;
+        const opponentCochoX = this.terrainX + TERRAIN_WIDTH - 24;
         const opponentCochoY = this.terrainY + 120;
         this.opponentSprite = this.add.sprite(opponentCochoX, opponentCochoY, 'petanque_opponent', 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1);
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
         this._opponentCochoX = opponentCochoX;
         this._opponentCochoY = opponentCochoY;
         this._opponentCircleX = this.throwCircleX;
@@ -259,7 +263,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (team === 'opponent') {
             this.tweens.add({
                 targets: this.opponentSprite,
-                scaleY: 1.0,
+                scaleY: this._charScale || 1,
                 x: this._opponentCircleX, y: this._opponentCircleY,
                 duration: 500, ease: 'Sine.easeInOut',
                 onUpdate: () => {
@@ -288,7 +292,7 @@ export default class PetanqueScene extends Phaser.Scene {
             this.tweens.add({
                 targets: this.opponentSprite,
                 x: this._opponentCochoX, y: this._opponentCochoY,
-                scaleY: 1.0, duration: 500, ease: 'Sine.easeInOut',
+                scaleY: this._charScale || 1, duration: 500, ease: 'Sine.easeInOut',
                 onUpdate: () => {
                     this.opponentSprite.setFrame(Math.floor(Date.now() / 150) % 4);
                 },
@@ -306,6 +310,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
         const baseY = sprite.y;
         const baseX = sprite.x;
+        const s = this._charScale || 1; // base scale
 
         // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
         // Use north-facing (12-15) as "looking at terrain" during throw
@@ -318,23 +323,20 @@ export default class PetanqueScene extends Phaser.Scene {
             tweens: [
                 // Crouch: compress + shift weight
                 {
-                    scaleX: 0.85, scaleY: 1.15, y: baseY + 3,
+                    scaleX: s * 0.85, scaleY: s * 1.15, y: baseY + 4,
                     duration: 250, ease: 'Sine.easeOut',
-                    onStart: () => {
-                        // Cycle through walk frames for weight shift
-                        sprite.setFrame(profileFrames[1]);
-                    }
+                    onStart: () => sprite.setFrame(profileFrames[1])
                 },
                 // Arm back: lean back slightly
                 {
-                    scaleX: 0.9, scaleY: 1.1, x: baseX - (team === 'player' ? 3 : -3),
+                    scaleX: s * 0.9, scaleY: s * 1.1, x: baseX - (team === 'player' ? 4 : -4),
                     duration: 150, ease: 'Quad.easeIn',
                     onStart: () => sprite.setFrame(profileFrames[2])
                 },
                 // Phase 2: Release! — explosive extension + flash
                 {
-                    scaleX: 1.2, scaleY: 0.85, y: baseY - 10,
-                    x: baseX + (team === 'player' ? 4 : -4),
+                    scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 12,
+                    x: baseX + (team === 'player' ? 5 : -5),
                     duration: 100, ease: 'Quad.easeIn',
                     onStart: () => {
                         sprite.setFrame(profileFrames[3]);
@@ -344,17 +346,15 @@ export default class PetanqueScene extends Phaser.Scene {
                 },
                 // Phase 3: Follow-through — body extends forward
                 {
-                    scaleX: 1.1, scaleY: 0.95, y: baseY - 4,
+                    scaleX: s * 1.1, scaleY: s * 0.95, y: baseY - 5,
                     duration: 120, ease: 'Sine.easeOut',
                     onStart: () => sprite.setFrame(profileFrames[0])
                 },
                 // Phase 4: Recovery — bounce back to idle
                 {
-                    scaleX: 1.0, scaleY: 1.0, y: baseY, x: baseX,
+                    scaleX: s, scaleY: s, y: baseY, x: baseX,
                     duration: 300, ease: 'Bounce.easeOut',
-                    onComplete: () => {
-                        sprite.setFrame(team === 'player' ? 12 : 0);
-                    }
+                    onComplete: () => sprite.setFrame(team === 'player' ? 12 : 0)
                 }
             ]
         });
@@ -377,12 +377,12 @@ export default class PetanqueScene extends Phaser.Scene {
                 targets: throwerSprite,
                 tweens: [
                     {
-                        y: throwerSprite.y - 14, scaleX: 1.1, scaleY: 0.9,
+                        y: throwerSprite.y - 14, scaleX: (this._charScale || 1) * 1.1, scaleY: (this._charScale || 1) * 0.9,
                         duration: 200, ease: 'Quad.easeOut',
                         onStart: () => throwerSprite.setFrame(throwerSouthFrames[2])
                     },
                     {
-                        y: throwerSprite.y, scaleX: 1.0, scaleY: 1.0,
+                        y: throwerSprite.y, scaleX: 1.0, scaleY: this._charScale || 1,
                         duration: 250, ease: 'Bounce.easeOut',
                         onStart: () => throwerSprite.setFrame(throwerSouthFrames[0])
                     }
@@ -410,10 +410,10 @@ export default class PetanqueScene extends Phaser.Scene {
             this.tweens.chain({
                 targets: throwerSprite,
                 tweens: [
-                    { scaleY: 0.95, duration: 100 },
+                    { scaleY: (this._charScale || 1) * 0.95, duration: 100 },
                     { angle: -5, duration: 80 },
                     { angle: 5, duration: 80 },
-                    { angle: 0, scaleY: 1.0, duration: 120 }
+                    { angle: 0, scaleY: this._charScale || 1, duration: 120 }
                 ]
             });
             // Watcher smiles (subtle bounce)
