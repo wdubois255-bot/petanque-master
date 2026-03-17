@@ -15,8 +15,8 @@ export default class BootScene extends Phaser.Scene {
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
-        // Player spritesheet (Pipoya chibi, 128x128: 4 cols x 4 rows of 32x32)
-        this.load.spritesheet('player', `${BASE}assets/sprites/player_pipoya.png`, {
+        // Player spritesheet (PixelLab classic downscaled to 32x32 with outline)
+        this.load.spritesheet('player', `${BASE}assets/sprites/player_classic.png`, {
             frameWidth: 32, frameHeight: 32
         });
 
