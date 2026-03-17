@@ -114,20 +114,6 @@ export default class OverworldScene extends Phaser.Scene {
         // Transition state
         this._transitioning = false;
 
-        // DEBUG: touche P = lancer une partie directement
-        this.input.keyboard.on('keydown-P', () => {
-            if (this._transitioning || this.dialogBox.isVisible) return;
-            this.scene.sleep();
-            this.scene.launch('PetanqueScene', {
-                terrain: 'terre',
-                difficulty: 'easy',
-                format: 'tete_a_tete',
-                opponentName: 'Test',
-                opponentId: 'debug_test',
-                returnScene: 'OverworldScene'
-            });
-        });
-
         // Show control hints on first visit
         if (!this.gameState.flags._controls_shown) {
             this.gameState.flags._controls_shown = true;

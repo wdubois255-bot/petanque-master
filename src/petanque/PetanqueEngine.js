@@ -594,10 +594,20 @@ export default class PetanqueEngine {
         btn.on('pointerdown', () => {
             if (hasReturnScene) {
                 const returnScene = this.scene.scene.get(this.scene.returnScene);
-                this.scene.scene.stop();
-                this.scene.scene.wake(this.scene.returnScene);
-                if (returnScene && returnScene.returnFromBattle) {
-                    returnScene.returnFromBattle({ won: isVictory, opponentId: this.scene.opponentId });
+                const isSleeping = returnScene && returnScene.scene
+                    && returnScene.scene.settings
+                    && returnScene.scene.settings.status === Phaser.Scenes.SLEEPING;
+
+                if (isSleeping) {
+                    // Return scene is sleeping (launched from overworld) - wake it
+                    this.scene.scene.stop();
+                    this.scene.scene.wake(this.scene.returnScene);
+                    if (returnScene.returnFromBattle) {
+                        returnScene.returnFromBattle({ won: isVictory, opponentId: this.scene.opponentId });
+                    }
+                } else {
+                    // Return scene is not active (quick play) - start it fresh
+                    this.scene.scene.start(this.scene.returnScene);
                 }
             } else {
                 this.scene.scene.restart({

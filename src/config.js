@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from './utils/Constants.js';
 
 import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
+import QuickPlayScene from './scenes/QuickPlayScene.js';
 import IntroScene from './scenes/IntroScene.js';
 import OverworldScene from './scenes/OverworldScene.js';
 import PetanqueScene from './scenes/PetanqueScene.js';
@@ -26,7 +27,7 @@ const config = {
             debug: false
         }
     },
-    scene: [BootScene, TitleScene, IntroScene, OverworldScene, PetanqueScene]
+    scene: [BootScene, TitleScene, QuickPlayScene, IntroScene, OverworldScene, PetanqueScene]
 };
 
 export default config;
