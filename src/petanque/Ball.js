@@ -21,16 +21,20 @@ export default class Ball {
         this.id = options.id || `ball_${Date.now()}_${Math.random()}`;
 
         this._squashTimer = 0;
-        this._rollAngle = 0; // rotation angle for rolling animation
+        this._rollDist = 0; // accumulated rolling distance for frame cycling
+        this._rollFrames = 6; // number of roll animation frames
 
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
 
-        // Use sprite if texture exists, fallback to graphics
+        // Use sprite if texture exists (spritesheet with roll frames), fallback to graphics
         if (this.textureKey && scene.textures.exists(this.textureKey)) {
             const scale = this.radius / 14; // texture is 32x32 with radius 14
-            this.sprite = scene.add.image(x, y, this.textureKey).setScale(scale).setDepth(10);
+            this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
             this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x000000, 0.2).setDepth(9);
+            // Detect number of frames in spritesheet
+            const tex = scene.textures.get(this.textureKey);
+            this._rollFrames = tex.frameTotal - 1 || 1; // -1 because Phaser adds __BASE frame
             this.gfx = null;
             this.shadow = null;
         } else {
@@ -53,11 +57,16 @@ export default class Ball {
 
     draw() {
         if (this.sprite) {
-            // Sprite mode: update positions + rotation
+            // Sprite mode: update positions + rolling frame animation
             if (this.isAlive) {
                 this.sprite.setPosition(this.x, this.y).setVisible(true);
-                this.sprite.setAngle(this._rollAngle);
                 this.shadowSprite.setPosition(this.x + 3, this.y + 4).setVisible(true);
+
+                // Rolling animation: cycle through spritesheet frames based on distance
+                if (this._rollFrames > 1) {
+                    const frameIdx = Math.floor(this._rollDist / 15) % this._rollFrames;
+                    this.sprite.setFrame(frameIdx);
+                }
 
                 // Dynamic shadow: stretches when ball moves fast
                 if (this.isMoving) {
@@ -131,12 +140,8 @@ export default class Ball {
             this.vx *= ratio;
             this.vy *= ratio;
 
-            // Rolling rotation: speed determines rotation rate
-            // Direction of travel determines rotation direction
-            const rollSpeed = speed * 2.5; // degrees per frame, proportional to speed
-            const direction = Math.atan2(this.vy, this.vx);
-            // Roll clockwise when moving right, counter-clockwise when left
-            this._rollAngle += rollSpeed * cappedDt * Math.sign(Math.cos(direction) || 1);
+            // Accumulate rolling distance for frame animation
+            this._rollDist += speed * cappedDt * 60;
         } else {
             this.vx = 0;
             this.vy = 0;
