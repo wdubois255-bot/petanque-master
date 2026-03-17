@@ -26,6 +26,10 @@ export default class AimingSystem {
         this._trembleOffset = { x: 0, y: 0 };
         this._trembleTime = 0;
 
+        // Precision wobble: landing marker oscillates based on precision stat
+        this._aimTime = 0;
+        this._wobbleOffset = { x: 0, y: 0 };
+
         // Shot mode: 'pointer' or 'tirer'
         this.shotMode = null;
         this._modeUI = [];
@@ -455,17 +459,21 @@ export default class AimingSystem {
         const rawPower = Math.min(dist / 150, 1);
         let power = rawPower * rawPower;
 
-        // Apply precision dispersion: lower precision = more random deviation
-        // Precision 10 = 0 deg deviation, Precision 1 = ~6 deg deviation
-        // Technique penalty: plombee +2 deg, tir +1 deg (harder techniques)
+        // Precision wobble: the marker was oscillating during aim — use its current offset
+        // This replaces invisible random dispersion with visible, skill-based timing
+        const wobbleAngleOffset = Math.atan2(this._wobbleOffset.y, this._wobbleOffset.x + 100) -
+            Math.atan2(0, 100);
+        angle += wobbleAngleOffset;
+
+        // Small power wobble proportional to precision
         const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
         const techniquePenalty = loft?.precisionPenalty || 0;
-        const precisionDev = (10 - this.charStats.precision) * 0.7 + techniquePenalty;
-        angle += (Math.random() - 0.5) * 2 * precisionDev * Math.PI / 180;
-        const powerDev = (10 - this.charStats.precision) * 0.01 + techniquePenalty * 0.005;
-        power = Phaser.Math.Clamp(power + (Math.random() - 0.5) * 2 * powerDev, 0.01, 1);
+        const wobbleMag = Math.sqrt(this._wobbleOffset.x ** 2 + this._wobbleOffset.y ** 2);
+        const maxWobble = this._getWobbleAmplitude();
+        const powerWobble = maxWobble > 0 ? (wobbleMag / maxWobble) * 0.03 * (1 + techniquePenalty * 0.3) : 0;
+        power = Phaser.Math.Clamp(power + (Math.sin(this._aimTime * 2.3) * powerWobble), 0.01, 1);
 
-        // Apply pressure tremble offset to angle
+        // Apply pressure tremble offset to angle (additive on top of wobble)
         angle += this._trembleOffset.x * 0.002;
 
         this.engine.aimingEnabled = false;
@@ -498,6 +506,45 @@ export default class AimingSystem {
         this.arrowGfx.clear();
         this._predictionGfx.clear();
         if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
+    }
+
+    // --- PRECISION WOBBLE ---
+    // Landing marker oscillates in a Lissajous pattern based on precision stat
+    // Low precision = big amplitude + fast movement. High precision = tiny + slow.
+    _getWobbleAmplitude() {
+        const precision = this.charStats.precision || 6;
+        const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
+        const techniquePenalty = loft?.precisionPenalty || 0;
+        // Precision 10 = 2px wobble, Precision 1 = 18px wobble
+        // Technique penalty adds more (plombee +3 = extra 6px)
+        return 2 + (10 - precision) * 1.8 + techniquePenalty * 2;
+    }
+
+    _getWobbleSpeed() {
+        const precision = this.charStats.precision || 6;
+        // Precision 10 = slow (1.2 Hz), Precision 1 = fast (3.5 Hz)
+        return 1.2 + (10 - precision) * 0.26;
+    }
+
+    _updateWobble() {
+        if (!this.isDragging) {
+            this._aimTime = 0;
+            this._wobbleOffset = { x: 0, y: 0 };
+            return;
+        }
+        this._aimTime += 0.016; // ~60fps
+
+        const amp = this._getWobbleAmplitude();
+        const speed = this._getWobbleSpeed();
+        const t = this._aimTime * speed * Math.PI * 2;
+
+        // Lissajous figure-8 pattern (more natural than a circle)
+        this._wobbleOffset.x = Math.sin(t) * amp;
+        this._wobbleOffset.y = Math.sin(t * 1.7 + 0.5) * amp * 0.6;
+
+        // Pressure tremble adds on top
+        this._wobbleOffset.x += this._trembleOffset.x;
+        this._wobbleOffset.y += this._trembleOffset.y;
     }
 
     // --- PRESSURE TREMBLE ---
@@ -594,8 +641,9 @@ export default class AimingSystem {
             this._toggleRetro();
         }
 
-        // Update pressure tremble
+        // Update pressure tremble + precision wobble
         this._updatePressureTremble();
+        this._updateWobble();
 
         // Draw aiming arrow + prediction
         this.arrowGfx.clear();
@@ -627,12 +675,12 @@ export default class AimingSystem {
             else color = 0xCC4444;
         }
 
-        // Draw arrow (with pressure tremble applied to endpoint)
+        // Draw arrow (with wobble applied to endpoint — arrow moves with marker)
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
         const arrowLen = power * 80;
-        const endX = originX + Math.cos(angle) * arrowLen + this._trembleOffset.x;
-        const endY = originY + Math.sin(angle) * arrowLen + this._trembleOffset.y;
+        const endX = originX + Math.cos(angle) * arrowLen + this._wobbleOffset.x * 0.5;
+        const endY = originY + Math.sin(angle) * arrowLen + this._wobbleOffset.y * 0.5;
 
         const lineWidth = this.shotMode === 'tirer' ? 5 : 3;
         this.arrowGfx.lineStyle(lineWidth, color, 0.8);
@@ -679,14 +727,25 @@ export default class AimingSystem {
             markerY = params.targetY;
         }
 
-        // Show landing marker (cross) — no trajectory, the rest is skill
-        this._predictionGfx.lineStyle(1.5, color, 0.5);
-        this._predictionGfx.strokeCircle(markerX, markerY, 6);
+        // Apply precision wobble to landing marker
+        const wobX = markerX + this._wobbleOffset.x;
+        const wobY = markerY + this._wobbleOffset.y;
+
+        // Show wobble range circle (ghosted, shows precision zone)
+        const wobAmp = this._getWobbleAmplitude();
+        if (wobAmp > 3) {
+            this._predictionGfx.lineStyle(0.8, color, 0.15);
+            this._predictionGfx.strokeCircle(markerX, markerY, wobAmp);
+        }
+
+        // Show landing marker (cross) — oscillates with precision wobble
+        this._predictionGfx.lineStyle(1.5, color, 0.6);
+        this._predictionGfx.strokeCircle(wobX, wobY, 5);
         this._predictionGfx.beginPath();
-        this._predictionGfx.moveTo(markerX - 4, markerY);
-        this._predictionGfx.lineTo(markerX + 4, markerY);
-        this._predictionGfx.moveTo(markerX, markerY - 4);
-        this._predictionGfx.lineTo(markerX, markerY + 4);
+        this._predictionGfx.moveTo(wobX - 4, wobY);
+        this._predictionGfx.lineTo(wobX + 4, wobY);
+        this._predictionGfx.moveTo(wobX, wobY - 4);
+        this._predictionGfx.lineTo(wobX, wobY + 4);
         this._predictionGfx.strokePath();
 
         // Retro indicator on arrow: small arc near tip
