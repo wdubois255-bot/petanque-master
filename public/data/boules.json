@@ -5,6 +5,7 @@
       "name": "Boules d'Acier",
       "description": "Equilibrees. Un bon compromis entre precision et puissance.",
       "sprite": "boules_acier",
+      "textureKey": "ball_acier",
       "color": "#A8B5C2",
       "stats": {
         "precision": 3,
@@ -13,13 +14,15 @@
         "rayon": 10
       },
       "bonus": null,
-      "lore": "Les classiques du boulodrome. Fiables, sans surprise."
+      "lore": "Les classiques du boulodrome. Fiables, sans surprise.",
+      "unlocked": true
     },
     {
       "id": "bronze",
       "name": "Boules de Bronze",
       "description": "Lourdes et devastatrices. Ideales pour le tir et le carreau.",
       "sprite": "boules_bronze",
+      "textureKey": "ball_bronze",
       "color": "#CD7F32",
       "stats": {
         "precision": 2,
@@ -28,13 +31,15 @@
         "rayon": 11
       },
       "bonus": "knockback_x1.2",
-      "lore": "Forgees par le vieux Marcel lui-meme. Ca fait mal."
+      "lore": "Forgees par le vieux Marcel lui-meme. Ca fait mal.",
+      "unlocked": true
     },
     {
       "id": "chrome",
       "name": "Boules de Chrome",
       "description": "Legeres et precises. Parfaites pour poser au point.",
       "sprite": "boules_chrome",
+      "textureKey": "ball_chrome",
       "color": "#E8E8E8",
       "stats": {
         "precision": 4,
@@ -43,7 +48,68 @@
         "rayon": 9
       },
       "bonus": "friction_x0.9",
-      "lore": "Polies comme un miroir. Glissent sur le terrain comme du beurre."
+      "lore": "Polies comme un miroir. Glissent sur le terrain comme du beurre.",
+      "unlocked": true
+    },
+    {
+      "id": "noire",
+      "name": "Boules Noires",
+      "description": "Compactes et denses. Excellentes en carreau, difficiles a deplacer.",
+      "sprite": "boules_noire",
+      "textureKey": "ball_noire",
+      "color": "#3A3A4A",
+      "stats": {
+        "precision": 3,
+        "puissance": 5,
+        "masse": 850,
+        "rayon": 10
+      },
+      "bonus": "restitution_x0.9",
+      "lore": "En acier carbure. Les pros du carreau ne jurent que par elles.",
+      "unlocked": true
+    },
+    {
+      "id": "rouge",
+      "name": "Boules Rouges",
+      "description": "Stries speciales pour un meilleur grip. Le roulé est plus controlable.",
+      "sprite": "boules_rouge",
+      "textureKey": "ball_rouge",
+      "color": "#CC3333",
+      "stats": {
+        "precision": 4,
+        "puissance": 3,
+        "masse": 710,
+        "rayon": 10
+      },
+      "bonus": "friction_x1.1",
+      "lore": "Rainurees a la main. S'accrochent au terrain comme des griffes.",
+      "unlocked": true
+    }
+  ],
+  "cochonnets": [
+    {
+      "id": "classique",
+      "name": "Cochonnet Classique",
+      "description": "Le cochonnet traditionnel en bois de buis.",
+      "textureKey": "ball_cochonnet",
+      "color": "#FFD700",
+      "unlocked": true
+    },
+    {
+      "id": "bleu",
+      "name": "Cochonnet Bleu",
+      "description": "Cochonnet competition FIPJP. Tres visible sur terre battue.",
+      "textureKey": "ball_cochonnet_bleu",
+      "color": "#3344DD",
+      "unlocked": true
+    },
+    {
+      "id": "vert",
+      "name": "Cochonnet Vert",
+      "description": "Cochonnet en resine. Ideal sur sable et dalles claires.",
+      "textureKey": "ball_cochonnet_vert",
+      "color": "#33BB44",
+      "unlocked": true
     }
   ],
   "cochonnet": {

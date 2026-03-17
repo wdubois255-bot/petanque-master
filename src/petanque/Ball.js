@@ -46,8 +46,9 @@ export default class Ball {
     _resolveTextureKey(explicit) {
         if (explicit) return explicit;
         if (this.team === 'cochonnet') return 'ball_cochonnet';
+        // Default fallbacks — can be overridden via options.textureKey
         if (this.team === 'opponent') return 'ball_chrome';
-        return 'ball_bronze'; // joueur = boules bronze/or
+        return 'ball_acier';
     }
 
     draw() {

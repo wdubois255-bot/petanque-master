@@ -48,8 +48,11 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_acier', `${BASE}assets/sprites/boule_acier.png`);
         this.load.image('ball_bronze', `${BASE}assets/sprites/boule_bronze.png`);
         this.load.image('ball_chrome', `${BASE}assets/sprites/boule_chrome.png`);
+        this.load.image('ball_noire', `${BASE}assets/sprites/boule_noire.png`);
+        this.load.image('ball_rouge', `${BASE}assets/sprites/boule_rouge.png`);
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
-        this.load.image('ball_opponent', `${BASE}assets/sprites/boule_chrome.png`);
+        this.load.image('ball_cochonnet_bleu', `${BASE}assets/sprites/cochonnet_bleu.png`);
+        this.load.image('ball_cochonnet_vert', `${BASE}assets/sprites/cochonnet_vert.png`);
 
         // Terrain decoration sprites (PixelLab)
         this.load.image('terrain_caillou_1', `${BASE}assets/sprites/terrain_caillou_1.png`);

@@ -33,7 +33,17 @@ const OPTIONS = [
         values: [
             { display: 'Acier', key: 'acier' },
             { display: 'Bronze', key: 'bronze' },
-            { display: 'Chrome', key: 'chrome' }
+            { display: 'Chrome', key: 'chrome' },
+            { display: 'Noire', key: 'noire' },
+            { display: 'Rouge', key: 'rouge' }
+        ]
+    },
+    {
+        label: 'COCHONNET',
+        values: [
+            { display: 'Classique', key: 'classique' },
+            { display: 'Bleu', key: 'bleu' },
+            { display: 'Vert', key: 'vert' }
         ]
     },
     {
@@ -60,8 +70,9 @@ const ROW_MODE = 0;
 const ROW_P1 = 1;
 const ROW_P2 = 2;
 const ROW_BOULES = 3;
-const ROW_TERRAIN = 4;
-const ROW_DIFF = 5;
+const ROW_COCHONNET = 4;
+const ROW_TERRAIN = 5;
+const ROW_DIFF = 6;
 
 // Layout constants
 const LEFT_W = 500;       // Options column width
@@ -545,6 +556,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const p1Option = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
         const p2Option = OPTIONS[ROW_P2].values[this._selections[ROW_P2]];
         const bouleType = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
+        const cochonnetType = OPTIONS[ROW_COCHONNET].values[this._selections[ROW_COCHONNET]].key;
         const terrain = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
         const difficulty = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
         const isLocal = mode === 'local';
@@ -569,7 +581,9 @@ export default class QuickPlayScene extends Phaser.Scene {
                 playerCharacter: p1Char,
                 opponentCharacter: p2Char,
                 localMultiplayer: isLocal,
-                quickPlay: true
+                quickPlay: true,
+                bouleType,
+                cochonnetType
             });
         });
     }

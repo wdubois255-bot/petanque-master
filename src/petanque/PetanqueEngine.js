@@ -250,7 +250,10 @@ export default class PetanqueEngine {
         const clampedX = Phaser.Math.Clamp(targetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
         const clampedY = Phaser.Math.Clamp(targetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
-        this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult);
+        // Resolve cochonnet texture from selection
+        const cochonnetTexMap = { classique: 'ball_cochonnet', bleu: 'ball_cochonnet_bleu', vert: 'ball_cochonnet_vert' };
+        const cochonnetTex = cochonnetTexMap[this.scene.cochonnetType] || 'ball_cochonnet';
+        this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex);
 
         // Animate fly
         this._animateThrow(this.cochonnet, clampedX, clampedY, 0, 0, () => {
@@ -297,6 +300,7 @@ export default class PetanqueEngine {
             mass: bouleStats.mass,
             radius: bouleStats.radius,
             frictionMult: this.frictionMult * (bouleStats.frictionMult || 1),
+            textureKey: bouleStats.textureKey || null,
             id: `${team}_${this.ballsPerPlayer - this.remaining[team]}`
         });
         this.balls.push(ball);
@@ -1079,21 +1083,24 @@ export default class PetanqueEngine {
 
     // --- BOULE STATS from boules.json ---
     _getBouleStats(team) {
-        if (team === 'player') {
-            const gameState = this.scene.registry?.get('gameState');
-            const bouleType = gameState?.bouleType;
-            const boulesData = this.scene.cache?.json?.get('boules');
-            if (boulesData && bouleType) {
-                const set = boulesData.sets?.find(s => s.id === bouleType);
-                if (set) {
-                    const colorNum = parseInt(set.color.replace('#', ''), 16);
-                    return {
-                        mass: set.stats.masse,
-                        radius: set.stats.rayon,
-                        color: colorNum,
-                        frictionMult: set.bonus === 'friction_x0.9' ? 0.9 : 1
-                    };
-                }
+        const bouleType = team === 'player'
+            ? (this.scene.bouleType || this.scene.registry?.get('gameState')?.bouleType)
+            : null;
+        const boulesData = this.scene.cache?.json?.get('boules');
+        if (boulesData && bouleType) {
+            const set = boulesData.sets?.find(s => s.id === bouleType);
+            if (set) {
+                const colorNum = parseInt(set.color.replace('#', ''), 16);
+                let frictionMult = 1;
+                if (set.bonus === 'friction_x0.9') frictionMult = 0.9;
+                if (set.bonus === 'friction_x1.1') frictionMult = 1.1;
+                return {
+                    mass: set.stats.masse,
+                    radius: set.stats.rayon,
+                    color: colorNum,
+                    textureKey: set.textureKey || null,
+                    frictionMult
+                };
             }
         }
         return {};
