@@ -108,12 +108,12 @@
     {
       "id": "docks",
       "name": "Les Docks",
-      "description": "Beton lisse, bordures metalliques. Ca glisse, ca rebondit. Le chaos organise. Avantage au sang-froid.",
+      "description": "Beton lisse, tres glissant. Les boules filent loin. Avantage au sang-froid.",
       "surface": "dalles",
       "friction": 0.4,
       "zones": [],
       "slope": null,
-      "walls": true,
+      "walls": false,
       "colors": {
         "bg": "#7A7A70",
         "gravel": ["#8E8E7E", "#B0A090", "#808070", "#A09888"],

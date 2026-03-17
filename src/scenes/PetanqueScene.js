@@ -162,8 +162,9 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists(playerKey)) {
             this.textures.addSpriteSheet('petanque_player',
                 this.textures.get(playerKey).getSourceImage(),
-                { frameWidth: 64, frameHeight: 64 }
+                { frameWidth: 128, frameHeight: 128 }
             );
+            this.textures.get('petanque_player').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
             generateCharacterSprite(this, 'petanque_player', this._getCharPalette(this.playerCharId));
         }
@@ -177,8 +178,9 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists(opponentKey)) {
             this.textures.addSpriteSheet('petanque_opponent',
                 this.textures.get(opponentKey).getSourceImage(),
-                { frameWidth: 64, frameHeight: 64 }
+                { frameWidth: 128, frameHeight: 128 }
             );
+            this.textures.get('petanque_opponent').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
             generateCharacterSprite(this, 'petanque_opponent', this._getCharPalette(opponentId));
         }
@@ -187,8 +189,8 @@ export default class PetanqueScene extends Phaser.Scene {
     // === PLAYER SPRITES & ANIMATIONS ===
 
     _createPlayerSprites() {
-        // Character sprite scale: 1x (sprites are now 64x64, displayed at native size)
-        const CHAR_SCALE = 1;
+        // Character sprite scale: 0.5x (sprites are 128x128, displayed at 64px for HD quality)
+        const CHAR_SCALE = 0.5;
         this._charScale = CHAR_SCALE;
 
         // Throw circle position (where the active thrower stands)

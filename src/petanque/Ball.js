@@ -222,6 +222,7 @@ export default class Ball {
 
     checkOutOfBounds(bounds) {
         if (!this.isAlive) return false;
+        // FIPJP rule: ball is dead when entirely outside the terrain
         return (
             this.x + this.radius < bounds.x ||
             this.x - this.radius > bounds.x + bounds.w ||

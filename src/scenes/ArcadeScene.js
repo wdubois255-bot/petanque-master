@@ -184,7 +184,7 @@ export default class ArcadeScene extends Phaser.Scene {
             // Opponent info
             const spriteKey = this._getSpriteKey(nextOpponent);
             if (this.textures.exists(spriteKey)) {
-                this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(1.25).setOrigin(0.5);
+                this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(0.625).setOrigin(0.5);
             }
 
             this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, nextOpponent.name.toUpperCase(), {

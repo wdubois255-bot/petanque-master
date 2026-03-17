@@ -356,8 +356,9 @@ export default class QuickPlayScene extends Phaser.Scene {
     // === TERRAIN PANEL ===
     _drawTerrainPanel(cx, top, terrainsData, _boulesData) {
         const terrainKey = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
-        // Match by surface type (terre, herbe, sable, dalles)
-        const terrain = terrainsData.stages.find(t => t.surface === terrainKey);
+        // Match by id first, fallback to surface type
+        const terrain = terrainsData.stages.find(t => t.id === terrainKey) ||
+                        terrainsData.stages.find(t => t.surface === terrainKey);
         if (!terrain) return;
 
         // Title
@@ -446,7 +447,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const spriteKey = charOption.sprite;
         if (this.textures.exists(spriteKey)) {
             this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
-                .setScale(1.25).setOrigin(0.5).setDepth(5);
+                .setScale(0.625).setOrigin(0.5).setDepth(5);
         }
 
         // Catchphrase

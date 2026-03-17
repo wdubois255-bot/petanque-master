@@ -18,14 +18,14 @@ export default class BootScene extends Phaser.Scene {
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
-        // Character spritesheets (PixelLab chibi, 128x128: 4 cols x 4 rows of 32x32)
+        // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [
             'rene_animated', 'marcel_animated', 'fanny_animated',
             'ricardo_animated', 'thierry_animated', 'marius_animated'
         ];
         for (const key of charSprites) {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
-                frameWidth: 64, frameHeight: 64
+                frameWidth: 128, frameHeight: 128
             });
         }
 
@@ -99,6 +99,19 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
+        // Enable LINEAR filtering on HD character spritesheets (128px displayed at 0.5x)
+        // This overrides the global pixelArt: true for these textures only,
+        // allowing smooth downsampling instead of nearest-neighbor
+        const charSprites = [
+            'rene_animated', 'marcel_animated', 'fanny_animated',
+            'ricardo_animated', 'thierry_animated', 'marius_animated'
+        ];
+        for (const key of charSprites) {
+            if (this.textures.exists(key)) {
+                this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+            }
+        }
+
         this.scene.start('TitleScene');
     }
 }
