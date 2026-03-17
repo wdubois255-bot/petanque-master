@@ -242,6 +242,8 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._drawCharPanel(cx, top, charsData, isP1);
         } else if (this._selectedRow === ROW_BOULES && boulesData) {
             this._drawBoulePanel(cx, top, boulesData);
+        } else if (this._selectedRow === ROW_COCHONNET && boulesData) {
+            this._drawCochonnetPanel(cx, top, boulesData);
         } else if (this._selectedRow === ROW_TERRAIN && terrainsData) {
             this._drawTerrainPanel(cx, top, terrainsData, boulesData);
         } else if (this._selectedRow === ROW_DIFF) {
@@ -318,6 +320,36 @@ export default class QuickPlayScene extends Phaser.Scene {
         if (boule.lore) {
             this._addLabel(cx, barsY + bars.length * 28 + 12, `"${boule.lore}"`, '9px', '#7A6A5A', 0.5, PANEL_W - 20);
         }
+    }
+
+    // === COCHONNET PANEL ===
+    _drawCochonnetPanel(cx, top, boulesData) {
+        const cochKey = OPTIONS[ROW_COCHONNET].values[this._selections[ROW_COCHONNET]].key;
+        const cochonnets = boulesData.cochonnets || [];
+        const coch = cochonnets.find(c => c.id === cochKey);
+        if (!coch) return;
+
+        // Title
+        this._addLabel(cx, top + 6, coch.name, '15px', '#FFD700', 0.5);
+
+        // Cochonnet visual (real sprite, scaled up for visibility)
+        const sphereY = top + 70;
+        const texKey = coch.textureKey;
+        if (texKey && this.textures.exists(texKey)) {
+            this._boulePreview = this.add.image(cx, sphereY, texKey)
+                .setScale(4).setOrigin(0.5).setDepth(5);
+        } else {
+            const color = parseInt(coch.color.replace('#', ''), 16);
+            this._boulePreview = this.add.graphics().setDepth(5);
+            this._boulePreview.fillStyle(color, 1);
+            this._boulePreview.fillCircle(cx, sphereY, 18);
+        }
+
+        // Description
+        this._addLabel(cx, sphereY + 40, coch.description, '11px', '#F5E6D0', 0.5, PANEL_W - 20);
+
+        // Tip
+        this._addLabel(cx, sphereY + 90, 'Le cochonnet est la cible.\nToutes les boules visent a\ns\'en approcher le plus possible.', '9px', '#9E9E8E', 0.5, PANEL_W - 20);
     }
 
     // === TERRAIN PANEL ===
