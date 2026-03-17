@@ -749,19 +749,15 @@ export default class PetanqueScene extends Phaser.Scene {
             return x - Math.floor(x);
         };
 
-        // Scatter small pebbles/cailloux on terrain
-        const decorItems = [
-            { key: 'terrain_caillou_1', count: 3, scale: 0.4, alpha: 0.6 },
-            { key: 'terrain_caillou_2', count: 4, scale: 0.35, alpha: 0.55 },
-        ];
+        // Scatter terrain decorations
+        const decorItems = [];
 
         // Add terrain-specific decor
         if (this.terrainType === 'terre' || this.terrainType === 'herbe') {
-            decorItems.push({ key: 'terrain_herbe_touffe', count: 2, scale: 0.45, alpha: 0.5 });
+            decorItems.push({ key: 'terrain_herbe_touffe', count: 3, scale: 0.45, alpha: 0.5 });
         }
         if (this.terrainType === 'terre') {
             decorItems.push({ key: 'terrain_fissure', count: 1, scale: 0.5, alpha: 0.35 });
-            decorItems.push({ key: 'terrain_racine', count: 1, scale: 0.4, alpha: 0.45 });
         }
 
         let rngIdx = 0;
@@ -780,7 +776,7 @@ export default class PetanqueScene extends Phaser.Scene {
         }
 
         // Scatter some outside the terrain too (around edges for realism)
-        const outsideItems = ['terrain_caillou_1', 'terrain_caillou_2', 'terrain_herbe_touffe'];
+        const outsideItems = ['terrain_herbe_touffe'];
         for (let i = 0; i < 6; i++) {
             const key = outsideItems[i % outsideItems.length];
             if (!this.textures.exists(key)) continue;
