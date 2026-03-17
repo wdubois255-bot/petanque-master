@@ -73,6 +73,28 @@ const CHAR_VISUALS = {
         eyeColor: 0x3A3A3A,
         expression: 'imposing',
         accessories: ['barbe', 'chaine'],
+    },
+    brute: {
+        // Ley - Colosse débonnaire, costaud, cheveux courts foncés, polo bleu
+        skinTone: 0xC8A078,
+        hairColor: 0x3A3020,
+        hairStyle: 'short',
+        shirtColor: 0x4A6FA5,
+        shirtStyle: 'polo',
+        eyeColor: 0x4A3A2A,
+        expression: 'smile',
+        accessories: [],
+    },
+    magicien: {
+        // Le Magicien - Mystérieux, chapeau, barbe courte, chemise sombre
+        skinTone: 0xE0C098,
+        hairColor: 0x5A3A20,
+        hairStyle: 'slick',
+        shirtColor: 0x8B4513,
+        shirtStyle: 'chemise',
+        eyeColor: 0x3A5A2A,
+        expression: 'cool',
+        accessories: ['chapeau'],
     }
 };
 
@@ -382,8 +404,8 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    const archetypes = ['equilibre', 'pointeur', 'tireur', 'stratege', 'wildcard', 'boss'];
-    const names = ['rene', 'marcel', 'fanny', 'ricardo', 'thierry', 'marius'];
+    const archetypes = ['equilibre', 'pointeur', 'tireur', 'stratege', 'wildcard', 'boss', 'brute', 'magicien'];
+    const names = ['rene', 'marcel', 'fanny', 'ricardo', 'thierry', 'marius', 'ley', 'le_magicien'];
 
     for (let i = 0; i < archetypes.length; i++) {
         generatePortrait(scene, `portrait_${names[i]}`, archetypes[i]);

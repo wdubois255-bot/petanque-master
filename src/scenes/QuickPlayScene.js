@@ -10,7 +10,9 @@ const CHAR_VALUES = [
     { display: 'Fanny', key: 'fanny_animated', sprite: 'fanny_animated', charId: 'tireur' },
     { display: 'Ricardo', key: 'ricardo_animated', sprite: 'ricardo_animated', charId: 'stratege' },
     { display: 'Thierry', key: 'thierry_animated', sprite: 'thierry_animated', charId: 'wildcard' },
-    { display: 'Marius', key: 'marius_animated', sprite: 'marius_animated', charId: 'boss' }
+    { display: 'Marius', key: 'marius_animated', sprite: 'marius_animated', charId: 'boss' },
+    { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'brute' },
+    { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' }
 ];
 
 const OPTIONS = [
