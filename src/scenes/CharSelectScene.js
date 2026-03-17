@@ -120,7 +120,7 @@ export default class CharSelectScene extends Phaser.Scene {
                 const spriteKey = this._getCharSpriteKey(char);
                 if (this.textures.exists(spriteKey)) {
                     this.add.sprite(cx, cy - 12, spriteKey, 0)
-                        .setScale(2).setOrigin(0.5);
+                        .setScale(1).setOrigin(0.5);
                 } else {
                     const portrait = this.add.graphics();
                     portrait.fillStyle(primaryColor, 1);
@@ -289,7 +289,7 @@ export default class CharSelectScene extends Phaser.Scene {
             this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);
 
             this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 370, spriteKey, 0)
-                .setScale(3).setOrigin(0.5).setDepth(5);
+                .setScale(1.5).setOrigin(0.5).setDepth(5);
 
             // Gentle idle bounce
             this.tweens.add({

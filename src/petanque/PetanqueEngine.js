@@ -400,7 +400,7 @@ export default class PetanqueEngine {
         let flyGfx = null;
         let flyShadow = null;
         if (ball.textureKey && this.scene.textures.exists(ball.textureKey)) {
-            const scale = ball.radius / 14;
+            const scale = ball.radius / 28;
             flySprite = this.scene.add.image(startX, startY, ball.textureKey).setScale(scale).setDepth(50);
             flyShadow = this.scene.add.ellipse(startX, startY, ball.radius * 1.8, ball.radius * 0.8, 0x000000, 0.15).setDepth(49);
         } else {
@@ -432,7 +432,7 @@ export default class PetanqueEngine {
                     flySprite.setPosition(cx, cy + arc);
                     // Scale ball slightly larger at peak to show height (parallax)
                     const sizeBoost = 1 + heightRatio * 0.15 * (Math.abs(arcHeight) / 80);
-                    flySprite.setScale((ball.radius / 14) * sizeBoost);
+                    flySprite.setScale((ball.radius / 28) * sizeBoost);
 
                     // Shadow: smaller & more offset when ball is higher
                     const shadowShrink = 1 - heightRatio * 0.6;

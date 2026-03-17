@@ -238,7 +238,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Player side (left) - René
         if (this.textures.exists('rene_animated')) {
-            const rene = this.add.sprite(190, 410, 'rene_animated', 0).setScale(3).setAlpha(0);
+            const rene = this.add.sprite(190, 410, 'rene_animated', 0).setScale(1.5).setAlpha(0);
             // Subtle idle bob
             this.tweens.add({
                 targets: rene, y: 407, duration: 1800,
@@ -249,7 +249,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Opponent side (right) - Marius
         if (this.textures.exists('marius_animated')) {
-            const marius = this.add.sprite(640, 412, 'marius_animated', 0).setScale(3).setAlpha(0).setFlipX(true);
+            const marius = this.add.sprite(640, 412, 'marius_animated', 0).setScale(1.5).setAlpha(0).setFlipX(true);
             this.tweens.add({
                 targets: marius, y: 409, duration: 2000,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 400
@@ -259,7 +259,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Background character - Marcel watching
         if (this.textures.exists('marcel_animated')) {
-            const marcel = this.add.sprite(415, 370, 'marcel_animated', 0).setScale(2).setAlpha(0);
+            const marcel = this.add.sprite(415, 370, 'marcel_animated', 0).setScale(1).setAlpha(0);
             this.tweens.add({
                 targets: marcel, y: 368, duration: 2200,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600

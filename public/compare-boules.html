@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Boules - Comparatif complet</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #2A2218; color: #F5E6D0;
+    font-family: 'Segoe UI', monospace; padding: 20px;
+  }
+  h1 { text-align: center; color: #FFD700; margin-bottom: 6px; font-size: 22px; }
+  .subtitle { text-align: center; color: #9E9E8E; margin-bottom: 20px; font-size: 12px; }
+  .controls {
+    text-align: center; margin-bottom: 16px;
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  }
+  .controls button {
+    background: #4A3A28; color: #FFD700; border: 2px solid #6B5B3A;
+    padding: 8px 16px; cursor: pointer; font-size: 13px;
+    border-radius: 4px; font-family: monospace;
+  }
+  .controls button:hover, .controls button.active {
+    background: #6B5B3A; border-color: #FFD700;
+  }
+  .toggle-row {
+    text-align: center; margin-bottom: 16px; color: #9E9E8E; font-size: 12px;
+  }
+  .toggle-row label { cursor: pointer; margin: 0 8px; }
+  table {
+    margin: 0 auto; border-collapse: collapse; max-width: 1200px;
+  }
+  th {
+    background: #3A2E28; color: #FFD700; padding: 8px 12px;
+    font-size: 12px; border: 1px solid #4A3A28;
+  }
+  td {
+    padding: 10px; text-align: center; vertical-align: middle;
+    border: 1px solid #3A2E28;
+  }
+  td img {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  td.name-cell {
+    color: #D4A574; font-weight: bold; font-size: 13px;
+    background: #332A20; min-width: 80px;
+  }
+  .section-row td {
+    background: #4A3A28; color: #FFD700; font-size: 15px;
+    font-weight: bold; padding: 8px; text-align: left;
+  }
+  .cell-bg { background: #1A1510; }
+  .cell-bg.terre { background: #3A3020; }
+  .cell-bg.herbe { background: #1A2A18; }
+  .cell-bg.sable { background: #3A3428; }
+  .cell-bg.dalles { background: #2A2A28; }
+  .size-label { font-size: 9px; color: #5A5040; display: block; margin-top: 4px; }
+</style>
+</head>
+<body>
+<h1>Comparatif Boules : Original vs Upscale vs PixelLab</h1>
+<p class="subtitle">Anciennes boules (retouchees Piskel) upscalees nearest-neighbor vs generees PixelLab</p>
+
+<div class="controls">
+  <span style="color:#9E9E8E;line-height:36px;margin-right:8px">Afficher a :</span>
+  <button onclick="setDisplay(0)" id="btn-native" class="active">Taille native</button>
+  <button onclick="setDisplay(64)" id="btn-64">64px</button>
+  <button onclick="setDisplay(96)" id="btn-96">96px (preview)</button>
+  <button onclick="setDisplay(128)" id="btn-128">128px</button>
+</div>
+<div class="toggle-row">
+  Fond :
+  <label><input type="radio" name="bg" value="" checked onchange="setBg('')"> Noir</label>
+  <label><input type="radio" name="bg" value="terre" onchange="setBg('terre')"> Terre</label>
+  <label><input type="radio" name="bg" value="herbe" onchange="setBg('herbe')"> Herbe</label>
+  <label><input type="radio" name="bg" value="sable" onchange="setBg('sable')"> Sable</label>
+  <label><input type="radio" name="bg" value="dalles" onchange="setBg('dalles')"> Dalles</label>
+</div>
+
+<table id="tbl"></table>
+
+<script>
+const balls = [
+  { section: 'Boules' },
+  { name: 'Acier', base: 'boule_acier' },
+  { name: 'Bronze', base: 'boule_bronze' },
+  { name: 'Chrome', base: 'boule_chrome' },
+  { name: 'Noire', base: 'boule_noire' },
+  { name: 'Rouge', base: 'boule_rouge' },
+  { section: 'Cochonnets' },
+  { name: 'Classique', base: 'cochonnet' },
+  { name: 'Bleu', base: 'cochonnet_bleu' },
+  { name: 'Vert', base: 'cochonnet_vert' },
+];
+
+// Columns: [label, file suffix, native size]
+const cols = [
+  ['Original 32', 'old/{base}_old', 32],
+  ['Upscale 64', '{base}_up64', 64],
+  ['Upscale 128', '{base}_up128', 128],
+  ['PixelLab 64', '{base}_64', 64],
+  ['PixelLab 128', '{base}_128', 128],
+];
+
+let displaySize = 0; // 0 = native
+let bgClass = '';
+
+function render() {
+  const tbl = document.getElementById('tbl');
+  let html = '<tr><th></th>';
+  for (const [label] of cols) {
+    html += `<th>${label}</th>`;
+  }
+  html += '</tr>';
+
+  for (const item of balls) {
+    if (item.section) {
+      html += `<tr class="section-row"><td colspan="${cols.length + 1}">${item.section}</td></tr>`;
+      continue;
+    }
+    html += `<tr><td class="name-cell">${item.name}</td>`;
+    for (const [, pattern, nativeSize] of cols) {
+      const file = pattern.replace('{base}', item.base);
+      const sz = displaySize || nativeSize;
+      const cls = 'cell-bg' + (bgClass ? ' ' + bgClass : '');
+      html += `<td class="${cls}">
+        <img src="assets/sprites/${file}.png" width="${sz}" height="${sz}"
+             onerror="this.style.opacity=0.15;this.title='manquant'">
+        <span class="size-label">${nativeSize}px → ${sz}px</span>
+      </td>`;
+    }
+    html += '</tr>';
+  }
+  tbl.innerHTML = html;
+}
+
+function setDisplay(sz) {
+  displaySize = sz;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  const id = sz === 0 ? 'btn-native' : 'btn-' + sz;
+  document.getElementById(id)?.classList.add('active');
+  render();
+}
+function setBg(cls) {
+  bgClass = cls;
+  render();
+}
+render();
+</script>
+</body>
+</html>

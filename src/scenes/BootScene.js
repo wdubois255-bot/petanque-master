@@ -25,7 +25,7 @@ export default class BootScene extends Phaser.Scene {
         ];
         for (const key of charSprites) {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
-                frameWidth: 32, frameHeight: 32
+                frameWidth: 64, frameHeight: 64
             });
         }
 
@@ -58,6 +58,22 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('terrain_herbe_touffe', `${BASE}assets/sprites/terrain_herbe_touffe.png`);
         this.load.image('terrain_fissure', `${BASE}assets/sprites/terrain_fissure.png`);
         this.load.image('terrain_planche_bord', `${BASE}assets/sprites/terrain_planche_bord.png`);
+
+        // Terrain surface textures (seamless 64x64)
+        this.load.image('terrain_tex_terre', `${BASE}assets/sprites/terrain_tex_terre.png`);
+        this.load.image('terrain_tex_herbe', `${BASE}assets/sprites/terrain_tex_herbe.png`);
+        this.load.image('terrain_tex_sable', `${BASE}assets/sprites/terrain_tex_sable.png`);
+        this.load.image('terrain_tex_dalles', `${BASE}assets/sprites/terrain_tex_dalles.png`);
+
+        // Border 9-slice textures (48x48)
+        this.load.image('border_wood', `${BASE}assets/sprites/border_wood_9slice.png`);
+        this.load.image('border_stone', `${BASE}assets/sprites/border_stone_9slice.png`);
+
+        // Decor sprites (provencal)
+        this.load.image('decor_pin', `${BASE}assets/sprites/decor_pin.png`);
+        this.load.image('decor_olivier', `${BASE}assets/sprites/decor_olivier.png`);
+        this.load.image('decor_banc', `${BASE}assets/sprites/decor_banc.png`);
+        this.load.image('decor_fontaine', `${BASE}assets/sprites/decor_fontaine.png`);
 
         // Audio - SFX (ElevenLabs generated)
         const sfxFiles = [

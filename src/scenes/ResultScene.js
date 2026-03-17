@@ -70,7 +70,7 @@ export default class ResultScene extends Phaser.Scene {
             const winKey = this._getSpriteKey(winner);
             if (this.textures.exists(winKey)) {
                 const winSprite = this.add.sprite(GAME_WIDTH / 2, 210, winKey, 0)
-                    .setScale(3).setOrigin(0.5);
+                    .setScale(1.5).setOrigin(0.5);
                 // Victory bounce
                 this.tweens.add({
                     targets: winSprite, y: 200,

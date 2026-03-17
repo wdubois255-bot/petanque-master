@@ -35,7 +35,7 @@ export default class Ball {
 
         // Use sprite if texture exists (spritesheet with roll frames), fallback to graphics
         if (this.textureKey && scene.textures.exists(this.textureKey)) {
-            const scale = this.radius / 14; // texture is 32x32 with radius 14
+            const scale = this.radius / 28; // texture is 64x64 with radius 28
             this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
             this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x000000, 0.2).setDepth(9);
             // Detect number of frames in spritesheet
@@ -87,10 +87,10 @@ export default class Ball {
                 if (this._squashTimer > 0) {
                     this._squashTimer--;
                     this.sprite.setTint(0xFFFFFF);
-                    this.sprite.setScale((this.radius + 2) / 14);
+                    this.sprite.setScale((this.radius + 2) / 28);
                 } else {
                     this.sprite.clearTint();
-                    this.sprite.setScale(this.radius / 14);
+                    this.sprite.setScale(this.radius / 28);
                 }
             } else {
                 this.sprite.setVisible(false);

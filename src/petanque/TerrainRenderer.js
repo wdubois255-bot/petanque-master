@@ -187,6 +187,55 @@ export default class TerrainRenderer {
             case 'colline': this._decorColline(d, tx, tw); break;
             case 'docks':   this._decorDocks(d, tx, tw); break;
         }
+
+        // Overlay pixel art sprite decors where available
+        this._placeDecorSprites(tx, tw);
+    }
+
+    _placeDecorSprites(tx, tw) {
+        const s = this.scene;
+        const depth = 0.6;
+        const has = (k) => s.textures.exists(k);
+
+        switch (this.terrainId) {
+            case 'village':
+                // Bench (left side, near procedural bench position)
+                if (has('decor_banc'))
+                    s.add.image(tx - 46, 300, 'decor_banc').setDepth(depth).setScale(2);
+                // Fountain (right side)
+                if (has('decor_fontaine'))
+                    s.add.image(tx + TERRAIN_WIDTH + 40, 215, 'decor_fontaine').setDepth(depth).setScale(2);
+                break;
+
+            case 'parc':
+                // Pine tree (left side as tall tree)
+                if (has('decor_pin'))
+                    s.add.image(tx - 55, 160, 'decor_pin').setDepth(depth).setScale(2.5);
+                // Bench (left side below tree)
+                if (has('decor_banc'))
+                    s.add.image(tx - 45, 290, 'decor_banc').setDepth(depth).setScale(1.8);
+                break;
+
+            case 'colline':
+                // Olive trees replacing procedural ones
+                if (has('decor_olivier')) {
+                    s.add.image(tx - 55, 110, 'decor_olivier').setDepth(depth).setScale(2.5);
+                    s.add.image(tx + TERRAIN_WIDTH + 65, 140, 'decor_olivier').setDepth(depth).setScale(2.2).setFlipX(true);
+                    s.add.image(tx - 30, 260, 'decor_olivier').setDepth(depth).setScale(2);
+                    s.add.image(tx + TERRAIN_WIDTH + 85, 290, 'decor_olivier').setDepth(depth).setScale(2).setFlipX(true);
+                }
+                break;
+
+            case 'plage':
+                // Pine tree as distant vegetation (left far)
+                if (has('decor_pin'))
+                    s.add.image(30, 85, 'decor_pin').setDepth(depth).setScale(1.5).setAlpha(0.5);
+                break;
+
+            case 'docks':
+                // No nature decor for industrial setting
+                break;
+        }
     }
 
     _decorVillage(d, tx, tw) {
@@ -502,31 +551,64 @@ export default class TerrainRenderer {
     // SURFACE TEXTURE - Rendu procedural riche
     // ============================================================
     _drawSurface() {
-        const key = `terrain_surface_${this.terrainId}`;
-        if (this.scene.textures.exists(key)) this.scene.textures.remove(key);
-        const tex = this.scene.textures.createCanvas(key, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-        const ctx = tex.getContext();
+        // Texture mapping: terrainId -> loaded texture key
+        const TEX_MAP = {
+            village: 'terrain_tex_terre',
+            plage: 'terrain_tex_sable',
+            parc: 'terrain_tex_herbe',
+            colline: 'terrain_tex_terre',
+            docks: 'terrain_tex_dalles'
+        };
+        const texKey = TEX_MAP[this.terrainId];
+        const hasTexture = texKey && this.scene.textures.exists(texKey);
 
-        switch (this.terrainId) {
-            case 'village': this._surfaceTerre(ctx); break;
-            case 'plage':   this._surfaceSable(ctx); break;
-            case 'parc':    this._surfaceHerbe(ctx); break;
-            case 'colline': this._surfaceColline(ctx); break;
-            case 'docks':   this._surfaceDalles(ctx); break;
-            default:        this._surfaceTerre(ctx); break;
+        if (hasTexture) {
+            // Tile the seamless texture across the terrain surface
+            const ts = this.scene.add.tileSprite(
+                this.tx + TERRAIN_WIDTH / 2,
+                this.ty + TERRAIN_HEIGHT / 2,
+                TERRAIN_WIDTH, TERRAIN_HEIGHT,
+                texKey
+            ).setDepth(2);
+
+            // Tint colline warmer to differentiate from village (same terre texture)
+            if (this.terrainId === 'colline') {
+                ts.setTint(0xDDCC88);
+            }
+
+            // Transparent canvas overlay for zones, slope, vignette
+            const overlayKey = `terrain_overlay_${this.terrainId}`;
+            if (this.scene.textures.exists(overlayKey)) this.scene.textures.remove(overlayKey);
+            const tex = this.scene.textures.createCanvas(overlayKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+            const ctx = tex.getContext();
+            this._drawFrictionZones(ctx);
+            this._drawSlopeIndicator(ctx);
+            this._drawVignette(ctx);
+            tex.refresh();
+            this.scene.add.image(this.tx + TERRAIN_WIDTH / 2, this.ty + TERRAIN_HEIGHT / 2, overlayKey).setDepth(2.1);
+        } else {
+            // Fallback: fully procedural surface
+            const key = `terrain_surface_${this.terrainId}`;
+            if (this.scene.textures.exists(key)) this.scene.textures.remove(key);
+            const tex = this.scene.textures.createCanvas(key, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+            const ctx = tex.getContext();
+
+            switch (this.terrainId) {
+                case 'village': this._surfaceTerre(ctx); break;
+                case 'plage':   this._surfaceSable(ctx); break;
+                case 'parc':    this._surfaceHerbe(ctx); break;
+                case 'colline': this._surfaceColline(ctx); break;
+                case 'docks':   this._surfaceDalles(ctx); break;
+                default:        this._surfaceTerre(ctx); break;
+            }
+
+            this._drawFrictionZones(ctx);
+            this._drawSlopeIndicator(ctx);
+            this._drawVignette(ctx);
+
+            tex.refresh();
+            this.scene.add.image(this.tx + TERRAIN_WIDTH / 2, this.ty + TERRAIN_HEIGHT / 2, key).setDepth(2);
         }
-
-        // Friction zones overlay
-        this._drawFrictionZones(ctx);
-
-        // Slope indicator
-        this._drawSlopeIndicator(ctx);
-
-        // Vignette
-        this._drawVignette(ctx);
-
-        tex.refresh();
-        this.scene.add.image(this.tx + TERRAIN_WIDTH / 2, this.ty + TERRAIN_HEIGHT / 2, key).setDepth(2);
     }
 
     // --- TERRE (Village) ---
@@ -1060,57 +1142,64 @@ export default class TerrainRenderer {
         const tx = this.tx, ty = this.ty;
         const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
         const bw = BORDER_WIDTH;
-        const g = this.scene.add.graphics().setDepth(3.5);
+        const hasTex = this.scene.textures.exists('border_wood');
 
-        // Plank base color
-        const base = 0x8B6B3A;
+        if (hasTex) {
+            // TileSprite borders using loaded wood texture
+            const depth = 3.5;
+            // Top
+            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty - bw + bw / 2,
+                tw + bw * 2, bw, 'border_wood').setDepth(depth);
+            // Bottom
+            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty + th + bw / 2,
+                tw + bw * 2, bw, 'border_wood').setDepth(depth);
+            // Left
+            this.scene.add.tileSprite(tx - bw + bw / 2, ty + th / 2,
+                bw, th, 'border_wood').setDepth(depth);
+            // Right
+            this.scene.add.tileSprite(tx + tw + bw / 2, ty + th / 2,
+                bw, th, 'border_wood').setDepth(depth);
+        }
+
+        const g = this.scene.add.graphics().setDepth(3.6);
         const dark = 0x6B4B2A;
         const light = 0xA88B4A;
 
-        // Top border
-        g.fillStyle(base, 1);
-        g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
-        // Bottom border
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
-        // Left border
-        g.fillRect(tx - bw, ty, bw, th);
-        // Right border
-        g.fillRect(tx + tw, ty, bw, th);
+        if (!hasTex) {
+            // Fallback: procedural base fill
+            g.fillStyle(0x8B6B3A, 1);
+            g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
+            g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
+            g.fillRect(tx - bw, ty, bw, th);
+            g.fillRect(tx + tw, ty, bw, th);
+        }
 
-        // Wood grain (horizontal lines on H borders, vertical on V)
-        g.fillStyle(dark, 0.25);
+        // Wood grain overlay (horizontal lines on H borders, vertical on V)
+        g.fillStyle(dark, 0.2);
         for (let gy = 0; gy < bw; gy += 2) {
-            g.fillRect(tx - bw, ty - bw + gy, tw + bw * 2, 0.8); // top
-            g.fillRect(tx - bw, ty + th + gy, tw + bw * 2, 0.8); // bottom
+            g.fillRect(tx - bw, ty - bw + gy, tw + bw * 2, 0.8);
+            g.fillRect(tx - bw, ty + th + gy, tw + bw * 2, 0.8);
         }
         for (let gx = 0; gx < bw; gx += 2) {
-            g.fillRect(tx - bw + gx, ty, 0.8, th); // left
-            g.fillRect(tx + tw + gx, ty, 0.8, th); // right
+            g.fillRect(tx - bw + gx, ty, 0.8, th);
+            g.fillRect(tx + tw + gx, ty, 0.8, th);
         }
 
-        // Plank joints (vertical on H borders)
-        g.fillStyle(dark, 0.4);
+        // Plank joints
+        g.fillStyle(dark, 0.35);
         for (let jx = tx - bw; jx < tx + tw + bw; jx += 30 + this._rng() * 10) {
-            g.fillRect(jx, ty - bw, 1.5, bw); // top
-            g.fillRect(jx, ty + th, 1.5, bw); // bottom
+            g.fillRect(jx, ty - bw, 1.5, bw);
+            g.fillRect(jx, ty + th, 1.5, bw);
         }
         for (let jy = ty; jy < ty + th; jy += 30 + this._rng() * 10) {
-            g.fillRect(tx - bw, jy, bw, 1.5); // left
-            g.fillRect(tx + tw, jy, bw, 1.5); // right
+            g.fillRect(tx - bw, jy, bw, 1.5);
+            g.fillRect(tx + tw, jy, bw, 1.5);
         }
 
-        // Highlight (top edge of each border = light catch)
-        g.fillStyle(light, 0.3);
+        // Highlight
+        g.fillStyle(light, 0.25);
         g.fillRect(tx - bw, ty - bw, tw + bw * 2, 1.5);
         g.fillRect(tx - bw, ty, 1.5, th);
-
-        // Wear marks / knots
-        for (let i = 0; i < 6; i++) {
-            const kx = tx - bw + this._rng() * (tw + bw * 2);
-            g.fillStyle(dark, 0.3);
-            g.fillCircle(kx, ty - bw + bw / 2, 1.5 + this._rng());
-            g.fillCircle(kx, ty + th + bw / 2, 1.5 + this._rng());
-        }
 
         // Corner nails
         this._drawNails(g, tx, ty, tw, th, bw);
@@ -1257,49 +1346,55 @@ export default class TerrainRenderer {
         const tx = this.tx, ty = this.ty;
         const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
         const bw = BORDER_WIDTH + 1;
-        const g = this.scene.add.graphics().setDepth(3.5);
+        const hasTex = this.scene.textures.exists('border_stone');
 
-        const stoneColors = [0xB0A888, 0xC4B898, 0x9A9070, 0xA8A080, 0xD0C8A8];
+        if (hasTex) {
+            const depth = 3.5;
+            // TileSprite borders using loaded stone texture
+            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty - bw + bw / 2,
+                tw + bw * 2, bw, 'border_stone').setDepth(depth);
+            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty + th + bw / 2,
+                tw + bw * 2, bw, 'border_stone').setDepth(depth);
+            this.scene.add.tileSprite(tx - bw + bw / 2, ty + th / 2,
+                bw, th, 'border_stone').setDepth(depth);
+            this.scene.add.tileSprite(tx + tw + bw / 2, ty + th / 2,
+                bw, th, 'border_stone').setDepth(depth);
+        }
 
-        // Draw stacked stones along each border
-        const drawStoneWall = (startX, startY, length, isHorizontal) => {
-            const stoneW = isHorizontal ? (8 + this._rng() * 6) : bw;
-            const stoneH = isHorizontal ? bw : (8 + this._rng() * 6);
-            let pos = 0;
+        const g = this.scene.add.graphics().setDepth(3.6);
 
-            while (pos < length) {
-                const sw = isHorizontal ? (6 + this._rng() * 8) : bw - 1;
-                const sh = isHorizontal ? bw - 1 : (6 + this._rng() * 8);
-                const sx = isHorizontal ? startX + pos : startX;
-                const sy = isHorizontal ? startY : startY + pos;
+        if (!hasTex) {
+            // Fallback: procedural stacked stones
+            const stoneColors = [0xB0A888, 0xC4B898, 0x9A9070, 0xA8A080, 0xD0C8A8];
+            const drawStoneWall = (startX, startY, length, isHorizontal) => {
+                let pos = 0;
+                while (pos < length) {
+                    const sw = isHorizontal ? (6 + this._rng() * 8) : bw - 1;
+                    const sh = isHorizontal ? bw - 1 : (6 + this._rng() * 8);
+                    const sx = isHorizontal ? startX + pos : startX;
+                    const sy = isHorizontal ? startY : startY + pos;
+                    const color = stoneColors[Math.floor(this._rng() * stoneColors.length)];
+                    g.fillStyle(color, 0.9);
+                    g.fillRoundedRect(sx, sy, sw, sh, 1);
+                    g.fillStyle(0x3A2E28, 0.15);
+                    g.fillRect(sx + sw - 1, sy + 1, 1, sh - 1);
+                    g.fillRect(sx + 1, sy + sh - 1, sw - 1, 1);
+                    g.fillStyle(0xFFFFFF, 0.08);
+                    g.fillRect(sx, sy, sw, 1);
+                    g.fillRect(sx, sy, 1, sh);
+                    pos += isHorizontal ? sw + 1 : sh + 1;
+                }
+            };
+            drawStoneWall(tx - bw, ty - bw, tw + bw * 2, true);
+            drawStoneWall(tx - bw, ty + th, tw + bw * 2, true);
+            drawStoneWall(tx - bw, ty, th, false);
+            drawStoneWall(tx + tw, ty, th, false);
+        }
 
-                const color = stoneColors[Math.floor(this._rng() * stoneColors.length)];
-                g.fillStyle(color, 0.9);
-                g.fillRoundedRect(sx, sy, sw, sh, 1);
-
-                // Stone shadow (bottom-right)
-                g.fillStyle(0x3A2E28, 0.15);
-                g.fillRect(sx + sw - 1, sy + 1, 1, sh - 1);
-                g.fillRect(sx + 1, sy + sh - 1, sw - 1, 1);
-
-                // Stone highlight (top-left)
-                g.fillStyle(0xFFFFFF, 0.08);
-                g.fillRect(sx, sy, sw, 1);
-                g.fillRect(sx, sy, 1, sh);
-
-                pos += isHorizontal ? sw + 1 : sh + 1;
-            }
-        };
-
-        drawStoneWall(tx - bw, ty - bw, tw + bw * 2, true);  // top
-        drawStoneWall(tx - bw, ty + th, tw + bw * 2, true);   // bottom
-        drawStoneWall(tx - bw, ty, th, false);                  // left
-        drawStoneWall(tx + tw, ty, th, false);                  // right
-
-        // Mortar lines (subtle)
+        // Mortar lines overlay (subtle, works on both textured and procedural)
         g.fillStyle(0x8A8060, 0.2);
-        g.fillRect(tx - bw, ty, tw + bw * 2, 0.5); // inner edge top
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, 0.5); // inner edge bottom
+        g.fillRect(tx - bw, ty, tw + bw * 2, 0.5);
+        g.fillRect(tx - bw, ty + th, tw + bw * 2, 0.5);
     }
 
     // --- METAL (Docks) - Rails metalliques avec rivets ---

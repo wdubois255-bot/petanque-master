@@ -162,7 +162,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists(playerKey)) {
             this.textures.addSpriteSheet('petanque_player',
                 this.textures.get(playerKey).getSourceImage(),
-                { frameWidth: 32, frameHeight: 32 }
+                { frameWidth: 64, frameHeight: 64 }
             );
         } else {
             generateCharacterSprite(this, 'petanque_player', this._getCharPalette(this.playerCharId));
@@ -177,7 +177,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists(opponentKey)) {
             this.textures.addSpriteSheet('petanque_opponent',
                 this.textures.get(opponentKey).getSourceImage(),
-                { frameWidth: 32, frameHeight: 32 }
+                { frameWidth: 64, frameHeight: 64 }
             );
         } else {
             generateCharacterSprite(this, 'petanque_opponent', this._getCharPalette(opponentId));
@@ -187,8 +187,8 @@ export default class PetanqueScene extends Phaser.Scene {
     // === PLAYER SPRITES & ANIMATIONS ===
 
     _createPlayerSprites() {
-        // Character sprite scale: 2x for better visibility on the petanque terrain
-        const CHAR_SCALE = 2;
+        // Character sprite scale: 1x (sprites are now 64x64, displayed at native size)
+        const CHAR_SCALE = 1;
         this._charScale = CHAR_SCALE;
 
         // Throw circle position (where the active thrower stands)
@@ -446,7 +446,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
     _createBallTextures() {
         const ROLL_FRAMES = 8;
-        const FRAME_SIZE = 32;
+        const FRAME_SIZE = 64;
 
         // All ball texture keys that should become rolling spritesheets
         const ballKeys = [

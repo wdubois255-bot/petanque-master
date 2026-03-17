@@ -79,7 +79,7 @@ export default class VSIntroScene extends Phaser.Scene {
         let playerSprite = null;
         if (this.textures.exists(playerSpriteKey)) {
             playerSprite = this.add.sprite(playerX, GAME_HEIGHT / 2 + 40, playerSpriteKey, 0)
-                .setScale(3).setOrigin(0.5).setX(-200);
+                .setScale(1.5).setOrigin(0.5).setX(-200);
         }
 
         // Opponent side (right)
@@ -97,7 +97,7 @@ export default class VSIntroScene extends Phaser.Scene {
         let opponentSprite = null;
         if (this.textures.exists(opponentSpriteKey)) {
             opponentSprite = this.add.sprite(opponentX, GAME_HEIGHT / 2 + 40, opponentSpriteKey, 0)
-                .setScale(3).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+                .setScale(1.5).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
         }
 
         // Terrain name at bottom
