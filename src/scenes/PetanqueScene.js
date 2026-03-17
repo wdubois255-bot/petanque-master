@@ -640,40 +640,151 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.add.image(this.terrainX + TERRAIN_WIDTH / 2, this.terrainY + TERRAIN_HEIGHT / 2, terrainTexKey).setDepth(2);
 
-        // === WOODEN BORDERS (3D effect) ===
-        const bord = this.add.graphics().setDepth(3);
-        const bw = 5;
-        // Main border
-        bord.fillStyle(0x6B5038, 1);
-        bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, bw);
-        bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2, bw);
-        bord.fillRect(this.terrainX - bw, this.terrainY, bw, TERRAIN_HEIGHT);
-        bord.fillRect(this.terrainX + TERRAIN_WIDTH, this.terrainY, bw, TERRAIN_HEIGHT);
-        // Wood highlight (top edge lighter)
-        bord.fillStyle(0x9B7B5A, 0.7);
-        bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, 2);
-        bord.fillRect(this.terrainX - bw, this.terrainY - bw, 2, TERRAIN_HEIGHT + bw * 2);
-        // Wood shadow (bottom edge darker)
-        bord.fillStyle(0x4A3520, 0.5);
-        bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT + bw - 2, TERRAIN_WIDTH + bw * 2, 2);
-        bord.fillRect(this.terrainX + TERRAIN_WIDTH + bw - 2, this.terrainY - bw, 2, TERRAIN_HEIGHT + bw * 2);
-        // Corner nails
-        const nailColor = 0xA0A0A0;
-        bord.fillStyle(nailColor, 0.6);
-        bord.fillCircle(this.terrainX - 2, this.terrainY - 2, 2);
-        bord.fillCircle(this.terrainX + TERRAIN_WIDTH + 2, this.terrainY - 2, 2);
-        bord.fillCircle(this.terrainX - 2, this.terrainY + TERRAIN_HEIGHT + 2, 2);
-        bord.fillCircle(this.terrainX + TERRAIN_WIDTH + 2, this.terrainY + TERRAIN_HEIGHT + 2, 2);
+        // === TERRAIN DECORATION SPRITES (PixelLab generated) ===
+        this._placeTerrainDecor();
+
+        // === WOODEN BORDERS (tiled plank sprite) ===
+        this._drawTerrainBorders();
 
         // === THROW CIRCLE ===
         this.throwCircleX = GAME_WIDTH / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
         const circleG = this.add.graphics().setDepth(4);
-        // Double ring for visibility
-        circleG.lineStyle(3, 0xFFFFFF, 0.2);
+        circleG.lineStyle(3, 0xFFFFFF, 0.15);
         circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 2);
-        circleG.lineStyle(2, COLORS.BLANC, 0.6);
+        circleG.lineStyle(2, COLORS.BLANC, 0.5);
         circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
+    }
+
+    _placeTerrainDecor() {
+        const tx = this.terrainX;
+        const ty = this.terrainY;
+        const margin = 12;
+
+        // Seeded random for consistent terrain per match (but varied between matches)
+        const seed = (this.terrainType.charCodeAt(0) * 137 + Date.now() % 1000) | 0;
+        const rng = (i) => {
+            const x = Math.sin(seed + i * 9301 + 49297) * 233280;
+            return x - Math.floor(x);
+        };
+
+        // Scatter small pebbles/cailloux on terrain
+        const decorItems = [
+            { key: 'terrain_caillou_1', count: 3, scale: 0.4, alpha: 0.6 },
+            { key: 'terrain_caillou_2', count: 4, scale: 0.35, alpha: 0.55 },
+        ];
+
+        // Add terrain-specific decor
+        if (this.terrainType === 'terre' || this.terrainType === 'herbe') {
+            decorItems.push({ key: 'terrain_herbe_touffe', count: 2, scale: 0.45, alpha: 0.5 });
+        }
+        if (this.terrainType === 'terre') {
+            decorItems.push({ key: 'terrain_fissure', count: 1, scale: 0.5, alpha: 0.35 });
+            decorItems.push({ key: 'terrain_racine', count: 1, scale: 0.4, alpha: 0.45 });
+        }
+
+        let rngIdx = 0;
+        for (const item of decorItems) {
+            if (!this.textures.exists(item.key)) continue;
+            for (let i = 0; i < item.count; i++) {
+                const px = tx + margin + rng(rngIdx++) * (TERRAIN_WIDTH - margin * 2);
+                const py = ty + margin + rng(rngIdx++) * (TERRAIN_HEIGHT - margin * 2);
+                const angle = rng(rngIdx++) * 360;
+                this.add.image(px, py, item.key)
+                    .setScale(item.scale)
+                    .setAlpha(item.alpha)
+                    .setAngle(angle)
+                    .setDepth(2.5);
+            }
+        }
+
+        // Scatter some outside the terrain too (around edges for realism)
+        const outsideItems = ['terrain_caillou_1', 'terrain_caillou_2', 'terrain_herbe_touffe'];
+        for (let i = 0; i < 6; i++) {
+            const key = outsideItems[i % outsideItems.length];
+            if (!this.textures.exists(key)) continue;
+            // Random position near terrain edges but outside
+            const side = Math.floor(rng(rngIdx++) * 4);
+            let ox, oy;
+            if (side === 0) { ox = tx - 15 - rng(rngIdx++) * 40; oy = ty + rng(rngIdx++) * TERRAIN_HEIGHT; }
+            else if (side === 1) { ox = tx + TERRAIN_WIDTH + 15 + rng(rngIdx++) * 40; oy = ty + rng(rngIdx++) * TERRAIN_HEIGHT; }
+            else if (side === 2) { ox = tx + rng(rngIdx++) * TERRAIN_WIDTH; oy = ty - 15 - rng(rngIdx++) * 30; }
+            else { ox = tx + rng(rngIdx++) * TERRAIN_WIDTH; oy = ty + TERRAIN_HEIGHT + 15 + rng(rngIdx++) * 30; }
+            this.add.image(ox, oy, key)
+                .setScale(0.35 + rng(rngIdx++) * 0.2)
+                .setAlpha(0.4 + rng(rngIdx++) * 0.2)
+                .setAngle(rng(rngIdx++) * 360)
+                .setDepth(1.5);
+        }
+    }
+
+    _drawTerrainBorders() {
+        const tx = this.terrainX;
+        const ty = this.terrainY;
+        const bw = 8; // border width
+
+        if (this.textures.exists('terrain_planche_bord')) {
+            // Tile the plank sprite along all 4 borders
+            const plankH = 8; // display height of horizontal planks
+            const plankW = 64; // original sprite width
+
+            // Top border (horizontal planks)
+            for (let px = tx - bw; px < tx + TERRAIN_WIDTH + bw; px += plankW * 0.12) {
+                this.add.image(px, ty - bw / 2, 'terrain_planche_bord')
+                    .setScale(0.12, plankH / 64)
+                    .setOrigin(0, 0.5)
+                    .setDepth(3);
+            }
+            // Bottom border
+            for (let px = tx - bw; px < tx + TERRAIN_WIDTH + bw; px += plankW * 0.12) {
+                this.add.image(px, ty + TERRAIN_HEIGHT + bw / 2, 'terrain_planche_bord')
+                    .setScale(0.12, plankH / 64)
+                    .setOrigin(0, 0.5)
+                    .setDepth(3);
+            }
+            // Left border (rotated planks)
+            for (let py = ty; py < ty + TERRAIN_HEIGHT; py += plankW * 0.12) {
+                this.add.image(tx - bw / 2, py, 'terrain_planche_bord')
+                    .setScale(0.12, plankH / 64)
+                    .setAngle(90)
+                    .setOrigin(0, 0.5)
+                    .setDepth(3);
+            }
+            // Right border
+            for (let py = ty; py < ty + TERRAIN_HEIGHT; py += plankW * 0.12) {
+                this.add.image(tx + TERRAIN_WIDTH + bw / 2, py, 'terrain_planche_bord')
+                    .setScale(0.12, plankH / 64)
+                    .setAngle(90)
+                    .setOrigin(0, 0.5)
+                    .setDepth(3);
+            }
+        }
+
+        // Graphics overlay for border structure (shadow + highlight)
+        const bord = this.add.graphics().setDepth(3.5);
+        // Outer shadow
+        bord.fillStyle(0x3A2E28, 0.4);
+        bord.fillRect(tx - bw - 1, ty - bw - 1, TERRAIN_WIDTH + bw * 2 + 2, bw + 1);
+        bord.fillRect(tx - bw - 1, ty + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2 + 2, bw + 1);
+        bord.fillRect(tx - bw - 1, ty, bw + 1, TERRAIN_HEIGHT);
+        bord.fillRect(tx + TERRAIN_WIDTH, ty, bw + 1, TERRAIN_HEIGHT);
+
+        // Inner edge highlight (catch light on inner border edge)
+        bord.lineStyle(1, 0xD4A574, 0.3);
+        bord.strokeRect(tx, ty, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+
+        // Corner pegs (metal)
+        bord.fillStyle(0x808080, 0.7);
+        bord.fillCircle(tx, ty, 3);
+        bord.fillCircle(tx + TERRAIN_WIDTH, ty, 3);
+        bord.fillCircle(tx, ty + TERRAIN_HEIGHT, 3);
+        bord.fillCircle(tx + TERRAIN_WIDTH, ty + TERRAIN_HEIGHT, 3);
+        // Peg highlights
+        bord.fillStyle(0xC0C0C0, 0.5);
+        bord.fillCircle(tx - 1, ty - 1, 1);
+        bord.fillCircle(tx + TERRAIN_WIDTH - 1, ty - 1, 1);
+        bord.fillCircle(tx - 1, ty + TERRAIN_HEIGHT - 1, 1);
+        bord.fillCircle(tx + TERRAIN_WIDTH - 1, ty + TERRAIN_HEIGHT - 1, 1);
     }
 
     _darkenHex(hex, amount = 30) {
