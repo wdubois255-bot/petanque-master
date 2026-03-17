@@ -271,16 +271,57 @@ export default class PetanqueScene extends Phaser.Scene {
     _animateCharThrow(team) {
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
         const baseY = sprite.y;
+        const baseX = sprite.x;
 
-        sprite.setTint(0xFFFFFF);
-        this.time.delayedCall(80, () => sprite.clearTint());
+        // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
+        // Use north-facing (12-15) as "looking at terrain" during throw
+        const profileFrames = team === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
 
+        // Phase 1: Wind-up — turn to profile, crouch down
+        sprite.setFrame(profileFrames[0]);
         this.tweens.chain({
             targets: sprite,
             tweens: [
-                { scaleX: 0.9, scaleY: 1.1, y: baseY + 2, duration: 150, ease: 'Quad.easeOut' },
-                { scaleX: 1.15, scaleY: 0.8, y: baseY - 8, duration: 100, ease: 'Quad.easeIn' },
-                { scaleX: 1.0, scaleY: 1.0, y: baseY, duration: 250, ease: 'Bounce.easeOut' }
+                // Crouch: compress + shift weight
+                {
+                    scaleX: 0.85, scaleY: 1.15, y: baseY + 3,
+                    duration: 250, ease: 'Sine.easeOut',
+                    onStart: () => {
+                        // Cycle through walk frames for weight shift
+                        sprite.setFrame(profileFrames[1]);
+                    }
+                },
+                // Arm back: lean back slightly
+                {
+                    scaleX: 0.9, scaleY: 1.1, x: baseX - (team === 'player' ? 3 : -3),
+                    duration: 150, ease: 'Quad.easeIn',
+                    onStart: () => sprite.setFrame(profileFrames[2])
+                },
+                // Phase 2: Release! — explosive extension + flash
+                {
+                    scaleX: 1.2, scaleY: 0.85, y: baseY - 10,
+                    x: baseX + (team === 'player' ? 4 : -4),
+                    duration: 100, ease: 'Quad.easeIn',
+                    onStart: () => {
+                        sprite.setFrame(profileFrames[3]);
+                        sprite.setTint(0xFFFFFF);
+                        this.time.delayedCall(60, () => sprite.clearTint());
+                    }
+                },
+                // Phase 3: Follow-through — body extends forward
+                {
+                    scaleX: 1.1, scaleY: 0.95, y: baseY - 4,
+                    duration: 120, ease: 'Sine.easeOut',
+                    onStart: () => sprite.setFrame(profileFrames[0])
+                },
+                // Phase 4: Recovery — bounce back to idle
+                {
+                    scaleX: 1.0, scaleY: 1.0, y: baseY, x: baseX,
+                    duration: 300, ease: 'Bounce.easeOut',
+                    onComplete: () => {
+                        sprite.setFrame(team === 'player' ? 12 : 0);
+                    }
+                }
             ]
         });
     }
@@ -293,32 +334,59 @@ export default class PetanqueScene extends Phaser.Scene {
 
         const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
         const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
+        // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
+        const throwerSouthFrames = lastTeam === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
 
         if (dist < 30) {
-            // Good shot — thrower celebrates
-            this.tweens.add({
+            // Great shot — thrower celebrates with jump + fist pump
+            this.tweens.chain({
                 targets: throwerSprite,
-                y: throwerSprite.y - 8,
-                duration: 200, ease: 'Bounce.easeOut', yoyo: true
+                tweens: [
+                    {
+                        y: throwerSprite.y - 14, scaleX: 1.1, scaleY: 0.9,
+                        duration: 200, ease: 'Quad.easeOut',
+                        onStart: () => throwerSprite.setFrame(throwerSouthFrames[2])
+                    },
+                    {
+                        y: throwerSprite.y, scaleX: 1.0, scaleY: 1.0,
+                        duration: 250, ease: 'Bounce.easeOut',
+                        onStart: () => throwerSprite.setFrame(throwerSouthFrames[0])
+                    }
+                ]
             });
-            // Watcher shakes head
+            // Watcher shakes head in dismay
             this.tweens.chain({
                 targets: watcherSprite,
                 tweens: [
-                    { angle: -5, duration: 100 },
-                    { angle: 5, duration: 100 },
-                    { angle: 0, duration: 100 }
+                    { angle: -6, duration: 100 },
+                    { angle: 6, duration: 100 },
+                    { angle: -4, duration: 80 },
+                    { angle: 0, duration: 80 }
                 ]
             });
+        } else if (dist < 60) {
+            // Decent shot — small nod
+            this.tweens.add({
+                targets: throwerSprite,
+                y: throwerSprite.y - 4,
+                duration: 150, ease: 'Sine.easeOut', yoyo: true
+            });
         } else if (dist > 80) {
-            // Bad shot — thrower disappointed
+            // Bad shot — thrower frustrated head shake + slump
             this.tweens.chain({
                 targets: throwerSprite,
                 tweens: [
-                    { angle: -5, duration: 100 },
-                    { angle: 5, duration: 100 },
-                    { angle: 0, duration: 100 }
+                    { scaleY: 0.95, duration: 100 },
+                    { angle: -5, duration: 80 },
+                    { angle: 5, duration: 80 },
+                    { angle: 0, scaleY: 1.0, duration: 120 }
                 ]
+            });
+            // Watcher smiles (subtle bounce)
+            this.tweens.add({
+                targets: watcherSprite,
+                y: watcherSprite.y - 3,
+                duration: 200, ease: 'Sine.easeOut', yoyo: true
             });
         }
     }
