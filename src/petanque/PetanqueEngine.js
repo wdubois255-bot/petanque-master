@@ -97,6 +97,10 @@ export default class PetanqueEngine {
             player: this.ballsPerPlayer,
             opponent: this.ballsPerPlayer
         };
+
+        // FIPJP: l'equipe qui a GAGNE la mene precedente lance le cochonnet
+        // (mene 1 = toujours player)
+        this._cochonnetTeam = this.meneWinner || 'player';
         this.meneWinner = null;
 
         this.setState(STATES.COCHONNET_THROW);
@@ -110,25 +114,43 @@ export default class PetanqueEngine {
 
         switch (state) {
             case STATES.COCHONNET_THROW:
-                this.currentTeam = 'player';
-                this.aimingEnabled = true;
-                this._showMessage('Lancez le cochonnet !');
-                this._showAimHint();
-                if (this.onTurnChange) this.onTurnChange('player');
+                // L'equipe qui a gagne la mene precedente lance le cochonnet
+                this.currentTeam = this._cochonnetTeam || 'player';
+                if (this.currentTeam === 'player') {
+                    this.aimingEnabled = true;
+                    this._showMessage('Lancez le cochonnet !');
+                    this._showAimHint();
+                } else {
+                    this._showMessage('L\'adversaire lance le cochonnet');
+                    this._triggerAI();
+                }
+                if (this.onTurnChange) this.onTurnChange(this.currentTeam);
                 break;
 
             case STATES.FIRST_BALL:
-                this.currentTeam = 'player';
-                this.aimingEnabled = true;
-                this._showMessage('Lancez votre premiere boule !');
-                if (this.onTurnChange) this.onTurnChange('player');
+                // Meme equipe que le cochonnet lance la premiere boule
+                this.currentTeam = this._cochonnetTeam || 'player';
+                if (this.currentTeam === 'player') {
+                    this.aimingEnabled = true;
+                    this._showMessage('Lancez votre premiere boule !');
+                } else {
+                    this._showMessage('L\'adversaire lance sa premiere boule');
+                    this._triggerAI();
+                }
+                if (this.onTurnChange) this.onTurnChange(this.currentTeam);
                 break;
 
             case STATES.SECOND_TEAM_FIRST:
-                this.currentTeam = 'opponent';
-                this._showMessage('Tour de l\'adversaire');
-                if (this.onTurnChange) this.onTurnChange('opponent');
-                this._triggerAI();
+                // L'autre equipe joue sa premiere boule
+                this.currentTeam = this._cochonnetTeam === 'player' ? 'opponent' : 'player';
+                if (this.currentTeam === 'player') {
+                    this.aimingEnabled = true;
+                    this._showMessage('A vous de jouer !');
+                } else {
+                    this._showMessage('Tour de l\'adversaire');
+                    this._triggerAI();
+                }
+                if (this.onTurnChange) this.onTurnChange(this.currentTeam);
                 break;
 
             case STATES.PLAY_LOOP:
@@ -230,9 +252,11 @@ export default class PetanqueEngine {
         });
     }
 
-    static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult) {
+    static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6) {
         const isTir = loftPreset.id === 'tir';
-        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85);
+        // Puissance stat affects max distance: 1 = 70% range, 6 = 100%, 10 = 120%
+        const puissanceMult = 0.7 + (puissanceStat - 1) / 9 * 0.5;
+        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85) * puissanceMult;
         const totalDist = power * maxDist;
         const landDist = totalDist * loftPreset.landingFactor;
         const rollDist = totalDist * (1 - loftPreset.landingFactor);
@@ -280,8 +304,12 @@ export default class PetanqueEngine {
         const isTir = shotMode === 'tirer';
         const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
 
+        // Get puissance stat from the team's character
+        const puissance = team === 'player'
+            ? (this.scene.playerCharacter?.stats?.puissance || 6)
+            : (this.scene.opponentCharacter?.stats?.puissance || 6);
         const { targetX, targetY, rollVx, rollVy } =
-            PetanqueEngine.computeThrowParams(angle, power, cx, cy, this.bounds, loft, this.frictionMult);
+            PetanqueEngine.computeThrowParams(angle, power, cx, cy, this.bounds, loft, this.frictionMult, puissance);
 
         // SFX throw swoosh
         sfxThrow();
@@ -513,15 +541,19 @@ export default class PetanqueEngine {
 
         if (playerRemaining > 0 && opponentRemaining === 0) {
             this.scores.player += playerRemaining;
+            this.meneWinner = 'player';
             this._showMessage(`Mene morte ! Vous gagnez ${playerRemaining} point(s) !`);
         } else if (opponentRemaining > 0 && playerRemaining === 0) {
             this.scores.opponent += opponentRemaining;
+            this.meneWinner = 'opponent';
             this._showMessage(`Mene morte ! L'adversaire gagne ${opponentRemaining} point(s) !`);
         } else {
+            // Mene morte sans points : meme equipe relance
+            this.meneWinner = this._cochonnetTeam;
             this._showMessage('Mene morte ! 0 points.');
         }
 
-        if (this.onScore) this.onScore(this.scores, null, 0);
+        if (this.onScore) this.onScore(this.scores, this.meneWinner, 0);
 
         this.scene.time.delayedCall(2500, () => {
             if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
@@ -540,6 +572,28 @@ export default class PetanqueEngine {
 
         // SFX victory/defeat
         if (isVictory) sfxVictory(); else sfxDefeat();
+
+        // If arcade/versus mode: redirect to ResultScene
+        if (this.scene.arcadeState || this.scene.playerCharacter) {
+            this.scene.time.delayedCall(1500, () => {
+                this.scene.scene.start('ResultScene', {
+                    won: isVictory,
+                    scores: { ...this.scores },
+                    playerCharacter: this.scene.playerCharacter,
+                    opponentCharacter: this.scene.opponentCharacter,
+                    terrainName: this.terrainType,
+                    returnScene: this.scene.returnScene || 'TitleScene',
+                    arcadeState: this.scene.arcadeState,
+                    matchStats: {
+                        menes: this.mene,
+                        bestMene: Math.max(
+                            ...([0].concat(this.balls.filter(b => b.isAlive).map(() => 1)))
+                        )
+                    }
+                });
+            });
+            return;
+        }
 
         // Overlay sombre
         const overlay = this.scene.add.graphics().setDepth(90);

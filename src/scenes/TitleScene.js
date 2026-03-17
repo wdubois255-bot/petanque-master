@@ -180,7 +180,7 @@ export default class TitleScene extends Phaser.Scene {
         this._mode = 'main';
         this._selectedIndex = 0;
 
-        const items = ['Nouvelle Partie', 'Partie Rapide'];
+        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie'];
         if (hasSaveData()) items.push('Continuer');
 
         const startY = 218;
@@ -308,17 +308,20 @@ export default class TitleScene extends Phaser.Scene {
 
     _onMainSelect() {
         if (this._selectedIndex === 0) {
-            // Nouvelle Partie
+            // Mode Arcade
+            this.scene.start('CharSelectScene', { mode: 'arcade' });
+        } else if (this._selectedIndex === 1) {
+            // Partie Rapide
+            this.scene.start('QuickPlayScene');
+        } else if (this._selectedIndex === 2) {
+            // Nouvelle Partie (aventure)
             if (hasSaveData()) {
                 this._showSlotMenu();
                 this._newGame = true;
             } else {
                 this._startNewGame(0);
             }
-        } else if (this._selectedIndex === 1) {
-            // Partie Rapide
-            this.scene.start('QuickPlayScene');
-        } else if (this._selectedIndex === 2) {
+        } else if (this._selectedIndex === 3) {
             // Continuer
             this._showSlotMenu();
             this._newGame = false;

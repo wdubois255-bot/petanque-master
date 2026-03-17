@@ -1,0 +1,131 @@
+{
+  "stages": [
+    {
+      "id": "village",
+      "name": "Place du Village",
+      "description": "La place provencale classique. Platanes, fontaine, cigales. Le terrain d'apprentissage, pur skill.",
+      "surface": "terre",
+      "friction": 1.0,
+      "zones": [],
+      "slope": null,
+      "walls": false,
+      "colors": {
+        "bg": "#C4854A",
+        "gravel": ["#B07840", "#D49560", "#A87040", "#C4954A"],
+        "line": "#FFFFFF"
+      },
+      "ambiance": {
+        "sky": ["#87CEEB", "#B8D8EB"],
+        "ground": "#8B7D5A",
+        "decor": "platanes_fontaine",
+        "sfx_ambient": "cigales"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "plage",
+      "name": "Plage de la Ciotat",
+      "description": "Sable fin, parasols et embruns. Les boules s'enfoncent et s'arretent vite. Avantage aux tireurs.",
+      "surface": "sable",
+      "friction": 3.0,
+      "zones": [],
+      "slope": null,
+      "walls": false,
+      "colors": {
+        "bg": "#E8D5B7",
+        "gravel": ["#D4C0A0", "#F0E0C8", "#C4B090", "#E8D0B0"],
+        "line": "#FFFFFF"
+      },
+      "ambiance": {
+        "sky": ["#5BA8D5", "#E8D890"],
+        "ground": "#D4C0A0",
+        "decor": "parasols_bateaux",
+        "sfx_ambient": "vagues_mouettes"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "parc",
+      "name": "Parc Municipal",
+      "description": "Pelouse et allees de gravier. Les zones mixtes creent des trajectoires imprevisibles. Avantage aux strateges.",
+      "surface": "herbe",
+      "friction": 1.8,
+      "zones": [
+        {
+          "type": "gravier",
+          "friction": 1.2,
+          "rect": { "x": 0.3, "y": 0.0, "w": 0.15, "h": 1.0 },
+          "color": "#B8A888"
+        },
+        {
+          "type": "gravier",
+          "friction": 1.2,
+          "rect": { "x": 0.6, "y": 0.0, "w": 0.15, "h": 1.0 },
+          "color": "#B8A888"
+        }
+      ],
+      "slope": null,
+      "walls": false,
+      "colors": {
+        "bg": "#6B8E4E",
+        "gravel": ["#5E8A44", "#7BA65E", "#4A7A3A", "#6B9E4E"],
+        "line": "#FFFFFF"
+      },
+      "ambiance": {
+        "sky": ["#87CEEB", "#B8E8D0"],
+        "ground": "#5A7A3A",
+        "decor": "bancs_canards",
+        "sfx_ambient": "oiseaux_enfants"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "colline",
+      "name": "Colline aux Oliviers",
+      "description": "Terrain en pente ! Les boules roulent vers le bas. Il faut compenser en visant plus haut. Game-changer total.",
+      "surface": "terre",
+      "friction": 1.0,
+      "zones": [],
+      "slope": {
+        "direction": "down",
+        "angle": 3.0,
+        "gravity_component": 0.03
+      },
+      "walls": false,
+      "colors": {
+        "bg": "#C4954A",
+        "gravel": ["#B08540", "#D4A560", "#A88040", "#C4A54A"],
+        "line": "#FFFFFF"
+      },
+      "ambiance": {
+        "sky": ["#87CEEB", "#E8C890"],
+        "ground": "#8B7D5A",
+        "decor": "oliviers_murets",
+        "sfx_ambient": "vent_grillons"
+      },
+      "unlocked": true
+    },
+    {
+      "id": "docks",
+      "name": "Les Docks",
+      "description": "Beton lisse, bordures metalliques. Ca glisse, ca rebondit. Le chaos organise. Avantage au sang-froid.",
+      "surface": "dalles",
+      "friction": 0.4,
+      "zones": [],
+      "slope": null,
+      "walls": true,
+      "colors": {
+        "bg": "#7A7A70",
+        "gravel": ["#8E8E7E", "#B0A090", "#808070", "#A09888"],
+        "line": "#C0C0C0"
+      },
+      "ambiance": {
+        "sky": ["#2A3A5A", "#4A3A50"],
+        "ground": "#4A4A40",
+        "decor": "containers_grues",
+        "sfx_ambient": "industriel_nocturne"
+      },
+      "unlocked": true
+    }
+  ]
+}

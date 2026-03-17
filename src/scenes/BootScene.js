@@ -9,6 +9,9 @@ export default class BootScene extends Phaser.Scene {
     preload() {
         const BASE = import.meta.env.BASE_URL;
         this.load.json('boules', `${BASE}data/boules.json`);
+        this.load.json('characters', `${BASE}data/characters.json`);
+        this.load.json('terrains', `${BASE}data/terrains.json`);
+        this.load.json('arcade', `${BASE}data/arcade.json`);
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
 

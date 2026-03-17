@@ -26,6 +26,12 @@ export default class PetanqueScene extends Phaser.Scene {
         this.opponentId = data.opponentId || null;
         this.returnScene = data.returnScene || null;
         this.personality = data.personality || null;
+        // Character data (from characters.json) for stat-based gameplay
+        this.playerCharacter = data.playerCharacter || null;
+        this.opponentCharacter = data.opponentCharacter || null;
+        // Arcade state (passed through for return)
+        this.arcadeState = data.arcadeState || null;
+        this.arcadeRound = data.arcadeRound || null;
     }
 
     create() {
@@ -60,11 +66,12 @@ export default class PetanqueScene extends Phaser.Scene {
         // Add player characters on terrain
         this._createPlayerSprites();
 
-        // Aiming
-        this.aimingSystem = new AimingSystem(this, this.engine);
+        // Aiming (with player character stats for precision/sang-froid)
+        const playerStats = this.playerCharacter?.stats || null;
+        this.aimingSystem = new AimingSystem(this, this.engine, playerStats);
 
-        // AI (with personality if provided)
-        this.ai = new PetanqueAI(this, this.engine, this.difficulty, this.personality);
+        // AI (with opponent character data for stat-based behavior)
+        this.ai = new PetanqueAI(this, this.engine, this.difficulty, this.personality, this.opponentCharacter);
 
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);

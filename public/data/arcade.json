@@ -1,0 +1,48 @@
+{
+  "name": "Mode Arcade",
+  "description": "Affrontez 5 adversaires de plus en plus coriaces. Battez-les tous pour debloquer le boss secret !",
+  "matches": [
+    {
+      "round": 1,
+      "opponent": "equilibre",
+      "terrain": "village",
+      "difficulty_label": "Facile",
+      "intro_text": "Premier match ! Montrez ce que vous valez."
+    },
+    {
+      "round": 2,
+      "opponent": "pointeur",
+      "terrain": "plage",
+      "difficulty_label": "Facile+",
+      "intro_text": "Marcel ne rate jamais sa cible. Attention a sa precision..."
+    },
+    {
+      "round": 3,
+      "opponent": "tireur",
+      "terrain": "parc",
+      "difficulty_label": "Moyen",
+      "intro_text": "Fanny tire a vue. Protegez vos boules !"
+    },
+    {
+      "round": 4,
+      "opponent": "stratege",
+      "terrain": "colline",
+      "difficulty_label": "Moyen+",
+      "intro_text": "Ricardo calcule tout. Et la pente ne l'aide pas..."
+    },
+    {
+      "round": 5,
+      "opponent": "wildcard",
+      "terrain": "docks",
+      "difficulty_label": "Difficile",
+      "intro_text": "Thierry est imprevisible. Tout peut arriver sur les Docks."
+    }
+  ],
+  "boss": {
+    "opponent": "boss",
+    "terrain": "village",
+    "difficulty_label": "Expert",
+    "intro_text": "Le Grand Marius vous attend. Personne ne l'a battu depuis des annees.",
+    "unlock_condition": "Terminer les 5 matchs de l'arcade"
+  }
+}

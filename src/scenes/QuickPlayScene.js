@@ -32,12 +32,12 @@ const OPTIONS = [
     {
         label: 'ADVERSAIRE',
         values: [
-            { display: 'Marcel', key: 'npc_marcel', sprite: 'npc_marcel' },
-            { display: 'Fanny', key: 'npc_dresseur_1', sprite: 'npc_dresseur_1' },
-            { display: 'Ricardo', key: 'npc_dresseur_2', sprite: 'npc_dresseur_2' },
-            { display: 'Marius', key: 'npc_maitre', sprite: 'npc_maitre' },
-            { display: 'Thierry', key: 'npc_villager_1', sprite: 'npc_villager_1' },
-            { display: 'Jean-Pierre', key: 'npc_villager_2', sprite: 'npc_villager_2' }
+            { display: 'Rene', key: 'npc_villager_1', sprite: 'npc_villager_1', charId: 'equilibre' },
+            { display: 'Marcel', key: 'npc_marcel', sprite: 'npc_marcel', charId: 'pointeur' },
+            { display: 'Fanny', key: 'npc_dresseur_1', sprite: 'npc_dresseur_1', charId: 'tireur' },
+            { display: 'Ricardo', key: 'npc_dresseur_2', sprite: 'npc_dresseur_2', charId: 'stratege' },
+            { display: 'Thierry', key: 'npc_villager_2', sprite: 'npc_villager_2', charId: 'wildcard' },
+            { display: 'Marius', key: 'npc_maitre', sprite: 'npc_maitre', charId: 'boss' }
         ]
     },
     {
@@ -49,52 +49,45 @@ const OPTIONS = [
     }
 ];
 
+// Layout constants
+const LEFT_W = 500;       // Options column width
+const PANEL_X = 670;      // Info panel center X
+const PANEL_W = 280;      // Info panel width
+const PANEL_TOP = 70;     // Info panel top Y
+
 export default class QuickPlayScene extends Phaser.Scene {
     constructor() {
         super('QuickPlayScene');
     }
 
     create() {
-        // Selection state: index into each option's values
         this._selections = OPTIONS.map(() => 0);
         this._selectedRow = 0;
-        // Total rows = OPTIONS.length + 1 (JOUER button)
         this._totalRows = OPTIONS.length + 1;
 
-        this._uiElements = [];
-
-        // ============================================
-        // BACKGROUND - Dark overlay with provencal tones
-        // ============================================
+        // Background
         const bg = this.add.graphics();
-
-        // Sky gradient (darker than title)
         bg.fillGradientStyle(0x3A5A7A, 0x3A5A7A, 0x5A3A28, 0x5A3A28, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        // Subtle ground stripe
         bg.fillStyle(0x3A2E28, 0.5);
-        bg.fillRect(0, GAME_HEIGHT - 60, GAME_WIDTH, 60);
+        bg.fillRect(0, GAME_HEIGHT - 40, GAME_WIDTH, 40);
 
-        // ============================================
-        // TITLE
-        // ============================================
-        this.add.text(GAME_WIDTH / 2, 36, 'PARTIE RAPIDE', {
-            fontFamily: 'monospace',
-            fontSize: '36px',
-            color: '#FFD700',
-            align: 'center',
+        // Right panel background (permanent)
+        const panelBg = this.add.graphics();
+        panelBg.fillStyle(0x2A2018, 0.85);
+        panelBg.fillRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, 10);
+        panelBg.lineStyle(1, 0xD4A574, 0.25);
+        panelBg.strokeRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, 10);
+
+        // Title
+        this.add.text(LEFT_W / 2, 32, 'PARTIE RAPIDE', {
+            fontFamily: 'monospace', fontSize: '32px', color: '#FFD700',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
-        // ============================================
-        // OPTIONS
-        // ============================================
-        const startY = 100;
-        const rowH = 54;
-        const labelX = 160;
-        const valueX = GAME_WIDTH / 2 + 60;
-
+        // Options (left column)
+        const startY = 86;
+        const rowH = 50;
         this._optionTexts = [];
         this._valueTexts = [];
         this._arrowLeftTexts = [];
@@ -105,160 +98,355 @@ export default class QuickPlayScene extends Phaser.Scene {
             const y = startY + i * rowH;
             const opt = OPTIONS[i];
 
-            // Row background pill
             const pill = this.add.graphics();
             pill.fillStyle(0x3A2E28, 0.7);
-            pill.fillRoundedRect(40, y - 16, GAME_WIDTH - 80, 38, 6);
+            pill.fillRoundedRect(36, y - 14, LEFT_W - 56, 34, 6);
             this._rowBgs.push(pill);
 
-            // Label
-            const label = this.add.text(labelX, y, opt.label, {
-                fontFamily: 'monospace',
-                fontSize: '18px',
-                color: '#D4A574',
-                shadow: SHADOW
+            const label = this.add.text(142, y, opt.label, {
+                fontFamily: 'monospace', fontSize: '15px', color: '#D4A574', shadow: SHADOW
             }).setOrigin(1, 0.5);
             this._optionTexts.push(label);
 
-            // Left arrow
-            const arrowL = this.add.text(valueX - 140, y, '<', {
-                fontFamily: 'monospace',
-                fontSize: '20px',
-                color: '#FFD700',
-                shadow: SHADOW
+            const arrowL = this.add.text(200, y, '<', {
+                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
             this._arrowLeftTexts.push(arrowL);
 
-            // Value
-            const val = this.add.text(valueX, y, opt.values[0].display, {
-                fontFamily: 'monospace',
-                fontSize: '18px',
-                color: '#F5E6D0',
-                align: 'center',
-                shadow: SHADOW
+            const val = this.add.text(320, y, opt.values[0].display, {
+                fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center', shadow: SHADOW
             }).setOrigin(0.5);
             this._valueTexts.push(val);
 
-            // Right arrow
-            const arrowR = this.add.text(valueX + 140, y, '>', {
-                fontFamily: 'monospace',
-                fontSize: '20px',
-                color: '#FFD700',
-                shadow: SHADOW
+            const arrowR = this.add.text(440, y, '>', {
+                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
             this._arrowRightTexts.push(arrowR);
         }
 
-        // ============================================
-        // JOUER BUTTON
-        // ============================================
-        const jouerY = startY + OPTIONS.length * rowH + 16;
+        // JOUER button
+        const jouerY = startY + OPTIONS.length * rowH + 10;
         this._jouerBg = this.add.graphics();
         this._jouerBg.fillStyle(0x3A2E28, 0.8);
-        this._jouerBg.fillRoundedRect(GAME_WIDTH / 2 - 120, jouerY - 20, 240, 44, 8);
+        this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
 
-        this._jouerText = this.add.text(GAME_WIDTH / 2, jouerY, 'JOUER !', {
-            fontFamily: 'monospace',
-            fontSize: '26px',
-            color: '#FFD700',
-            align: 'center',
+        this._jouerText = this.add.text(LEFT_W / 2, jouerY, 'JOUER !', {
+            fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
-        // ============================================
-        // CONTROLS HINT
-        // ============================================
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 20, '\u2191\u2193 Naviguer   \u2190\u2192 Changer   Espace Confirmer   Echap Retour', {
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            color: '#9E9E8E',
-            align: 'center',
-            shadow: SHADOW
+        // Controls hint
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193 Naviguer   \u2190\u2192 Changer   Espace Confirmer   Echap Retour', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // ============================================
-        // CURSOR
-        // ============================================
+        // Cursor
         this._cursor = this.add.text(0, 0, '\u25b6', {
-            fontFamily: 'monospace',
-            fontSize: '20px',
-            color: '#FFD700',
-            shadow: SHADOW
+            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // ============================================
-        // OPPONENT PREVIEW SPRITE
-        // ============================================
-        this._previewSprite = null;
-        this._updatePreviewSprite();
+        // Info panel dynamic elements (right column)
+        this._infoBarsGfx = this.add.graphics().setDepth(5);
+        this._infoLabels = [];
+        this._boulePreview = null;
+        this._charPreview = null;
 
-        // ============================================
-        // INPUT
-        // ============================================
+        // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enterKey = this.input.keyboard.addKey('ENTER');
         this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.escKey = this.input.keyboard.addKey('ESC');
 
         this._updateDisplay();
+        this._updateInfoPanel();
     }
 
     _updateDisplay() {
-        // Update all value texts
         for (let i = 0; i < OPTIONS.length; i++) {
             const sel = this._selections[i];
             const opt = OPTIONS[i];
             this._valueTexts[i].setText(opt.values[sel].display);
 
-            // Highlight selected row
             const isSelected = (this._selectedRow === i);
             this._optionTexts[i].setColor(isSelected ? '#FFD700' : '#D4A574');
             this._valueTexts[i].setColor(isSelected ? '#FFFFFF' : '#F5E6D0');
             this._arrowLeftTexts[i].setAlpha(isSelected ? 1 : 0.3);
             this._arrowRightTexts[i].setAlpha(isSelected ? 1 : 0.3);
 
-            // Row bg highlight
             this._rowBgs[i].clear();
             this._rowBgs[i].fillStyle(isSelected ? 0x5A4A38 : 0x3A2E28, 0.7);
-            const y = 100 + i * 54;
-            this._rowBgs[i].fillRoundedRect(40, y - 16, GAME_WIDTH - 80, 38, 6);
+            const y = 86 + i * 50;
+            this._rowBgs[i].fillRoundedRect(36, y - 14, LEFT_W - 56, 34, 6);
         }
 
-        // JOUER button highlight
         const jouerSelected = (this._selectedRow === OPTIONS.length);
         this._jouerBg.clear();
         this._jouerBg.fillStyle(jouerSelected ? 0x8B6B20 : 0x3A2E28, 0.8);
-        const jouerY = 100 + OPTIONS.length * 54 + 16;
-        this._jouerBg.fillRoundedRect(GAME_WIDTH / 2 - 120, jouerY - 20, 240, 44, 8);
+        const jouerY = 86 + OPTIONS.length * 50 + 10;
+        this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
         this._jouerText.setColor(jouerSelected ? '#FFFFFF' : '#FFD700');
 
-        // Cursor position
         if (this._selectedRow < OPTIONS.length) {
-            const y = 100 + this._selectedRow * 54;
-            this._cursor.setPosition(52, y);
+            this._cursor.setPosition(42, 86 + this._selectedRow * 50);
             this._cursor.setVisible(true);
         } else {
-            this._cursor.setPosition(GAME_WIDTH / 2 - 80, jouerY);
+            this._cursor.setPosition(LEFT_W / 2 - 68, jouerY);
             this._cursor.setVisible(true);
         }
     }
 
-    _updatePreviewSprite() {
-        if (this._previewSprite) {
-            this._previewSprite.destroy();
-            this._previewSprite = null;
+    _updateInfoPanel() {
+        // Clear
+        this._infoBarsGfx.clear();
+        this._infoLabels.forEach(l => l.destroy());
+        this._infoLabels = [];
+        if (this._boulePreview) { this._boulePreview.destroy(); this._boulePreview = null; }
+        if (this._charPreview) { this._charPreview.destroy(); this._charPreview = null; }
+
+        const boulesData = this.cache.json.get('boules');
+        const terrainsData = this.cache.json.get('terrains');
+        const charsData = this.cache.json.get('characters');
+
+        const cx = PANEL_X;
+        const top = PANEL_TOP;
+
+        if (this._selectedRow === 0 && boulesData) {
+            this._drawBoulePanel(cx, top, boulesData);
+        } else if (this._selectedRow === 1 && terrainsData) {
+            this._drawTerrainPanel(cx, top, terrainsData, boulesData);
+        } else if (this._selectedRow === 2) {
+            this._drawDifficultyPanel(cx, top);
+        } else if (this._selectedRow === 3 && charsData) {
+            this._drawCharPanel(cx, top, charsData);
+        } else {
+            // FORMAT or JOUER — show summary
+            this._drawSummaryPanel(cx, top, boulesData, charsData, terrainsData);
+        }
+    }
+
+    // === BOULES PANEL ===
+    _drawBoulePanel(cx, top, boulesData) {
+        const bouleKey = OPTIONS[0].values[this._selections[0]].key;
+        const boule = boulesData.sets.find(s => s.id === bouleKey);
+        if (!boule) return;
+
+        // Title
+        this._addLabel(cx, top + 6, boule.name, '15px', '#FFD700', 0.5);
+
+        // Boule visual (3D sphere)
+        const sphereY = top + 60;
+        const color = parseInt(boule.color.replace('#', ''), 16);
+        this._boulePreview = this.add.graphics().setDepth(5);
+        // Shadow
+        this._boulePreview.fillStyle(0x000000, 0.15);
+        this._boulePreview.fillEllipse(cx, sphereY + 26, 44, 14);
+        // Main sphere
+        this._boulePreview.fillStyle(color, 1);
+        this._boulePreview.fillCircle(cx, sphereY, 22);
+        // Highlight
+        const hiColor = bouleKey === 'bronze' ? 0xE8A050 : bouleKey === 'chrome' ? 0xFFFFFF : 0xE0E8F0;
+        this._boulePreview.fillStyle(hiColor, 0.5);
+        this._boulePreview.fillCircle(cx - 7, sphereY - 8, 8);
+        this._boulePreview.fillStyle(0xFFFFFF, 0.7);
+        this._boulePreview.fillCircle(cx - 5, sphereY - 10, 3);
+
+        // Description
+        this._addLabel(cx, sphereY + 36, boule.description, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
+
+        // Stats bars
+        const barsY = sphereY + 76;
+        const bars = [
+            { label: 'Poids', value: boule.stats.masse, min: 600, max: 850, color: 0xCC4444,
+              desc: boule.stats.masse >= 750 ? 'Lourde, deplace plus' : boule.stats.masse <= 650 ? 'Legere, roule plus loin' : 'Equilibree' },
+            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x5B9BD5,
+              desc: boule.stats.rayon >= 11 ? 'Grande, facile a toucher' : boule.stats.rayon <= 9 ? 'Petite, discrette' : 'Standard' },
+            { label: 'Glisse', value: boule.bonus === 'friction_x0.9' ? 8 : boule.bonus === 'knockback_x1.2' ? 3 : 5, min: 1, max: 10, color: 0x44CC44,
+              desc: boule.bonus === 'friction_x0.9' ? 'Roule longtemps' : boule.bonus === 'knockback_x1.2' ? 'Impact fort' : 'Normal' }
+        ];
+        this._drawBars(cx, barsY, bars);
+
+        // Lore
+        if (boule.lore) {
+            this._addLabel(cx, barsY + bars.length * 28 + 12, `"${boule.lore}"`, '9px', '#7A6A5A', 0.5, PANEL_W - 20);
+        }
+    }
+
+    // === TERRAIN PANEL ===
+    _drawTerrainPanel(cx, top, terrainsData, boulesData) {
+        const terrainKey = OPTIONS[1].values[this._selections[1]].key;
+        // Match by surface type (terre, herbe, sable, dalles)
+        const terrain = terrainsData.stages.find(t => t.surface === terrainKey);
+        if (!terrain) return;
+
+        // Title
+        this._addLabel(cx, top + 6, terrain.name, '15px', '#FFD700', 0.5);
+
+        // Terrain color swatch
+        const swatchY = top + 46;
+        const bgColor = parseInt(terrain.colors.bg.replace('#', ''), 16);
+        this._infoBarsGfx.fillStyle(bgColor, 1);
+        this._infoBarsGfx.fillRoundedRect(cx - 50, swatchY, 100, 28, 4);
+        this._infoBarsGfx.lineStyle(1, 0xF5E6D0, 0.3);
+        this._infoBarsGfx.strokeRoundedRect(cx - 50, swatchY, 100, 28, 4);
+        // Gravel dots
+        const gravel = terrain.colors.gravel;
+        for (let i = 0; i < 15; i++) {
+            const gx = cx - 45 + Math.random() * 90;
+            const gy = swatchY + 4 + Math.random() * 20;
+            const gc = parseInt(gravel[Math.floor(Math.random() * gravel.length)].replace('#', ''), 16);
+            this._infoBarsGfx.fillStyle(gc, 0.6);
+            this._infoBarsGfx.fillRect(gx, gy, 2, 2);
         }
 
-        const advIdx = 3; // ADVERSAIRE option index
-        const sel = this._selections[advIdx];
-        const spriteKey = OPTIONS[advIdx].values[sel].sprite;
+        // Short description (2 lines max)
+        const shortDesc = terrain.description.length > 80
+            ? terrain.description.substring(0, 77) + '...'
+            : terrain.description;
+        this._addLabel(cx, swatchY + 38, shortDesc, '9px', '#F5E6D0', 0.5, PANEL_W - 20);
 
+        // Stats bars
+        const barsY = swatchY + 80;
+        const frictionDesc = terrain.friction >= 2.5 ? 'Boules s\'arretent vite'
+            : terrain.friction >= 1.5 ? 'Roulement reduit'
+            : terrain.friction <= 0.5 ? 'Ca roule loin !'
+            : 'Bon equilibre';
+
+        const features = [terrain.slope ? 'Pente' : null, terrain.walls ? 'Rebonds' : null, terrain.zones.length > 0 ? 'Zones mixtes' : null].filter(Boolean);
+        const complexityVal = features.length * 3 + 2;
+        const complexityDesc = features.length > 0 ? features.join(', ') : 'Terrain plat';
+
+        const bars = [
+            { label: 'Adherence', value: Math.min(terrain.friction / 3.5 * 10, 10), min: 0, max: 10, color: 0xD4A574, desc: frictionDesc },
+            { label: 'Complexite', value: complexityVal, min: 0, max: 10, color: 0xC44B3F, desc: complexityDesc }
+        ];
+        this._drawBars(cx, barsY, bars);
+    }
+
+    // === DIFFICULTY PANEL ===
+    _drawDifficultyPanel(cx, top) {
+        const diffKey = OPTIONS[2].values[this._selections[2]].key;
+        const diffInfo = {
+            easy: { title: 'Facile', desc: 'L\'adversaire vise mal et ne tire pas. Parfait pour apprendre.', stars: 1 },
+            medium: { title: 'Moyen', desc: 'Adversaire correct, tire quand il le faut.', stars: 2 },
+            hard: { title: 'Difficile', desc: 'Adversaire precis et strategique. Bon courage !', stars: 3 }
+        };
+        const d = diffInfo[diffKey] || diffInfo.easy;
+
+        this._addLabel(cx, top + 6, d.title, '15px', '#FFD700', 0.5);
+
+        // Stars visual
+        const starsY = top + 46;
+        const starStr = '\u2605'.repeat(d.stars) + '\u2606'.repeat(3 - d.stars);
+        this._addLabel(cx, starsY, starStr, '28px', '#FFD700', 0.5);
+
+        this._addLabel(cx, starsY + 40, d.desc, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
+    }
+
+    // === CHARACTER PANEL ===
+    _drawCharPanel(cx, top, charsData) {
+        const advOption = OPTIONS[3].values[this._selections[3]];
+        const char = charsData.roster.find(c => c.id === advOption.charId);
+        if (!char) return;
+
+        // Name + title
+        this._addLabel(cx, top + 6, char.name, '16px', '#FFD700', 0.5);
+        this._addLabel(cx, top + 26, char.title, '11px', '#D4A574', 0.5);
+
+        // Sprite preview
+        const spriteY = top + 72;
+        const spriteKey = advOption.sprite;
         if (this.textures.exists(spriteKey)) {
-            const previewX = GAME_WIDTH - 80;
-            const previewY = 100 + advIdx * 54;
-            this._previewSprite = this.add.sprite(previewX, previewY, spriteKey, 0)
-                .setScale(2)
-                .setOrigin(0.5);
+            this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
+                .setScale(2.5).setOrigin(0.5).setDepth(5);
+        }
+
+        // Catchphrase
+        this._addLabel(cx, spriteY + 36, `"${char.catchphrase}"`, '9px', '#9E9E8E', 0.5, PANEL_W - 20);
+
+        // Stats bars
+        const barsY = spriteY + 64;
+        const bars = [
+            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0x44CC44,
+              desc: char.stats.precision >= 8 ? 'Chirurgical' : char.stats.precision <= 4 ? 'Approximatif' : 'Correct' },
+            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xCC4444,
+              desc: char.stats.puissance >= 8 ? 'Devastateur' : char.stats.puissance <= 4 ? 'Frappe douce' : 'Normal' },
+            { label: 'Effet', value: char.stats.effet, min: 0, max: 10, color: 0x9B7BB8,
+              desc: char.stats.effet >= 8 ? 'Maitre courbes' : char.stats.effet <= 4 ? 'Tirs droits' : 'Quelques courbes' },
+            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x5B9BD5,
+              desc: char.stats.sang_froid >= 8 ? 'Imperturbable' : char.stats.sang_froid <= 4 ? 'Craque vite' : 'Tient le coup' }
+        ];
+        this._drawBars(cx, barsY, bars);
+    }
+
+    // === SUMMARY PANEL (format/jouer) ===
+    _drawSummaryPanel(cx, top, boulesData, charsData, terrainsData) {
+        this._addLabel(cx, top + 6, 'RESUME', '14px', '#FFD700', 0.5);
+
+        const bouleKey = OPTIONS[0].values[this._selections[0]].key;
+        const terrainKey = OPTIONS[1].values[this._selections[1]].key;
+        const diffKey = OPTIONS[2].values[this._selections[2]].display;
+        const advName = OPTIONS[3].values[this._selections[3]].display;
+
+        const boule = boulesData?.sets?.find(s => s.id === bouleKey);
+        const lines = [
+            `Boules : ${boule?.name || bouleKey}`,
+            `Terrain : ${OPTIONS[1].values[this._selections[1]].display}`,
+            `Difficulte : ${diffKey}`,
+            `Adversaire : ${advName}`,
+        ];
+        let ly = top + 36;
+        for (const line of lines) {
+            this._addLabel(cx - PANEL_W / 2 + 14, ly, line, '11px', '#F5E6D0', 0);
+            ly += 22;
+        }
+    }
+
+    // === HELPERS ===
+    _addLabel(x, y, text, size, color, originX, wrapWidth) {
+        const style = {
+            fontFamily: 'monospace', fontSize: size, color, shadow: SHADOW
+        };
+        if (wrapWidth) {
+            style.wordWrap = { width: wrapWidth };
+            style.align = 'center';
+            style.lineSpacing = 2;
+        }
+        const t = this.add.text(x, y, text, style)
+            .setOrigin(originX, 0).setDepth(5);
+        this._infoLabels.push(t);
+        return t;
+    }
+
+    _drawBars(cx, startY, bars) {
+        const totalW = PANEL_W - 24;
+        const labelW = 76;
+        const barH = 8;
+        const rowH = 26;
+        const barX = cx - totalW / 2 + labelW;
+        const barW = totalW - labelW - 4;
+
+        for (let i = 0; i < bars.length; i++) {
+            const b = bars[i];
+            const by = startY + i * rowH;
+
+            // Label
+            this._addLabel(cx - totalW / 2, by, b.label, '10px', '#D4A574', 0);
+
+            // Bar bg
+            this._infoBarsGfx.fillStyle(0x1A1510, 0.7);
+            this._infoBarsGfx.fillRoundedRect(barX, by + 1, barW, barH, 3);
+
+            // Bar fill
+            const ratio = Phaser.Math.Clamp((b.value - (b.min || 0)) / ((b.max || 10) - (b.min || 0)), 0, 1);
+            if (ratio > 0) {
+                this._infoBarsGfx.fillStyle(b.color, 0.85);
+                this._infoBarsGfx.fillRoundedRect(barX, by + 1, barW * ratio, barH, 3);
+            }
+
+            // Short description to the right of the label, below the bar
+            if (b.desc) {
+                this._addLabel(barX, by + barH + 3, b.desc, '8px', '#7A6A5A', 0);
+            }
         }
     }
 
@@ -270,36 +458,33 @@ export default class QuickPlayScene extends Phaser.Scene {
         const confirm = Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
         const back = Phaser.Input.Keyboard.JustDown(this.escKey);
 
-        if (back) {
-            this.scene.start('TitleScene');
-            return;
-        }
+        if (back) { this.scene.start('TitleScene'); return; }
 
         if (up) {
             this._selectedRow = Math.max(0, this._selectedRow - 1);
             this._updateDisplay();
+            this._updateInfoPanel();
         }
         if (down) {
             this._selectedRow = Math.min(this._totalRows - 1, this._selectedRow + 1);
             this._updateDisplay();
+            this._updateInfoPanel();
         }
 
-        // Left/Right cycle values for current option row
         if (this._selectedRow < OPTIONS.length) {
             const opt = OPTIONS[this._selectedRow];
             if (left) {
                 this._selections[this._selectedRow] = (this._selections[this._selectedRow] - 1 + opt.values.length) % opt.values.length;
                 this._updateDisplay();
-                if (this._selectedRow === 3) this._updatePreviewSprite();
+                this._updateInfoPanel();
             }
             if (right) {
                 this._selections[this._selectedRow] = (this._selections[this._selectedRow] + 1) % opt.values.length;
                 this._updateDisplay();
-                if (this._selectedRow === 3) this._updatePreviewSprite();
+                this._updateInfoPanel();
             }
         }
 
-        // Confirm on JOUER
         if (confirm && this._selectedRow === OPTIONS.length) {
             this._launchGame();
         }
@@ -312,30 +497,27 @@ export default class QuickPlayScene extends Phaser.Scene {
         const opponent = OPTIONS[3].values[this._selections[3]];
         const format = OPTIONS[4].values[this._selections[4]].key;
 
-        // Store boule type in registry
         const gs = this.registry.get('gameState') || {};
-        this.registry.set('gameState', {
-            ...gs,
-            bouleType
-        });
+        this.registry.set('gameState', { ...gs, bouleType });
+
+        const charsData = this.cache.json.get('characters');
+        const opponentChar = opponent.charId && charsData
+            ? charsData.roster.find(c => c.id === opponent.charId) : null;
 
         this.cameras.main.fadeOut(300);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('PetanqueScene', {
-                terrain,
-                difficulty,
-                format,
+                terrain, difficulty, format,
                 opponentName: opponent.display,
                 opponentId: 'quickplay_' + opponent.key,
                 returnScene: 'QuickPlayScene',
+                personality: opponentChar?.ai?.personality || null,
+                opponentCharacter: opponentChar,
                 quickPlay: true
             });
         });
     }
 
-    /**
-     * Called by PetanqueEngine when returning from a quick play match.
-     */
     returnFromBattle(_result) {
         this.scene.restart();
     }

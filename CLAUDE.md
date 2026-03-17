@@ -1,8 +1,9 @@
 # CLAUDE.md - Petanque Master
 Tu dois toujours challenger, questionner, essayer d'aller plus loin afin d'aider et d'avancer le projet. 
 ## Projet
-**Petanque Master** : jeu web 2D style Pokemon avec combats de petanque.
-Le joueur explore un monde ouvert top-down, rencontre des joueurs de petanque, et affronte des maitres d'arene.
+**Petanque Master** : jeu de petanque competitif style jeu de combat (Street Fighter / Tekken).
+Le joueur choisit un personnage avec des stats uniques et affronte des adversaires sur des terrains varies.
+Modes : Arcade (solo, 5 matchs + boss), Versus local, Versus en ligne (async), Quick Play.
 
 ## Stack technique
 - **Framework** : Phaser 3.90.0 "Tsugumi" (derniere version stable, finale de la branche 3.x)
@@ -34,24 +35,30 @@ Le joueur explore un monde ouvert top-down, rencontre des joueurs de petanque, e
   index.html
   vite.config.js
   package.json
+  GAME_DESIGN.md         # Bible du game design (concept, persos, terrains, flow)
+  STORY.md               # Histoire "L'Heritier de la Ciotat" (reserve pour mode aventure futur)
   /src
     main.js              # Point d'entree Phaser
     config.js            # Config Phaser (resolution, physics, scenes)
     /scenes
       BootScene.js       # Chargement assets
       TitleScene.js      # Ecran titre
-      OverworldScene.js  # Exploration monde ouvert
-      PetanqueScene.js   # Partie de petanque
-      DialogScene.js     # Overlay dialogues
-      UIScene.js         # HUD overlay
+      CharSelectScene.js # Selection de personnage (style jeu de combat)
+      QuickPlayScene.js  # Configuration partie rapide
+      ArcadeScene.js     # Mode arcade (progression 5 matchs + boss)
+      PetanqueScene.js   # Partie de petanque (le coeur)
+      VSIntroScene.js    # Ecran "X vs Y" avant le match
+      ResultScene.js     # Ecran de resultats apres le match
+      OverworldScene.js  # Exploration monde ouvert (reserve, basse priorite)
     /entities
       Player.js          # Joueur (mouvement grille, animation)
       NPC.js             # PNJ (detection, dialogue, patrol)
+      Character.js       # Personnage jouable (stats, sprite, portrait)
     /petanque
       Ball.js            # Boule avec physique custom
       Cochonnet.js       # Cochonnet
       PetanqueEngine.js  # Moteur de jeu petanque (regles, tours, score)
-      PetanqueAI.js      # IA adversaire (3 niveaux)
+      PetanqueAI.js      # IA adversaire (3 niveaux + stats perso)
       AimingSystem.js    # Systeme de visee drag-and-release
     /world
       MapManager.js      # Chargement/transition des maps Tiled
@@ -61,15 +68,20 @@ Le joueur explore un monde ouvert top-down, rencontre des joueurs de petanque, e
       DialogBox.js       # Boite de dialogue style Pokemon
       ScorePanel.js      # Panneau score petanque
       MiniMap.js         # Medaillon zoom petanque
+      CharSelectUI.js    # UI grille de selection perso (portraits, stats, curseur)
     /data
-      npcs.json          # Donnees des PNJ (dialogues, difficulte, position)
-      progression.json   # Badges, deblocages, arenes
+      characters.json    # Roster : stats, descriptions, catchphrases des personnages
+      terrains.json      # Terrains : proprietes physiques, zones, pentes
+      arcade.json        # Progression arcade (ordre adversaires, terrains)
+      npcs.json          # Donnees des PNJ overworld (reserve)
+      progression.json   # Deblocages (persos, boules, terrains)
       boules.json        # Types de boules et leurs stats
     /utils
       SaveManager.js     # Sauvegarde localStorage
       Constants.js       # Constantes du jeu
   /assets
     /sprites             # Personnages, boules, UI elements
+    /portraits           # Portraits grand format pour ecran selection
     /tilesets            # Tilesets pour Tiled
     /maps                # Fichiers JSON exportes de Tiled
     /audio
@@ -110,9 +122,10 @@ npm run preview      # Preview du build
 ## Workflow de dev
 1. Toujours tester dans le navigateur apres chaque changement (Vite HMR)
 2. Le moteur petanque est le coeur du jeu : le prioriser et le tester isolement
-3. Les maps Tiled sont dans /assets/maps en JSON
-4. Quand on ajoute un PNJ, l'ajouter dans npcs.json ET dans la map Tiled (object layer)
+3. GAME_DESIGN.md est la bible du projet — tout nouveau contenu doit s'y conformer
+4. Les personnages sont developpes un par un (stats + visuel PixelLab + portrait)
 5. Tester la physique des boules avec differentes valeurs de friction avant de figer
+6. Chaque terrain doit etre jouable et teste independamment avant integration dans l'arcade
 
 ## Themes et ambiance
 - Ambiance provencale / sud de la France, humor
@@ -133,8 +146,10 @@ npm run preview      # Preview du build
 - Boule hors terrain = morte (retiree)
 
 ## Fichiers de reference
-- /PLAN_MVP.md : plan de dev complet en 5 sprints (Sprint 0-4) avec schemas de donnees
-- /CAHIER_DES_CHARGES.md : cahier des charges du projet
-- /research/ : 11 fichiers de recherche detailles (frameworks, physique, UX, IA pixel art, MCP, etc.)
+- /GAME_DESIGN.md : **BIBLE DU PROJET** — concept, personnages, terrains, flow, priorites
+- /PLAN_MVP.md : plan de dev originel en 5 sprints (Sprint 0-4), historique
+- /STORY.md : histoire "L'Heritier de la Ciotat" (reserve pour mode aventure futur)
+- /CAHIER_DES_CHARGES.md : cahier des charges initial
+- /research/ : 12+ fichiers de recherche detailles
 - /src/data/boules.json : schema complet des boules, cochonnet, physique, terrains
 - /.claude/skills/ : 5 custom skills (/sprite, /tileset, /sfx, /playtest, /build-assets)

@@ -8,18 +8,36 @@ import {
 } from '../utils/Constants.js';
 
 export default class PetanqueAI {
-    constructor(scene, engine, difficulty, personality = null) {
+    constructor(scene, engine, difficulty, personality = null, characterData = null) {
         this.scene = scene;
         this.engine = engine;
         this.difficulty = difficulty;
+        this.characterData = characterData;
 
-        // Resolve precision config from difficulty
-        this.precisionConfig = difficulty === 'hard' ? AI_HARD
-            : difficulty === 'medium' ? AI_MEDIUM
-            : AI_EASY;
-
-        // Resolve personality config (overrides decision-making, not precision)
-        this.personality = this._resolvePersonality(personality, difficulty);
+        // If character data provided (from characters.json), use its AI config
+        if (characterData && characterData.ai) {
+            this.precisionConfig = {
+                angleDev: characterData.ai.angleDev,
+                powerDev: characterData.ai.powerDev,
+                canShoot: characterData.ai.shootProbability > 0,
+                shootThreshold: 3
+            };
+            this.personality = {
+                personality: characterData.archetype,
+                shootProbability: characterData.ai.shootProbability,
+                loftPref: characterData.ai.loftPref,
+                targetsCocho: characterData.ai.targetsCocho
+            };
+            // Apply sang-froid: under pressure (10-10+), AI precision degrades
+            this._charStats = characterData.stats || { precision: 6, puissance: 6, effet: 6, sang_froid: 6 };
+        } else {
+            // Legacy: resolve from difficulty string
+            this.precisionConfig = difficulty === 'hard' ? AI_HARD
+                : difficulty === 'medium' ? AI_MEDIUM
+                : AI_EASY;
+            this.personality = this._resolvePersonality(personality, difficulty);
+            this._charStats = { precision: 6, puissance: 6, effet: 6, sang_froid: 6 };
+        }
     }
 
     _resolvePersonality(personality, difficulty) {
@@ -65,9 +83,21 @@ export default class PetanqueAI {
         const idealAngle = Math.atan2(dy, dx);
         const idealDist = Math.sqrt(dx * dx + dy * dy);
 
-        // Precision from difficulty config
-        const angleNoise = this._noise(this.precisionConfig.angleDev) * Math.PI / 180;
-        const powerNoise = this._noise(this.precisionConfig.powerDev);
+        // Precision from difficulty config, with pressure modifier
+        let angleDev = this.precisionConfig.angleDev;
+        let powerDev = this.precisionConfig.powerDev;
+
+        // Pressure: when both scores >= 10, precision degrades based on sang-froid
+        const scores = this.engine.scores;
+        if (scores.player >= 10 && scores.opponent >= 10) {
+            // sang_froid 10 = +0% noise, sang_froid 1 = +80% noise
+            const pressureMult = 1 + (10 - this._charStats.sang_froid) / 9 * 0.8;
+            angleDev *= pressureMult;
+            powerDev *= pressureMult;
+        }
+
+        const angleNoise = this._noise(angleDev) * Math.PI / 180;
+        const powerNoise = this._noise(powerDev);
 
         const angle = idealAngle + angleNoise;
         const isTir = shotMode === 'tirer';

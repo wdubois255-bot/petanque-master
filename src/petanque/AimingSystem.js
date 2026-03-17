@@ -11,7 +11,7 @@ import { sfxUIClick } from '../utils/SoundManager.js';
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 export default class AimingSystem {
-    constructor(scene, engine) {
+    constructor(scene, engine, characterStats = null) {
         this.scene = scene;
         this.engine = engine;
         this.isDragging = false;
@@ -19,6 +19,13 @@ export default class AimingSystem {
         this.startY = 0;
         this.currentX = 0;
         this.currentY = 0;
+
+        // Character stats (affects aiming)
+        this.charStats = characterStats || { precision: 6, puissance: 6, effet: 6, sang_froid: 6 };
+
+        // Pressure tremble state
+        this._trembleOffset = { x: 0, y: 0 };
+        this._trembleTime = 0;
 
         // Shot mode: 'pointer' or 'tirer'
         this.shotMode = null;
@@ -342,10 +349,20 @@ export default class AimingSystem {
 
         if (dist < DEAD_ZONE_PX) return;
 
-        const angle = Math.atan2(dy, dx);
+        let angle = Math.atan2(dy, dx);
         // Quadratic power curve: more control at low power, realistic feel
         const rawPower = Math.min(dist / 150, 1);
-        const power = rawPower * rawPower;
+        let power = rawPower * rawPower;
+
+        // Apply precision dispersion: lower precision = more random deviation
+        // Precision 10 = 0 deg deviation, Precision 1 = ~6 deg deviation
+        const precisionDev = (10 - this.charStats.precision) * 0.7; // degrees
+        angle += (Math.random() - 0.5) * 2 * precisionDev * Math.PI / 180;
+        const powerDev = (10 - this.charStats.precision) * 0.01;
+        power = Phaser.Math.Clamp(power + (Math.random() - 0.5) * 2 * powerDev, 0.01, 1);
+
+        // Apply pressure tremble offset to angle
+        angle += this._trembleOffset.x * 0.002;
 
         this.engine.aimingEnabled = false;
         this._clearTargetHighlights();
@@ -370,6 +387,30 @@ export default class AimingSystem {
         this.arrowGfx.clear();
         this._predictionGfx.clear();
         if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
+    }
+
+    // --- PRESSURE TREMBLE ---
+    // When both scores >= 10, the aiming arrow trembles.
+    // Sang-froid stat reduces the effect (10 = almost no tremble, 1 = max tremble)
+    _updatePressureTremble() {
+        const scores = this.engine.scores;
+        const threshold = 10;
+        if (scores.player >= threshold && scores.opponent >= threshold) {
+            // Both at 10+ : pressure is ON
+            const baseAmplitude = 8; // max tremble in pixels
+            const frequency = 3.5;
+            // Sang-froid reduces amplitude: sf=10 -> 30% of base, sf=1 -> 100% of base
+            const sangFroidReduction = 1 - (this.charStats.sang_froid - 1) / 9 * 0.7;
+            const amplitude = baseAmplitude * sangFroidReduction;
+
+            this._trembleTime += 0.016; // ~60fps
+            this._trembleOffset.x = Math.sin(this._trembleTime * frequency * Math.PI * 2) * amplitude;
+            this._trembleOffset.y = Math.cos(this._trembleTime * frequency * Math.PI * 2 * 0.7) * amplitude * 0.5;
+        } else {
+            this._trembleOffset.x = 0;
+            this._trembleOffset.y = 0;
+            this._trembleTime = 0;
+        }
     }
 
     // --- UPDATE LOOP ---
@@ -436,6 +477,9 @@ export default class AimingSystem {
             return;
         }
 
+        // Update pressure tremble
+        this._updatePressureTremble();
+
         // Draw aiming arrow + prediction
         this.arrowGfx.clear();
         this._predictionGfx.clear();
@@ -466,12 +510,12 @@ export default class AimingSystem {
             else color = 0xCC4444;
         }
 
-        // Draw arrow
+        // Draw arrow (with pressure tremble applied to endpoint)
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
         const arrowLen = power * 80;
-        const endX = originX + Math.cos(angle) * arrowLen;
-        const endY = originY + Math.sin(angle) * arrowLen;
+        const endX = originX + Math.cos(angle) * arrowLen + this._trembleOffset.x;
+        const endY = originY + Math.sin(angle) * arrowLen + this._trembleOffset.y;
 
         const lineWidth = this.shotMode === 'tirer' ? 5 : 3;
         this.arrowGfx.lineStyle(lineWidth, color, 0.8);
@@ -510,8 +554,9 @@ export default class AimingSystem {
             markerY = Math.max(by + margin, Math.min(by + bh - margin, originY + Math.sin(angle) * cochDist));
         } else {
             const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
+            const puissance = this.charStats.puissance || 6;
             const params = PetanqueEngine.computeThrowParams(
-                angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult
+                angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult, puissance
             );
             markerX = params.targetX;
             markerY = params.targetY;

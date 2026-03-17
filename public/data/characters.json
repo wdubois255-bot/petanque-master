@@ -1,0 +1,172 @@
+{
+  "stats_description": {
+    "precision": "Taille de la zone de dispersion (10 = quasi-parfait, 1 = tres aleatoire)",
+    "puissance": "Force max du tir, portee et deplacement des boules adverses",
+    "effet": "Capacite a mettre du spin/courbe, controle des trajectoires courbes",
+    "sang_froid": "Stabilite de la visee sous pression (10+ a 10+, la visee tremble)"
+  },
+  "pressure_rules": {
+    "threshold_score": 10,
+    "base_tremble_amplitude": 8,
+    "tremble_frequency": 3.5,
+    "sang_froid_reduction": 0.7
+  },
+  "roster": [
+    {
+      "id": "equilibre",
+      "name": "Rene",
+      "title": "Le Joueur du Dimanche",
+      "catchphrase": "Allez, c'est pour le fun !",
+      "description": "Rene joue a la petanque tous les dimanches apres le pastis. Pas le meilleur, pas le pire, mais toujours de bonne humeur.",
+      "archetype": "equilibre",
+      "stats": {
+        "precision": 6,
+        "puissance": 6,
+        "effet": 6,
+        "sang_froid": 6
+      },
+      "ai": {
+        "personality": "equilibre",
+        "angleDev": 7,
+        "powerDev": 0.12,
+        "shootProbability": 0.35,
+        "loftPref": "adaptatif",
+        "targetsCocho": false
+      },
+      "sprite": "char_rene",
+      "portrait": "portrait_rene",
+      "palette": { "primary": "#6B8E4E", "secondary": "#D4A574", "accent": "#FFFFFF" },
+      "unlocked": true
+    },
+    {
+      "id": "pointeur",
+      "name": "Marcel",
+      "title": "Le Chirurgien",
+      "catchphrase": "La precision, petit, ca s'apprend pas.",
+      "description": "Marcel joue depuis 40 ans. Ses mains ne tremblent jamais. Il pose ses boules au millimetre, et ca enerve tout le monde.",
+      "archetype": "pointeur",
+      "stats": {
+        "precision": 9,
+        "puissance": 4,
+        "effet": 6,
+        "sang_froid": 7
+      },
+      "ai": {
+        "personality": "pointeur",
+        "angleDev": 3,
+        "powerDev": 0.05,
+        "shootProbability": 0.1,
+        "loftPref": "roulette",
+        "targetsCocho": false
+      },
+      "sprite": "char_marcel",
+      "portrait": "portrait_marcel",
+      "palette": { "primary": "#A8B5C2", "secondary": "#3A2E28", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
+      "id": "tireur",
+      "name": "Fanny",
+      "title": "La Canonniere",
+      "catchphrase": "Pousse-toi de la, j'arrive !",
+      "description": "Fanny ne fait pas dans la dentelle. Elle tire, elle casse, elle gagne. Son tir au fer est redoute dans tout le departement.",
+      "archetype": "tireur",
+      "stats": {
+        "precision": 5,
+        "puissance": 9,
+        "effet": 4,
+        "sang_froid": 6
+      },
+      "ai": {
+        "personality": "tireur",
+        "angleDev": 5,
+        "powerDev": 0.08,
+        "shootProbability": 0.85,
+        "loftPref": "tir",
+        "targetsCocho": false
+      },
+      "sprite": "char_fanny",
+      "portrait": "portrait_fanny",
+      "palette": { "primary": "#C44B3F", "secondary": "#F5E6D0", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
+      "id": "stratege",
+      "name": "Ricardo",
+      "title": "Le Calculateur",
+      "catchphrase": "J'ai deja gagne. Tu le sais pas encore.",
+      "description": "Ricardo analyse chaque angle, chaque rebond. Ses effets sont incomprehensibles pour le commun des mortels. Il joue aux echecs avec des boules.",
+      "archetype": "stratege",
+      "stats": {
+        "precision": 6,
+        "puissance": 5,
+        "effet": 9,
+        "sang_froid": 6
+      },
+      "ai": {
+        "personality": "stratege",
+        "angleDev": 4,
+        "powerDev": 0.06,
+        "shootProbability": 0.5,
+        "loftPref": "adaptatif",
+        "targetsCocho": true
+      },
+      "sprite": "char_ricardo",
+      "portrait": "portrait_ricardo",
+      "palette": { "primary": "#9B7BB8", "secondary": "#F5E6D0", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
+      "id": "wildcard",
+      "name": "Thierry",
+      "title": "Le Flambeur",
+      "catchphrase": "Tout ou rien, bebe !",
+      "description": "Thierry est un genie... quand il est en forme. Sinon, c'est la catastrophe. Ses stats sont monstrueuses mais son sang-froid est inexistant.",
+      "archetype": "wildcard",
+      "stats": {
+        "precision": 7,
+        "puissance": 8,
+        "effet": 7,
+        "sang_froid": 3
+      },
+      "ai": {
+        "personality": "complet",
+        "angleDev": 4,
+        "powerDev": 0.07,
+        "shootProbability": 0.6,
+        "loftPref": "adaptatif",
+        "targetsCocho": true
+      },
+      "sprite": "char_thierry",
+      "portrait": "portrait_thierry",
+      "palette": { "primary": "#D4A574", "secondary": "#C44B3F", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
+      "id": "boss",
+      "name": "Le Grand Marius",
+      "title": "Le Maitre Absolu",
+      "catchphrase": "Tu crois connaitre la petanque ? Laisse-moi te montrer.",
+      "description": "Marius est une legende vivante. Champion regional cinq fois, il maitrise chaque technique a la perfection. Personne ne l'a battu depuis des annees.",
+      "archetype": "boss",
+      "stats": {
+        "precision": 8,
+        "puissance": 7,
+        "effet": 8,
+        "sang_froid": 9
+      },
+      "ai": {
+        "personality": "complet",
+        "angleDev": 2,
+        "powerDev": 0.04,
+        "shootProbability": 0.55,
+        "loftPref": "adaptatif",
+        "targetsCocho": true
+      },
+      "sprite": "char_marius",
+      "portrait": "portrait_marius",
+      "palette": { "primary": "#3A2E28", "secondary": "#FFD700", "accent": "#C44B3F" },
+      "unlocked": false
+    }
+  ]
+}
