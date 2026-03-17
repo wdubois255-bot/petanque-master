@@ -3,7 +3,8 @@ import {
     GAME_WIDTH, GAME_HEIGHT,
     TERRAIN_WIDTH, TERRAIN_HEIGHT,
     TERRAIN_COLORS, TERRAIN_FRICTION,
-    COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET
+    COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
+    CHAR_SPRITE_MAP
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -137,15 +138,7 @@ export default class PetanqueScene extends Phaser.Scene {
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
 
     _getCharSpriteKey(charId) {
-        const mapping = {
-            'equilibre': 'rene_animated',
-            'pointeur': 'marcel_animated',
-            'tireur': 'fanny_animated',
-            'stratege': 'ricardo_animated',
-            'wildcard': 'thierry_animated',
-            'boss': 'marius_animated'
-        };
-        return mapping[charId] || 'rene_animated';
+        return CHAR_SPRITE_MAP[charId] || 'rene_animated';
     }
 
     _getCharPalette(charId) {

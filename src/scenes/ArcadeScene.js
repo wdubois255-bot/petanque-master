@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -369,14 +369,6 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _getSpriteKey(char) {
-        const mapping = {
-            'equilibre': 'rene_animated',
-            'pointeur': 'marcel_animated',
-            'tireur': 'fanny_animated',
-            'stratege': 'ricardo_animated',
-            'wildcard': 'thierry_animated',
-            'boss': 'marius_animated'
-        };
-        return mapping[char.id] || char.sprite;
+        return getCharSpriteKey(char);
     }
 }
