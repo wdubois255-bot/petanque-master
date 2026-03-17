@@ -293,7 +293,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const spriteKey = `ball_${bouleKey}`;
         if (this.textures.exists(spriteKey)) {
             this._boulePreview = this.add.image(cx, sphereY, spriteKey)
-                .setScale(3).setOrigin(0.5).setDepth(5);
+                .setScale(1.5).setOrigin(0.5).setDepth(5);
         } else {
             // Fallback: colored circle
             const color = parseInt(boule.color.replace('#', ''), 16);
@@ -338,7 +338,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const texKey = coch.textureKey;
         if (texKey && this.textures.exists(texKey)) {
             this._boulePreview = this.add.image(cx, sphereY, texKey)
-                .setScale(4).setOrigin(0.5).setDepth(5);
+                .setScale(2).setOrigin(0.5).setDepth(5);
         } else {
             const color = parseInt(coch.color.replace('#', ''), 16);
             this._boulePreview = this.add.graphics().setDepth(5);
@@ -446,7 +446,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const spriteKey = charOption.sprite;
         if (this.textures.exists(spriteKey)) {
             this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
-                .setScale(2.5).setOrigin(0.5).setDepth(5);
+                .setScale(1.25).setOrigin(0.5).setDepth(5);
         }
 
         // Catchphrase

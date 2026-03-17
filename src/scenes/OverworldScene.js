@@ -55,7 +55,7 @@ export default class OverworldScene extends Phaser.Scene {
                     const srcTex = this.textures.get(pngKey);
                     if (!this.textures.exists(gameKey)) {
                         this.textures.addSpriteSheet(gameKey, srcTex.getSourceImage(), {
-                            frameWidth: 32, frameHeight: 32
+                            frameWidth: 64, frameHeight: 64
                         });
                     }
                 } else if (!this.textures.exists(gameKey)) {
