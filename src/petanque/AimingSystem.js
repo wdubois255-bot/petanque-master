@@ -36,6 +36,9 @@ export default class AimingSystem {
         this.loftPreset = LOFT_DEMI_PORTEE;
         this._loftUI = [];
 
+        // Retro (backspin) toggle
+        this.retroActive = false;
+
         this.arrowGfx = scene.add.graphics().setDepth(50);
         this._predictionGfx = scene.add.graphics().setDepth(49);
 
@@ -55,9 +58,11 @@ export default class AimingSystem {
                 this.shotMode = null;
                 this._clearModeUI();
                 this._clearLoftUI();
+                this._clearRetroUI();
             } else if (state === 'WAITING_STOP' || state === 'SCORE_MENE' || state === 'GAME_OVER') {
                 this._clearModeUI();
                 this._clearLoftUI();
+                this._clearRetroUI();
             }
         };
 
@@ -86,55 +91,64 @@ export default class AimingSystem {
         this._clearModeUI();
         this._clearLoftUI();
         this.engine.aimingEnabled = false;
+        this.retroActive = false;
 
-        // Combined UI: POINTER (with loft sub-options) + TIRER in one panel
         const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 80;
+        const baseY = this.scene.scale.height - 52;
 
+        // Slim background panel
+        const panelW = 520, panelH = 56;
         const bg = this.scene.add.graphics().setDepth(95);
-        bg.fillStyle(0x3A2E28, 0.92);
-        bg.fillRoundedRect(cx - 300, baseY - 20, 600, 80, 8);
-        bg.lineStyle(2, 0xD4A574, 0.5);
-        bg.strokeRoundedRect(cx - 300, baseY - 20, 600, 80, 8);
+        bg.fillStyle(0x3A2E28, 0.88);
+        bg.fillRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
+        bg.lineStyle(1, 0xD4A574, 0.35);
+        bg.strokeRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
         this._modeUI.push(bg);
 
-        // Label
-        const label = this.scene.add.text(cx, baseY - 6, 'Choisissez votre lancer', {
-            fontFamily: 'monospace', fontSize: '14px', color: '#D4A574', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(96);
-        this._modeUI.push(label);
-
-        // 4 buttons in one row: ROULETTE | DEMI-PORTEE | PLOMBEE | TIRER
+        // Options with mini arc data (arcPts for visual curve)
         const allOptions = [
-            { label: 'ROULETTE', mode: 'pointer', loft: 0, color: '#A8B5C2' },
-            { label: 'DEMI-PORTEE', mode: 'pointer', loft: 1, color: '#A8B5C2' },
-            { label: 'PLOMBEE', mode: 'pointer', loft: 2, color: '#A8B5C2' },
-            { label: 'TIRER', mode: 'tirer', loft: -1, color: '#C44B3F' }
+            { label: '1', sublabel: 'Roulette', mode: 'pointer', loft: 0, color: 0x87CEEB, arcH: 0.08 },
+            { label: '2', sublabel: 'Demi-portee', mode: 'pointer', loft: 1, color: 0x6B8E4E, arcH: 0.35 },
+            { label: '3', sublabel: 'Plombee', mode: 'pointer', loft: 2, color: 0x9B7BB8, arcH: 0.75 },
+            { label: 'T', sublabel: 'Tirer', mode: 'tirer', loft: -1, color: 0xC44B3F, arcH: 0.55 }
         ];
-        const offsets = [-210, -70, 70, 210];
+        const spacing = 120;
+        const startX = cx - (allOptions.length - 1) * spacing / 2;
 
         this._combinedBtns = [];
+        this._combinedGfx = [];
         this._combinedSelected = 1; // default demi-portee
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < allOptions.length; i++) {
             const opt = allOptions[i];
-            const btn = this.scene.add.text(
-                cx + offsets[i], baseY + 30,
-                opt.label, {
-                    fontFamily: 'monospace', fontSize: '16px',
-                    color: opt.color, backgroundColor: '#4A3E28',
-                    padding: { x: 10, y: 6 }, shadow: SHADOW
-                }
-            ).setOrigin(0.5).setDepth(96).setInteractive({ useHandCursor: true });
-            this._modeUI.push(btn);
-            this._combinedBtns.push(btn);
+            const ox = startX + i * spacing;
+
+            // Mini trajectory arc icon
+            const arcGfx = this.scene.add.graphics().setDepth(97);
+            this._drawMiniArc(arcGfx, ox, baseY - 10, opt.arcH, opt.color, false);
+            this._modeUI.push(arcGfx);
+            this._combinedGfx.push(arcGfx);
+
+            // Key hint + label
+            const label = this.scene.add.text(ox, baseY + 12, `[${opt.label}] ${opt.sublabel}`, {
+                fontFamily: 'monospace', fontSize: '11px',
+                color: '#' + opt.color.toString(16).padStart(6, '0'),
+                shadow: SHADOW
+            }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
+            this._modeUI.push(label);
+
+            // Invisible hit area
+            const hitZone = this.scene.add.zone(ox, baseY, spacing - 8, panelH)
+                .setDepth(98).setInteractive({ useHandCursor: true });
+            this._modeUI.push(hitZone);
+            this._combinedBtns.push({ hitZone, label, arcGfx, opt });
 
             const idx = i;
-            btn.on('pointerdown', (pointer) => {
+            hitZone.on('pointerdown', (pointer) => {
                 pointer.event.stopPropagation();
                 this._selectCombined(idx);
             });
-            btn.on('pointerover', () => {
+            hitZone.on('pointerover', () => {
                 this._combinedSelected = idx;
                 this._updateCombinedHighlight();
             });
@@ -152,15 +166,47 @@ export default class AimingSystem {
         this._updateCombinedHighlight();
     }
 
+    _drawMiniArc(gfx, cx, cy, arcHeight, color, selected) {
+        gfx.clear();
+        const w = 40, h = arcHeight * 20;
+        const alpha = selected ? 1 : 0.5;
+        const lineW = selected ? 2.5 : 1.5;
+
+        // Draw arc curve
+        gfx.lineStyle(lineW, color, alpha);
+        gfx.beginPath();
+        const steps = 12;
+        for (let s = 0; s <= steps; s++) {
+            const t = s / steps;
+            const px = cx - w / 2 + t * w;
+            const py = cy - Math.sin(t * Math.PI) * h;
+            if (s === 0) gfx.moveTo(px, py);
+            else gfx.lineTo(px, py);
+        }
+        gfx.strokePath();
+
+        // Landing dot
+        if (selected) {
+            gfx.fillStyle(color, 0.9);
+            gfx.fillCircle(cx + w / 2, cy, 2.5);
+        }
+
+        // Ground line
+        gfx.lineStyle(1, color, alpha * 0.3);
+        gfx.beginPath();
+        gfx.moveTo(cx - w / 2, cy);
+        gfx.lineTo(cx + w / 2, cy);
+        gfx.strokePath();
+    }
+
     _updateCombinedHighlight() {
         if (!this._combinedBtns) return;
         for (let i = 0; i < this._combinedBtns.length; i++) {
-            if (i === this._combinedSelected) {
-                this._combinedBtns[i].setStyle({ backgroundColor: '#6B5A40', color: '#FFD700' });
-            } else {
-                const opt = this._allOptions[i];
-                this._combinedBtns[i].setStyle({ backgroundColor: '#4A3E28', color: opt.color });
-            }
+            const { label, arcGfx, opt } = this._combinedBtns[i];
+            const selected = i === this._combinedSelected;
+            label.setAlpha(selected ? 1 : 0.6);
+            label.setFontSize(selected ? '12px' : '11px');
+            this._drawMiniArc(arcGfx, label.x, label.y - 22, opt.arcH, opt.color, selected);
         }
     }
 
@@ -173,14 +219,69 @@ export default class AimingSystem {
             this.shotMode = 'tirer';
             this.loftPreset = LOFT_TIR;
             this._highlightOpponentBalls();
+            this._showRetroToggle();
             this.engine._showMessage('Visez une boule adverse !');
         } else {
             this.shotMode = 'pointer';
             this.loftIndex = opt.loft;
             this.loftPreset = LOFT_PRESETS[opt.loft];
+            if (this.loftPreset.retroAllowed) this._showRetroToggle();
             this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
         }
         this.engine.aimingEnabled = true;
+    }
+
+    // Retro toggle: slim indicator bottom-right, toggled with [R]
+    _showRetroToggle() {
+        this._clearRetroUI();
+        this._retroUI = [];
+
+        const effetStat = this.charStats.effet || 6;
+        const x = this.scene.scale.width - 90;
+        const y = this.scene.scale.height - 32;
+
+        const retroLabel = this.scene.add.text(x, y, '[R] Retro', {
+            fontFamily: 'monospace', fontSize: '11px',
+            color: '#9B7BB8', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
+            .setInteractive({ useHandCursor: true });
+        this._retroUI.push(retroLabel);
+        this._retroLabel = retroLabel;
+
+        // Effet stat indicator (small dots)
+        const dotGfx = this.scene.add.graphics().setDepth(96);
+        for (let d = 0; d < 5; d++) {
+            const filled = d < Math.ceil(effetStat / 2);
+            dotGfx.fillStyle(filled ? 0x9B7BB8 : 0x3A2E28, filled ? 0.7 : 0.3);
+            dotGfx.fillCircle(x - 20 + d * 10, y + 12, 3);
+        }
+        this._retroUI.push(dotGfx);
+
+        retroLabel.on('pointerdown', (pointer) => {
+            pointer.event.stopPropagation();
+            this._toggleRetro();
+        });
+
+        this._keyR = this.scene.input.keyboard.addKey('R');
+    }
+
+    _toggleRetro() {
+        this.retroActive = !this.retroActive;
+        sfxUIClick();
+        if (this._retroLabel) {
+            this._retroLabel.setAlpha(this.retroActive ? 1 : 0.5);
+            this._retroLabel.setColor(this.retroActive ? '#D4A574' : '#9B7BB8');
+            this._retroLabel.setText(this.retroActive ? '[R] RETRO !' : '[R] Retro');
+        }
+    }
+
+    _clearRetroUI() {
+        if (this._retroUI) {
+            this._retroUI.forEach(e => e.destroy());
+            this._retroUI = [];
+        }
+        this._retroLabel = null;
+        this._keyR = null;
     }
 
     _updateModeHighlight() {
@@ -356,9 +457,12 @@ export default class AimingSystem {
 
         // Apply precision dispersion: lower precision = more random deviation
         // Precision 10 = 0 deg deviation, Precision 1 = ~6 deg deviation
-        const precisionDev = (10 - this.charStats.precision) * 0.7; // degrees
+        // Technique penalty: plombee +2 deg, tir +1 deg (harder techniques)
+        const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
+        const techniquePenalty = loft?.precisionPenalty || 0;
+        const precisionDev = (10 - this.charStats.precision) * 0.7 + techniquePenalty;
         angle += (Math.random() - 0.5) * 2 * precisionDev * Math.PI / 180;
-        const powerDev = (10 - this.charStats.precision) * 0.01;
+        const powerDev = (10 - this.charStats.precision) * 0.01 + techniquePenalty * 0.005;
         power = Phaser.Math.Clamp(power + (Math.random() - 0.5) * 2 * powerDev, 0.01, 1);
 
         // Apply pressure tremble offset to angle
@@ -366,6 +470,7 @@ export default class AimingSystem {
 
         this.engine.aimingEnabled = false;
         this._clearTargetHighlights();
+        this._clearRetroUI();
         // Cochonnet uses linear power for full range control (6-10m)
         // Boules use quadratic for precision at low power
         const isCochonnet = this.engine.state === 'COCHONNET_THROW';
@@ -380,8 +485,12 @@ export default class AimingSystem {
         } else {
             // In local multiplayer, use the current team (could be 'opponent')
             const team = this.engine.currentTeam || 'player';
-            this.engine.throwBall(angle, power, team, this.shotMode || 'pointer', this.loftPreset);
+            // Retro intensity scales with effet stat (effet 1 = 10%, effet 10 = 100%)
+            const effetStat = this.charStats.effet || 6;
+            const retroIntensity = this.retroActive ? (0.1 + (effetStat - 1) / 9 * 0.9) : 0;
+            this.engine.throwBall(angle, power, team, this.shotMode || 'pointer', this.loftPreset, retroIntensity);
         }
+        this.retroActive = false;
     }
 
     cancel() {
@@ -480,6 +589,11 @@ export default class AimingSystem {
             return;
         }
 
+        // Handle retro toggle [R] during aiming phase
+        if (this._keyR && Phaser.Input.Keyboard.JustDown(this._keyR)) {
+            this._toggleRetro();
+        }
+
         // Update pressure tremble
         this._updatePressureTremble();
 
@@ -575,17 +689,33 @@ export default class AimingSystem {
         this._predictionGfx.lineTo(markerX, markerY + 4);
         this._predictionGfx.strokePath();
 
+        // Retro indicator on arrow: small arc near tip
+        if (this.retroActive) {
+            const retroColor = 0x9B7BB8;
+            this.arrowGfx.lineStyle(1.5, retroColor, 0.7);
+            const rr = 5;
+            for (let a = 0; a < Math.PI * 1.5; a += 0.3) {
+                const rx = endX + Math.cos(a + angle) * rr * (1 + a * 0.15);
+                const ry = endY + Math.sin(a + angle) * rr * (1 + a * 0.15);
+                if (a === 0) this.arrowGfx.moveTo(rx, ry);
+                else this.arrowGfx.lineTo(rx, ry);
+            }
+            this.arrowGfx.strokePath();
+        }
+
         // Power text — show raw % (what the player feels) not the quadratic value
         if (this._powerText) this._powerText.destroy();
         const modeLabel = isCochonnetThrow ? 'COCHONNET'
             : this.shotMode === 'tirer' ? 'TIR'
             : this.loftPreset?.label || 'DEMI-PORTEE';
+        const retroSuffix = this.retroActive ? ' +R' : '';
         this._powerText = this.scene.add.text(
             originX, originY + 28,
-            `${modeLabel} ${Math.round(rawPower * 100)}%`,
+            `${modeLabel} ${Math.round(rawPower * 100)}%${retroSuffix}`,
             {
                 fontFamily: 'monospace', fontSize: '20px',
-                color: this.shotMode === 'tirer' ? '#FF8844' : '#F5E6D0',
+                color: this.retroActive ? '#9B7BB8'
+                    : this.shotMode === 'tirer' ? '#FF8844' : '#F5E6D0',
                 shadow: SHADOW
             }
         ).setOrigin(0.5).setDepth(51);
@@ -600,6 +730,7 @@ export default class AimingSystem {
         this._clearModeUI();
         this._clearLoftUI();
         this._clearTargetHighlights();
+        this._clearRetroUI();
         if (this._powerText) this._powerText.destroy();
     }
 }

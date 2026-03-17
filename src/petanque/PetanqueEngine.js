@@ -67,6 +67,9 @@ export default class PetanqueEngine {
         this._pendingCarreauChecks = [];
         this._hitstopUntil = 0;
 
+        // Shot result tracking
+        this._shotCollisions = []; // balls hit by lastThrownBall this throw
+
         // Point indicator
         this._lastBestBallId = null;
         this._bestPulse = { t: 0 };
@@ -319,7 +322,7 @@ export default class PetanqueEngine {
         return { targetX, targetY, rollVx, rollVy };
     }
 
-    throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null) {
+    throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null, retro = 0) {
         if (this.remaining[team] <= 0) return;
 
         const cx = this.scene.throwCircleX;
@@ -339,12 +342,16 @@ export default class PetanqueEngine {
             bounds: this.bounds,
             id: `${team}_${this.ballsPerPlayer - this.remaining[team]}`
         });
+        // Apply retro (backspin) if the loft allows it
+        ball.retro = (loftPreset || LOFT_DEMI_PORTEE).retroAllowed ? retro : 0;
+
         this.balls.push(ball);
         this.remaining[team]--;
         this.lastTeamPlayed = team;
         this.lastThrownBall = ball;
         this.lastShotWasTir = shotMode === 'tirer';
         this._pendingCarreauChecks = [];
+        this._shotCollisions = [];
 
         // Resolve loft preset
         const isTir = shotMode === 'tirer';
@@ -368,6 +375,7 @@ export default class PetanqueEngine {
             this.setState(STATES.WAITING_STOP);
             this._afterStopCallback = () => {
                 this._checkCarreau();
+                this._detectShotResult();
                 this._checkBoundsAll();
                 if (!this.cochonnet.isAlive) {
                     this.setState(STATES.MENE_DEAD);
@@ -622,10 +630,26 @@ export default class PetanqueEngine {
     _handleGameOver() {
         const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
         const isVictory = winner === 'player';
+        const loser = isVictory ? 'opponent' : 'player';
+        const isFanny = this.scores[loser] === 0;
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
         // SFX victory/defeat
         if (isVictory) sfxVictory(); else sfxDefeat();
+
+        // Fanny: 13-0 — discreet but memorable
+        if (isFanny) {
+            const fannyTxt = this.scene.add.text(
+                this.scene.scale.width / 2, this.scene.scale.height / 2 + 10,
+                'FANNY !', {
+                    fontFamily: 'monospace', fontSize: '18px', color: '#C44B3F',
+                    shadow
+                }
+            ).setOrigin(0.5).setDepth(102).setAlpha(0);
+            this.scene.tweens.add({
+                targets: fannyTxt, alpha: 1, duration: 800, delay: 600, ease: 'Cubic.easeOut'
+            });
+        }
 
         // If arcade/versus mode: redirect to ResultScene
         if (this.scene.arcadeState || this.scene.playerCharacter) {
@@ -640,6 +664,7 @@ export default class PetanqueEngine {
                     arcadeState: this.scene.arcadeState,
                     matchStats: {
                         menes: this.mene,
+                        fanny: isFanny,
                         bestMene: Math.max(
                             ...([0].concat(this.balls.filter(b => b.isAlive).map(() => 1)))
                         )
@@ -810,17 +835,26 @@ export default class PetanqueEngine {
                             this._spawnCollisionSparks(mx, my);
                         }
 
-                        if (collided && this.lastThrownBall && this._pendingCarreauChecks) {
-                            if (allBodies[i] === this.lastThrownBall) {
-                                this._pendingCarreauChecks.push({
-                                    thrownBall: allBodies[i],
-                                    targetOrigX: bx, targetOrigY: by
-                                });
-                            } else if (allBodies[j] === this.lastThrownBall) {
-                                this._pendingCarreauChecks.push({
-                                    thrownBall: allBodies[j],
-                                    targetOrigX: ax, targetOrigY: ay
-                                });
+                        if (collided && this.lastThrownBall) {
+                            // Track carreau candidates
+                            if (this._pendingCarreauChecks) {
+                                if (allBodies[i] === this.lastThrownBall) {
+                                    this._pendingCarreauChecks.push({
+                                        thrownBall: allBodies[i],
+                                        targetOrigX: bx, targetOrigY: by
+                                    });
+                                } else if (allBodies[j] === this.lastThrownBall) {
+                                    this._pendingCarreauChecks.push({
+                                        thrownBall: allBodies[j],
+                                        targetOrigX: ax, targetOrigY: ay
+                                    });
+                                }
+                            }
+                            // Track all collisions for shot result detection
+                            if (allBodies[i] === this.lastThrownBall && !this._shotCollisions.includes(allBodies[j])) {
+                                this._shotCollisions.push(allBodies[j]);
+                            } else if (allBodies[j] === this.lastThrownBall && !this._shotCollisions.includes(allBodies[i])) {
+                                this._shotCollisions.push(allBodies[i]);
                             }
                         }
                     }
@@ -918,6 +952,69 @@ export default class PetanqueEngine {
                 onComplete: () => spark.destroy()
             });
         }
+    }
+
+    // --- SHOT RESULT DETECTION (discreet feedback) ---
+    _detectShotResult() {
+        if (!this.lastThrownBall || !this.lastThrownBall.isAlive) return;
+        if (!this.cochonnet || !this.cochonnet.isAlive) return;
+
+        const ball = this.lastThrownBall;
+        const isTir = this.lastShotWasTir;
+        const hitBalls = this._shotCollisions || [];
+
+        // Biberon: boule collee au cochonnet (pointage only)
+        if (!isTir) {
+            const distToCoch = ball.distanceTo(this.cochonnet);
+            if (distToCoch <= ball.radius + this.cochonnet.radius + 2) {
+                this._showShotLabel(ball, 'BIBERON !', '#FFD700', 14);
+                this._shotCollisions = [];
+                return;
+            }
+        }
+
+        // Tir-specific results (skip if carreau already celebrated)
+        if (isTir && hitBalls.length > 0) {
+            // Contre: hit an allied ball during tir
+            const hitAllied = hitBalls.filter(b => b.team === ball.team && b.team !== 'cochonnet');
+            if (hitAllied.length > 0) {
+                this._showShotLabel(ball, 'Contre...', '#C44B3F', 12);
+                this._shotCollisions = [];
+                return;
+            }
+
+            // Palet: tir where thrown ball stays near impact zone (but not carreau)
+            const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
+            if (hitEnemy.length > 0) {
+                // Check if ball stayed relatively close (within 50px of an original target position)
+                for (const check of (this._pendingCarreauChecks || [])) {
+                    // pendingCarreauChecks already cleared by _checkCarreau, so skip palet
+                }
+                // Simple palet check: ball is still near cochonnet after tir
+                const distToCoch = ball.distanceTo(this.cochonnet);
+                if (distToCoch < 60) {
+                    this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
+                    this._shotCollisions = [];
+                    return;
+                }
+            }
+        }
+
+        this._shotCollisions = [];
+    }
+
+    _showShotLabel(ball, text, color, fontSize) {
+        const txt = this.scene.add.text(ball.x, ball.y - 20, text, {
+            fontFamily: 'monospace', fontSize: `${fontSize}px`, color,
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(62).setAlpha(0.85);
+
+        this.scene.tweens.add({
+            targets: txt,
+            y: txt.y - 25, alpha: 0,
+            duration: 1200, ease: 'Cubic.easeOut',
+            onComplete: () => txt.destroy()
+        });
     }
 
     _updateBestIndicator() {

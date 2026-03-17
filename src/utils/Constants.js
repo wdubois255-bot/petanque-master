@@ -47,15 +47,18 @@ export const THROW_SHAKE_DURATION = 150;
 // - Tir au fer : 95% vol, arc haut (2-3m), impact violent
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 0.7
+    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 0.7,
+    precisionPenalty: 0, retroAllowed: false
 };
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
-    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 0.6
+    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 0.6,
+    precisionPenalty: 0, retroAllowed: true
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.45
+    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.45,
+    precisionPenalty: 2.0, retroAllowed: true
 };
 // Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
 // Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :
@@ -65,8 +68,13 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 14.0
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 14.0,
+    precisionPenalty: 1.0, retroAllowed: true
 };
+
+// Retro (backspin) physics
+export const RETRO_FRICTION_MULT = 2.5;  // Max extra friction multiplier at full retro
+export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
 // Petanque - prediction trajectoire

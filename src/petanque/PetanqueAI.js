@@ -161,9 +161,20 @@ export default class PetanqueAI {
         if (isTir) { this._consecutiveShots++; this._consecutivePoints = 0; }
         else { this._consecutivePoints++; this._consecutiveShots = 0; }
 
+        // AI retro decision: use retro on plombee/tir when effet stat is decent
+        let retroIntensity = 0;
+        if (loftPreset.retroAllowed && this._charStats.effet >= 4) {
+            const effetStat = this._charStats.effet;
+            const retroChance = (effetStat - 3) / 7; // effet 4 = 14%, effet 10 = 100%
+            if (Math.random() < retroChance) {
+                retroIntensity = 0.1 + (effetStat - 1) / 9 * 0.9;
+            }
+        }
+
         const arrowColor = isTir ? 0xFF6644 : 0xC44B3F;
+        const retro = retroIntensity;
         this._showAimingArrow(angle, power, arrowColor, () => {
-            this.engine.throwBall(angle, power, 'opponent', shotMode, loftPreset);
+            this.engine.throwBall(angle, power, 'opponent', shotMode, loftPreset, retro);
         });
     }
 

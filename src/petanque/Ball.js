@@ -1,7 +1,8 @@
 import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
-    PREDICTION_STEPS, PREDICTION_SAMPLE_RATE
+    PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
+    RETRO_FRICTION_MULT
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -25,6 +26,9 @@ export default class Ball {
         this._squashTimer = 0;
         this._rollDist = 0; // accumulated rolling distance for frame cycling
         this._rollFrames = 6; // number of roll animation frames
+
+        // Spin (retro/backspin): 0 = no effect, 1 = max backspin
+        this.retro = 0;
 
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
@@ -169,7 +173,9 @@ export default class Ball {
 
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > SPEED_THRESHOLD) {
-            const frictionDecel = FRICTION_BASE * effectiveFriction * 60;
+            // Retro (backspin) increases friction — ball stops faster
+            const retroBoost = this.retro > 0 ? 1 + this.retro * RETRO_FRICTION_MULT : 1;
+            const frictionDecel = FRICTION_BASE * effectiveFriction * retroBoost * 60;
             const newSpeed = Math.max(0, speed - frictionDecel * cappedDt);
             const ratio = newSpeed / speed;
             this.vx *= ratio;
