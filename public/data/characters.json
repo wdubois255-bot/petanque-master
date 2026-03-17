@@ -263,6 +263,90 @@
       "portrait": "portrait_marius",
       "palette": { "primary": "#3A2E28", "secondary": "#FFD700", "accent": "#C44B3F" },
       "unlocked": false
+    },
+    {
+      "id": "brute",
+      "name": "Ley",
+      "title": "La Force Tranquille",
+      "catchphrase": "Pas besoin de viser quand tu frappes aussi fort.",
+      "description": "Ley est un colosse debonnaire. Sa puissance brute compense son manque de finesse. Quand il tire, les boules tremblent.",
+      "archetype": "brute",
+      "stats": {
+        "precision": 4,
+        "puissance": 9,
+        "effet": 3,
+        "sang_froid": 8
+      },
+      "ai": {
+        "personality": "brute",
+        "angleDev": 12,
+        "powerDev": 0.08,
+        "shootProbability": 0.70,
+        "loftPref": "tir",
+        "targetsCocho": false
+      },
+      "barks": {
+        "good_shot": ["Boom.", "Facile.", "Ca passe."],
+        "bad_shot": ["Bof.", "Pas grave.", "La prochaine."],
+        "opponent_good": ["Pas mal, petit.", "Hmm. OK."],
+        "opponent_bad": ["Heh.", "Fallait frapper plus fort."],
+        "carreau": ["BOUM ! Carreau !", "La force, y'a que ca de vrai."],
+        "opponent_carreau": ["... Costaud.", "OK, respect."],
+        "taking_lead": ["Tranquille.", "On gere."],
+        "losing_badly": ["Ca va venir.", "J'me chauffe."],
+        "match_point": ["Allez, un dernier coup.", "On finit ca."],
+        "victory": ["Facile. Trop facile.", "La force tranquille."],
+        "defeat": ["Bien joue. T'es costaud.", "La prochaine, j'envoie plus fort."],
+        "pre_match": ["Allez, montre-moi c'que t'as.", "Pas besoin de viser quand tu frappes aussi fort."],
+        "post_match_win": ["C'etait sympa. Reviens quand tu veux.", "La puissance, ca se discute pas."],
+        "post_match_lose": ["T'es fort. Respect.", "Faudra que je frappe encore plus fort."]
+      },
+      "sprite": "char_ley",
+      "portrait": "portrait_ley",
+      "palette": { "primary": "#4A6FA5", "secondary": "#3A2E28", "accent": "#D4A574" },
+      "unlocked": true
+    },
+    {
+      "id": "magicien",
+      "name": "Le Magicien",
+      "title": "L'Illusionniste",
+      "catchphrase": "Tu n'as rien vu venir.",
+      "description": "Personne ne sait comment il fait. Ses boules prennent des trajectoires impossibles. Certains disent qu'il triche. Lui dit que c'est de l'art.",
+      "archetype": "magicien",
+      "stats": {
+        "precision": 7,
+        "puissance": 5,
+        "effet": 10,
+        "sang_froid": 5
+      },
+      "ai": {
+        "personality": "magicien",
+        "angleDev": 5,
+        "powerDev": 0.07,
+        "shootProbability": 0.30,
+        "loftPref": "adaptatif",
+        "targetsCocho": true
+      },
+      "barks": {
+        "good_shot": ["Magie !", "Tu as vu la courbe ?", "Abracadabra."],
+        "bad_shot": ["Le tour a rate...", "Hmm, pas le bon angle.", "Meme les magiciens ratent."],
+        "opponent_good": ["Joli tour.", "Tu as du talent."],
+        "opponent_bad": ["Il te manque... la magie.", "Previsible."],
+        "carreau": ["DISPARITION ! Carreau magique !", "Et hop, envolee !"],
+        "opponent_carreau": ["... Beau tour.", "Tu m'impressionnes."],
+        "taking_lead": ["Le spectacle commence.", "La magie opère."],
+        "losing_badly": ["Le grand final approche...", "Patience, patience..."],
+        "match_point": ["Pour mon dernier tour...", "Regardez bien."],
+        "victory": ["Et voila ! Le Magicien a encore frappe.", "Merci, merci, le spectacle est termine."],
+        "defeat": ["Bravo. Tu as dejoue mes tours.", "Un jour, je te montrerai mon meilleur tour."],
+        "pre_match": ["Bienvenue au spectacle.", "Tu n'as rien vu venir."],
+        "post_match_win": ["Le public en redemande !", "La magie, ca ne s'explique pas."],
+        "post_match_lose": ["Tu as perce mes secrets... pour l'instant.", "La prochaine fois, nouveaux tours."]
+      },
+      "sprite": "char_le_magicien",
+      "portrait": "portrait_le_magicien",
+      "palette": { "primary": "#8B4513", "secondary": "#F5E6D0", "accent": "#C44B3F" },
+      "unlocked": true
     }
   ]
 }

@@ -201,7 +201,9 @@ export const CHAR_SPRITE_MAP = {
     'tireur': 'fanny_animated',
     'stratege': 'ricardo_animated',
     'wildcard': 'thierry_animated',
-    'boss': 'marius_animated'
+    'boss': 'marius_animated',
+    'brute': 'ley_animated',
+    'magicien': 'le_magicien_animated'
 };
 
 export function getCharSpriteKey(char) {
