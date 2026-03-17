@@ -156,14 +156,14 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _getCharSpriteKey(char) {
-        // Map character IDs to existing sprite keys
+        // Map character IDs to PixelLab animated spritesheets
         const mapping = {
-            'equilibre': 'npc_villager_1',
-            'pointeur': 'npc_marcel',
-            'tireur': 'npc_dresseur_1',
-            'stratege': 'npc_dresseur_2',
-            'wildcard': 'npc_villager_2',
-            'boss': 'npc_maitre'
+            'equilibre': 'rene_animated',
+            'pointeur': 'marcel_animated',
+            'tireur': 'fanny_animated',
+            'stratege': 'ricardo_animated',
+            'wildcard': 'thierry_animated',
+            'boss': 'marius_animated'
         };
         return mapping[char.id] || char.sprite;
     }

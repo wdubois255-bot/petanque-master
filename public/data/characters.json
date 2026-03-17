@@ -130,7 +130,7 @@
         "sang_froid": 3
       },
       "ai": {
-        "personality": "complet",
+        "personality": "wildcard",
         "angleDev": 4,
         "powerDev": 0.07,
         "shootProbability": 0.6,
@@ -156,7 +156,7 @@
         "sang_froid": 9
       },
       "ai": {
-        "personality": "complet",
+        "personality": "boss",
         "angleDev": 2,
         "powerDev": 0.04,
         "shootProbability": 0.55,

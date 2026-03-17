@@ -169,13 +169,13 @@ export default class ResultScene extends Phaser.Scene {
 
     _getSpriteKey(char) {
         const mapping = {
-            'equilibre': 'npc_villager_1',
-            'pointeur': 'npc_marcel',
-            'tireur': 'npc_dresseur_1',
-            'stratege': 'npc_dresseur_2',
-            'wildcard': 'npc_villager_2',
-            'boss': 'npc_maitre'
+            'equilibre': 'rene_animated',
+            'pointeur': 'marcel_animated',
+            'tireur': 'fanny_animated',
+            'stratege': 'ricardo_animated',
+            'wildcard': 'thierry_animated',
+            'boss': 'marius_animated'
         };
-        return mapping[char?.id] || char?.sprite || 'npc_dresseur_1';
+        return mapping[char?.id] || char?.sprite || 'rene_animated';
     }
 }

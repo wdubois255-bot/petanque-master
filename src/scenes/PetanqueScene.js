@@ -10,7 +10,8 @@ import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
 import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
-import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
+import ModularCharacter from '../petanque/ModularCharacter.js';
+import { createCharacterTextures, createHandBallTexture } from '../petanque/CharacterTextures.js';
 import { startCigales, stopCigales } from '../utils/SoundManager.js';
 
 export default class PetanqueScene extends Phaser.Scene {
@@ -26,13 +27,11 @@ export default class PetanqueScene extends Phaser.Scene {
         this.opponentId = data.opponentId || null;
         this.returnScene = data.returnScene || null;
         this.personality = data.personality || null;
-        // Character data (from characters.json) for stat-based gameplay
         this.playerCharacter = data.playerCharacter || null;
         this.opponentCharacter = data.opponentCharacter || null;
-        // Arcade state (passed through for return)
+        this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'equilibre';
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;
-        // Local multiplayer: both players use the same controls (drag to aim)
         this.localMultiplayer = data.localMultiplayer || false;
     }
 
@@ -40,17 +39,15 @@ export default class PetanqueScene extends Phaser.Scene {
         const terrainColor = TERRAIN_COLORS[this.terrainType];
         this.frictionMult = TERRAIN_FRICTION[this.terrainType];
 
-        // Terrain offset (centered horizontally, vertically)
         this.terrainX = (GAME_WIDTH - TERRAIN_WIDTH) / 2;
         this.terrainY = (GAME_HEIGHT - TERRAIN_HEIGHT) / 2;
 
         this.drawTerrain(terrainColor);
 
-        // Generate 3D ball textures (CanvasTexture with radial gradient)
         this._createBallTextures();
 
-        // Generate character sprites for petanque scene
-        this._ensureSprites();
+        // Generate modular character textures
+        this._createCharacterTextures();
 
         // Engine
         this.engine = new PetanqueEngine(this, {
@@ -65,14 +62,14 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         });
 
-        // Add player characters on terrain
+        // Create modular character sprites
         this._createPlayerSprites();
 
-        // Aiming (with player character stats for precision/sang-froid)
+        // Aiming
         const playerStats = this.playerCharacter?.stats || null;
         this.aimingSystem = new AimingSystem(this, this.engine, playerStats);
 
-        // AI (only if not local multiplayer)
+        // AI
         if (this.localMultiplayer) {
             this.ai = null;
         } else {
@@ -82,7 +79,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);
 
-        // Opponent name label
+        // VS label
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
         this.add.text(
             GAME_WIDTH / 2, this.terrainY - 12,
@@ -93,124 +90,115 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         ).setOrigin(0.5, 1).setDepth(5);
 
-        // Impact traces layer (RenderTexture, persistent marks on terrain)
+        // Impact traces layer
         this.impactLayer = this.add.renderTexture(
             this.terrainX, this.terrainY,
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
 
-        // Start ambiance
         startCigales();
-
-        // Start game
         this.engine.startGame();
 
-        // Stop cigales when scene shuts down
-        this.events.on('shutdown', () => stopCigales());
+        this.events.on('shutdown', () => {
+            stopCigales();
+            if (this.playerChar) this.playerChar.destroy();
+            if (this.opponentChar) this.opponentChar.destroy();
+        });
         this.events.on('destroy', () => stopCigales());
     }
 
-    _ensureSprites() {
-        // Use preloaded Pipoya PNG spritesheets instead of canvas generation
-        const playerKey = this._getPipoyaKey('player');
-        if (this.textures.exists(playerKey)) {
-            if (!this.textures.exists('petanque_player')) {
-                this.textures.addSpriteSheet('petanque_player',
-                    this.textures.get(playerKey).getSourceImage(),
-                    { frameWidth: 32, frameHeight: 32 }
-                );
-            }
-        } else if (!this.textures.exists('petanque_player')) {
-            generateCharacterSprite(this, 'petanque_player', PALETTES.player);
-        }
+    // === CHARACTER PROFILE MAPPING ===
 
-        // Opponent - always recreate to support different opponents per fight
-        if (this.textures.exists('petanque_opponent')) {
-            this.textures.remove('petanque_opponent');
-        }
-        const opponentKey = this._getOpponentPipoyaKey();
-        if (this.textures.exists(opponentKey)) {
-            this.textures.addSpriteSheet('petanque_opponent',
-                this.textures.get(opponentKey).getSourceImage(),
-                { frameWidth: 32, frameHeight: 32 }
-            );
-        } else {
-            const opponentPalette = this._getOpponentPalette();
-            generateCharacterSprite(this, 'petanque_opponent', opponentPalette);
-        }
+    _getProfileId(charId) {
+        // Map game character archetypes to profile texture IDs
+        // For now only 'papet' and 'joueur' have profile views
+        const mapping = {
+            'equilibre': 'joueur',
+            'pointeur': 'papet',
+            'tireur': 'joueur',
+            'stratege': 'papet',
+            'wildcard': 'joueur',
+            'boss': 'papet',
+        };
+        return mapping[charId] || 'joueur';
     }
 
-    _getPipoyaKey(type) {
-        if (type === 'player') return 'player'; // PixelLab chibi player
-        return 'npc_dresseur_1';
-    }
+    _createCharacterTextures() {
+        // Create profile textures for both characters
+        const playerProfileId = this._getProfileId(this.playerCharId);
+        const opponentProfileId = this._getProfileId(this.opponentId || 'pointeur');
 
-    _getOpponentPipoyaKey() {
-        const id = this.opponentId || '';
-        if (id.includes('marcel')) return 'marcel_animated';
-        if (id.includes('rival') || id.includes('bastien')) return 'bastien_animated';
-        if (id.includes('fanny')) return 'npc_fanny';
-        if (id.includes('maitre') || id.includes('papet')) return 'papet_animated';
-        if (id.includes('dresseur')) return 'npc_dresseur_1';
-        if (id.includes('gate')) return 'npc_gate';
-        return 'npc_dresseur_1';
-    }
+        createCharacterTextures(this, playerProfileId);
+        createCharacterTextures(this, opponentProfileId);
+        createHandBallTexture(this);
 
-    _getOpponentPalette() {
-        const id = this.opponentId || '';
-        if (id.includes('marcel')) return PALETTES.npc_marcel;
-        if (id.includes('rival') || id.includes('bastien')) return PALETTES.npc_rival;
-        if (id.includes('fanny')) return PALETTES.npc_fanny;
-        if (id.includes('ricardo')) return PALETTES.npc_ricardo;
-        if (id.includes('marius')) return PALETTES.npc_marius;
-        if (id.includes('maitre') || id.includes('papet')) return PALETTES.npc_vieux_maitre;
-        if (id.includes('dresseur')) return PALETTES.npc_dresseur;
-        return PALETTES.npc_dresseur;
+        this._playerProfileId = playerProfileId;
+        this._opponentProfileId = opponentProfileId;
     }
 
     _createPlayerSprites() {
-        // Player: in the throw circle, facing up toward terrain
+        const playerTex = createCharacterTextures(this, this._playerProfileId);
+        const opponentTex = createCharacterTextures(this, this._opponentProfileId);
+        const ballKey = 'modular_boule';
+
+        // Player: in the throw circle, facing up (right in profile = up toward terrain)
         const playerHomeX = this.throwCircleX;
-        const playerHomeY = this.throwCircleY + 16;
-        this.playerSprite = this.add.sprite(playerHomeX, playerHomeY, 'petanque_player', 12)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1);
+        const playerHomeY = this.throwCircleY + 24;
         this._playerHomeX = playerHomeX;
         this._playerHomeY = playerHomeY;
 
-        // Opponent: on the RIGHT EDGE of terrain (inside), at cochonnet height, watching
-        const opponentCochoX = this.terrainX + TERRAIN_WIDTH - 20;
-        const opponentCochoY = this.terrainY + 120;
-        const opponentCircleX = this.throwCircleX;
-        const opponentCircleY = this.throwCircleY + 16;
-        this.opponentSprite = this.add.sprite(opponentCochoX, opponentCochoY, 'petanque_opponent', 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(1); // standing on sideline
+        this.playerChar = new ModularCharacter(this, playerHomeX, playerHomeY, {
+            bodyKey: playerTex.bodyKey,
+            armKey: playerTex.armKey,
+            ballKey,
+            shoulder: playerTex.shoulder,
+            armLength: playerTex.armLength,
+            scale: 2,
+            flipX: false,
+        });
+
+        // Opponent: sideline (right edge of terrain), near where cochonnet will land
+        const opponentCochoX = this.terrainX + TERRAIN_WIDTH + 24;
+        const opponentCochoY = this.terrainY + 140;
         this._opponentCochoX = opponentCochoX;
         this._opponentCochoY = opponentCochoY;
-        this._opponentCircleX = opponentCircleX;
-        this._opponentCircleY = opponentCircleY;
+        this._opponentCircleX = this.throwCircleX;
+        this._opponentCircleY = this.throwCircleY + 24;
+
+        this.opponentChar = new ModularCharacter(this, opponentCochoX, opponentCochoY, {
+            bodyKey: opponentTex.bodyKey,
+            armKey: opponentTex.armKey,
+            ballKey,
+            shoulder: opponentTex.shoulder,
+            armLength: opponentTex.armLength,
+            scale: 2,
+            flipX: true,
+        });
+        // Opponent starts without ball visible
+        this.opponentChar.ball.setVisible(false);
+        this.opponentChar.hasBall = false;
 
         // Turn indicator arrows
-        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 56, '\u25bc', {
+        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 80, '\u25bc', {
             fontFamily: 'monospace', fontSize: '16px', color: '#A8B5C2'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        this.opponentTurnArrow = this.add.text(opponentCochoX, opponentCochoY - 40, '\u25bc', {
+        this.opponentTurnArrow = this.add.text(opponentCochoX, opponentCochoY - 80, '\u25bc', {
             fontFamily: 'monospace', fontSize: '16px', color: '#C44B3F'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        // Bounce animation for turn arrow
         this._playerArrowTween = this.tweens.add({
             targets: this.playerTurnArrow,
-            y: playerHomeY - 48,
+            y: playerHomeY - 72,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
         this._opponentArrowTween = this.tweens.add({
             targets: this.opponentTurnArrow,
-            y: opponentCochoY - 32,
+            y: opponentCochoY - 72,
             duration: 400, yoyo: true, repeat: -1, paused: true
         });
 
-        // Hook into throw events for animations
+        // Hook into engine events
         const existingTurnChange = this.engine.onTurnChange;
         this.engine.onTurnChange = (team) => {
             if (existingTurnChange) existingTurnChange(team);
@@ -224,7 +212,6 @@ export default class PetanqueScene extends Phaser.Scene {
             this._animateCharThrow(team);
         };
 
-        // Hook into after-stop for reactions
         const existingAfterStop = this.engine.onAfterStop;
         this.engine.onAfterStop = (lastTeam) => {
             if (existingAfterStop) existingAfterStop(lastTeam);
@@ -234,11 +221,9 @@ export default class PetanqueScene extends Phaser.Scene {
         this._updateTurnIndicator('player');
     }
 
-    // Update opponent position near cochonnet (call after cochonnet lands)
     _updateOpponentCochoPos() {
         if (this.engine.cochonnet && this.engine.cochonnet.isAlive) {
-            // Opponent stands on the RIGHT EDGE of terrain, at cochonnet height
-            this._opponentCochoX = this.terrainX + TERRAIN_WIDTH + 16;
+            this._opponentCochoX = this.terrainX + TERRAIN_WIDTH + 24;
             this._opponentCochoY = this.engine.cochonnet.y + 10;
         }
     }
@@ -247,130 +232,67 @@ export default class PetanqueScene extends Phaser.Scene {
         this._updateOpponentCochoPos();
 
         if (team === 'opponent') {
-            // Opponent stands up and walks to circle
-            this.tweens.add({
-                targets: this.opponentSprite,
-                scaleY: 1.0, // stand up
-                x: this._opponentCircleX,
-                y: this._opponentCircleY,
-                duration: 500,
-                ease: 'Sine.easeInOut',
-                onUpdate: () => {
-                    const f = Math.floor(Date.now() / 150) % 4;
-                    this.opponentSprite.setFrame(f);
-                },
-                onComplete: () => {
-                    this.opponentSprite.setFrame(12);
-                }
-            });
+            // Opponent walks to throw circle with ball
+            this.opponentChar.prepareBall();
+            this.opponentChar.moveTo(this._opponentCircleX, this._opponentCircleY, 500);
+
+            // Move arrow
             this.tweens.add({
                 targets: this.opponentTurnArrow,
                 x: this._opponentCircleX,
-                y: this._opponentCircleY - 56,
+                y: this._opponentCircleY - 80,
                 duration: 500
             });
-            // Player steps to LEFT EDGE of terrain, at cochonnet height
-            this.tweens.add({
-                targets: this.playerSprite,
-                x: this.terrainX - 16,
-                y: this._opponentCochoY,
-                duration: 400,
-                ease: 'Sine.easeInOut',
-                onComplete: () => {
-                    this.playerSprite.setFrame(0);
-                }
-            });
+
+            // Player steps to sideline (left edge)
+            this.playerChar.ball.setVisible(false);
+            this.playerChar.hasBall = false;
+            this.playerChar.moveTo(this.terrainX - 24, this._opponentCochoY, 400);
         } else {
-            // Player walks back to circle
-            this.tweens.add({
-                targets: this.playerSprite,
-                x: this._playerHomeX,
-                y: this._playerHomeY,
-                duration: 400,
-                ease: 'Sine.easeInOut',
-                onComplete: () => {
-                    this.playerSprite.setFrame(12);
-                }
-            });
+            // Player walks back to throw circle with ball
+            this.playerChar.prepareBall();
+            this.playerChar.moveTo(this._playerHomeX, this._playerHomeY, 400);
+
             // Opponent goes back to sideline
-            this.tweens.add({
-                targets: this.opponentSprite,
-                x: this._opponentCochoX,
-                y: this._opponentCochoY,
-                scaleY: 1.0, // standing
-                duration: 500,
-                ease: 'Sine.easeInOut',
-                onUpdate: () => {
-                    const f = Math.floor(Date.now() / 150) % 4;
-                    this.opponentSprite.setFrame(f);
-                },
-                onComplete: () => {
-                    this.opponentSprite.setFrame(0);
-                }
-            });
+            this.opponentChar.ball.setVisible(false);
+            this.opponentChar.hasBall = false;
+            this.opponentChar.moveTo(this._opponentCochoX, this._opponentCochoY, 500);
+
             this.tweens.add({
                 targets: this.opponentTurnArrow,
                 x: this._opponentCochoX,
-                y: this._opponentCochoY - 40,
+                y: this._opponentCochoY - 80,
                 duration: 500
             });
         }
     }
 
     _animateCharThrow(team) {
-        const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
-        const baseY = sprite.y;
+        const char = team === 'player' ? this.playerChar : this.opponentChar;
+        const isAI = team === 'opponent' && !this.localMultiplayer;
 
-        sprite.setTint(0xFFFFFF);
-        this.time.delayedCall(80, () => sprite.clearTint());
-
-        this.tweens.chain({
-            targets: sprite,
-            tweens: [
-                { scaleX: 0.9, scaleY: 1.1, y: baseY + 2, duration: 150, ease: 'Quad.easeOut' },
-                { scaleX: 1.15, scaleY: 0.8, y: baseY - 8, duration: 100, ease: 'Quad.easeIn' },
-                { scaleX: 1.0, scaleY: 1.0, y: baseY, duration: 250, ease: 'Bounce.easeOut' }
-            ]
-        });
+        if (isAI) {
+            char.playQuickThrow(0.7);
+        } else {
+            char.playThrow(0.7);
+        }
     }
 
     _animateReaction(lastTeam) {
         if (!this.engine.cochonnet || !this.engine.cochonnet.isAlive) return;
 
-        // Find the last thrown ball's distance to cochonnet
         const lastBall = this.engine.lastThrownBall;
         if (!lastBall || !lastBall.isAlive) return;
         const dist = lastBall.distanceTo(this.engine.cochonnet);
 
-        const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
-        const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
+        const throwerChar = lastTeam === 'player' ? this.playerChar : this.opponentChar;
+        const watcherChar = lastTeam === 'player' ? this.opponentChar : this.playerChar;
 
         if (dist < 30) {
-            // Good shot! Thrower celebrates (small jump)
-            this.tweens.add({
-                targets: throwerSprite,
-                y: throwerSprite.y - 8,
-                duration: 200, ease: 'Bounce.easeOut', yoyo: true
-            });
-            // Watcher shakes head
-            this.tweens.chain({
-                targets: watcherSprite,
-                tweens: [
-                    { angle: -5, duration: 100 },
-                    { angle: 5, duration: 100 },
-                    { angle: 0, duration: 100 }
-                ]
-            });
+            throwerChar.playCelebrate();
+            watcherChar.playDisappoint();
         } else if (dist > 80) {
-            // Bad shot — thrower shakes head
-            this.tweens.chain({
-                targets: throwerSprite,
-                tweens: [
-                    { angle: -5, duration: 100 },
-                    { angle: 5, duration: 100 },
-                    { angle: 0, duration: 100 }
-                ]
-            });
+            throwerChar.playDisappoint();
         }
     }
 
@@ -400,7 +322,6 @@ export default class PetanqueScene extends Phaser.Scene {
             if (this.textures.exists(key)) continue;
             const tex = this.textures.createCanvas(key, 32, 32);
             const ctx = tex.getContext();
-            // Radial gradient for 3D sphere
             const grad = ctx.createRadialGradient(12, 10, 2, 16, 16, 14);
             grad.addColorStop(0, hi);
             grad.addColorStop(0.4, base);
@@ -409,7 +330,6 @@ export default class PetanqueScene extends Phaser.Scene {
             ctx.beginPath();
             ctx.arc(16, 16, 14, 0, Math.PI * 2);
             ctx.fill();
-            // Specular highlight
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
             ctx.beginPath();
             ctx.arc(11, 9, 3, 0, Math.PI * 2);
@@ -419,10 +339,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     drawTerrain(colors) {
-        // === FOND DE SCENE : ciel Provence + sol exterieur ===
         const bg = this.add.graphics().setDepth(0);
 
-        // Ciel gradient vertical #87CEEB → #B8D8EB
         if (this.textures.exists('sky_gradient')) this.textures.remove('sky_gradient');
         const skyTex = this.textures.createCanvas('sky_gradient', GAME_WIDTH, GAME_HEIGHT);
         const skyCtx = skyTex.getContext();
@@ -434,25 +352,21 @@ export default class PetanqueScene extends Phaser.Scene {
         skyTex.refresh();
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'sky_gradient').setDepth(0);
 
-        // Sol exterieur (terre seche sous le terrain)
         bg.fillStyle(0x8B7D5A, 1);
         bg.fillRect(0, GAME_HEIGHT * 0.6, GAME_WIDTH, GAME_HEIGHT * 0.4);
         bg.setDepth(0);
 
-        // === DECOR STATIQUE ===
         const decor = this.add.graphics().setDepth(1);
         const tx = this.terrainX;
         const tw = TERRAIN_WIDTH;
 
-        // Platane gauche
         decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx - 80, 60, 20, 80);           // tronc
+        decor.fillRect(tx - 80, 60, 20, 80);
         decor.fillStyle(0x4A7A3A, 1);
-        decor.fillCircle(tx - 70, 50, 50);              // canopee
+        decor.fillCircle(tx - 70, 50, 50);
         decor.fillStyle(0x3A6A2A, 0.5);
-        decor.fillCircle(tx - 60, 60, 35);              // canopee ombre
+        decor.fillCircle(tx - 60, 60, 35);
 
-        // Platane droite
         decor.fillStyle(0x8B6B4A, 1);
         decor.fillRect(tx + tw + 60, 80, 20, 80);
         decor.fillStyle(0x4A7A3A, 1);
@@ -460,36 +374,31 @@ export default class PetanqueScene extends Phaser.Scene {
         decor.fillStyle(0x3A6A2A, 0.5);
         decor.fillCircle(tx + tw + 80, 80, 30);
 
-        // Banc
         decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx - 70, 300, 50, 6);            // assise
+        decor.fillRect(tx - 70, 300, 50, 6);
         decor.fillStyle(0x6B5038, 1);
-        decor.fillRect(tx - 68, 306, 4, 10);            // pied gauche
-        decor.fillRect(tx - 26, 306, 4, 10);            // pied droit
+        decor.fillRect(tx - 68, 306, 4, 10);
+        decor.fillRect(tx - 26, 306, 4, 10);
         decor.fillStyle(0x8B6B4A, 0.8);
-        decor.fillRect(tx - 70, 294, 50, 4);            // dossier
+        decor.fillRect(tx - 70, 294, 50, 4);
 
-        // Muret pierre
         decor.fillStyle(0xD4C4A0, 1);
         decor.fillRect(tx + tw + 20, 150, 30, 200);
         decor.fillStyle(0xC0B090, 0.5);
         for (let my = 150; my < 350; my += 20) {
-            decor.fillRect(tx + tw + 20, my, 30, 1);    // joints
+            decor.fillRect(tx + tw + 20, my, 30, 1);
         }
 
-        // Table cafe
         decor.fillStyle(0x8B6B4A, 1);
-        decor.fillCircle(tx + tw + 45, 390, 12);        // plateau rond
+        decor.fillCircle(tx + tw + 45, 390, 12);
         decor.fillStyle(0x6B5038, 1);
-        decor.fillRect(tx + tw + 43, 402, 4, 14);       // pied
+        decor.fillRect(tx + tw + 43, 402, 4, 14);
 
-        // === TERRAIN TEXTURE GRAVIER (CanvasTexture) ===
         const terrainTexKey = `terrain_gravier_${this.terrainType}`;
         if (this.textures.exists(terrainTexKey)) this.textures.remove(terrainTexKey);
         const terrainTex = this.textures.createCanvas(terrainTexKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
         const tCtx = terrainTex.getContext();
 
-        // Base couleur terrain
         const baseColors = {
             terre:  '#C4854A',
             herbe:  '#6B8E4E',
@@ -505,7 +414,6 @@ export default class PetanqueScene extends Phaser.Scene {
         tCtx.fillStyle = baseColors[this.terrainType] || baseColors.terre;
         tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
-        // 200 petits cailloux aleatoires
         const gravel = gravelColors[this.terrainType] || gravelColors.terre;
         for (let i = 0; i < 200; i++) {
             const gx = Math.random() * TERRAIN_WIDTH;
@@ -516,29 +424,23 @@ export default class PetanqueScene extends Phaser.Scene {
         }
         terrainTex.refresh();
 
-        // Ombre du terrain
         const terrainG = this.add.graphics().setDepth(1);
         terrainG.fillStyle(0x000000, 0.15);
         terrainG.fillRect(this.terrainX + 4, this.terrainY + 4, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
-        // Image terrain
         this.add.image(this.terrainX + TERRAIN_WIDTH / 2, this.terrainY + TERRAIN_HEIGHT / 2, terrainTexKey).setDepth(2);
 
-        // === BORDURES BOIS ===
         const bord = this.add.graphics().setDepth(3);
-        const bw = 4; // epaisseur bordure
-        // Bois principal
+        const bw = 4;
         bord.fillStyle(0x6B5038, 1);
-        bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, bw);        // haut
-        bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2, bw); // bas
-        bord.fillRect(this.terrainX - bw, this.terrainY, bw, TERRAIN_HEIGHT);                      // gauche
-        bord.fillRect(this.terrainX + TERRAIN_WIDTH, this.terrainY, bw, TERRAIN_HEIGHT);            // droite
-        // Highlight interieur (1px)
+        bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, bw);
+        bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2, bw);
+        bord.fillRect(this.terrainX - bw, this.terrainY, bw, TERRAIN_HEIGHT);
+        bord.fillRect(this.terrainX + TERRAIN_WIDTH, this.terrainY, bw, TERRAIN_HEIGHT);
         bord.fillStyle(0x9B7B5A, 0.6);
         bord.fillRect(this.terrainX, this.terrainY, TERRAIN_WIDTH, 1);
         bord.fillRect(this.terrainX, this.terrainY, 1, TERRAIN_HEIGHT);
 
-        // === CERCLE DE LANCER ===
         this.throwCircleX = GAME_WIDTH / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
         const circleG = this.add.graphics().setDepth(4);
@@ -552,34 +454,6 @@ export default class PetanqueScene extends Phaser.Scene {
         }
         if (this.aimingSystem) {
             this.aimingSystem.update();
-
-            // Update player sprite based on shot mode
-            if (this.playerSprite && this.aimingSystem.shotMode) {
-                if (this.aimingSystem.shotMode === 'pointer' && !this._playerCrouched) {
-                    this._playerCrouched = true;
-                    this._playerStanding = false;
-                    this.tweens.add({
-                        targets: this.playerSprite,
-                        scaleY: 0.7, duration: 200
-                    });
-                } else if (this.aimingSystem.shotMode === 'tirer' && !this._playerStanding) {
-                    this._playerStanding = true;
-                    this._playerCrouched = false;
-                    this.tweens.add({
-                        targets: this.playerSprite,
-                        scaleY: 1.0, duration: 200
-                    });
-                }
-            }
-
-            if (!this.engine.aimingEnabled && this._playerCrouched) {
-                this._playerCrouched = false;
-                this._playerStanding = false;
-                this.tweens.add({
-                    targets: this.playerSprite,
-                    scaleY: 1.0, duration: 150
-                });
-            }
         }
         if (this.scorePanel) {
             this.scorePanel.update();

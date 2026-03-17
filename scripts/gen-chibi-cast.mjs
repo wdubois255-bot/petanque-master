@@ -31,28 +31,40 @@ const API_BASE = 'https://api.pixellab.ai/v1';
 // ===== CHARACTER DEFINITIONS =====
 const CHARACTERS = [
   {
-    id: 'player',
-    name: 'Lucas (Joueur)',
+    id: 'rene',
+    name: 'René (L\'Équilibré)',
     description: 'chibi RPG character, young teenage boy, big head, brown messy hair, bright blue t-shirt, brown khaki shorts, white sneakers, cute round face, large brown eyes, small body, determined expression, pixel art, RPG Maker style, colorful, top-down game sprite',
-    output: 'public/assets/sprites/player_animated.png'
-  },
-  {
-    id: 'bastien',
-    name: 'Bastien "Le Fennec"',
-    description: 'chibi RPG character, teenage boy, big head, spiky blond hair pointed up, red polo shirt, white pants, cocky smirk, sharp blue eyes, athletic build, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
-    output: 'public/assets/sprites/bastien_animated.png'
+    output: 'public/assets/sprites/rene_animated.png'
   },
   {
     id: 'marcel',
-    name: 'Maitre Marcel',
+    name: 'Marcel (Le Chirurgien)',
     description: 'chibi RPG character, middle-aged stocky man, big head, thick black mustache, gold chain necklace, white tank top undershirt, brown vest, beige pants, tanned skin, warm smile, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
     output: 'public/assets/sprites/marcel_animated.png'
   },
   {
-    id: 'papet',
-    name: 'Le Vieux Papet',
-    description: 'chibi RPG character, elderly man, big head, white thin hair, beret hat dark blue, beige linen shirt, brown suspenders, brown pants, walking cane in hand, gentle wrinkled face, kind eyes, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
-    output: 'public/assets/sprites/papet_animated.png'
+    id: 'fanny',
+    name: 'Fanny (La Canonnière)',
+    description: 'chibi RPG character, strong athletic woman, big head, auburn red hair in a ponytail, green tank top, beige cargo pants, brown boots, confident fierce expression, tanned skin, hands on hips pose, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
+    output: 'public/assets/sprites/fanny_animated.png'
+  },
+  {
+    id: 'ricardo',
+    name: 'Ricardo (Le Calculateur)',
+    description: 'chibi RPG character, elegant slim man, big head, slicked back dark hair, stylish sunglasses, white linen shirt unbuttoned, beige chinos, leather sandals, tanned olive skin, cool mysterious smile, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
+    output: 'public/assets/sprites/ricardo_animated.png'
+  },
+  {
+    id: 'thierry',
+    name: 'Thierry (Le Flambeur)',
+    description: 'chibi RPG character, flamboyant middle-aged man, big head, wild curly brown hair, hawaiian shirt bright orange and yellow flowers, white shorts, flip flops, big grin, gold bracelet, sunburned skin, energetic pose, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
+    output: 'public/assets/sprites/thierry_animated.png'
+  },
+  {
+    id: 'marius',
+    name: 'Le Grand Marius (Boss)',
+    description: 'chibi RPG character, imposing elderly man, big head, thick white beard, wild white hair, dark navy suit jacket, gold chain necklace, dark pants, polished shoes, piercing intense eyes, commanding aura, regal posture, small body, pixel art, RPG Maker style, colorful, top-down game sprite',
+    output: 'public/assets/sprites/marius_animated.png'
   }
 ];
 

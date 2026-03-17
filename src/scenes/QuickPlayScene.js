@@ -4,12 +4,12 @@ import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 const CHAR_VALUES = [
-    { display: 'Rene', key: 'npc_villager_1', sprite: 'npc_villager_1', charId: 'equilibre' },
-    { display: 'Marcel', key: 'npc_marcel', sprite: 'npc_marcel', charId: 'pointeur' },
-    { display: 'Fanny', key: 'npc_dresseur_1', sprite: 'npc_dresseur_1', charId: 'tireur' },
-    { display: 'Ricardo', key: 'npc_dresseur_2', sprite: 'npc_dresseur_2', charId: 'stratege' },
-    { display: 'Thierry', key: 'npc_villager_2', sprite: 'npc_villager_2', charId: 'wildcard' },
-    { display: 'Marius', key: 'npc_maitre', sprite: 'npc_maitre', charId: 'boss' }
+    { display: 'Rene', key: 'rene_animated', sprite: 'rene_animated', charId: 'equilibre' },
+    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'pointeur' },
+    { display: 'Fanny', key: 'fanny_animated', sprite: 'fanny_animated', charId: 'tireur' },
+    { display: 'Ricardo', key: 'ricardo_animated', sprite: 'ricardo_animated', charId: 'stratege' },
+    { display: 'Thierry', key: 'thierry_animated', sprite: 'thierry_animated', charId: 'wildcard' },
+    { display: 'Marius', key: 'marius_animated', sprite: 'marius_animated', charId: 'boss' }
 ];
 
 const OPTIONS = [

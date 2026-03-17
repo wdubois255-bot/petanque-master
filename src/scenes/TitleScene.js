@@ -108,20 +108,20 @@ export default class TitleScene extends Phaser.Scene {
         // ============================================
         // CHARACTERS (Pipoya sprites on screen)
         // ============================================
-        if (this.textures.exists('player_pipoya')) {
+        if (this.textures.exists('rene_animated')) {
             // Player standing near terrain
-            const player = this.add.sprite(340, 416, 'player_pipoya', 0).setScale(2);
+            const player = this.add.sprite(340, 416, 'rene_animated', 0).setScale(2);
             this.tweens.add({ targets: player, y: 414, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         }
-        if (this.textures.exists('npc_maitre')) {
-            // Papet watching
-            const papet = this.add.sprite(500, 418, 'npc_maitre', 4).setScale(2);
-            this.tweens.add({ targets: papet, y: 416, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 300 });
+        if (this.textures.exists('marius_animated')) {
+            // Marius watching
+            const marius = this.add.sprite(500, 418, 'marius_animated', 0).setScale(2);
+            this.tweens.add({ targets: marius, y: 416, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 300 });
         }
-        if (this.textures.exists('npc_rival')) {
-            // Rival in background
-            const rival = this.add.sprite(560, 380, 'npc_rival', 4).setScale(1.5).setAlpha(0.7);
-            this.tweens.add({ targets: rival, y: 378, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600 });
+        if (this.textures.exists('marcel_animated')) {
+            // Marcel in background
+            const marcel = this.add.sprite(560, 380, 'marcel_animated', 0).setScale(1.5).setAlpha(0.7);
+            this.tweens.add({ targets: marcel, y: 378, duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600 });
         }
 
         // ============================================
@@ -180,7 +180,7 @@ export default class TitleScene extends Phaser.Scene {
         this._mode = 'main';
         this._selectedIndex = 0;
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie'];
+        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie', 'Test Sprites'];
         if (hasSaveData()) items.push('Continuer');
 
         const startY = 218;
@@ -322,6 +322,9 @@ export default class TitleScene extends Phaser.Scene {
                 this._startNewGame(0);
             }
         } else if (this._selectedIndex === 3) {
+            // Test Sprites (prototype animation modulaire)
+            this.scene.start('SpriteTestScene');
+        } else if (this._selectedIndex === 4) {
             // Continuer
             this._showSlotMenu();
             this._newGame = false;

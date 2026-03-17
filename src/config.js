@@ -11,6 +11,7 @@ import ResultScene from './scenes/ResultScene.js';
 import IntroScene from './scenes/IntroScene.js';
 import OverworldScene from './scenes/OverworldScene.js';
 import PetanqueScene from './scenes/PetanqueScene.js';
+import SpriteTestScene from './scenes/SpriteTestScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -31,7 +32,7 @@ const config = {
             debug: false
         }
     },
-    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, IntroScene, OverworldScene, PetanqueScene]
+    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, IntroScene, OverworldScene, PetanqueScene, SpriteTestScene]
 };
 
 export default config;
