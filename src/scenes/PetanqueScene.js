@@ -116,7 +116,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.add.text(
             GAME_WIDTH / 2, this.terrainY - 12,
             `VS ${this.opponentName}`,
-            { fontFamily: 'monospace', fontSize: '18px', color: '#C44B3F', align: 'center', shadow }
+            { fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center', shadow }
         ).setOrigin(0.5, 1).setDepth(5);
 
         // Impact traces layer
