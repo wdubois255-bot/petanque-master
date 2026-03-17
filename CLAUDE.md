@@ -1,5 +1,5 @@
 # CLAUDE.md - Petanque Master
-
+Tu dois toujours challenger, questionner, essayer d'aller plus loin afin d'aider et d'avancer le projet. 
 ## Projet
 **Petanque Master** : jeu web 2D style Pokemon avec combats de petanque.
 Le joueur explore un monde ouvert top-down, rencontre des joueurs de petanque, et affronte des maitres d'arene.
