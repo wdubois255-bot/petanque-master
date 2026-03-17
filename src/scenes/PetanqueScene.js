@@ -22,12 +22,12 @@ export default class PetanqueScene extends Phaser.Scene {
         this.difficulty = data.difficulty || 'easy';
         this.format = data.format || 'tete_a_tete';
         this.opponentName = data.opponentName || 'Adversaire';
-        this.opponentId = data.opponentId || null;
         this.returnScene = data.returnScene || null;
         this.personality = data.personality || null;
         this.playerCharacter = data.playerCharacter || null;
         this.opponentCharacter = data.opponentCharacter || null;
         this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'equilibre';
+        this.opponentId = this.opponentCharacter?.id || data.opponentId?.replace('char_', '')?.replace('quickplay_', '') || null;
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;
         this.localMultiplayer = data.localMultiplayer || false;
@@ -121,16 +121,17 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _ensureSprites() {
-        // Player sprite — use PNG if available, else generate with correct palette
+        // Player sprite — always recreate to match selected character
+        if (this.textures.exists('petanque_player')) {
+            this.textures.remove('petanque_player');
+        }
         const playerKey = this._getCharSpriteKey(this.playerCharId);
         if (this.textures.exists(playerKey)) {
-            if (!this.textures.exists('petanque_player')) {
-                this.textures.addSpriteSheet('petanque_player',
-                    this.textures.get(playerKey).getSourceImage(),
-                    { frameWidth: 32, frameHeight: 32 }
-                );
-            }
-        } else if (!this.textures.exists('petanque_player')) {
+            this.textures.addSpriteSheet('petanque_player',
+                this.textures.get(playerKey).getSourceImage(),
+                { frameWidth: 32, frameHeight: 32 }
+            );
+        } else {
             generateCharacterSprite(this, 'petanque_player', this._getCharPalette(this.playerCharId));
         }
 
@@ -555,6 +556,7 @@ export default class PetanqueScene extends Phaser.Scene {
         decor.fillStyle(0x6B5038, 1);
         decor.fillRect(tx - 24, 210, 8, 20);
 
+        // === TERRAIN SURFACE (rich canvas texture) ===
         const terrainTexKey = `terrain_gravier_${this.terrainType}`;
         if (this.textures.exists(terrainTexKey)) this.textures.remove(terrainTexKey);
         const terrainTex = this.textures.createCanvas(terrainTexKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
@@ -564,43 +566,121 @@ export default class PetanqueScene extends Phaser.Scene {
             terre:  '#C4854A', herbe: '#6B8E4E', sable: '#E8D5B7', dalles: '#9E9E8E'
         };
         const gravelColors = {
-            terre:  ['#B07840', '#D49560', '#A87040', '#C4954A'],
-            herbe:  ['#5E8A44', '#7BA65E', '#4A7A3A', '#6B9E4E'],
-            sable:  ['#D4C0A0', '#F0E0C8', '#C4B090', '#E8D0B0'],
-            dalles: ['#8E8E7E', '#B0A090', '#808070', '#A09888']
+            terre:  ['#B07840', '#D49560', '#A87040', '#C4954A', '#B88850'],
+            herbe:  ['#5E8A44', '#7BA65E', '#4A7A3A', '#6B9E4E', '#5A9040'],
+            sable:  ['#D4C0A0', '#F0E0C8', '#C4B090', '#E8D0B0', '#DDD4B8'],
+            dalles: ['#8E8E7E', '#B0A090', '#808070', '#A09888', '#989080']
         };
-        tCtx.fillStyle = baseColors[this.terrainType] || baseColors.terre;
+
+        // Base fill with subtle vertical gradient (lighter at top = distance)
+        const baseCol = baseColors[this.terrainType] || baseColors.terre;
+        const terrGrad = tCtx.createLinearGradient(0, 0, 0, TERRAIN_HEIGHT);
+        terrGrad.addColorStop(0, baseCol);
+        terrGrad.addColorStop(0.5, baseCol);
+        terrGrad.addColorStop(1, this._darkenHex(baseCol, 20));
+        tCtx.fillStyle = terrGrad;
         tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
+        // Fine gravel texture (lots of tiny particles)
         const gravel = gravelColors[this.terrainType] || gravelColors.terre;
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 500; i++) {
             tCtx.fillStyle = gravel[Math.floor(Math.random() * gravel.length)];
-            tCtx.fillRect(Math.random() * TERRAIN_WIDTH, Math.random() * TERRAIN_HEIGHT, 1 + Math.random() * 2, 1 + Math.random() * 2);
+            const size = 1 + Math.random() * 1.5;
+            tCtx.fillRect(Math.random() * TERRAIN_WIDTH, Math.random() * TERRAIN_HEIGHT, size, size);
         }
+
+        // Larger pebbles/cailloux (scattered, subtle)
+        for (let i = 0; i < 15; i++) {
+            const px = 20 + Math.random() * (TERRAIN_WIDTH - 40);
+            const py = 20 + Math.random() * (TERRAIN_HEIGHT - 40);
+            const pr = 2 + Math.random() * 3;
+            tCtx.fillStyle = gravel[Math.floor(Math.random() * gravel.length)];
+            tCtx.globalAlpha = 0.5 + Math.random() * 0.3;
+            tCtx.beginPath();
+            tCtx.ellipse(px, py, pr, pr * 0.7, Math.random() * Math.PI, 0, Math.PI * 2);
+            tCtx.fill();
+            // Pebble highlight
+            tCtx.fillStyle = 'rgba(255,255,255,0.2)';
+            tCtx.beginPath();
+            tCtx.arc(px - 1, py - 1, pr * 0.4, 0, Math.PI * 2);
+            tCtx.fill();
+        }
+        tCtx.globalAlpha = 1;
+
+        // Terrain wear marks (subtle drag lines from previous games)
+        tCtx.strokeStyle = 'rgba(0,0,0,0.06)';
+        tCtx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+            const sx = 30 + Math.random() * (TERRAIN_WIDTH - 60);
+            const sy = 40 + Math.random() * (TERRAIN_HEIGHT - 80);
+            tCtx.beginPath();
+            tCtx.moveTo(sx, sy);
+            tCtx.lineTo(sx + (Math.random() - 0.5) * 30, sy + 10 + Math.random() * 20);
+            tCtx.stroke();
+        }
+
+        // Edge darkening (vignette effect for depth)
+        const edgeGrad = tCtx.createRadialGradient(
+            TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.35,
+            TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.55
+        );
+        edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        edgeGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+        tCtx.fillStyle = edgeGrad;
+        tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+
         terrainTex.refresh();
 
+        // Drop shadow under terrain
         const terrainG = this.add.graphics().setDepth(1);
-        terrainG.fillStyle(0x000000, 0.15);
-        terrainG.fillRect(this.terrainX + 4, this.terrainY + 4, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+        terrainG.fillStyle(0x000000, 0.18);
+        terrainG.fillRect(this.terrainX + 5, this.terrainY + 5, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+        terrainG.fillStyle(0x000000, 0.08);
+        terrainG.fillRect(this.terrainX + 3, this.terrainY + 3, TERRAIN_WIDTH + 2, TERRAIN_HEIGHT + 2);
 
         this.add.image(this.terrainX + TERRAIN_WIDTH / 2, this.terrainY + TERRAIN_HEIGHT / 2, terrainTexKey).setDepth(2);
 
+        // === WOODEN BORDERS (3D effect) ===
         const bord = this.add.graphics().setDepth(3);
-        const bw = 4;
+        const bw = 5;
+        // Main border
         bord.fillStyle(0x6B5038, 1);
         bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, bw);
         bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2, bw);
         bord.fillRect(this.terrainX - bw, this.terrainY, bw, TERRAIN_HEIGHT);
         bord.fillRect(this.terrainX + TERRAIN_WIDTH, this.terrainY, bw, TERRAIN_HEIGHT);
-        bord.fillStyle(0x9B7B5A, 0.6);
-        bord.fillRect(this.terrainX, this.terrainY, TERRAIN_WIDTH, 1);
-        bord.fillRect(this.terrainX, this.terrainY, 1, TERRAIN_HEIGHT);
+        // Wood highlight (top edge lighter)
+        bord.fillStyle(0x9B7B5A, 0.7);
+        bord.fillRect(this.terrainX - bw, this.terrainY - bw, TERRAIN_WIDTH + bw * 2, 2);
+        bord.fillRect(this.terrainX - bw, this.terrainY - bw, 2, TERRAIN_HEIGHT + bw * 2);
+        // Wood shadow (bottom edge darker)
+        bord.fillStyle(0x4A3520, 0.5);
+        bord.fillRect(this.terrainX - bw, this.terrainY + TERRAIN_HEIGHT + bw - 2, TERRAIN_WIDTH + bw * 2, 2);
+        bord.fillRect(this.terrainX + TERRAIN_WIDTH + bw - 2, this.terrainY - bw, 2, TERRAIN_HEIGHT + bw * 2);
+        // Corner nails
+        const nailColor = 0xA0A0A0;
+        bord.fillStyle(nailColor, 0.6);
+        bord.fillCircle(this.terrainX - 2, this.terrainY - 2, 2);
+        bord.fillCircle(this.terrainX + TERRAIN_WIDTH + 2, this.terrainY - 2, 2);
+        bord.fillCircle(this.terrainX - 2, this.terrainY + TERRAIN_HEIGHT + 2, 2);
+        bord.fillCircle(this.terrainX + TERRAIN_WIDTH + 2, this.terrainY + TERRAIN_HEIGHT + 2, 2);
 
+        // === THROW CIRCLE ===
         this.throwCircleX = GAME_WIDTH / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
         const circleG = this.add.graphics().setDepth(4);
-        circleG.lineStyle(2, COLORS.BLANC, 0.5);
+        // Double ring for visibility
+        circleG.lineStyle(3, 0xFFFFFF, 0.2);
+        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 2);
+        circleG.lineStyle(2, COLORS.BLANC, 0.6);
         circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
+    }
+
+    _darkenHex(hex, amount = 30) {
+        const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - amount);
+        const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - amount);
+        const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - amount);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
     }
 
     update(time, delta) {

@@ -21,6 +21,7 @@ export default class Ball {
         this.id = options.id || `ball_${Date.now()}_${Math.random()}`;
 
         this._squashTimer = 0;
+        this._rollAngle = 0; // rotation angle for rolling animation
 
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
@@ -51,12 +52,22 @@ export default class Ball {
 
     draw() {
         if (this.sprite) {
-            // Sprite mode: update positions
+            // Sprite mode: update positions + rotation
             if (this.isAlive) {
                 this.sprite.setPosition(this.x, this.y).setVisible(true);
+                this.sprite.setAngle(this._rollAngle);
                 this.shadowSprite.setPosition(this.x + 3, this.y + 4).setVisible(true);
 
-                // Squash flash
+                // Dynamic shadow: stretches when ball moves fast
+                if (this.isMoving) {
+                    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    const stretch = Math.min(1.4, 1 + speed * 0.003);
+                    this.shadowSprite.setScale(stretch, 0.7);
+                } else {
+                    this.shadowSprite.setScale(1, 1);
+                }
+
+                // Squash flash on collision
                 if (this._squashTimer > 0) {
                     this._squashTimer--;
                     this.sprite.setTint(0xFFFFFF);
@@ -118,6 +129,13 @@ export default class Ball {
             const ratio = newSpeed / speed;
             this.vx *= ratio;
             this.vy *= ratio;
+
+            // Rolling rotation: speed determines rotation rate
+            // Direction of travel determines rotation direction
+            const rollSpeed = speed * 2.5; // degrees per frame, proportional to speed
+            const direction = Math.atan2(this.vy, this.vx);
+            // Roll clockwise when moving right, counter-clockwise when left
+            this._rollAngle += rollSpeed * cappedDt * Math.sign(Math.cos(direction) || 1);
         } else {
             this.vx = 0;
             this.vy = 0;
