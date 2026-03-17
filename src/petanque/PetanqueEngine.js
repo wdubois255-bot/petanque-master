@@ -256,10 +256,25 @@ export default class PetanqueEngine {
         const cochonnetTex = cochonnetTexMap[this.scene.cochonnetType] || 'ball_cochonnet';
         this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
 
-        // Animate fly
-        this._animateThrow(this.cochonnet, clampedX, clampedY, 0, 0, () => {
-            this.setState(STATES.FIRST_BALL);
-        });
+        // Cochonnet rolls 20-30% beyond landing point (like a real throw)
+        const throwDirX = Math.cos(angle);
+        const throwDirY = Math.sin(angle);
+        const rollSpeed = dist * 0.25 * 0.06; // ~25% of throw distance, scaled to velocity
+        const rollVx = throwDirX * rollSpeed;
+        const rollVy = throwDirY * rollSpeed;
+
+        // Animate fly, then wait for roll to stop before switching state
+        this._animateThrow(this.cochonnet, clampedX, clampedY, rollVx, rollVy, () => {
+            // Wait for cochonnet to stop rolling before allowing first ball
+            const waitForStop = () => {
+                if (this.cochonnet.isMoving) {
+                    this.scene.time.delayedCall(50, waitForStop);
+                } else {
+                    this.setState(STATES.FIRST_BALL);
+                }
+            };
+            waitForStop();
+        }, LOFT_DEMI_PORTEE);
     }
 
     static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6) {
