@@ -45,14 +45,8 @@ export default class Ball {
     _resolveTextureKey(explicit) {
         if (explicit) return explicit;
         if (this.team === 'cochonnet') return 'ball_cochonnet';
-        if (this.team === 'opponent') return 'ball_opponent';
-        // Player: map color to texture
-        const colorMap = {
-            0xA8B5C2: 'ball_acier',
-            0xCD7F32: 'ball_bronze',
-            0xDCDCDC: 'ball_chrome'
-        };
-        return colorMap[this.color] || 'ball_acier';
+        if (this.team === 'opponent') return 'ball_chrome';
+        return 'ball_bronze'; // joueur = boules bronze/or
     }
 
     draw() {

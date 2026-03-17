@@ -63,7 +63,7 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_bronze', `${BASE}assets/sprites/boule_bronze.png`);
         this.load.image('ball_chrome', `${BASE}assets/sprites/boule_chrome.png`);
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
-        this.load.image('ball_opponent', `${BASE}assets/sprites/boule_acier.png`);
+        this.load.image('ball_opponent', `${BASE}assets/sprites/boule_chrome.png`);
 
         // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {

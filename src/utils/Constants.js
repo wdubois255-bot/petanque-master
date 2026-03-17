@@ -142,16 +142,16 @@ export const TERRAIN_FRICTION = {
     dalles: 0.4
 };
 
-// Ball colors (placeholder)
+// Ball colors (used as fallback when sprites not loaded)
 export const BALL_COLORS = {
-    player: 0xA8B5C2,
-    opponent: 0xC44B3F,
+    player: 0xCD7F32,      // bronze/or pour le joueur
+    opponent: 0xDCDCDC,    // chrome pour l'adversaire
     cochonnet: 0xFFD700
 };
 
 // Ball sizes (pixels in game) - doubled
 export const BALL_RADIUS = 10;
-export const COCHONNET_RADIUS = 4;
+export const COCHONNET_RADIUS = 6;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 30;
 
