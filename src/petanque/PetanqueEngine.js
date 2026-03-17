@@ -79,6 +79,18 @@ export default class PetanqueEngine {
 
         // Dramatic zoom state
         this._zoomActive = false;
+
+        // === MATCH STATS TRACKING ===
+        this.matchStats = {
+            carreaux: { player: 0, opponent: 0 },
+            biberons: { player: 0, opponent: 0 },
+            shots: { player: 0, opponent: 0 },      // tirs attempted
+            points: { player: 0, opponent: 0 },      // pointages attempted
+            bestBallDist: Infinity,                    // closest ball to cochonnet ever
+            menesPlayed: 0,
+            bestMeneScore: 0,                          // highest single-mene score for player
+            meneScores: []                             // per-mene point history
+        };
     }
 
     startGame() {
@@ -353,6 +365,12 @@ export default class PetanqueEngine {
         this._pendingCarreauChecks = [];
         this._shotCollisions = [];
 
+        // Track shot/point stats
+        if (this.matchStats) {
+            if (shotMode === 'tirer') this.matchStats.shots[team]++;
+            else this.matchStats.points[team]++;
+        }
+
         // Resolve loft preset
         const isTir = shotMode === 'tirer';
         const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
@@ -580,6 +598,15 @@ export default class PetanqueEngine {
         this.scores[winner] += points;
         this.meneWinner = winner;
 
+        // Track mene stats
+        if (this.matchStats) {
+            this.matchStats.menesPlayed++;
+            this.matchStats.meneScores.push({ winner, points });
+            if (winner === 'player' && points > this.matchStats.bestMeneScore) {
+                this.matchStats.bestMeneScore = points;
+            }
+        }
+
         const winnerName = this._teamName(winner);
         this._showMessage(`${winnerName} ${winner === 'player' ? 'gagnez' : 'gagne'} ${points} point${points > 1 ? 's' : ''} !`);
 
@@ -663,11 +690,15 @@ export default class PetanqueEngine {
                     returnScene: this.scene.returnScene || 'TitleScene',
                     arcadeState: this.scene.arcadeState,
                     matchStats: {
-                        menes: this.mene,
+                        menes: this.matchStats?.menesPlayed || this.mene,
                         fanny: isFanny,
-                        bestMene: Math.max(
-                            ...([0].concat(this.balls.filter(b => b.isAlive).map(() => 1)))
-                        )
+                        bestMene: this.matchStats?.bestMeneScore || 0,
+                        carreaux: this.matchStats?.carreaux?.player || 0,
+                        biberons: this.matchStats?.biberons?.player || 0,
+                        shots: this.matchStats?.shots?.player || 0,
+                        points_attempted: this.matchStats?.points?.player || 0,
+                        bestBallDist: this.matchStats?.bestBallDist || Infinity,
+                        opponentCarreaux: this.matchStats?.carreaux?.opponent || 0
                     }
                 });
             });
@@ -916,6 +947,11 @@ export default class PetanqueEngine {
     }
 
     _celebrateCarreau(ball) {
+        // Track carreau stat
+        if (this.matchStats && ball.team) {
+            this.matchStats.carreaux[ball.team]++;
+        }
+
         // Hitstop
         this._hitstopUntil = Date.now() + 100;
 
@@ -963,10 +999,19 @@ export default class PetanqueEngine {
         const isTir = this.lastShotWasTir;
         const hitBalls = this._shotCollisions || [];
 
+        // Track best ball distance
+        if (!isTir && this.matchStats && ball.team === 'player') {
+            const d = ball.distanceTo(this.cochonnet);
+            if (d < this.matchStats.bestBallDist) {
+                this.matchStats.bestBallDist = d;
+            }
+        }
+
         // Biberon: boule collee au cochonnet (pointage only)
         if (!isTir) {
             const distToCoch = ball.distanceTo(this.cochonnet);
             if (distToCoch <= ball.radius + this.cochonnet.radius + 2) {
+                if (this.matchStats && ball.team) this.matchStats.biberons[ball.team]++;
                 this._showShotLabel(ball, 'BIBERON !', '#FFD700', 14);
                 this._shotCollisions = [];
                 return;

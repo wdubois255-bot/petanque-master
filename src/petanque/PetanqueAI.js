@@ -40,6 +40,38 @@ export default class PetanqueAI {
         // Track consecutive actions for variety
         this._consecutivePoints = 0;
         this._consecutiveShots = 0;
+
+        // Momentum system: persists across shots within a match
+        // Range: -1.0 (tilt) to +1.0 (on fire)
+        this._momentum = 0;
+        // Per-archetype momentum sensitivity
+        this._momentumSensitivity = this._getMomentumSensitivity();
+    }
+
+    _getMomentumSensitivity() {
+        const p = this.personality?.personality || 'equilibre';
+        // How much momentum affects precision (higher = more volatile)
+        switch (p) {
+            case 'equilibre': return 0.10;  // Rene: stable, barely affected
+            case 'pointeur':  return 0.05;  // Marcel: imperturbable
+            case 'tireur':    return 0.20;  // Fanny: rage makes her worse OR better
+            case 'stratege':  return 0.08;  // Ricardo: controlled but not immune
+            case 'wildcard':  return 0.50;  // Thierry: EXTREME momentum swings
+            case 'boss':      return 0.03;  // Marius: nearly unshakeable
+            default:          return 0.10;
+        }
+    }
+
+    // Called after each shot result to update momentum
+    updateMomentum(wasGoodShot) {
+        const sens = this._momentumSensitivity;
+        if (wasGoodShot) {
+            this._momentum = Math.min(1, this._momentum + 0.3 * (1 + sens));
+        } else {
+            this._momentum = Math.max(-1, this._momentum - 0.25 * (1 + sens));
+        }
+        // Natural decay toward 0
+        this._momentum *= 0.85;
     }
 
     _resolvePersonality(personality, difficulty) {
@@ -141,19 +173,32 @@ export default class PetanqueAI {
             powerDev *= 0.7;
         }
 
-        // Wildcard: extreme hot/cold streaks (25% genius, 20% disaster)
+        // Wildcard: extreme hot/cold streaks — now driven by momentum
         if (this.personality.personality === 'wildcard') {
-            const streakFactor = Math.random();
-            if (streakFactor < 0.25) {
-                // Zone: exceptionally precise (genius mode)
-                angleDev *= 0.3;
-                powerDev *= 0.3;
-            } else if (streakFactor > 0.80) {
-                // Tilt: complete disaster
-                angleDev *= 2.0;
-                powerDev *= 2.0;
+            // Thierry's streaks are amplified by momentum
+            if (this._momentum > 0.3) {
+                // In the zone: momentum makes him a genius
+                const zoneBoost = 0.3 + this._momentum * 0.4;
+                angleDev *= zoneBoost;
+                powerDev *= zoneBoost;
+            } else if (this._momentum < -0.3) {
+                // Tilted: momentum makes it catastrophic
+                const tiltPenalty = 1.5 + Math.abs(this._momentum) * 1.5;
+                angleDev *= tiltPenalty;
+                powerDev *= tiltPenalty;
+            } else {
+                // Neutral: still somewhat volatile
+                const streakFactor = Math.random();
+                if (streakFactor < 0.20) { angleDev *= 0.4; powerDev *= 0.4; }
+                else if (streakFactor > 0.85) { angleDev *= 1.8; powerDev *= 1.8; }
             }
         }
+
+        // === MOMENTUM EFFECT (all personalities) ===
+        // Positive momentum = more precise, negative = less precise
+        const momentumMod = 1 - this._momentum * this._momentumSensitivity * 3;
+        angleDev *= Math.max(0.3, momentumMod);
+        powerDev *= Math.max(0.3, momentumMod);
 
         const angleNoise = this._noise(angleDev) * Math.PI / 180;
         const powerNoise = this._noise(powerDev);
@@ -453,33 +498,103 @@ export default class PetanqueAI {
     }
 
     // ---- RENE: L'EQUILIBRE ----
-    // Philosophie: joue simple, pas de genius move. Reagit basiquement a la situation.
-    // Tire quand il n'a pas le point et qu'il y a une cible evidente, sinon pointe.
+    // Refonte: Rene est "le mec relax qui joue pour le fun mais qui a des coups de genie".
+    // Il adapte son style au score, varie ses lofts, et a des "moments pastis" imprevisibles.
     _strategyEquilibre(cochonnet, sit) {
-        let shouldShoot = false;
+        // "Moment pastis" — 15% du temps, coup instinctif (brillant ou ridicule)
+        if (Math.random() < 0.15) {
+            return this._reneMomentPastis(cochonnet, sit);
+        }
 
+        // Score-adaptive: mene au score → prudent, en tete → detendu et prend des risques
+        const isRelaxed = sit.scoreDiff >= 2;
+        const isStressed = sit.scoreDiff <= -3;
+
+        // Shooting decision: broader trigger than before (30px threshold, higher probability)
+        let shouldShoot = false;
         if (!sit.aiHasPoint && sit.playerBalls.length > 0) {
-            // Simple decision: shoot if a ball is very close to cochonnet
-            if (sit.bestPlayerDist < 20) {
-                shouldShoot = Math.random() < (this.personality.shootProbability || 0.35);
+            const shootThreshold = isStressed ? 35 : 25; // stressed = shoots more
+            const shootProb = isRelaxed ? 0.40 : isStressed ? 0.45 : 0.30;
+            if (sit.bestPlayerDist < shootThreshold) {
+                shouldShoot = Math.random() < shootProb;
             }
         }
 
-        // Score pressure makes him slightly more aggressive
-        if (sit.isDesperate) shouldShoot = shouldShoot || Math.random() < 0.3;
+        // Desperation boost
+        if (sit.isDesperate && Math.random() < 0.4) shouldShoot = true;
 
-        // 10% variance (sometimes does the unexpected)
-        if (Math.random() < 0.1) shouldShoot = !shouldShoot;
+        // 8% pure instinct flip (keeps Rene unpredictable)
+        if (Math.random() < 0.08) shouldShoot = !shouldShoot;
 
         if (shouldShoot && sit.bestPlayerBall) {
             return this._makeShot(sit.bestPlayerBall.ball);
         }
 
-        const loft = this._chooseLoft();
+        // Pointing: vary lofts based on mood
+        let loft;
+        if (isRelaxed) {
+            // Relaxed = try different things for fun
+            const roll = Math.random();
+            if (roll < 0.3) loft = LOFT_ROULETTE;
+            else if (roll < 0.6) loft = LOFT_DEMI_PORTEE;
+            else loft = LOFT_PLOMBEE;
+        } else {
+            // Serious = terrain-adapted
+            loft = this._chooseLoft();
+        }
+
+        // Variable offset (not always piled on cochonnet)
+        const spread = isRelaxed ? 8 : 5;
+        return {
+            target: { x: cochonnet.x + this._noise(spread), y: cochonnet.y + this._noise(spread) },
+            shotMode: 'pointer',
+            loftPreset: loft
+        };
+    }
+
+    // Rene's special moments: instinctive, surprising, sometimes brilliant
+    _reneMomentPastis(cochonnet, sit) {
+        const roll = Math.random();
+
+        if (roll < 0.35 && sit.playerBalls.length > 0) {
+            // "Tiens, et si je tirais?" — impulsive shot, sometimes at a random ball
+            const balls = sit.playerBalls;
+            const target = balls[Math.floor(Math.random() * balls.length)];
+            return this._makeShot(target);
+        }
+
+        if (roll < 0.60) {
+            // Plombee audacieuse — gros arc, placement risque mais fun
+            return {
+                target: { x: cochonnet.x + this._noise(3), y: cochonnet.y + this._noise(3) },
+                shotMode: 'pointer',
+                loftPreset: LOFT_PLOMBEE
+            };
+        }
+
+        if (roll < 0.80) {
+            // Roulette longue distance — smooth operator
+            return {
+                target: { x: cochonnet.x + this._noise(6), y: cochonnet.y + this._noise(6) },
+                shotMode: 'pointer',
+                loftPreset: LOFT_ROULETTE
+            };
+        }
+
+        // "Allez, la totale" — tir au cochonnet (chaos fun, very rare)
+        if (sit.playerBalls.length > 0 && !sit.isLastBall) {
+            return {
+                target: { x: cochonnet.x, y: cochonnet.y },
+                shotMode: 'tirer',
+                loftPreset: LOFT_TIR
+            };
+        }
+
+        // Fallback: standard point
         return {
             target: { x: cochonnet.x + this._noise(5), y: cochonnet.y + this._noise(5) },
             shotMode: 'pointer',
-            loftPreset: loft
+            loftPreset: this._chooseLoft()
         };
     }
 

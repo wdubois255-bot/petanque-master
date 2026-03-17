@@ -88,8 +88,8 @@
       "zones": [],
       "slope": {
         "direction": "down",
-        "angle": 3.0,
-        "gravity_component": 0.03
+        "angle": 5.0,
+        "gravity_component": 0.08
       },
       "walls": false,
       "colors": {
@@ -108,12 +108,12 @@
     {
       "id": "docks",
       "name": "Les Docks",
-      "description": "Beton lisse, tres glissant. Les boules filent loin. Avantage au sang-froid.",
+      "description": "Beton lisse avec murs metalliques ! Les boules rebondissent sur les bords. Chaos garanti.",
       "surface": "dalles",
       "friction": 0.4,
       "zones": [],
       "slope": null,
-      "walls": false,
+      "walls": true,
       "colors": {
         "bg": "#7A7A70",
         "gravel": ["#8E8E7E", "#B0A090", "#808070", "#A09888"],

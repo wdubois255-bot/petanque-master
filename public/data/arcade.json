@@ -1,6 +1,21 @@
 {
   "name": "Mode Arcade",
   "description": "Affrontez 5 adversaires de plus en plus coriaces. Battez-les tous pour debloquer le boss secret !",
+  "intro_narrative": [
+    "Les meilleurs joueurs de Provence se retrouvent",
+    "pour le Grand Tournoi de la Ciotat.",
+    "",
+    "Toi, tu vas prouver que tu merites",
+    "ta place parmi les legendes."
+  ],
+  "ending_narrative": [
+    "Le tournoi est termine.",
+    "",
+    "Un nouveau champion s'est revele",
+    "sur les terrains de la Ciotat.",
+    "",
+    "La legende ne fait que commencer."
+  ],
   "matches": [
     {
       "round": 1,
@@ -28,14 +43,14 @@
       "opponent": "stratege",
       "terrain": "colline",
       "difficulty_label": "Moyen+",
-      "intro_text": "Ricardo calcule tout. Et la pente ne l'aide pas..."
+      "intro_text": "Ricardo calcule tout. Et la pente change tout..."
     },
     {
       "round": 5,
       "opponent": "wildcard",
       "terrain": "docks",
       "difficulty_label": "Difficile",
-      "intro_text": "Thierry est imprevisible. Tout peut arriver sur les Docks."
+      "intro_text": "Thierry est imprevisible. Les murs des Docks aussi."
     }
   ],
   "boss": {

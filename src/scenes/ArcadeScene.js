@@ -33,6 +33,14 @@ export default class ArcadeScene extends Phaser.Scene {
             return;
         }
 
+        // Show intro narrative on first entry (round 1, no results yet)
+        if (this.currentRound === 1 && !this.lastMatchResult && this.arcadeData.intro_narrative) {
+            this._showNarrative(this.arcadeData.intro_narrative, () => {
+                this._buildProgressScreen();
+            });
+            return;
+        }
+
         // Process last match result (if returning from a match)
         if (this.lastMatchResult) {
             if (this.lastMatchResult.won) {
@@ -58,8 +66,65 @@ export default class ArcadeScene extends Phaser.Scene {
         // Check if all 5 matches done -> boss fight
         const allRegularWon = this.wins >= totalMatches && !bossDefeated;
 
+        this._buildProgressScreen(allRegularWon);
+    }
+
+    _buildProgressScreen(allRegularWon) {
         // Show the arcade progress screen
         this._showProgressScreen(allRegularWon);
+    }
+
+    // === NARRATIVE SCREENS (intro/ending text crawl) ===
+    _showNarrative(lines, onComplete) {
+        const bg = this.add.graphics();
+        bg.fillStyle(0x1A1510, 1);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        const lineObjects = [];
+        const startY = GAME_HEIGHT / 2 - (lines.length * 24) / 2;
+
+        for (let i = 0; i < lines.length; i++) {
+            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 24, lines[i], {
+                fontFamily: 'monospace', fontSize: '16px', color: '#D4A574',
+                shadow: SHADOW, align: 'center'
+            }).setOrigin(0.5).setAlpha(0);
+
+            lineObjects.push(txt);
+
+            this.tweens.add({
+                targets: txt, alpha: 1, duration: 600,
+                delay: 300 + i * 400, ease: 'Sine.easeIn'
+            });
+        }
+
+        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 30, 'Espace pour continuer', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
+        }).setOrigin(0.5).setAlpha(0);
+
+        const totalDelay = 300 + lines.length * 400 + 500;
+        this.tweens.add({
+            targets: skipHint, alpha: 1, duration: 400, delay: totalDelay
+        });
+
+        let canSkip = false;
+        this.time.delayedCall(1000, () => { canSkip = true; });
+
+        const proceed = () => {
+            if (!canSkip) return;
+            canSkip = false;
+            this.cameras.main.fadeOut(400);
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                bg.destroy();
+                lineObjects.forEach(t => t.destroy());
+                skipHint.destroy();
+                this.cameras.main.fadeIn(300);
+                if (onComplete) onComplete();
+            });
+        };
+
+        this.input.keyboard.on('keydown-SPACE', proceed);
+        this.input.keyboard.on('keydown-ENTER', proceed);
+        this.input.on('pointerdown', proceed);
     }
 
     _showProgressScreen(bossUnlocked) {
@@ -295,6 +360,20 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _showArcadeComplete() {
+        // Show ending narrative first, then the completion screen
+        if (this.arcadeData.ending_narrative && !this._endingShown) {
+            this._endingShown = true;
+            const playerName = this.playerCharacter?.name || 'Le Champion';
+            const lines = this.arcadeData.ending_narrative.map(
+                l => l.replace('[Personnage]', playerName)
+            );
+            this._showNarrative(lines, () => this._showArcadeCompleteScreen());
+            return;
+        }
+        this._showArcadeCompleteScreen();
+    }
+
+    _showArcadeCompleteScreen() {
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);

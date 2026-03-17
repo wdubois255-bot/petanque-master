@@ -126,13 +126,95 @@ export default class PetanqueScene extends Phaser.Scene {
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
 
+        // Hook score events for barks
+        this.engine.onScore = (scores, winner, points) => {
+            this._triggerScoreBark(scores, winner, points);
+        };
+
+        // Hook carreau for bark
+        const existingCarreau = this.engine._celebrateCarreau.bind(this.engine);
+        const self = this;
+        const origCelebrateCarreau = this.engine._celebrateCarreau;
+        this.engine._celebrateCarreau = function(ball) {
+            origCelebrateCarreau.call(this, ball);
+            const team = ball.team;
+            const other = team === 'player' ? 'opponent' : 'player';
+            self._showBark(team, 'carreau');
+            self.time.delayedCall(1200, () => {
+                if (Math.random() < 0.5) self._showBark(other, 'opponent_carreau');
+            });
+        };
+
         setSoundScene(this);
         startCigales();
         startMusic('music_match', 0.2);
         this.engine.startGame();
 
+        // First-time tutorial overlay
+        this._checkTutorial();
+
         this.events.on('shutdown', () => { stopCigales(); stopMusic(); });
         this.events.on('destroy', () => { stopCigales(); stopMusic(); });
+    }
+
+    _checkTutorial() {
+        try {
+            if (localStorage.getItem('pm_tutorial_done')) return;
+        } catch { return; }
+
+        this._showTutorialStep(0);
+    }
+
+    _showTutorialStep(step) {
+        const steps = [
+            {
+                text: 'BIENVENUE !\n\nVous devez lancer le cochonnet\n(la petite boule jaune).\n\nGlissez et relachez pour viser.',
+                y: GAME_HEIGHT / 2
+            },
+            {
+                text: 'OBJECTIF :\nPlacez vos boules le plus pres\npossible du cochonnet.\n\nL\'equipe la plus loin rejoue.',
+                y: GAME_HEIGHT / 2
+            },
+            {
+                text: 'TECHNIQUES :\n\nRouler = Roulette (basse)\nDemi-hauteur = Demi-portee\nHaut = Plombee (arretez court)\n\nAppuyez sur R pour changer.',
+                y: GAME_HEIGHT / 2
+            },
+            {
+                text: 'SCORE :\nChaque boule plus proche\ndu cochonnet que la meilleure\nadverse rapporte 1 point.\n\nPremier a 13 gagne !',
+                y: GAME_HEIGHT / 2
+            }
+        ];
+
+        if (step >= steps.length) {
+            try { localStorage.setItem('pm_tutorial_done', '1'); } catch {}
+            return;
+        }
+
+        const s = steps[step];
+        const overlay = this.add.graphics().setDepth(200);
+        overlay.fillStyle(0x1A1510, 0.75);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        const txt = this.add.text(GAME_WIDTH / 2, s.y, s.text, {
+            fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
+            align: 'center', lineSpacing: 4,
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(201);
+
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 40, `(${step + 1}/${steps.length}) Cliquez pour continuer`, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(201);
+
+        const dismiss = () => {
+            overlay.destroy();
+            txt.destroy();
+            hint.destroy();
+            this._showTutorialStep(step + 1);
+        };
+
+        this.input.once('pointerdown', dismiss);
+        this.input.keyboard.once('keydown-SPACE', dismiss);
     }
 
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
@@ -253,6 +335,14 @@ export default class PetanqueScene extends Phaser.Scene {
         this.engine.onAfterStop = (lastTeam) => {
             if (existingAfterStop) existingAfterStop(lastTeam);
             this._animateReaction(lastTeam);
+            // Update AI momentum based on shot quality
+            if (lastTeam === 'opponent' && this.ai && this.ai.updateMomentum) {
+                const ball = this.engine.lastThrownBall;
+                if (ball && ball.isAlive && this.engine.cochonnet?.isAlive) {
+                    const dist = ball.distanceTo(this.engine.cochonnet);
+                    this.ai.updateMomentum(dist < 40);
+                }
+            }
         };
 
         this._updateTurnIndicator('player');
@@ -365,7 +455,104 @@ export default class PetanqueScene extends Phaser.Scene {
         });
     }
 
+    // === BARKS SYSTEM (contextual character dialogue bubbles) ===
+
+    _showBark(team, barkType) {
+        const charData = team === 'player' ? this.playerCharacter : this.opponentCharacter;
+        if (!charData?.barks?.[barkType]) return;
+
+        const barks = charData.barks[barkType];
+        const text = barks[Math.floor(Math.random() * barks.length)];
+
+        const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
+        if (!sprite) return;
+
+        // Remove previous bark bubble if exists
+        if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
+        if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
+
+        const bx = sprite.x;
+        const by = sprite.y - 80;
+
+        // Bubble background
+        const bubble = this.add.graphics().setDepth(100);
+        const padding = 8;
+        const style = { fontFamily: 'monospace', fontSize: '10px', color: '#1A1510', wordWrap: { width: 140 } };
+        const measure = this.add.text(0, 0, text, style).setVisible(false);
+        const tw = Math.min(measure.width + padding * 2, 156);
+        const th = measure.height + padding * 2;
+        measure.destroy();
+
+        bubble.fillStyle(0xF5E6D0, 0.95);
+        bubble.fillRoundedRect(bx - tw / 2, by - th / 2, tw, th, 6);
+        bubble.lineStyle(1.5, 0x3A2E28, 0.6);
+        bubble.strokeRoundedRect(bx - tw / 2, by - th / 2, tw, th, 6);
+        // Tail triangle
+        bubble.fillStyle(0xF5E6D0, 0.95);
+        bubble.fillTriangle(bx - 5, by + th / 2, bx + 5, by + th / 2, bx, by + th / 2 + 8);
+
+        const barkText = this.add.text(bx, by, text, {
+            ...style, align: 'center'
+        }).setOrigin(0.5).setDepth(101);
+
+        this._barkBubble = bubble;
+        this._barkText = barkText;
+
+        // Fade out after 2s
+        this.time.delayedCall(2000, () => {
+            if (this._barkBubble === bubble) {
+                this.tweens.add({
+                    targets: [bubble, barkText], alpha: 0, duration: 400,
+                    onComplete: () => { bubble.destroy(); barkText.destroy(); }
+                });
+                this._barkBubble = null;
+                this._barkText = null;
+            }
+        });
+    }
+
+    _triggerBark(lastTeam) {
+        if (!this.engine.cochonnet || !this.engine.cochonnet.isAlive) return;
+        const lastBall = this.engine.lastThrownBall;
+        if (!lastBall || !lastBall.isAlive) return;
+        const dist = lastBall.distanceTo(this.engine.cochonnet);
+
+        // Decide bark based on shot quality (only ~40% of the time to avoid spam)
+        if (Math.random() > 0.4) return;
+
+        const thrower = lastTeam;
+        const watcher = lastTeam === 'player' ? 'opponent' : 'player';
+
+        if (dist < 25) {
+            this._showBark(thrower, 'good_shot');
+        } else if (dist > 90) {
+            this._showBark(thrower, 'bad_shot');
+            // Watcher may also react
+            if (Math.random() < 0.3) {
+                this.time.delayedCall(800, () => this._showBark(watcher, 'opponent_bad'));
+            }
+        } else if (dist < 50) {
+            if (Math.random() < 0.2) this._showBark(thrower, 'good_shot');
+        }
+    }
+
+    _triggerScoreBark(scores, winner, points) {
+        if (Math.random() > 0.5) return;
+        const loser = winner === 'player' ? 'opponent' : 'player';
+
+        if (scores.player >= 11 || scores.opponent >= 11) {
+            this._showBark(winner === 'player' ? 'player' : 'opponent', 'match_point');
+        } else if (scores[winner] - scores[loser] >= 6) {
+            this._showBark(winner, 'taking_lead');
+        } else if (scores[loser] - scores[winner] >= 6) {
+            this._showBark(loser, 'losing_badly');
+        }
+    }
+
     _animateReaction(lastTeam) {
+        // Trigger contextual bark
+        this._triggerBark(lastTeam);
+
         if (!this.engine.cochonnet || !this.engine.cochonnet.isAlive) return;
         const lastBall = this.engine.lastThrownBall;
         if (!lastBall || !lastBall.isAlive) return;

@@ -100,6 +100,23 @@ export default class VSIntroScene extends Phaser.Scene {
                 .setScale(0.75).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
         }
 
+        // Opponent pre-match bark (from character data)
+        const opponentBark = opponent.barks?.pre_match;
+        if (opponentBark) {
+            const bark = opponentBark[Math.floor(Math.random() * opponentBark.length)];
+            const barkText = this.add.text(opponentX, GAME_HEIGHT / 2 + 90, `"${bark}"`, {
+                fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+                shadow: SHADOW, wordWrap: { width: 200 }, align: 'center',
+                fontStyle: 'italic'
+            }).setOrigin(0.5).setX(GAME_WIDTH + 200).setAlpha(0.9);
+
+            // Slide in with opponent
+            this.tweens.add({
+                targets: barkText,
+                x: opponentX, duration: 500, ease: 'Back.easeOut', delay: 200
+            });
+        }
+
         // Terrain name at bottom
         const terrainText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, this.terrainName, {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
