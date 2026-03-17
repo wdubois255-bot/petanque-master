@@ -74,9 +74,10 @@ export default class AimingSystem {
     _onTurnChange(team) {
         this._clearModeUI();
         this._clearLoftUI();
-        // Show shot choice only when it's player's turn to throw a BALL (not cochonnet)
+        // Show shot choice when it's a human player's turn (player, or opponent in local mode)
         const state = this.engine.state;
-        if (team === 'player' && this.engine.remaining.player > 0 &&
+        const isHumanTurn = team === 'player' || this.scene.localMultiplayer;
+        if (isHumanTurn && this.engine.remaining[team] > 0 &&
             state !== 'COCHONNET_THROW') {
             this._showShotModeChoice();
         }
@@ -378,7 +379,9 @@ export default class AimingSystem {
         if (state === 'COCHONNET_THROW') {
             this.engine.throwCochonnet(angle, power);
         } else {
-            this.engine.throwBall(angle, power, 'player', this.shotMode || 'pointer', this.loftPreset);
+            // In local multiplayer, use the current team (could be 'opponent')
+            const team = this.engine.currentTeam || 'player';
+            this.engine.throwBall(angle, power, team, this.shotMode || 'pointer', this.loftPreset);
         }
     }
 
@@ -416,8 +419,9 @@ export default class AimingSystem {
     // --- UPDATE LOOP ---
 
     update() {
-        // Safety: hide shot buttons if it's not the player's turn
-        if (this.engine.currentTeam !== 'player' && this._combinedBtns) {
+        // Safety: hide shot buttons if it's not a human player's turn
+        const isHumanTurn = this.engine.currentTeam === 'player' || this.scene.localMultiplayer;
+        if (!isHumanTurn && this._combinedBtns) {
             this._clearModeUI();
             this._clearLoftUI();
         }

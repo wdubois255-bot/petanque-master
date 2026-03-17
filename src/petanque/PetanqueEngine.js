@@ -118,10 +118,10 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam || 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage('Lancez le cochonnet !');
+                    this._showMessage(`${this._teamName('player')} : lancez le cochonnet !`);
                     this._showAimHint();
                 } else {
-                    this._showMessage('L\'adversaire lance le cochonnet');
+                    this._showMessage(`${this._teamName('opponent')} lance le cochonnet`);
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -132,9 +132,9 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam || 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage('Lancez votre premiere boule !');
+                    this._showMessage(`${this._teamName('player')} : premiere boule !`);
                 } else {
-                    this._showMessage('L\'adversaire lance sa premiere boule');
+                    this._showMessage(`${this._teamName('opponent')} : premiere boule`);
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -145,9 +145,9 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam === 'player' ? 'opponent' : 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage('A vous de jouer !');
+                    this._showMessage(`${this._teamName('player')} : a vous !`);
                 } else {
-                    this._showMessage('Tour de l\'adversaire');
+                    this._showMessage(`Tour de ${this._teamName('opponent')}`);
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -205,13 +205,20 @@ export default class PetanqueEngine {
 
         if (this.currentTeam === 'player') {
             this.aimingEnabled = true;
-            this._showMessage('A vous de jouer !');
+            this._showMessage(`${this._teamName('player')} : a vous !`);
         } else {
-            this._showMessage('Tour de l\'adversaire');
+            this._showMessage(`Tour de ${this._teamName('opponent')}`);
             this._triggerAI();
         }
 
         if (this.onTurnChange) this.onTurnChange(this.currentTeam);
+    }
+
+    _teamName(team) {
+        if (this.scene.localMultiplayer) {
+            return team === 'player' ? 'Joueur 1' : 'Joueur 2';
+        }
+        return team === 'player' ? 'Vous' : 'L\'adversaire';
     }
 
     _getMinDistance(team) {
@@ -518,8 +525,8 @@ export default class PetanqueEngine {
         this.scores[winner] += points;
         this.meneWinner = winner;
 
-        const winnerName = winner === 'player' ? 'Vous gagnez' : 'L\'adversaire gagne';
-        this._showMessage(`${winnerName} ${points} point${points > 1 ? 's' : ''} !`);
+        const winnerName = this._teamName(winner);
+        this._showMessage(`${winnerName} ${winner === 'player' ? 'gagnez' : 'gagne'} ${points} point${points > 1 ? 's' : ''} !`);
 
         sfxScore();
         if (this.onScore) this.onScore(this.scores, winner, points);
@@ -928,6 +935,11 @@ export default class PetanqueEngine {
     }
 
     _triggerAI() {
+        if (this.scene.localMultiplayer) {
+            // Local multiplayer: enable aiming for the opponent player too
+            this.aimingEnabled = true;
+            return;
+        }
         if (this.scene.ai) {
             this.scene.ai.takeTurn();
         }

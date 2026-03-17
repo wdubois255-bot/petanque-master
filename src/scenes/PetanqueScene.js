@@ -32,6 +32,8 @@ export default class PetanqueScene extends Phaser.Scene {
         // Arcade state (passed through for return)
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;
+        // Local multiplayer: both players use the same controls (drag to aim)
+        this.localMultiplayer = data.localMultiplayer || false;
     }
 
     create() {
@@ -70,8 +72,12 @@ export default class PetanqueScene extends Phaser.Scene {
         const playerStats = this.playerCharacter?.stats || null;
         this.aimingSystem = new AimingSystem(this, this.engine, playerStats);
 
-        // AI (with opponent character data for stat-based behavior)
-        this.ai = new PetanqueAI(this, this.engine, this.difficulty, this.personality, this.opponentCharacter);
+        // AI (only if not local multiplayer)
+        if (this.localMultiplayer) {
+            this.ai = null;
+        } else {
+            this.ai = new PetanqueAI(this, this.engine, this.difficulty, this.personality, this.opponentCharacter);
+        }
 
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);

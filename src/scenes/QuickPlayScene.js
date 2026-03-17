@@ -3,7 +3,31 @@ import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
+const CHAR_VALUES = [
+    { display: 'Rene', key: 'npc_villager_1', sprite: 'npc_villager_1', charId: 'equilibre' },
+    { display: 'Marcel', key: 'npc_marcel', sprite: 'npc_marcel', charId: 'pointeur' },
+    { display: 'Fanny', key: 'npc_dresseur_1', sprite: 'npc_dresseur_1', charId: 'tireur' },
+    { display: 'Ricardo', key: 'npc_dresseur_2', sprite: 'npc_dresseur_2', charId: 'stratege' },
+    { display: 'Thierry', key: 'npc_villager_2', sprite: 'npc_villager_2', charId: 'wildcard' },
+    { display: 'Marius', key: 'npc_maitre', sprite: 'npc_maitre', charId: 'boss' }
+];
+
 const OPTIONS = [
+    {
+        label: 'MODE',
+        values: [
+            { display: 'VS IA', key: 'vs_ia' },
+            { display: 'Local 1v1', key: 'local' }
+        ]
+    },
+    {
+        label: '\u{1F535} JOUEUR 1',
+        values: CHAR_VALUES
+    },
+    {
+        label: '\u{1F534} JOUEUR 2',
+        values: CHAR_VALUES
+    },
     {
         label: 'BOULES',
         values: [
@@ -28,26 +52,16 @@ const OPTIONS = [
             { display: 'Moyen', key: 'medium' },
             { display: 'Difficile', key: 'hard' }
         ]
-    },
-    {
-        label: 'ADVERSAIRE',
-        values: [
-            { display: 'Rene', key: 'npc_villager_1', sprite: 'npc_villager_1', charId: 'equilibre' },
-            { display: 'Marcel', key: 'npc_marcel', sprite: 'npc_marcel', charId: 'pointeur' },
-            { display: 'Fanny', key: 'npc_dresseur_1', sprite: 'npc_dresseur_1', charId: 'tireur' },
-            { display: 'Ricardo', key: 'npc_dresseur_2', sprite: 'npc_dresseur_2', charId: 'stratege' },
-            { display: 'Thierry', key: 'npc_villager_2', sprite: 'npc_villager_2', charId: 'wildcard' },
-            { display: 'Marius', key: 'npc_maitre', sprite: 'npc_maitre', charId: 'boss' }
-        ]
-    },
-    {
-        label: 'FORMAT',
-        values: [
-            { display: 'Tete-a-tete (1v1)', key: 'tete_a_tete' },
-            { display: 'Doublette (2v2) - bientot !', key: 'tete_a_tete' }
-        ]
     }
 ];
+
+// Row indices
+const ROW_MODE = 0;
+const ROW_P1 = 1;
+const ROW_P2 = 2;
+const ROW_BOULES = 3;
+const ROW_TERRAIN = 4;
+const ROW_DIFF = 5;
 
 // Layout constants
 const LEFT_W = 500;       // Options column width
@@ -210,18 +224,45 @@ export default class QuickPlayScene extends Phaser.Scene {
         const cx = PANEL_X;
         const top = PANEL_TOP;
 
-        if (this._selectedRow === 0 && boulesData) {
+        if (this._selectedRow === ROW_MODE) {
+            this._drawModePanel(cx, top);
+        } else if ((this._selectedRow === ROW_P1 || this._selectedRow === ROW_P2) && charsData) {
+            const isP1 = this._selectedRow === ROW_P1;
+            this._drawCharPanel(cx, top, charsData, isP1);
+        } else if (this._selectedRow === ROW_BOULES && boulesData) {
             this._drawBoulePanel(cx, top, boulesData);
-        } else if (this._selectedRow === 1 && terrainsData) {
+        } else if (this._selectedRow === ROW_TERRAIN && terrainsData) {
             this._drawTerrainPanel(cx, top, terrainsData, boulesData);
-        } else if (this._selectedRow === 2) {
+        } else if (this._selectedRow === ROW_DIFF) {
             this._drawDifficultyPanel(cx, top);
-        } else if (this._selectedRow === 3 && charsData) {
-            this._drawCharPanel(cx, top, charsData);
         } else {
-            // FORMAT or JOUER — show summary
             this._drawSummaryPanel(cx, top, boulesData, charsData, terrainsData);
         }
+    }
+
+    // === MODE PANEL ===
+    _drawModePanel(cx, top) {
+        const modeKey = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]].key;
+        const isLocal = modeKey === 'local';
+
+        this._addLabel(cx, top + 6, isLocal ? 'LOCAL 1v1' : 'VS INTELLIGENCE ARTIFICIELLE', '14px', '#FFD700', 0.5);
+
+        const desc = isLocal
+            ? 'Deux joueurs sur le meme ecran.\nChacun son tour, chacun son perso !'
+            : 'Affrontez l\'IA.\nChoisissez sa difficulte et son personnage.';
+        this._addLabel(cx, top + 40, desc, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
+
+        // Visual icon
+        const iconY = top + 110;
+        this._infoBarsGfx.fillStyle(0x5B9BD5, 0.8);
+        this._infoBarsGfx.fillCircle(cx - 40, iconY, 16);
+        this._addLabel(cx - 40, iconY - 6, 'J1', '10px', '#FFFFFF', 0.5);
+
+        this._addLabel(cx, iconY - 6, 'VS', '14px', '#FFD700', 0.5);
+
+        this._infoBarsGfx.fillStyle(isLocal ? 0xC44B3F : 0x5A4A38, 0.8);
+        this._infoBarsGfx.fillCircle(cx + 40, iconY, 16);
+        this._addLabel(cx + 40, iconY - 6, isLocal ? 'J2' : 'IA', '10px', '#FFFFFF', 0.5);
     }
 
     // === BOULES PANEL ===
@@ -233,22 +274,19 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Title
         this._addLabel(cx, top + 6, boule.name, '15px', '#FFD700', 0.5);
 
-        // Boule visual (3D sphere)
+        // Boule visual (real sprite)
         const sphereY = top + 60;
-        const color = parseInt(boule.color.replace('#', ''), 16);
-        this._boulePreview = this.add.graphics().setDepth(5);
-        // Shadow
-        this._boulePreview.fillStyle(0x000000, 0.15);
-        this._boulePreview.fillEllipse(cx, sphereY + 26, 44, 14);
-        // Main sphere
-        this._boulePreview.fillStyle(color, 1);
-        this._boulePreview.fillCircle(cx, sphereY, 22);
-        // Highlight
-        const hiColor = bouleKey === 'bronze' ? 0xE8A050 : bouleKey === 'chrome' ? 0xFFFFFF : 0xE0E8F0;
-        this._boulePreview.fillStyle(hiColor, 0.5);
-        this._boulePreview.fillCircle(cx - 7, sphereY - 8, 8);
-        this._boulePreview.fillStyle(0xFFFFFF, 0.7);
-        this._boulePreview.fillCircle(cx - 5, sphereY - 10, 3);
+        const spriteKey = `ball_${bouleKey}`;
+        if (this.textures.exists(spriteKey)) {
+            this._boulePreview = this.add.image(cx, sphereY, spriteKey)
+                .setScale(3).setOrigin(0.5).setDepth(5);
+        } else {
+            // Fallback: colored circle
+            const color = parseInt(boule.color.replace('#', ''), 16);
+            this._boulePreview = this.add.graphics().setDepth(5);
+            this._boulePreview.fillStyle(color, 1);
+            this._boulePreview.fillCircle(cx, sphereY, 22);
+        }
 
         // Description
         this._addLabel(cx, sphereY + 36, boule.description, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
@@ -343,18 +381,25 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     // === CHARACTER PANEL ===
-    _drawCharPanel(cx, top, charsData) {
-        const advOption = OPTIONS[3].values[this._selections[3]];
-        const char = charsData.roster.find(c => c.id === advOption.charId);
+    _drawCharPanel(cx, top, charsData, isP1 = true) {
+        const rowIdx = isP1 ? ROW_P1 : ROW_P2;
+        const charOption = OPTIONS[rowIdx].values[this._selections[rowIdx]];
+        const char = charsData.roster.find(c => c.id === charOption.charId);
         if (!char) return;
 
+        const teamColor = isP1 ? '#5B9BD5' : '#C44B3F';
+        const teamLabel = isP1 ? 'JOUEUR 1' : 'JOUEUR 2';
+
+        // Team badge
+        this._addLabel(cx, top + 4, teamLabel, '10px', teamColor, 0.5);
+
         // Name + title
-        this._addLabel(cx, top + 6, char.name, '16px', '#FFD700', 0.5);
-        this._addLabel(cx, top + 26, char.title, '11px', '#D4A574', 0.5);
+        this._addLabel(cx, top + 20, char.name, '16px', '#FFD700', 0.5);
+        this._addLabel(cx, top + 40, char.title, '11px', '#D4A574', 0.5);
 
         // Sprite preview
-        const spriteY = top + 72;
-        const spriteKey = advOption.sprite;
+        const spriteY = top + 86;
+        const spriteKey = charOption.sprite;
         if (this.textures.exists(spriteKey)) {
             this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
                 .setScale(2.5).setOrigin(0.5).setDepth(5);
@@ -364,7 +409,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._addLabel(cx, spriteY + 36, `"${char.catchphrase}"`, '9px', '#9E9E8E', 0.5, PANEL_W - 20);
 
         // Stats bars
-        const barsY = spriteY + 64;
+        const barsY = spriteY + 58;
         const bars = [
             { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0x44CC44,
               desc: char.stats.precision >= 8 ? 'Chirurgical' : char.stats.precision <= 4 ? 'Approximatif' : 'Correct' },
@@ -378,26 +423,31 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._drawBars(cx, barsY, bars);
     }
 
-    // === SUMMARY PANEL (format/jouer) ===
+    // === SUMMARY PANEL (jouer) ===
     _drawSummaryPanel(cx, top, boulesData, charsData, terrainsData) {
         this._addLabel(cx, top + 6, 'RESUME', '14px', '#FFD700', 0.5);
 
-        const bouleKey = OPTIONS[0].values[this._selections[0]].key;
-        const terrainKey = OPTIONS[1].values[this._selections[1]].key;
-        const diffKey = OPTIONS[2].values[this._selections[2]].display;
-        const advName = OPTIONS[3].values[this._selections[3]].display;
-
+        const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]];
+        const p1 = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
+        const p2 = OPTIONS[ROW_P2].values[this._selections[ROW_P2]];
+        const bouleKey = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
         const boule = boulesData?.sets?.find(s => s.id === bouleKey);
+        const terrain = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]];
+        const diff = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]];
+
         const lines = [
+            `Mode : ${mode.display}`,
+            `Joueur 1 : ${p1.display}`,
+            `Joueur 2 : ${p2.display}`,
             `Boules : ${boule?.name || bouleKey}`,
-            `Terrain : ${OPTIONS[1].values[this._selections[1]].display}`,
-            `Difficulte : ${diffKey}`,
-            `Adversaire : ${advName}`,
+            `Terrain : ${terrain.display}`,
         ];
+        if (mode.key === 'vs_ia') lines.push(`Difficulte : ${diff.display}`);
+
         let ly = top + 36;
         for (const line of lines) {
             this._addLabel(cx - PANEL_W / 2 + 14, ly, line, '11px', '#F5E6D0', 0);
-            ly += 22;
+            ly += 20;
         }
     }
 
@@ -491,28 +541,34 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     _launchGame() {
-        const bouleType = OPTIONS[0].values[this._selections[0]].key;
-        const terrain = OPTIONS[1].values[this._selections[1]].key;
-        const difficulty = OPTIONS[2].values[this._selections[2]].key;
-        const opponent = OPTIONS[3].values[this._selections[3]];
-        const format = OPTIONS[4].values[this._selections[4]].key;
+        const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]].key;
+        const p1Option = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
+        const p2Option = OPTIONS[ROW_P2].values[this._selections[ROW_P2]];
+        const bouleType = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
+        const terrain = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
+        const difficulty = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
+        const isLocal = mode === 'local';
 
         const gs = this.registry.get('gameState') || {};
         this.registry.set('gameState', { ...gs, bouleType });
 
         const charsData = this.cache.json.get('characters');
-        const opponentChar = opponent.charId && charsData
-            ? charsData.roster.find(c => c.id === opponent.charId) : null;
+        const p1Char = charsData?.roster?.find(c => c.id === p1Option.charId) || null;
+        const p2Char = charsData?.roster?.find(c => c.id === p2Option.charId) || null;
 
         this.cameras.main.fadeOut(300);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('PetanqueScene', {
-                terrain, difficulty, format,
-                opponentName: opponent.display,
-                opponentId: 'quickplay_' + opponent.key,
+                terrain,
+                difficulty: isLocal ? 'medium' : difficulty,
+                format: 'tete_a_tete',
+                opponentName: p2Option.display,
+                opponentId: 'quickplay_' + p2Option.key,
                 returnScene: 'QuickPlayScene',
-                personality: opponentChar?.ai?.personality || null,
-                opponentCharacter: opponentChar,
+                personality: p2Char?.ai?.personality || null,
+                playerCharacter: p1Char,
+                opponentCharacter: p2Char,
+                localMultiplayer: isLocal,
                 quickPlay: true
             });
         });
