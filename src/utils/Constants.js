@@ -151,7 +151,7 @@ export const BALL_COLORS = {
 
 // Ball sizes (pixels in game) - doubled
 export const BALL_RADIUS = 10;
-export const COCHONNET_RADIUS = 6;
+export const COCHONNET_RADIUS = 8;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 30;
 
