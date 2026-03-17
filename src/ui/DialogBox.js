@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, TYPEWRITER_SPEED, COLORS } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, TYPEWRITER_SPEED } from '../utils/Constants.js';
 
 const BOX_HEIGHT = 116;
 const BOX_MARGIN = 8;

@@ -310,7 +310,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     // === TERRAIN PANEL ===
-    _drawTerrainPanel(cx, top, terrainsData, boulesData) {
+    _drawTerrainPanel(cx, top, terrainsData, _boulesData) {
         const terrainKey = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
         // Match by surface type (terre, herbe, sable, dalles)
         const terrain = terrainsData.stages.find(t => t.surface === terrainKey);
@@ -424,7 +424,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     // === SUMMARY PANEL (jouer) ===
-    _drawSummaryPanel(cx, top, boulesData, charsData, terrainsData) {
+    _drawSummaryPanel(cx, top, boulesData, _charsData, _terrainsData) {
         this._addLabel(cx, top + 6, 'RESUME', '14px', '#FFD700', 0.5);
 
         const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]];

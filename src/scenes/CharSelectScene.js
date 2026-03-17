@@ -104,11 +104,11 @@ export default class CharSelectScene extends Phaser.Scene {
             // Portrait placeholder (colored circle with initial, will be replaced by sprites later)
             if (isLocked) {
                 // Locked: show silhouette
-                const lock = this.add.text(cx, cy - 10, '?', {
+                this.add.text(cx, cy - 10, '?', {
                     fontFamily: 'monospace', fontSize: '40px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
 
-                const lockLabel = this.add.text(cx, cy + 30, 'VERROUILLE', {
+                this.add.text(cx, cy + 30, 'VERROUILLE', {
                     fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
             } else {
@@ -119,7 +119,7 @@ export default class CharSelectScene extends Phaser.Scene {
                 // Try to use existing sprite, fallback to colored circle
                 const spriteKey = this._getCharSpriteKey(char);
                 if (this.textures.exists(spriteKey)) {
-                    const sprite = this.add.sprite(cx, cy - 12, spriteKey, 0)
+                    this.add.sprite(cx, cy - 12, spriteKey, 0)
                         .setScale(2).setOrigin(0.5);
                 } else {
                     const portrait = this.add.graphics();
@@ -128,13 +128,13 @@ export default class CharSelectScene extends Phaser.Scene {
                     portrait.fillStyle(0xFFFFFF, 0.3);
                     portrait.fillCircle(cx - 8, cy - 20, 10);
 
-                    const initial = this.add.text(cx, cy - 12, char.name[0], {
+                    this.add.text(cx, cy - 12, char.name[0], {
                         fontFamily: 'monospace', fontSize: '24px', color: '#FFFFFF', shadow: SHADOW
                     }).setOrigin(0.5);
                 }
 
                 // Name
-                const name = this.add.text(cx, cy + 30, char.name, {
+                this.add.text(cx, cy + 30, char.name, {
                     fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0', shadow: SHADOW
                 }).setOrigin(0.5);
             }
@@ -212,7 +212,7 @@ export default class CharSelectScene extends Phaser.Scene {
         for (let i = 0; i < statNames.length; i++) {
             const by = barStartY + i * 38;
 
-            const label = this.add.text(px - 85, by - 4, statLabels[i], {
+            this.add.text(px - 85, by - 4, statLabels[i], {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
             }).setOrigin(0, 0.5);
 
@@ -281,15 +281,42 @@ export default class CharSelectScene extends Phaser.Scene {
             bar.num.setText(value.toString());
         }
 
-        // Update preview sprite
+        // Update preview sprite with idle animation
         if (this._previewSprite) {
             this._previewSprite.destroy();
             this._previewSprite = null;
         }
+        if (this._previewShadow) {
+            this._previewShadow.destroy();
+            this._previewShadow = null;
+        }
         const spriteKey = this._getCharSpriteKey(char);
         if (this.textures.exists(spriteKey)) {
+            // Shadow under sprite
+            this._previewShadow = this.add.graphics().setDepth(4);
+            this._previewShadow.fillStyle(0x3A2E28, 0.3);
+            this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);
+
             this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 370, spriteKey, 0)
                 .setScale(3).setOrigin(0.5).setDepth(5);
+
+            // Gentle idle bounce
+            this.tweens.add({
+                targets: this._previewSprite,
+                y: 366, duration: 800, yoyo: true, repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+
+            // Walk animation (frames 0-3 = south walk)
+            const animKey = `preview_walk_${char.id}`;
+            if (!this.anims.exists(animKey)) {
+                this.anims.create({
+                    key: animKey,
+                    frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
+                    frameRate: 6, repeat: -1
+                });
+            }
+            this._previewSprite.play(animKey);
         }
     }
 

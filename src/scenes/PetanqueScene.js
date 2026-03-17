@@ -372,58 +372,120 @@ export default class PetanqueScene extends Phaser.Scene {
     drawTerrain(_colors) {
         const bg = this.add.graphics().setDepth(0);
 
+        // === SKY with gradient ===
         if (this.textures.exists('sky_gradient')) this.textures.remove('sky_gradient');
         const skyTex = this.textures.createCanvas('sky_gradient', GAME_WIDTH, GAME_HEIGHT);
         const skyCtx = skyTex.getContext();
         const skyGrad = skyCtx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-        skyGrad.addColorStop(0, '#87CEEB');
-        skyGrad.addColorStop(1, '#B8D8EB');
+        skyGrad.addColorStop(0, '#6BB8E0');
+        skyGrad.addColorStop(0.4, '#A8D8EA');
+        skyGrad.addColorStop(0.7, '#D4E8D0');
+        skyGrad.addColorStop(1, '#C4B090');
         skyCtx.fillStyle = skyGrad;
         skyCtx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // Soft clouds
+        skyCtx.fillStyle = 'rgba(255,255,255,0.25)';
+        skyCtx.beginPath(); skyCtx.arc(150, 40, 35, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.beginPath(); skyCtx.arc(180, 35, 28, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.beginPath(); skyCtx.arc(120, 45, 22, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.fillStyle = 'rgba(255,255,255,0.18)';
+        skyCtx.beginPath(); skyCtx.arc(550, 55, 40, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.beginPath(); skyCtx.arc(590, 48, 30, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.beginPath(); skyCtx.arc(520, 58, 25, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.fillStyle = 'rgba(255,255,255,0.15)';
+        skyCtx.beginPath(); skyCtx.arc(380, 25, 20, 0, Math.PI * 2); skyCtx.fill();
+        skyCtx.beginPath(); skyCtx.arc(400, 20, 15, 0, Math.PI * 2); skyCtx.fill();
+
         skyTex.refresh();
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'sky_gradient').setDepth(0);
 
-        bg.fillStyle(0x8B7D5A, 1);
-        bg.fillRect(0, GAME_HEIGHT * 0.6, GAME_WIDTH, GAME_HEIGHT * 0.4);
+        // === GROUND (below horizon) ===
+        bg.fillStyle(0x9B8D6A, 1);
+        bg.fillRect(0, GAME_HEIGHT * 0.55, GAME_WIDTH, GAME_HEIGHT * 0.45);
+        // Ground path texture
+        bg.fillStyle(0xA89870, 0.4);
+        bg.fillRect(0, GAME_HEIGHT * 0.58, GAME_WIDTH, GAME_HEIGHT * 0.05);
         bg.setDepth(0);
 
+        // === BACKGROUND BUILDINGS (horizon line) ===
+        const horizon = this.add.graphics().setDepth(0.5);
+        const hy = GAME_HEIGHT * 0.5;
+        // Distant provençal rooftops
+        horizon.fillStyle(0xD4A574, 0.6);
+        horizon.fillRect(80, hy, 60, 30);
+        horizon.fillStyle(0xC4854A, 0.5);
+        horizon.fillRect(80, hy - 10, 60, 12); // terracotta roof
+        horizon.fillStyle(0xD4A574, 0.5);
+        horizon.fillRect(200, hy + 5, 45, 25);
+        horizon.fillStyle(0xC4854A, 0.4);
+        horizon.fillRect(200, hy - 3, 45, 10);
+        // Church tower
+        horizon.fillStyle(0xD4C4A0, 0.5);
+        horizon.fillRect(680, hy - 20, 20, 50);
+        horizon.fillStyle(0xC4854A, 0.4);
+        horizon.fillRect(675, hy - 25, 30, 8);
+
+        // === TREES ===
         const decor = this.add.graphics().setDepth(1);
         const tx = this.terrainX;
         const tw = TERRAIN_WIDTH;
 
-        decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx - 80, 60, 20, 80);
-        decor.fillStyle(0x4A7A3A, 1);
-        decor.fillCircle(tx - 70, 50, 50);
-        decor.fillStyle(0x3A6A2A, 0.5);
-        decor.fillCircle(tx - 60, 60, 35);
+        // Left platane (big)
+        decor.fillStyle(0x7B5B3A, 1);
+        decor.fillRect(tx - 80, 70, 18, 90);
+        decor.fillStyle(0x5A8A3A, 1);
+        decor.fillCircle(tx - 71, 55, 48);
+        decor.fillStyle(0x4A7A2A, 0.6);
+        decor.fillCircle(tx - 60, 65, 35);
+        decor.fillStyle(0x6B9E4E, 0.4);
+        decor.fillCircle(tx - 82, 48, 28);
 
-        decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx + tw + 60, 80, 20, 80);
-        decor.fillStyle(0x4A7A3A, 1);
-        decor.fillCircle(tx + tw + 70, 70, 45);
-        decor.fillStyle(0x3A6A2A, 0.5);
-        decor.fillCircle(tx + tw + 80, 80, 30);
+        // Right platane
+        decor.fillStyle(0x7B5B3A, 1);
+        decor.fillRect(tx + tw + 62, 85, 16, 80);
+        decor.fillStyle(0x5A8A3A, 1);
+        decor.fillCircle(tx + tw + 70, 72, 42);
+        decor.fillStyle(0x4A7A2A, 0.6);
+        decor.fillCircle(tx + tw + 80, 82, 30);
 
+        // === BENCH (left) ===
         decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx - 70, 300, 50, 6);
-        decor.fillStyle(0x6B5038, 1);
-        decor.fillRect(tx - 68, 306, 4, 10);
-        decor.fillRect(tx - 26, 306, 4, 10);
-        decor.fillStyle(0x8B6B4A, 0.8);
-        decor.fillRect(tx - 70, 294, 50, 4);
+        decor.fillRect(tx - 70, 300, 50, 5);
+        decor.fillStyle(0x7B5B3A, 1);
+        decor.fillRect(tx - 68, 305, 4, 12);
+        decor.fillRect(tx - 26, 305, 4, 12);
+        decor.fillStyle(0x9B7B5A, 0.8);
+        decor.fillRect(tx - 70, 295, 50, 3);
 
+        // === STONE WALL (right) ===
         decor.fillStyle(0xD4C4A0, 1);
-        decor.fillRect(tx + tw + 20, 150, 30, 200);
-        decor.fillStyle(0xC0B090, 0.5);
-        for (let my = 150; my < 350; my += 20) {
-            decor.fillRect(tx + tw + 20, my, 30, 1);
+        decor.fillRect(tx + tw + 20, 150, 28, 200);
+        decor.fillStyle(0xC0B090, 0.4);
+        for (let my = 150; my < 350; my += 16) {
+            decor.fillRect(tx + tw + 20, my, 28, 1);
+            if (my % 32 === 0) {
+                decor.fillRect(tx + tw + 34, my, 1, 16);
+            }
         }
 
-        decor.fillStyle(0x8B6B4A, 1);
-        decor.fillCircle(tx + tw + 45, 390, 12);
+        // === SMALL DETAILS ===
+        // Flower pot near wall
+        decor.fillStyle(0xA05A2A, 1);
+        decor.fillRect(tx + tw + 25, 355, 14, 12);
+        decor.fillStyle(0xCC4444, 0.8);
+        decor.fillCircle(tx + tw + 32, 352, 6);
+        decor.fillStyle(0xDD6666, 0.5);
+        decor.fillCircle(tx + tw + 28, 349, 4);
+
+        // Pétanque scoring board (left side)
+        decor.fillStyle(0x2A4A2A, 1);
+        decor.fillRect(tx - 30, 180, 20, 30);
+        decor.fillStyle(0xFFFFFF, 0.7);
+        decor.fillRect(tx - 27, 185, 6, 8);
+        decor.fillRect(tx - 18, 185, 6, 8);
         decor.fillStyle(0x6B5038, 1);
-        decor.fillRect(tx + tw + 43, 402, 4, 14);
+        decor.fillRect(tx - 24, 210, 8, 20);
 
         const terrainTexKey = `terrain_gravier_${this.terrainType}`;
         if (this.textures.exists(terrainTexKey)) this.textures.remove(terrainTexKey);

@@ -3,7 +3,7 @@ import { TILES } from './TilesetGenerator.js';
 
 // Tileset constants
 const TILESET_NAME = 'basechip_combined';
-const TILESET_COLS = 8;
+// Tileset is 8 columns wide (kept as reference)
 
 // ===== HOUSE STYLES (from Pipoya TMX building layer analysis) =====
 // Each style is a column in the basechip rows 70-73 (roof+wall) and 44-45 (base+door)
@@ -191,7 +191,6 @@ function placeIronFenceRect(buildings, collisions, x1, y1, x2, y2, openX1, openX
 
 // Scatter grass variety on a ground layer
 function scatterGrassVariety(ground, W, H) {
-    const variants = [TILES.GRASS_MEDIUM, TILES.GRASS_LIGHT, TILES.GRASS_DARK, TILES.GRASS_YELLOW];
     for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
             if (ground[y][x] === TILES.GRASS) {

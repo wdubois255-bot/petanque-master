@@ -663,7 +663,7 @@ export const TILE_CATEGORIES = {
 };
 
 // Compatibility stub - tileset is now loaded as PNG in BootScene
-export function generateTileset(scene) {
+export function generateTileset(_scene) {
     // No-op: basechip_combined.png is preloaded in BootScene
     return null;
 }

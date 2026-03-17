@@ -32,7 +32,7 @@ export function saveGame(slot, gameState) {
     try {
         localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(data));
         return true;
-    } catch (e) {
+    } catch {
         return false;
     }
 }
@@ -45,7 +45,7 @@ export function loadGame(slot) {
         const data = JSON.parse(raw);
         if (data.version !== SAVE_VERSION) return null;
         return data;
-    } catch (e) {
+    } catch {
         return null;
     }
 }

@@ -1,5 +1,3 @@
-import { TILE_SIZE } from '../utils/Constants.js';
-
 const SPRITE_W = 32;
 const SPRITE_H = 32;
 
@@ -24,9 +22,6 @@ function lighten(hex, amount = 30) {
     const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
-
-// Outline color - warm dark, never pure black
-const OL = '#2A1E15';
 
 // Helper: fill a rect in 2x-scaled coordinates
 function rect(ctx, x, y, w, h, color) {
