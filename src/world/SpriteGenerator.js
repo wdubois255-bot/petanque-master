@@ -452,6 +452,33 @@ function drawCharacter(ctx, dir, frame, p) {
         } else if (p.hatStyle === 'bandana') {
             rect(ctx, 3, 0, 10, 1, p.hat);
             rect(ctx, 3, 1, 10, 1, hatDark);
+        } else if (p.hatStyle === 'country') {
+            // Wide-brim country hat (like Marcel's reference)
+            if (dir === 'down') {
+                rect(ctx, 1, 1, 14, 1, p.hat);       // wide brim
+                rect(ctx, 3, 0, 10, 1, hatDark);      // crown
+                px(ctx, 1, 1, hatDark);
+                px(ctx, 14, 1, hatDark);
+                px(ctx, 6, 0, hatLight);
+                px(ctx, 7, 0, hatLight);
+                // hat band
+                rect(ctx, 4, 0, 8, 1, darken(p.hat, 50));
+                px(ctx, 6, 0, hatLight);
+            } else if (dir === 'up') {
+                rect(ctx, 1, 1, 14, 1, p.hat);
+                rect(ctx, 3, 0, 10, 1, hatDark);
+                px(ctx, 7, 0, hatLight);
+            } else if (dir === 'left') {
+                rect(ctx, 0, 1, 12, 1, p.hat);
+                rect(ctx, 3, 0, 8, 1, hatDark);
+                px(ctx, 0, 1, hatDark);
+                px(ctx, 5, 0, hatLight);
+            } else {
+                rect(ctx, 4, 1, 12, 1, p.hat);
+                rect(ctx, 5, 0, 8, 1, hatDark);
+                px(ctx, 15, 1, hatDark);
+                px(ctx, 9, 0, hatLight);
+            }
         } else {
             rect(ctx, 3, 0, 10, 1, p.hat);
             rect(ctx, 3, 0, 10, 1, hatDark);
@@ -465,7 +492,7 @@ function drawCharacter(ctx, dir, frame, p) {
     }
 
     // ============================================
-    // SUNGLASSES
+    // GLASSES (regular or sunglasses)
     // ============================================
     if (p.sunglasses) {
         if (dir === 'down') {
@@ -480,6 +507,30 @@ function drawCharacter(ctx, dir, frame, p) {
         } else if (dir === 'right') {
             rect(ctx, 9, 2, 3, 2, '#1A1A2E');
             px(ctx, 11, 2, '#4A4A6A');
+        }
+    }
+    if (p.glasses) {
+        const frame = '#5A4A3A';
+        if (dir === 'down') {
+            // Left lens frame
+            px(ctx, 5, 2, frame); px(ctx, 7, 2, frame);
+            px(ctx, 5, 3, frame); px(ctx, 7, 3, frame);
+            // Right lens frame
+            px(ctx, 9, 2, frame); px(ctx, 11, 2, frame);
+            px(ctx, 9, 3, frame); px(ctx, 11, 3, frame);
+            // Bridge
+            px(ctx, 8, 2, frame);
+            // Lens tint
+            px(ctx, 6, 2, 'rgba(180,200,220,0.35)');
+            px(ctx, 10, 2, 'rgba(180,200,220,0.35)');
+        } else if (dir === 'left') {
+            px(ctx, 4, 2, frame); px(ctx, 6, 2, frame);
+            px(ctx, 4, 3, frame); px(ctx, 6, 3, frame);
+            px(ctx, 5, 2, 'rgba(180,200,220,0.35)');
+        } else if (dir === 'right') {
+            px(ctx, 9, 2, frame); px(ctx, 11, 2, frame);
+            px(ctx, 9, 3, frame); px(ctx, 11, 3, frame);
+            px(ctx, 10, 2, 'rgba(180,200,220,0.35)');
         }
     }
 
@@ -527,16 +578,16 @@ export const PALETTES = {
     },
     npc_marcel: {
         skin: '#D4A880',
-        hair: '#E0E0E0',
-        shirt: '#C44B3F',
-        pants: '#5A4A38',
-        shoes: '#3A2E28',
+        hair: '#D0C8A0',
+        shirt: '#8B2020',
+        pants: '#C4B090',
+        shoes: '#5A4030',
         eyes: '#4A3020',
-        hat: '#E8D5B7',
-        hatStyle: 'casquette',
-        hairStyle: 'wild',
+        hat: '#C4A870',
+        hatStyle: 'country',
+        hairStyle: 'default',
         chain: '#D4AA40',
-        mustache: '#B0B0B0',
+        mustache: '#A09080',
         expression: 'stern'
     },
     npc_rival: {
@@ -564,11 +615,11 @@ export const PALETTES = {
     npc_ricardo: {
         skin: '#C49870',
         hair: '#2A1A10',
-        shirt: '#E8E0D0',
-        pants: '#C4A880',
-        shoes: '#6B5040',
+        shirt: '#1A2A4A',
+        pants: '#C4B090',
+        shoes: '#4A3828',
         eyes: '#3A2E28',
-        sunglasses: true,
+        glasses: true,
         hairStyle: 'default'
     },
     npc_villager_1: {
@@ -635,14 +686,14 @@ export const PALETTES = {
     },
     npc_marius: {
         skin: '#D4A880',
-        hair: '#E8E8E8',
-        shirt: '#1A1A3A',
-        pants: '#2A2A4A',
+        hair: '#C8C8C8',
+        shirt: '#5A1A3A',
+        pants: '#2A2A3A',
         shoes: '#2A1A10',
         eyes: '#3A2E28',
         chain: '#D4AA40',
-        beard: '#D0D0D0',
-        mustache: '#D0D0D0',
+        beard: '#B0B0B0',
+        mustache: '#B0B0B0',
         hairStyle: 'wild',
         expression: 'stern'
     }

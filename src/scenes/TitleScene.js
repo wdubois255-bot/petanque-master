@@ -180,7 +180,7 @@ export default class TitleScene extends Phaser.Scene {
         this._mode = 'main';
         this._selectedIndex = 0;
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie', 'Test Sprites'];
+        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie'];
         if (hasSaveData()) items.push('Continuer');
 
         const startY = 218;
@@ -322,9 +322,6 @@ export default class TitleScene extends Phaser.Scene {
                 this._startNewGame(0);
             }
         } else if (this._selectedIndex === 3) {
-            // Test Sprites (prototype animation modulaire)
-            this.scene.start('SpriteTestScene');
-        } else if (this._selectedIndex === 4) {
             // Continuer
             this._showSlotMenu();
             this._newGame = false;

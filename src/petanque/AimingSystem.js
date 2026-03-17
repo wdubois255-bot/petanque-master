@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import {
-    DEAD_ZONE_PX, MAX_THROW_SPEED, COLORS, GAME_WIDTH, GAME_HEIGHT,
-    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, PREDICTION_DOT_RADIUS,
-    FRICTION_BASE, COCHONNET_MIN_DIST, COCHONNET_MAX_DIST
+    DEAD_ZONE_PX,
+    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR,
+    COCHONNET_MIN_DIST, COCHONNET_MAX_DIST
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
-import Ball from './Ball.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };

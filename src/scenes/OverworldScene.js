@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE, CAMERA_LERP } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, CAMERA_LERP } from '../utils/Constants.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import MapManager from '../world/MapManager.js';
 import NPCManager from '../world/NPCManager.js';

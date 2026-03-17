@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 
 export default class BootScene extends Phaser.Scene {
     constructor() {

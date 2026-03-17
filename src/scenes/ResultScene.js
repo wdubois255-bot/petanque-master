@@ -60,7 +60,7 @@ export default class ResultScene extends Phaser.Scene {
 
         // Character sprites
         const winner = this.won ? this.playerCharacter : this.opponentCharacter;
-        const loser = this.won ? this.opponentCharacter : this.playerCharacter;
+        const _loser = this.won ? this.opponentCharacter : this.playerCharacter;
 
         if (winner) {
             const winKey = this._getSpriteKey(winner);
