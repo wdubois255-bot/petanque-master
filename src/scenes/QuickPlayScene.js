@@ -267,7 +267,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
     // === BOULES PANEL ===
     _drawBoulePanel(cx, top, boulesData) {
-        const bouleKey = OPTIONS[0].values[this._selections[0]].key;
+        const bouleKey = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
         const boule = boulesData.sets.find(s => s.id === bouleKey);
         if (!boule) return;
 
@@ -311,7 +311,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
     // === TERRAIN PANEL ===
     _drawTerrainPanel(cx, top, terrainsData, boulesData) {
-        const terrainKey = OPTIONS[1].values[this._selections[1]].key;
+        const terrainKey = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
         // Match by surface type (terre, herbe, sable, dalles)
         const terrain = terrainsData.stages.find(t => t.surface === terrainKey);
         if (!terrain) return;
@@ -362,7 +362,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
     // === DIFFICULTY PANEL ===
     _drawDifficultyPanel(cx, top) {
-        const diffKey = OPTIONS[2].values[this._selections[2]].key;
+        const diffKey = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
         const diffInfo = {
             easy: { title: 'Facile', desc: 'L\'adversaire vise mal et ne tire pas. Parfait pour apprendre.', stars: 1 },
             medium: { title: 'Moyen', desc: 'Adversaire correct, tire quand il le faut.', stars: 2 },
