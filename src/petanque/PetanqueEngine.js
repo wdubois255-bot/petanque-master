@@ -257,9 +257,14 @@ export default class PetanqueEngine {
         this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
 
         // Cochonnet rolls 20-30% beyond landing point (like a real throw)
+        // Physics: with friction decel = FRICTION_BASE * frictionMult * 60,
+        // rolling distance = v^2 / (2 * decel). So v = sqrt(2 * decel * targetRollDist)
         const throwDirX = Math.cos(angle);
         const throwDirY = Math.sin(angle);
-        const rollSpeed = dist * 0.25 * 0.06; // ~25% of throw distance, scaled to velocity
+        const rollPct = 0.20 + Math.random() * 0.10; // 20-30%
+        const targetRollDist = dist * rollPct;
+        const frictionDecel = 0.15 * this.frictionMult * 60; // matches Ball.update()
+        const rollSpeed = Math.sqrt(2 * frictionDecel * targetRollDist);
         const rollVx = throwDirX * rollSpeed;
         const rollVy = throwDirY * rollSpeed;
 
@@ -495,11 +500,15 @@ export default class PetanqueEngine {
 
         for (const ball of this.balls) {
             if (ball.isAlive && ball.checkOutOfBounds(this.bounds)) {
+                const bx = ball.x, by = ball.y;
                 ball.kill();
+                if (this.onBallDead) this.onBallDead(bx, by);
             }
         }
         if (this.cochonnet && this.cochonnet.isAlive && this.cochonnet.checkOutOfBounds(this.bounds)) {
+            const cx = this.cochonnet.x, cy = this.cochonnet.y;
             this.cochonnet.kill();
+            if (this.onBallDead) this.onBallDead(cx, cy);
         }
     }
 

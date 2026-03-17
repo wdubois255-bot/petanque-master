@@ -9,6 +9,7 @@ import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
 import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
+import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { startCigales, stopCigales } from '../utils/SoundManager.js';
 
@@ -36,25 +37,43 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     create() {
-        const terrainColor = TERRAIN_COLORS[this.terrainType];
-        this.frictionMult = TERRAIN_FRICTION[this.terrainType];
-
-        // Load full terrain data from JSON (slope, zones, walls)
+        // Load full terrain data - support both terrain IDs and surface types
         const terrainsJson = this.cache.json.get('terrains');
-        const surfaceToTerrain = { terre: 'village', herbe: 'parc', sable: 'plage', dalles: 'docks' };
-        const terrainId = surfaceToTerrain[this.terrainType] || 'village';
-        this.terrainFullData = terrainsJson?.stages?.find(s => s.id === terrainId) || null;
+        let terrainData = terrainsJson?.stages?.find(s => s.id === this.terrainType);
+        if (!terrainData) {
+            const surfaceToTerrain = { terre: 'village', herbe: 'parc', sable: 'plage', dalles: 'docks' };
+            const terrainId = surfaceToTerrain[this.terrainType] || 'village';
+            terrainData = terrainsJson?.stages?.find(s => s.id === terrainId) || null;
+        }
+        this.terrainFullData = terrainData;
+        // Use surface type for friction lookup
+        const surfaceType = terrainData?.surface || this.terrainType;
+        this.frictionMult = TERRAIN_FRICTION[surfaceType] || 1.0;
 
         this.terrainX = (GAME_WIDTH - TERRAIN_WIDTH) / 2;
         this.terrainY = (GAME_HEIGHT - TERRAIN_HEIGHT) / 2;
 
-        this.drawTerrain(terrainColor);
+        // Render terrain with TerrainRenderer (textures, borders, decor, dead lines)
+        this.terrainRenderer = new TerrainRenderer(
+            this, surfaceType, this.terrainFullData, this.terrainX, this.terrainY
+        );
+        this.terrainRenderer.render();
+
+        // Throw circle (draw on top of terrain)
+        this.throwCircleX = GAME_WIDTH / 2;
+        this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
+        const circleG = this.add.graphics().setDepth(4);
+        circleG.lineStyle(3, 0xFFFFFF, 0.15);
+        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 2);
+        circleG.lineStyle(2, COLORS.BLANC, 0.5);
+        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
+
         this._createBallTextures();
         this._ensureSprites();
 
         // Engine
         this.engine = new PetanqueEngine(this, {
-            terrainType: this.terrainType,
+            terrainType: surfaceType,
             frictionMult: this.frictionMult,
             format: this.format,
             terrainData: this.terrainFullData,
@@ -65,6 +84,11 @@ export default class PetanqueScene extends Phaser.Scene {
                 h: TERRAIN_HEIGHT
             }
         });
+
+        // HORS JEU feedback when a ball goes out of bounds
+        this.engine.onBallDead = (x, y) => {
+            if (this.terrainRenderer) this.terrainRenderer.showHorsJeu(x, y);
+        };
 
         this._createPlayerSprites();
 
@@ -473,403 +497,8 @@ export default class PetanqueScene extends Phaser.Scene {
         }
     }
 
-    // === TERRAIN ===
-
-    drawTerrain(_colors) {
-        const bg = this.add.graphics().setDepth(0);
-
-        // === SKY with gradient ===
-        if (this.textures.exists('sky_gradient')) this.textures.remove('sky_gradient');
-        const skyTex = this.textures.createCanvas('sky_gradient', GAME_WIDTH, GAME_HEIGHT);
-        const skyCtx = skyTex.getContext();
-        const skyGrad = skyCtx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-        skyGrad.addColorStop(0, '#6BB8E0');
-        skyGrad.addColorStop(0.4, '#A8D8EA');
-        skyGrad.addColorStop(0.7, '#D4E8D0');
-        skyGrad.addColorStop(1, '#C4B090');
-        skyCtx.fillStyle = skyGrad;
-        skyCtx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        // Soft clouds
-        skyCtx.fillStyle = 'rgba(255,255,255,0.25)';
-        skyCtx.beginPath(); skyCtx.arc(150, 40, 35, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.beginPath(); skyCtx.arc(180, 35, 28, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.beginPath(); skyCtx.arc(120, 45, 22, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.fillStyle = 'rgba(255,255,255,0.18)';
-        skyCtx.beginPath(); skyCtx.arc(550, 55, 40, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.beginPath(); skyCtx.arc(590, 48, 30, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.beginPath(); skyCtx.arc(520, 58, 25, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.fillStyle = 'rgba(255,255,255,0.15)';
-        skyCtx.beginPath(); skyCtx.arc(380, 25, 20, 0, Math.PI * 2); skyCtx.fill();
-        skyCtx.beginPath(); skyCtx.arc(400, 20, 15, 0, Math.PI * 2); skyCtx.fill();
-
-        skyTex.refresh();
-        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'sky_gradient').setDepth(0);
-
-        // === GROUND (below horizon) ===
-        bg.fillStyle(0x9B8D6A, 1);
-        bg.fillRect(0, GAME_HEIGHT * 0.55, GAME_WIDTH, GAME_HEIGHT * 0.45);
-        // Ground path texture
-        bg.fillStyle(0xA89870, 0.4);
-        bg.fillRect(0, GAME_HEIGHT * 0.58, GAME_WIDTH, GAME_HEIGHT * 0.05);
-        bg.setDepth(0);
-
-        // === BACKGROUND BUILDINGS (horizon line) ===
-        const horizon = this.add.graphics().setDepth(0.5);
-        const hy = GAME_HEIGHT * 0.5;
-        // Distant provençal rooftops
-        horizon.fillStyle(0xD4A574, 0.6);
-        horizon.fillRect(80, hy, 60, 30);
-        horizon.fillStyle(0xC4854A, 0.5);
-        horizon.fillRect(80, hy - 10, 60, 12); // terracotta roof
-        horizon.fillStyle(0xD4A574, 0.5);
-        horizon.fillRect(200, hy + 5, 45, 25);
-        horizon.fillStyle(0xC4854A, 0.4);
-        horizon.fillRect(200, hy - 3, 45, 10);
-        // Church tower
-        horizon.fillStyle(0xD4C4A0, 0.5);
-        horizon.fillRect(680, hy - 20, 20, 50);
-        horizon.fillStyle(0xC4854A, 0.4);
-        horizon.fillRect(675, hy - 25, 30, 8);
-
-        // === TREES ===
-        const decor = this.add.graphics().setDepth(1);
-        const tx = this.terrainX;
-        const tw = TERRAIN_WIDTH;
-
-        // Left platane (big)
-        decor.fillStyle(0x7B5B3A, 1);
-        decor.fillRect(tx - 80, 70, 18, 90);
-        decor.fillStyle(0x5A8A3A, 1);
-        decor.fillCircle(tx - 71, 55, 48);
-        decor.fillStyle(0x4A7A2A, 0.6);
-        decor.fillCircle(tx - 60, 65, 35);
-        decor.fillStyle(0x6B9E4E, 0.4);
-        decor.fillCircle(tx - 82, 48, 28);
-
-        // Right platane
-        decor.fillStyle(0x7B5B3A, 1);
-        decor.fillRect(tx + tw + 62, 85, 16, 80);
-        decor.fillStyle(0x5A8A3A, 1);
-        decor.fillCircle(tx + tw + 70, 72, 42);
-        decor.fillStyle(0x4A7A2A, 0.6);
-        decor.fillCircle(tx + tw + 80, 82, 30);
-
-        // === BENCH (left) ===
-        decor.fillStyle(0x8B6B4A, 1);
-        decor.fillRect(tx - 70, 300, 50, 5);
-        decor.fillStyle(0x7B5B3A, 1);
-        decor.fillRect(tx - 68, 305, 4, 12);
-        decor.fillRect(tx - 26, 305, 4, 12);
-        decor.fillStyle(0x9B7B5A, 0.8);
-        decor.fillRect(tx - 70, 295, 50, 3);
-
-        // === STONE WALL (right) ===
-        decor.fillStyle(0xD4C4A0, 1);
-        decor.fillRect(tx + tw + 20, 150, 28, 200);
-        decor.fillStyle(0xC0B090, 0.4);
-        for (let my = 150; my < 350; my += 16) {
-            decor.fillRect(tx + tw + 20, my, 28, 1);
-            if (my % 32 === 0) {
-                decor.fillRect(tx + tw + 34, my, 1, 16);
-            }
-        }
-
-        // === SMALL DETAILS ===
-        // Flower pot near wall
-        decor.fillStyle(0xA05A2A, 1);
-        decor.fillRect(tx + tw + 25, 355, 14, 12);
-        decor.fillStyle(0xCC4444, 0.8);
-        decor.fillCircle(tx + tw + 32, 352, 6);
-        decor.fillStyle(0xDD6666, 0.5);
-        decor.fillCircle(tx + tw + 28, 349, 4);
-
-        // Pétanque scoring board (left side)
-        decor.fillStyle(0x2A4A2A, 1);
-        decor.fillRect(tx - 30, 180, 20, 30);
-        decor.fillStyle(0xFFFFFF, 0.7);
-        decor.fillRect(tx - 27, 185, 6, 8);
-        decor.fillRect(tx - 18, 185, 6, 8);
-        decor.fillStyle(0x6B5038, 1);
-        decor.fillRect(tx - 24, 210, 8, 20);
-
-        // === TERRAIN SURFACE (rich canvas texture) ===
-        const terrainTexKey = `terrain_gravier_${this.terrainType}`;
-        if (this.textures.exists(terrainTexKey)) this.textures.remove(terrainTexKey);
-        const terrainTex = this.textures.createCanvas(terrainTexKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-        const tCtx = terrainTex.getContext();
-
-        const baseColors = {
-            terre:  '#C4854A', herbe: '#6B8E4E', sable: '#E8D5B7', dalles: '#9E9E8E'
-        };
-        const gravelColors = {
-            terre:  ['#B07840', '#D49560', '#A87040', '#C4954A', '#B88850'],
-            herbe:  ['#5E8A44', '#7BA65E', '#4A7A3A', '#6B9E4E', '#5A9040'],
-            sable:  ['#D4C0A0', '#F0E0C8', '#C4B090', '#E8D0B0', '#DDD4B8'],
-            dalles: ['#8E8E7E', '#B0A090', '#808070', '#A09888', '#989080']
-        };
-
-        // Base fill with subtle vertical gradient (lighter at top = distance)
-        const baseCol = baseColors[this.terrainType] || baseColors.terre;
-        const terrGrad = tCtx.createLinearGradient(0, 0, 0, TERRAIN_HEIGHT);
-        terrGrad.addColorStop(0, baseCol);
-        terrGrad.addColorStop(0.5, baseCol);
-        terrGrad.addColorStop(1, this._darkenHex(baseCol, 20));
-        tCtx.fillStyle = terrGrad;
-        tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-
-        // Fine gravel texture (lots of tiny particles)
-        const gravel = gravelColors[this.terrainType] || gravelColors.terre;
-        for (let i = 0; i < 500; i++) {
-            tCtx.fillStyle = gravel[Math.floor(Math.random() * gravel.length)];
-            const size = 1 + Math.random() * 1.5;
-            tCtx.fillRect(Math.random() * TERRAIN_WIDTH, Math.random() * TERRAIN_HEIGHT, size, size);
-        }
-
-        // Larger pebbles/cailloux (scattered, subtle)
-        for (let i = 0; i < 15; i++) {
-            const px = 20 + Math.random() * (TERRAIN_WIDTH - 40);
-            const py = 20 + Math.random() * (TERRAIN_HEIGHT - 40);
-            const pr = 2 + Math.random() * 3;
-            tCtx.fillStyle = gravel[Math.floor(Math.random() * gravel.length)];
-            tCtx.globalAlpha = 0.5 + Math.random() * 0.3;
-            tCtx.beginPath();
-            tCtx.ellipse(px, py, pr, pr * 0.7, Math.random() * Math.PI, 0, Math.PI * 2);
-            tCtx.fill();
-            // Pebble highlight
-            tCtx.fillStyle = 'rgba(255,255,255,0.2)';
-            tCtx.beginPath();
-            tCtx.arc(px - 1, py - 1, pr * 0.4, 0, Math.PI * 2);
-            tCtx.fill();
-        }
-        tCtx.globalAlpha = 1;
-
-        // Terrain wear marks (subtle drag lines from previous games)
-        tCtx.strokeStyle = 'rgba(0,0,0,0.06)';
-        tCtx.lineWidth = 1;
-        for (let i = 0; i < 5; i++) {
-            const sx = 30 + Math.random() * (TERRAIN_WIDTH - 60);
-            const sy = 40 + Math.random() * (TERRAIN_HEIGHT - 80);
-            tCtx.beginPath();
-            tCtx.moveTo(sx, sy);
-            tCtx.lineTo(sx + (Math.random() - 0.5) * 30, sy + 10 + Math.random() * 20);
-            tCtx.stroke();
-        }
-
-        // Edge darkening (vignette effect for depth)
-        const edgeGrad = tCtx.createRadialGradient(
-            TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.35,
-            TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.55
-        );
-        edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
-        edgeGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
-        tCtx.fillStyle = edgeGrad;
-        tCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-
-        // Draw friction zones (Parc: gravel paths)
-        if (this.terrainFullData?.zones?.length) {
-            for (const zone of this.terrainFullData.zones) {
-                const zx = zone.rect.x * TERRAIN_WIDTH;
-                const zy = zone.rect.y * TERRAIN_HEIGHT;
-                const zw = zone.rect.w * TERRAIN_WIDTH;
-                const zh = zone.rect.h * TERRAIN_HEIGHT;
-                tCtx.fillStyle = zone.color || '#B8A888';
-                tCtx.globalAlpha = 0.6;
-                tCtx.fillRect(zx, zy, zw, zh);
-                // Add gravel texture to zone
-                tCtx.globalAlpha = 0.4;
-                for (let i = 0; i < 60; i++) {
-                    tCtx.fillStyle = Math.random() > 0.5 ? '#C4B498' : '#A89878';
-                    const s = 1 + Math.random() * 1.5;
-                    tCtx.fillRect(zx + Math.random() * zw, zy + Math.random() * zh, s, s);
-                }
-                tCtx.globalAlpha = 1;
-            }
-        }
-
-        // Draw slope indicator (Colline: arrow showing direction)
-        if (this.terrainFullData?.slope) {
-            tCtx.save();
-            tCtx.globalAlpha = 0.15;
-            tCtx.fillStyle = '#000000';
-            const cx = TERRAIN_WIDTH / 2;
-            const cy = TERRAIN_HEIGHT / 2;
-            // Draw several small arrows pointing down
-            for (let i = 0; i < 5; i++) {
-                const ax = 30 + i * (TERRAIN_WIDTH - 60) / 4;
-                for (let j = 0; j < 3; j++) {
-                    const ay = 80 + j * 130;
-                    tCtx.beginPath();
-                    tCtx.moveTo(ax, ay);
-                    tCtx.lineTo(ax - 4, ay - 8);
-                    tCtx.lineTo(ax + 4, ay - 8);
-                    tCtx.closePath();
-                    tCtx.fill();
-                }
-            }
-            tCtx.restore();
-        }
-
-        terrainTex.refresh();
-
-        // Drop shadow under terrain
-        const terrainG = this.add.graphics().setDepth(1);
-        terrainG.fillStyle(0x000000, 0.18);
-        terrainG.fillRect(this.terrainX + 5, this.terrainY + 5, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-        terrainG.fillStyle(0x000000, 0.08);
-        terrainG.fillRect(this.terrainX + 3, this.terrainY + 3, TERRAIN_WIDTH + 2, TERRAIN_HEIGHT + 2);
-
-        this.add.image(this.terrainX + TERRAIN_WIDTH / 2, this.terrainY + TERRAIN_HEIGHT / 2, terrainTexKey).setDepth(2);
-
-        // === TERRAIN DECORATION SPRITES (PixelLab generated) ===
-        this._placeTerrainDecor();
-
-        // === WOODEN BORDERS (tiled plank sprite) ===
-        this._drawTerrainBorders();
-
-        // === THROW CIRCLE ===
-        this.throwCircleX = GAME_WIDTH / 2;
-        this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
-        const circleG = this.add.graphics().setDepth(4);
-        circleG.lineStyle(3, 0xFFFFFF, 0.15);
-        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 2);
-        circleG.lineStyle(2, COLORS.BLANC, 0.5);
-        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
-    }
-
-    _placeTerrainDecor() {
-        const tx = this.terrainX;
-        const ty = this.terrainY;
-        const margin = 12;
-
-        // Seeded random for consistent terrain per match (but varied between matches)
-        const seed = (this.terrainType.charCodeAt(0) * 137 + Date.now() % 1000) | 0;
-        const rng = (i) => {
-            const x = Math.sin(seed + i * 9301 + 49297) * 233280;
-            return x - Math.floor(x);
-        };
-
-        // Scatter terrain decorations
-        const decorItems = [];
-
-        // Add terrain-specific decor
-        if (this.terrainType === 'terre' || this.terrainType === 'herbe') {
-            decorItems.push({ key: 'terrain_herbe_touffe', count: 3, scale: 0.45, alpha: 0.5 });
-        }
-        if (this.terrainType === 'terre') {
-            decorItems.push({ key: 'terrain_fissure', count: 1, scale: 0.5, alpha: 0.35 });
-        }
-
-        let rngIdx = 0;
-        for (const item of decorItems) {
-            if (!this.textures.exists(item.key)) continue;
-            for (let i = 0; i < item.count; i++) {
-                const px = tx + margin + rng(rngIdx++) * (TERRAIN_WIDTH - margin * 2);
-                const py = ty + margin + rng(rngIdx++) * (TERRAIN_HEIGHT - margin * 2);
-                const angle = rng(rngIdx++) * 360;
-                this.add.image(px, py, item.key)
-                    .setScale(item.scale)
-                    .setAlpha(item.alpha)
-                    .setAngle(angle)
-                    .setDepth(2.5);
-            }
-        }
-
-        // Scatter some outside the terrain too (around edges for realism)
-        const outsideItems = ['terrain_herbe_touffe'];
-        for (let i = 0; i < 6; i++) {
-            const key = outsideItems[i % outsideItems.length];
-            if (!this.textures.exists(key)) continue;
-            // Random position near terrain edges but outside
-            const side = Math.floor(rng(rngIdx++) * 4);
-            let ox, oy;
-            if (side === 0) { ox = tx - 15 - rng(rngIdx++) * 40; oy = ty + rng(rngIdx++) * TERRAIN_HEIGHT; }
-            else if (side === 1) { ox = tx + TERRAIN_WIDTH + 15 + rng(rngIdx++) * 40; oy = ty + rng(rngIdx++) * TERRAIN_HEIGHT; }
-            else if (side === 2) { ox = tx + rng(rngIdx++) * TERRAIN_WIDTH; oy = ty - 15 - rng(rngIdx++) * 30; }
-            else { ox = tx + rng(rngIdx++) * TERRAIN_WIDTH; oy = ty + TERRAIN_HEIGHT + 15 + rng(rngIdx++) * 30; }
-            this.add.image(ox, oy, key)
-                .setScale(0.35 + rng(rngIdx++) * 0.2)
-                .setAlpha(0.4 + rng(rngIdx++) * 0.2)
-                .setAngle(rng(rngIdx++) * 360)
-                .setDepth(1.5);
-        }
-    }
-
-    _drawTerrainBorders() {
-        const tx = this.terrainX;
-        const ty = this.terrainY;
-        const bw = 8; // border width
-
-        if (this.textures.exists('terrain_planche_bord')) {
-            // Tile the plank sprite along all 4 borders
-            const plankH = 8; // display height of horizontal planks
-            const plankW = 64; // original sprite width
-
-            // Top border (horizontal planks)
-            for (let px = tx - bw; px < tx + TERRAIN_WIDTH + bw; px += plankW * 0.12) {
-                this.add.image(px, ty - bw / 2, 'terrain_planche_bord')
-                    .setScale(0.12, plankH / 64)
-                    .setOrigin(0, 0.5)
-                    .setDepth(3);
-            }
-            // Bottom border
-            for (let px = tx - bw; px < tx + TERRAIN_WIDTH + bw; px += plankW * 0.12) {
-                this.add.image(px, ty + TERRAIN_HEIGHT + bw / 2, 'terrain_planche_bord')
-                    .setScale(0.12, plankH / 64)
-                    .setOrigin(0, 0.5)
-                    .setDepth(3);
-            }
-            // Left border (rotated planks)
-            for (let py = ty; py < ty + TERRAIN_HEIGHT; py += plankW * 0.12) {
-                this.add.image(tx - bw / 2, py, 'terrain_planche_bord')
-                    .setScale(0.12, plankH / 64)
-                    .setAngle(90)
-                    .setOrigin(0, 0.5)
-                    .setDepth(3);
-            }
-            // Right border
-            for (let py = ty; py < ty + TERRAIN_HEIGHT; py += plankW * 0.12) {
-                this.add.image(tx + TERRAIN_WIDTH + bw / 2, py, 'terrain_planche_bord')
-                    .setScale(0.12, plankH / 64)
-                    .setAngle(90)
-                    .setOrigin(0, 0.5)
-                    .setDepth(3);
-            }
-        }
-
-        // Graphics overlay for border structure (shadow + highlight)
-        const bord = this.add.graphics().setDepth(3.5);
-        // Outer shadow
-        bord.fillStyle(0x3A2E28, 0.4);
-        bord.fillRect(tx - bw - 1, ty - bw - 1, TERRAIN_WIDTH + bw * 2 + 2, bw + 1);
-        bord.fillRect(tx - bw - 1, ty + TERRAIN_HEIGHT, TERRAIN_WIDTH + bw * 2 + 2, bw + 1);
-        bord.fillRect(tx - bw - 1, ty, bw + 1, TERRAIN_HEIGHT);
-        bord.fillRect(tx + TERRAIN_WIDTH, ty, bw + 1, TERRAIN_HEIGHT);
-
-        // Inner edge highlight (catch light on inner border edge)
-        bord.lineStyle(1, 0xD4A574, 0.3);
-        bord.strokeRect(tx, ty, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-
-        // Corner pegs (metal)
-        bord.fillStyle(0x808080, 0.7);
-        bord.fillCircle(tx, ty, 3);
-        bord.fillCircle(tx + TERRAIN_WIDTH, ty, 3);
-        bord.fillCircle(tx, ty + TERRAIN_HEIGHT, 3);
-        bord.fillCircle(tx + TERRAIN_WIDTH, ty + TERRAIN_HEIGHT, 3);
-        // Peg highlights
-        bord.fillStyle(0xC0C0C0, 0.5);
-        bord.fillCircle(tx - 1, ty - 1, 1);
-        bord.fillCircle(tx + TERRAIN_WIDTH - 1, ty - 1, 1);
-        bord.fillCircle(tx - 1, ty + TERRAIN_HEIGHT - 1, 1);
-        bord.fillCircle(tx + TERRAIN_WIDTH - 1, ty + TERRAIN_HEIGHT - 1, 1);
-    }
-
-    _darkenHex(hex, amount = 30) {
-        const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - amount);
-        const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - amount);
-        const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - amount);
-        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    }
+    // drawTerrain, _placeTerrainDecor, _drawTerrainBorders, _darkenHex
+    // replaced by TerrainRenderer.js
 
     update(time, delta) {
         if (this.engine) this.engine.update(delta);

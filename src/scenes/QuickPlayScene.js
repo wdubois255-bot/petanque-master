@@ -52,7 +52,8 @@ const OPTIONS = [
             { display: 'Terre battue', key: 'terre' },
             { display: 'Herbe', key: 'herbe' },
             { display: 'Sable', key: 'sable' },
-            { display: 'Dalles', key: 'dalles' }
+            { display: 'Dalles', key: 'dalles' },
+            { display: 'Colline', key: 'colline' }
         ]
     },
     {
