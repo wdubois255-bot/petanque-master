@@ -63,10 +63,15 @@ export default class PetanqueScene extends Phaser.Scene {
         this.throwCircleX = GAME_WIDTH / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
         const circleG = this.add.graphics().setDepth(4);
-        circleG.lineStyle(3, 0xFFFFFF, 0.15);
-        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 2);
-        circleG.lineStyle(2, COLORS.BLANC, 0.5);
+        // Outer glow
+        circleG.lineStyle(4, COLORS.OCRE, 0.2);
+        circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS + 3);
+        // Main circle
+        circleG.lineStyle(2, COLORS.BLANC, 0.6);
         circleG.strokeCircle(this.throwCircleX, this.throwCircleY, THROW_CIRCLE_RADIUS);
+        // Inner dot
+        circleG.fillStyle(COLORS.BLANC, 0.3);
+        circleG.fillCircle(this.throwCircleX, this.throwCircleY, 2);
 
         this._createBallTextures();
         this._ensureSprites();

@@ -308,11 +308,11 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Stats bars
         const barsY = sphereY + 76;
         const bars = [
-            { label: 'Poids', value: boule.stats.masse, min: 600, max: 850, color: 0xCC4444,
+            { label: 'Poids', value: boule.stats.masse, min: 600, max: 850, color: 0xC4854A,
               desc: boule.stats.masse >= 750 ? 'Lourde, deplace plus' : boule.stats.masse <= 650 ? 'Legere, roule plus loin' : 'Equilibree' },
-            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x5B9BD5,
+            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x87CEEB,
               desc: boule.stats.rayon >= 11 ? 'Grande, facile a toucher' : boule.stats.rayon <= 9 ? 'Petite, discrette' : 'Standard' },
-            { label: 'Glisse', value: boule.bonus === 'friction_x0.9' ? 8 : boule.bonus === 'knockback_x1.2' ? 3 : 5, min: 1, max: 10, color: 0x44CC44,
+            { label: 'Glisse', value: boule.bonus === 'friction_x0.9' ? 8 : boule.bonus === 'knockback_x1.2' ? 3 : 5, min: 1, max: 10, color: 0xD4A574,
               desc: boule.bonus === 'friction_x0.9' ? 'Roule longtemps' : boule.bonus === 'knockback_x1.2' ? 'Impact fort' : 'Normal' }
         ];
         this._drawBars(cx, barsY, bars);
@@ -455,13 +455,13 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Stats bars
         const barsY = spriteY + 58;
         const bars = [
-            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0x44CC44,
+            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0xD4A574,
               desc: char.stats.precision >= 8 ? 'Chirurgical' : char.stats.precision <= 4 ? 'Approximatif' : 'Correct' },
-            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xCC4444,
+            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xC4854A,
               desc: char.stats.puissance >= 8 ? 'Devastateur' : char.stats.puissance <= 4 ? 'Frappe douce' : 'Normal' },
             { label: 'Effet', value: char.stats.effet, min: 0, max: 10, color: 0x9B7BB8,
               desc: char.stats.effet >= 8 ? 'Maitre courbes' : char.stats.effet <= 4 ? 'Tirs droits' : 'Quelques courbes' },
-            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x5B9BD5,
+            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x87CEEB,
               desc: char.stats.sang_froid >= 8 ? 'Imperturbable' : char.stats.sang_froid <= 4 ? 'Craque vite' : 'Tient le coup' }
         ];
         this._drawBars(cx, barsY, bars);

@@ -206,7 +206,7 @@ export default class CharSelectScene extends Phaser.Scene {
             'Controle des courbes',
             'Stabilite sous pression (10-10+)'
         ];
-        const statColors = [0x44CC44, 0xCC4444, 0x9B7BB8, 0x5B9BD5];
+        const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB]; // ocre, terracotta, lavande, ciel
         const barStartY = py + 110;
 
         for (let i = 0; i < statNames.length; i++) {

@@ -215,7 +215,7 @@ export default class ArcadeScene extends Phaser.Scene {
             const statsY = panelY + 50;
             const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
             const statLabels = ['PRE', 'PUI', 'EFF', 'S-F'];
-            const statColors = [0x44CC44, 0xCC4444, 0x9B7BB8, 0x5B9BD5];
+            const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB]; // ocre, terracotta, lavande, ciel
 
             for (let i = 0; i < statNames.length; i++) {
                 const sy = statsY + i * 22;

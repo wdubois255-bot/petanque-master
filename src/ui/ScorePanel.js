@@ -1,55 +1,63 @@
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS } from '../utils/Constants.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW_GLOW = { offsetX: 0, offsetY: 0, color: '#FFD700', blur: 6, fill: true };
 
 export default class ScorePanel {
     constructor(scene, engine) {
         this.scene = scene;
         this.engine = engine;
 
-        this.panelX = GAME_WIDTH - 144;
+        this.panelX = GAME_WIDTH - 152;
         this.panelY = 8;
+        const pw = 144;
+        const ph = 164;
 
-        // Background
+        // Background with double border (outer glow + inner frame)
         this.bg = scene.add.graphics().setDepth(90);
-        this.bg.fillStyle(COLORS.OMBRE, 0.85);
-        this.bg.fillRoundedRect(this.panelX, this.panelY, 136, 156, 8);
-        this.bg.lineStyle(2, 0xD4A574, 0.5);
-        this.bg.strokeRoundedRect(this.panelX, this.panelY, 136, 156, 8);
+        // Outer glow
+        this.bg.fillStyle(0xD4A574, 0.12);
+        this.bg.fillRoundedRect(this.panelX - 2, this.panelY - 2, pw + 4, ph + 4, 10);
+        // Main panel
+        this.bg.fillStyle(COLORS.OMBRE, 0.9);
+        this.bg.fillRoundedRect(this.panelX, this.panelY, pw, ph, 8);
+        // Border
+        this.bg.lineStyle(2, COLORS.OCRE, 0.6);
+        this.bg.strokeRoundedRect(this.panelX, this.panelY, pw, ph, 8);
 
-        const cx = this.panelX + 68;
+        const cx = this.panelX + pw / 2;
 
-        // Title
+        // Title with decorative line
         this.titleText = scene.add.text(
-            cx, this.panelY + 16,
+            cx, this.panelY + 14,
             'SCORE', {
-                fontFamily: 'monospace', fontSize: '18px',
+                fontFamily: 'monospace', fontSize: '16px',
                 color: '#D4A574', align: 'center',
                 shadow: SHADOW
             }
         ).setOrigin(0.5, 0).setDepth(91);
 
-        // Separator
-        this.bg.lineStyle(2, 0xD4A574, 0.3);
+        // Separator lines (double)
+        this.bg.lineStyle(1, COLORS.OCRE, 0.4);
         this.bg.beginPath();
-        this.bg.moveTo(this.panelX + 16, this.panelY + 40);
-        this.bg.lineTo(this.panelX + 120, this.panelY + 40);
+        this.bg.moveTo(this.panelX + 12, this.panelY + 36);
+        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 36);
         this.bg.strokePath();
 
-        // Player score
+        // === Player section ===
         this.playerLabel = scene.add.text(
-            cx, this.panelY + 48,
+            cx - 24, this.panelY + 44,
             'VOUS', {
-                fontFamily: 'monospace', fontSize: '16px',
-                color: '#A8B5C2', align: 'center',
+                fontFamily: 'monospace', fontSize: '12px',
+                color: '#87CEEB', align: 'center',
                 shadow: SHADOW
             }
         ).setOrigin(0.5, 0).setDepth(91);
 
         this.playerScore = scene.add.text(
-            cx - 16, this.panelY + 68,
+            cx - 24, this.panelY + 60,
             '0', {
-                fontFamily: 'monospace', fontSize: '28px',
+                fontFamily: 'monospace', fontSize: '32px',
                 color: '#F5E6D0', align: 'center',
                 shadow: SHADOW
             }
@@ -57,28 +65,35 @@ export default class ScorePanel {
 
         // Projected score for player
         this.playerProjected = scene.add.text(
-            cx + 28, this.panelY + 72,
+            cx + 16, this.panelY + 66,
             '', {
-                fontFamily: 'monospace', fontSize: '16px',
-                color: '#44CC44',
+                fontFamily: 'monospace', fontSize: '14px',
+                color: '#6B8E4E', // olive instead of green
                 shadow: SHADOW
             }
         ).setOrigin(0, 0).setDepth(91);
 
-        // Opponent score
+        // VS divider
+        this.bg.lineStyle(1, COLORS.OCRE, 0.2);
+        this.bg.beginPath();
+        this.bg.moveTo(this.panelX + 12, this.panelY + 96);
+        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 96);
+        this.bg.strokePath();
+
+        // === Opponent section ===
         this.opponentLabel = scene.add.text(
-            cx, this.panelY + 96,
+            cx - 24, this.panelY + 102,
             'ADV.', {
-                fontFamily: 'monospace', fontSize: '16px',
+                fontFamily: 'monospace', fontSize: '12px',
                 color: '#C44B3F', align: 'center',
                 shadow: SHADOW
             }
         ).setOrigin(0.5, 0).setDepth(91);
 
         this.opponentScore = scene.add.text(
-            cx - 16, this.panelY + 116,
+            cx - 24, this.panelY + 118,
             '0', {
-                fontFamily: 'monospace', fontSize: '28px',
+                fontFamily: 'monospace', fontSize: '32px',
                 color: '#F5E6D0', align: 'center',
                 shadow: SHADOW
             }
@@ -86,23 +101,23 @@ export default class ScorePanel {
 
         // Projected score for opponent
         this.opponentProjected = scene.add.text(
-            cx + 28, this.panelY + 120,
+            cx + 16, this.panelY + 124,
             '', {
-                fontFamily: 'monospace', fontSize: '16px',
-                color: '#CC4444',
+                fontFamily: 'monospace', fontSize: '14px',
+                color: '#C44B3F',
                 shadow: SHADOW
             }
         ).setOrigin(0, 0).setDepth(91);
 
-        // Mene
+        // Mene indicator (integrated top-left with nicer style)
         this.meneText = scene.add.text(
             8, 8,
             'MENE 1', {
-                fontFamily: 'monospace', fontSize: '18px',
+                fontFamily: 'monospace', fontSize: '16px',
                 color: '#D4A574',
                 shadow: SHADOW,
                 backgroundColor: '#3A2E28',
-                padding: { x: 8, y: 4 }
+                padding: { x: 10, y: 5 }
             }
         ).setDepth(91);
 
@@ -110,12 +125,12 @@ export default class ScorePanel {
         this.ballsGfx = scene.add.graphics().setDepth(92);
         this.ballsBg = scene.add.graphics().setDepth(91);
 
-        // Distance indicators: only 1st and 2nd closest balls
+        // Distance indicators
         this._distGfx = scene.add.graphics().setDepth(9);
         this._rankLabels = [];
         for (let i = 0; i < 2; i++) {
             const label = scene.add.text(0, 0, '', {
-                fontFamily: 'monospace', fontSize: '11px',
+                fontFamily: 'monospace', fontSize: '12px',
                 color: '#F5E6D0',
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(12).setVisible(false);
@@ -124,12 +139,27 @@ export default class ScorePanel {
 
         this._prevPlayerRemaining = -1;
         this._prevOpponentRemaining = -1;
+        this._prevPlayerScore = 0;
+        this._prevOpponentScore = 0;
     }
 
     update() {
         const e = this.engine;
-        this.playerScore.setText(String(e.scores.player));
-        this.opponentScore.setText(String(e.scores.opponent));
+        const newPlayerScore = e.scores.player;
+        const newOpponentScore = e.scores.opponent;
+
+        // Animate score change with pulse
+        if (newPlayerScore !== this._prevPlayerScore) {
+            this.playerScore.setText(String(newPlayerScore));
+            this._pulseText(this.playerScore);
+            this._prevPlayerScore = newPlayerScore;
+        }
+        if (newOpponentScore !== this._prevOpponentScore) {
+            this.opponentScore.setText(String(newOpponentScore));
+            this._pulseText(this.opponentScore);
+            this._prevOpponentScore = newOpponentScore;
+        }
+
         this.meneText.setText(`MENE ${e.mene}`);
 
         // Projected score
@@ -147,11 +177,19 @@ export default class ScorePanel {
             this.opponentProjected.setVisible(false);
         }
 
-        // Balls remaining (colored dots)
         this._drawBallDots(e);
-
-        // Distance lines (only when all stopped)
         this._updateDistanceLines(e);
+    }
+
+    _pulseText(textObj) {
+        this.scene.tweens.add({
+            targets: textObj,
+            scaleX: 1.3, scaleY: 1.3,
+            duration: 150, ease: 'Quad.easeOut',
+            yoyo: true,
+            onStart: () => textObj.setShadow(0, 0, '#FFD700', 8, true, true),
+            onComplete: () => textObj.setShadow(2, 2, '#1A1510', 0, true, false)
+        });
     }
 
     _drawBallDots(e) {
@@ -159,46 +197,61 @@ export default class ScorePanel {
         this.ballsBg.clear();
 
         const baseX = 16;
-        const baseY = GAME_HEIGHT - 20;
-        const dotR = 6;
-        const spacing = 18;
+        const baseY = GAME_HEIGHT - 22;
+        const dotR = 7;
+        const spacing = 20;
 
-        // Background
-        const totalWidth = (e.ballsPerPlayer * spacing * 2) + 48;
-        this.ballsBg.fillStyle(COLORS.OMBRE, 0.7);
-        this.ballsBg.fillRoundedRect(baseX - 8, baseY - 16, totalWidth, 32, 6);
+        // Background pill
+        const totalWidth = (e.ballsPerPlayer * spacing * 2) + 52;
+        this.ballsBg.fillStyle(COLORS.OMBRE, 0.8);
+        this.ballsBg.fillRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 8);
+        this.ballsBg.lineStyle(1, COLORS.OCRE, 0.3);
+        this.ballsBg.strokeRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 8);
 
         // Player balls
         for (let i = 0; i < e.ballsPerPlayer; i++) {
             const remaining = i < e.remaining.player;
-            this.ballsGfx.fillStyle(BALL_COLORS.player, remaining ? 1 : 0.25);
-            this.ballsGfx.fillCircle(baseX + i * spacing, baseY, dotR);
+            const x = baseX + i * spacing;
+            // Shadow
+            this.ballsGfx.fillStyle(0x000000, 0.15);
+            this.ballsGfx.fillEllipse(x + 1, baseY + 3, dotR * 1.6, dotR * 0.8);
+            // Ball
+            this.ballsGfx.fillStyle(BALL_COLORS.player, remaining ? 1 : 0.2);
+            this.ballsGfx.fillCircle(x, baseY, dotR);
             if (remaining) {
-                this.ballsGfx.fillStyle(0xFFFFFF, 0.3);
-                this.ballsGfx.fillCircle(baseX + i * spacing - 2, baseY - 2, 2);
+                this.ballsGfx.fillStyle(0xFFFFFF, 0.35);
+                this.ballsGfx.fillCircle(x - 2, baseY - 2, 2.5);
             }
         }
 
+        // Separator
+        const sepX = baseX + e.ballsPerPlayer * spacing + 10;
+        this.ballsGfx.fillStyle(COLORS.OCRE, 0.4);
+        this.ballsGfx.fillRect(sepX, baseY - 8, 2, 16);
+
         // Opponent balls
-        const oBaseX = baseX + e.ballsPerPlayer * spacing + 24;
+        const oBaseX = sepX + 14;
         for (let i = 0; i < e.ballsPerPlayer; i++) {
             const remaining = i < e.remaining.opponent;
-            this.ballsGfx.fillStyle(BALL_COLORS.opponent, remaining ? 1 : 0.25);
-            this.ballsGfx.fillCircle(oBaseX + i * spacing, baseY, dotR);
+            const x = oBaseX + i * spacing;
+            this.ballsGfx.fillStyle(0x000000, 0.15);
+            this.ballsGfx.fillEllipse(x + 1, baseY + 3, dotR * 1.6, dotR * 0.8);
+            this.ballsGfx.fillStyle(BALL_COLORS.opponent, remaining ? 1 : 0.2);
+            this.ballsGfx.fillCircle(x, baseY, dotR);
             if (remaining) {
-                this.ballsGfx.fillStyle(0xFFFFFF, 0.3);
-                this.ballsGfx.fillCircle(oBaseX + i * spacing - 2, baseY - 2, 2);
+                this.ballsGfx.fillStyle(0xFFFFFF, 0.35);
+                this.ballsGfx.fillCircle(x - 2, baseY - 2, 2.5);
             }
         }
 
         // Flash animation on ball thrown
         if (e.remaining.player !== this._prevPlayerRemaining && this._prevPlayerRemaining >= 0) {
-            this.ballsGfx.fillStyle(0xFFFFFF, 0.5);
-            this.ballsGfx.fillCircle(baseX + e.remaining.player * spacing, baseY, dotR + 4);
+            this.ballsGfx.fillStyle(0xFFFFFF, 0.4);
+            this.ballsGfx.fillCircle(baseX + e.remaining.player * spacing, baseY, dotR + 5);
         }
         if (e.remaining.opponent !== this._prevOpponentRemaining && this._prevOpponentRemaining >= 0) {
-            this.ballsGfx.fillStyle(0xFFFFFF, 0.5);
-            this.ballsGfx.fillCircle(oBaseX + e.remaining.opponent * spacing, baseY, dotR + 4);
+            this.ballsGfx.fillStyle(0xFFFFFF, 0.4);
+            this.ballsGfx.fillCircle(oBaseX + e.remaining.opponent * spacing, baseY, dotR + 5);
         }
         this._prevPlayerRemaining = e.remaining.player;
         this._prevOpponentRemaining = e.remaining.opponent;
@@ -207,7 +260,6 @@ export default class ScorePanel {
     _updateDistanceLines(e) {
         this._distGfx.clear();
 
-        // Only show when all balls stopped
         const anyMoving = e.balls.some(b => b.isAlive && b.isMoving) ||
             (e.cochonnet && e.cochonnet.isAlive && e.cochonnet.isMoving);
         if (anyMoving || !e.cochonnet || !e.cochonnet.isAlive) {
@@ -215,7 +267,6 @@ export default class ScorePanel {
             return;
         }
 
-        // Sort alive balls by distance to cochonnet
         const alive = e.balls.filter(b => b.isAlive);
         if (alive.length === 0) {
             for (const label of this._rankLabels) label.setVisible(false);
@@ -225,29 +276,29 @@ export default class ScorePanel {
             .map(b => ({ ball: b, dist: b.distanceTo(e.cochonnet) }))
             .sort((a, b) => a.dist - b.dist);
 
-        // Show only 1st and 2nd closest — small discrete rank badge, no lines
         for (let i = 0; i < 2 && i < sorted.length; i++) {
             const { ball } = sorted[i];
-            const color = ball.team === 'player' ? 0xA8B5C2 : 0xC44B3F;
-            const colorHex = ball.team === 'player' ? '#A8B5C2' : '#C44B3F';
+            const color = ball.team === 'player' ? 0x87CEEB : 0xC44B3F;
+            const colorHex = ball.team === 'player' ? '#87CEEB' : '#C44B3F';
 
-            // Small rank number next to ball
             const label = this._rankLabels[i];
-            label.setPosition(ball.x + ball.radius + 4, ball.y - 6);
+            label.setPosition(ball.x + ball.radius + 5, ball.y - 8);
             label.setText(i === 0 ? '1' : '2');
             label.setColor(colorHex);
-            label.setFontSize('10px');
-            label.setAlpha(i === 0 ? 0.8 : 0.5);
+            label.setFontSize('12px');
+            label.setAlpha(i === 0 ? 0.9 : 0.55);
             label.setVisible(true);
 
-            // Tiny dot connecting to cochonnet (very subtle)
+            // Subtle line from ball to cochonnet for #1
             if (i === 0) {
-                this._distGfx.fillStyle(color, 0.25);
-                this._distGfx.fillCircle(e.cochonnet.x, e.cochonnet.y, 3);
+                this._distGfx.lineStyle(1, color, 0.15);
+                this._distGfx.beginPath();
+                this._distGfx.moveTo(ball.x, ball.y);
+                this._distGfx.lineTo(e.cochonnet.x, e.cochonnet.y);
+                this._distGfx.strokePath();
             }
         }
 
-        // Hide unused
         for (let i = Math.min(2, sorted.length); i < this._rankLabels.length; i++) {
             this._rankLabels[i].setVisible(false);
         }

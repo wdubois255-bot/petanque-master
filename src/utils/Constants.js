@@ -121,10 +121,36 @@ export const COLORS = {
     CIEL: 0x87CEEB,
     CREME: 0xF5E6D0,
     OMBRE: 0x3A2E28,
+    OMBRE_DEEP: 0x1A1510,
     ACCENT: 0xC44B3F,
+    OR: 0xFFD700,
     BLANC: 0xFFFFFF,
-    GRIS: 0x9E9E8E
+    GRIS: 0x9E9E8E,
+    // UI theme colors (provençal-tinted stats)
+    STAT_PUISSANCE: 0xC4854A,   // terracotta (was green)
+    STAT_PRECISION: 0x87CEEB,   // ciel (was blue)
+    STAT_EFFET: 0x9B7BB8,       // lavande (unchanged)
+    STAT_ADAPTABILITE: 0x6B8E4E // olive (was red)
 };
+
+// CSS color strings (hex) for Phaser text styles
+export const CSS = {
+    OCRE: '#D4A574',
+    TERRACOTTA: '#C4854A',
+    LAVANDE: '#9B7BB8',
+    OLIVE: '#6B8E4E',
+    CIEL: '#87CEEB',
+    CREME: '#F5E6D0',
+    OMBRE: '#3A2E28',
+    OMBRE_DEEP: '#1A1510',
+    ACCENT: '#C44B3F',
+    OR: '#FFD700',
+    BLANC: '#FFFFFF',
+    GRIS: '#9E9E8E'
+};
+
+export const SHADOW_TEXT = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+export const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
 
 // Terrain colors (for placeholder rendering)
 export const TERRAIN_COLORS = {

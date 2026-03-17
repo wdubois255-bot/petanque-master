@@ -257,14 +257,27 @@ export default class PetanqueEngine {
         this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
 
         // Cochonnet rolls 5-10% beyond landing point (like a real throw)
-        // Physics: with friction decel = FRICTION_BASE * frictionMult * 60,
-        // rolling distance = v^2 / (2 * decel). So v = sqrt(2 * decel * targetRollDist)
+        // But only if there's enough room — check distance to border in throw direction
         const throwDirX = Math.cos(angle);
         const throwDirY = Math.sin(angle);
-        const rollPct = 0.05 + Math.random() * 0.05; // 5-10%
-        const targetRollDist = dist * rollPct;
-        const frictionDecel = 0.15 * this.frictionMult * 60; // matches Ball.update()
-        const rollSpeed = Math.sqrt(2 * frictionDecel * targetRollDist);
+        const rollPct = 0.15 + Math.random() * 0.10; // 15-25%
+        let targetRollDist = dist * rollPct;
+
+        // Check remaining space in throw direction from landing point
+        const safeMargin = 15; // minimum pixels from border after roll
+        let maxRollX = Infinity, maxRollY = Infinity;
+        if (throwDirX < 0) maxRollX = (clampedX - this.bounds.x - safeMargin) / Math.abs(throwDirX);
+        else if (throwDirX > 0) maxRollX = (this.bounds.x + this.bounds.w - safeMargin - clampedX) / throwDirX;
+        if (throwDirY < 0) maxRollY = (clampedY - this.bounds.y - safeMargin) / Math.abs(throwDirY);
+        else if (throwDirY > 0) maxRollY = (this.bounds.y + this.bounds.h - safeMargin - clampedY) / throwDirY;
+        const maxRoll = Math.max(0, Math.min(maxRollX, maxRollY));
+        targetRollDist = Math.min(targetRollDist, maxRoll);
+
+        // Ball.update() per frame at 60fps: speed -= 0.15 * frictionMult
+        // Stopping distance = v0^2 / (2 * 0.15 * frictionMult)
+        // So v0 = sqrt(0.3 * frictionMult * targetRollDist)
+        const perFrameFriction = 0.15 * this.frictionMult;
+        const rollSpeed = targetRollDist > 0 ? Math.sqrt(2 * perFrameFriction * targetRollDist) : 0;
         const rollVx = throwDirX * rollSpeed;
         const rollVy = throwDirY * rollSpeed;
 
