@@ -122,28 +122,36 @@ export default class PetanqueAI {
         }
 
         // Tireur gets bonus precision when shooting (c'est sa specialite)
-        if (shotMode === 'tirer' && this.personality.personality === 'tireur') {
+        // But WORSE when forced to point (not her thing)
+        if (this.personality.personality === 'tireur') {
+            if (shotMode === 'tirer') { angleDev *= 0.55; powerDev *= 0.55; }
+            else { angleDev *= 1.3; powerDev *= 1.3; }
+        }
+
+        // Pointeur gets bonus precision when pointing (c'est sa specialite)
+        // But TERRIBLE when forced to shoot
+        if (this.personality.personality === 'pointeur') {
+            if (shotMode === 'pointer') { angleDev *= 0.6; powerDev *= 0.6; }
+            else { angleDev *= 1.5; powerDev *= 1.5; }
+        }
+
+        // Boss: consistently good at everything, less noise overall
+        if (this.personality.personality === 'boss') {
             angleDev *= 0.7;
             powerDev *= 0.7;
         }
 
-        // Pointeur gets bonus precision when pointing (c'est sa specialite)
-        if (shotMode === 'pointer' && this.personality.personality === 'pointeur') {
-            angleDev *= 0.75;
-            powerDev *= 0.75;
-        }
-
-        // Wildcard: hot streaks and cold streaks
+        // Wildcard: extreme hot/cold streaks (25% genius, 20% disaster)
         if (this.personality.personality === 'wildcard') {
             const streakFactor = Math.random();
-            if (streakFactor < 0.2) {
-                // Zone: exceptionally precise
-                angleDev *= 0.5;
-                powerDev *= 0.5;
-            } else if (streakFactor > 0.85) {
-                // Tilt: extra sloppy
-                angleDev *= 1.6;
-                powerDev *= 1.6;
+            if (streakFactor < 0.25) {
+                // Zone: exceptionally precise (genius mode)
+                angleDev *= 0.3;
+                powerDev *= 0.3;
+            } else if (streakFactor > 0.80) {
+                // Tilt: complete disaster
+                angleDev *= 2.0;
+                powerDev *= 2.0;
             }
         }
 
@@ -312,9 +320,9 @@ export default class PetanqueAI {
             if (target) return this._makeShot(target);
         }
 
-        // Fall back to pointing (not her strength, coarser loft choice)
+        // Fall back to pointing (not her strength — very coarse aim)
         return {
-            target: { x: cochonnet.x + this._noise(6), y: cochonnet.y + this._noise(6) },
+            target: { x: cochonnet.x + this._noise(12), y: cochonnet.y + this._noise(12) },
             shotMode: 'pointer',
             loftPreset: LOFT_DEMI_PORTEE
         };

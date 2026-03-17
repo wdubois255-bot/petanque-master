@@ -57,8 +57,8 @@ export const LOFT_DEMI_PORTEE = {
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.45,
-    precisionPenalty: 2.0, retroAllowed: true
+    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.50,
+    precisionPenalty: 3.0, retroAllowed: true
 };
 // Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
 // Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :
@@ -89,25 +89,26 @@ export const CARREAU_DISPLACED_MIN = 32;
 // Petanque - lisibilite
 export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
 
-// Petanque - IA personnalites
+// Petanque - IA personnalites (fallback quand pas de characterData)
+// Valeurs alignees avec characters.json
 export const AI_MARCEL = {
-    angleDev: 5, powerDev: 0.08,
-    personality: 'pointeur', shootProbability: 0.1,
+    angleDev: 2, powerDev: 0.03,
+    personality: 'pointeur', shootProbability: 0.08,
     loftPref: 'roulette', targetsCocho: false
 };
 export const AI_FANNY = {
-    angleDev: 5, powerDev: 0.08,
-    personality: 'tireur', shootProbability: 0.85,
+    angleDev: 6, powerDev: 0.10,
+    personality: 'tireur', shootProbability: 0.90,
     loftPref: 'tir', targetsCocho: false
 };
 export const AI_RICARDO = {
     angleDev: 4, powerDev: 0.06,
-    personality: 'stratege', shootProbability: 0.5,
+    personality: 'stratege', shootProbability: 0.45,
     loftPref: 'adaptatif', targetsCocho: true
 };
 export const AI_MARIUS = {
-    angleDev: 3, powerDev: 0.05,
-    personality: 'complet', shootProbability: 0.5,
+    angleDev: 1.5, powerDev: 0.03,
+    personality: 'complet', shootProbability: 0.55,
     loftPref: 'adaptatif', targetsCocho: true
 };
 

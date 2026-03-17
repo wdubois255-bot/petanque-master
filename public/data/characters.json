@@ -27,9 +27,9 @@
       },
       "ai": {
         "personality": "equilibre",
-        "angleDev": 7,
-        "powerDev": 0.12,
-        "shootProbability": 0.35,
+        "angleDev": 10,
+        "powerDev": 0.16,
+        "shootProbability": 0.25,
         "loftPref": "adaptatif",
         "targetsCocho": false
       },
@@ -53,9 +53,9 @@
       },
       "ai": {
         "personality": "pointeur",
-        "angleDev": 3,
-        "powerDev": 0.05,
-        "shootProbability": 0.1,
+        "angleDev": 2,
+        "powerDev": 0.03,
+        "shootProbability": 0.08,
         "loftPref": "roulette",
         "targetsCocho": false
       },
@@ -79,9 +79,9 @@
       },
       "ai": {
         "personality": "tireur",
-        "angleDev": 5,
-        "powerDev": 0.08,
-        "shootProbability": 0.85,
+        "angleDev": 6,
+        "powerDev": 0.10,
+        "shootProbability": 0.90,
         "loftPref": "tir",
         "targetsCocho": false
       },
@@ -107,7 +107,7 @@
         "personality": "stratege",
         "angleDev": 4,
         "powerDev": 0.06,
-        "shootProbability": 0.5,
+        "shootProbability": 0.45,
         "loftPref": "adaptatif",
         "targetsCocho": true
       },
@@ -131,9 +131,9 @@
       },
       "ai": {
         "personality": "wildcard",
-        "angleDev": 4,
-        "powerDev": 0.07,
-        "shootProbability": 0.6,
+        "angleDev": 5,
+        "powerDev": 0.09,
+        "shootProbability": 0.65,
         "loftPref": "adaptatif",
         "targetsCocho": true
       },
@@ -157,8 +157,8 @@
       },
       "ai": {
         "personality": "boss",
-        "angleDev": 2,
-        "powerDev": 0.04,
+        "angleDev": 1.5,
+        "powerDev": 0.03,
         "shootProbability": 0.55,
         "loftPref": "adaptatif",
         "targetsCocho": true
