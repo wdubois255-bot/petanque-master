@@ -1405,7 +1405,6 @@ export default class TerrainRenderer {
             onComplete: () => xMark.destroy()
         });
 
-        // Camera shake
-        this.scene.cameras.main.shake(150, 0.005);
+        // Camera shake removed — fixed scene
     }
 }

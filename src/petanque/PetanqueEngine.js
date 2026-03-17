@@ -246,8 +246,8 @@ export default class PetanqueEngine {
         const targetX = cx + Math.cos(angle) * dist;
         const targetY = cy + Math.sin(angle) * dist;
 
-        // Clamp within terrain (with margin)
-        const margin = 20;
+        // Clamp within terrain (with generous margin to avoid rolling out)
+        const margin = 35;
         const clampedX = Phaser.Math.Clamp(targetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
         const clampedY = Phaser.Math.Clamp(targetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
@@ -256,12 +256,12 @@ export default class PetanqueEngine {
         const cochonnetTex = cochonnetTexMap[this.scene.cochonnetType] || 'ball_cochonnet';
         this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
 
-        // Cochonnet rolls 20-30% beyond landing point (like a real throw)
+        // Cochonnet rolls 5-10% beyond landing point (like a real throw)
         // Physics: with friction decel = FRICTION_BASE * frictionMult * 60,
         // rolling distance = v^2 / (2 * decel). So v = sqrt(2 * decel * targetRollDist)
         const throwDirX = Math.cos(angle);
         const throwDirY = Math.sin(angle);
-        const rollPct = 0.20 + Math.random() * 0.10; // 20-30%
+        const rollPct = 0.05 + Math.random() * 0.05; // 5-10%
         const targetRollDist = dist * rollPct;
         const frictionDecel = 0.15 * this.frictionMult * 60; // matches Ball.update()
         const rollSpeed = Math.sqrt(2 * frictionDecel * targetRollDist);
@@ -465,7 +465,7 @@ export default class PetanqueEngine {
                     : isPlombee ? THROW_SHAKE_INTENSITY * 1.5
                     : THROW_SHAKE_INTENSITY;
                 const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
-                this.scene.cameras.main.shake(shakeDuration, shakeIntensity / 1000);
+                // Camera shake removed — fixed scene
 
                 if (isTir) {
                     // Flash on tir impact
@@ -875,11 +875,7 @@ export default class PetanqueEngine {
         // SFX carreau
         sfxCarreau();
 
-        // Screen shake
-        this.scene.cameras.main.shake(250, 0.004);
-
-        // Flash
-        this.scene.cameras.main.flash(80, 255, 255, 255);
+        // Camera shake/flash removed — fixed scene
 
         // "CARREAU !" text
         const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {

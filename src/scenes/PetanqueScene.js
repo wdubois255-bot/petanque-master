@@ -120,16 +120,6 @@ export default class PetanqueScene extends Phaser.Scene {
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
 
-        // Camera follow setup: invisible target that tracks the active ball
-        this._cameraTarget = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 1, 1, 0, 0).setDepth(0);
-        this._cameraFollowing = false;
-        this._cameraDefaultX = GAME_WIDTH / 2;
-        this._cameraDefaultY = GAME_HEIGHT / 2;
-
-        // Set camera bounds to allow slight panning beyond game area
-        const camPad = 60;
-        this.cameras.main.setBounds(-camPad, -camPad, GAME_WIDTH + camPad * 2, GAME_HEIGHT + camPad * 2);
-
         startCigales();
         this.engine.startGame();
 
@@ -505,52 +495,5 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
 
-        // Camera follow: track the fastest moving ball
-        this._updateCameraFollow();
-    }
-
-    _updateCameraFollow() {
-        const allBalls = this.engine ? [...this.engine.balls, this.engine.cochonnet].filter(b => b?.isAlive) : [];
-        let fastestBall = null;
-        let maxSpeed = 0;
-
-        for (const ball of allBalls) {
-            if (ball.isMoving) {
-                const spd = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                if (spd > maxSpeed) {
-                    maxSpeed = spd;
-                    fastestBall = ball;
-                }
-            }
-        }
-
-        const cam = this.cameras.main;
-        const lerp = 0.08;
-
-        if (fastestBall && maxSpeed > 1.5) {
-            // Follow the ball with smooth lerp
-            this._cameraTarget.x += (fastestBall.x - this._cameraTarget.x) * lerp;
-            this._cameraTarget.y += (fastestBall.y - this._cameraTarget.y) * lerp;
-
-            if (!this._cameraFollowing) {
-                cam.startFollow(this._cameraTarget, true, lerp, lerp);
-                this._cameraFollowing = true;
-            }
-        } else if (this._cameraFollowing) {
-            // Smooth return to center
-            this._cameraTarget.x += (this._cameraDefaultX - this._cameraTarget.x) * 0.05;
-            this._cameraTarget.y += (this._cameraDefaultY - this._cameraTarget.y) * 0.05;
-
-            const distToCenter = Math.abs(this._cameraTarget.x - this._cameraDefaultX) +
-                                 Math.abs(this._cameraTarget.y - this._cameraDefaultY);
-            if (distToCenter < 2) {
-                cam.stopFollow();
-                cam.scrollX = 0;
-                cam.scrollY = 0;
-                this._cameraTarget.x = this._cameraDefaultX;
-                this._cameraTarget.y = this._cameraDefaultY;
-                this._cameraFollowing = false;
-            }
-        }
     }
 }
