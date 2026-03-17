@@ -44,7 +44,7 @@ const OPTIONS = [
         label: 'FORMAT',
         values: [
             { display: 'Tete-a-tete (1v1)', key: 'tete_a_tete' },
-            { display: 'Doublette (2v2)', key: 'doublette' }
+            { display: 'Doublette (2v2) - bientot !', key: 'tete_a_tete' }
         ]
     }
 ];
