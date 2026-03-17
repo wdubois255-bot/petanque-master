@@ -184,3 +184,17 @@ export const COCHONNET_MASS = 30;
 // Circle de lancer - doubled
 export const THROW_CIRCLE_RADIUS = 16;
 export const THROW_CIRCLE_Y_OFFSET = 20;
+
+// Character ID → spritesheet key mapping (centralized, used by all scenes)
+export const CHAR_SPRITE_MAP = {
+    'equilibre': 'rene_animated',
+    'pointeur': 'marcel_animated',
+    'tireur': 'fanny_animated',
+    'stratege': 'ricardo_animated',
+    'wildcard': 'thierry_animated',
+    'boss': 'marius_animated'
+};
+
+export function getCharSpriteKey(char) {
+    return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'rene_animated';
+}
