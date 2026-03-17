@@ -11,7 +11,7 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { startCigales, stopCigales } from '../utils/SoundManager.js';
+import { setSoundScene, startCigales, stopCigales, startMusic, stopMusic } from '../utils/SoundManager.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -125,11 +125,13 @@ export default class PetanqueScene extends Phaser.Scene {
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
 
+        setSoundScene(this);
         startCigales();
+        startMusic('music_match', 0.2);
         this.engine.startGame();
 
-        this.events.on('shutdown', () => stopCigales());
-        this.events.on('destroy', () => stopCigales());
+        this.events.on('shutdown', () => { stopCigales(); stopMusic(); });
+        this.events.on('destroy', () => { stopCigales(); stopMusic(); });
     }
 
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
@@ -194,42 +196,48 @@ export default class PetanqueScene extends Phaser.Scene {
     _createPlayerSprites() {
         // Character sprite scale: 2x for better visibility on the petanque terrain
         const CHAR_SCALE = 2;
-
-        // Player: in throw circle
-        const playerHomeX = this.throwCircleX;
-        const playerHomeY = this.throwCircleY + 20;
-        this.playerSprite = this.add.sprite(playerHomeX, playerHomeY, 'petanque_player', 12)
-            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
-        this._playerHomeX = playerHomeX;
-        this._playerHomeY = playerHomeY;
         this._charScale = CHAR_SCALE;
 
-        // Opponent: right edge of terrain, watching
-        const opponentCochoX = this.terrainX + TERRAIN_WIDTH - 24;
-        const opponentCochoY = this.terrainY + 120;
-        this.opponentSprite = this.add.sprite(opponentCochoX, opponentCochoY, 'petanque_opponent', 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
-        this._opponentCochoX = opponentCochoX;
-        this._opponentCochoY = opponentCochoY;
-        this._opponentCircleX = this.throwCircleX;
-        this._opponentCircleY = this.throwCircleY + 16;
+        // Throw circle position (where the active thrower stands)
+        const circleX = this.throwCircleX;
+        const circleY = this.throwCircleY + 20;
 
-        // Turn arrows
-        this.playerTurnArrow = this.add.text(playerHomeX, playerHomeY - 56, '\u25bc', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#A8B5C2'
+        // Watcher positions (where the non-active player stands, well separated)
+        // Player watches from the LEFT of the terrain
+        this._playerWatchX = this.terrainX - 40;
+        this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.4;
+        // Opponent watches from the RIGHT of the terrain (near cochonnet)
+        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 40;
+        this._opponentWatchY = this.terrainY + 120;
+
+        // Shared circle position (both players use the same throw circle)
+        this._circleX = circleX;
+        this._circleY = circleY;
+
+        // Player starts at the circle (first to throw)
+        this.playerSprite = this.add.sprite(circleX, circleY, 'petanque_player', 12)
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
+
+        // Opponent starts watching from the right
+        this.opponentSprite = this.add.sprite(this._opponentWatchX, this._opponentWatchY, 'petanque_opponent', 0)
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
+
+        // Turn arrows (follow the active thrower at the circle)
+        this.playerTurnArrow = this.add.text(circleX, circleY - 72, '\u25bc', {
+            fontFamily: 'monospace', fontSize: '16px', color: '#87CEEB'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
-        this.opponentTurnArrow = this.add.text(opponentCochoX, opponentCochoY - 40, '\u25bc', {
+        this.opponentTurnArrow = this.add.text(circleX, circleY - 72, '\u25bc', {
             fontFamily: 'monospace', fontSize: '16px', color: '#C44B3F'
         }).setOrigin(0.5).setDepth(21).setVisible(false);
 
         this._playerArrowTween = this.tweens.add({
             targets: this.playerTurnArrow,
-            y: playerHomeY - 48, duration: 400, yoyo: true, repeat: -1, paused: true
+            y: circleY - 64, duration: 400, yoyo: true, repeat: -1, paused: true
         });
         this._opponentArrowTween = this.tweens.add({
             targets: this.opponentTurnArrow,
-            y: opponentCochoY - 32, duration: 400, yoyo: true, repeat: -1, paused: true
+            y: circleY - 64, duration: 400, yoyo: true, repeat: -1, paused: true
         });
 
         // Hook engine events
@@ -255,60 +263,57 @@ export default class PetanqueScene extends Phaser.Scene {
         this._updateTurnIndicator('player');
     }
 
-    _updateOpponentCochoPos() {
+    _updateWatchPositions() {
+        // Opponent watcher follows cochonnet Y if alive
         if (this.engine.cochonnet && this.engine.cochonnet.isAlive) {
-            this._opponentCochoX = this.terrainX + TERRAIN_WIDTH + 16;
-            this._opponentCochoY = this.engine.cochonnet.y + 10;
+            this._opponentWatchY = Math.max(this.terrainY + 60,
+                Math.min(this.engine.cochonnet.y + 10, this.terrainY + TERRAIN_HEIGHT - 40));
+            this._playerWatchY = this._opponentWatchY;
         }
     }
 
     _animateToCircle(team) {
-        this._updateOpponentCochoPos();
+        this._updateWatchPositions();
+        const s = this._charScale || 1;
 
-        if (team === 'opponent') {
-            this.tweens.add({
-                targets: this.opponentSprite,
-                scaleY: this._charScale || 1,
-                x: this._opponentCircleX, y: this._opponentCircleY,
-                duration: 500, ease: 'Sine.easeInOut',
-                onUpdate: () => {
-                    this.opponentSprite.setFrame(Math.floor(Date.now() / 150) % 4);
-                },
-                onComplete: () => this.opponentSprite.setFrame(12)
-            });
-            this.tweens.add({
-                targets: this.opponentTurnArrow,
-                x: this._opponentCircleX, y: this._opponentCircleY - 56,
-                duration: 500
-            });
-            this.tweens.add({
-                targets: this.playerSprite,
-                x: this.terrainX - 16, y: this._opponentCochoY,
-                duration: 400, ease: 'Sine.easeInOut',
-                onComplete: () => this.playerSprite.setFrame(0)
-            });
-        } else {
-            this.tweens.add({
-                targets: this.playerSprite,
-                x: this._playerHomeX, y: this._playerHomeY,
-                duration: 400, ease: 'Sine.easeInOut',
-                onComplete: () => this.playerSprite.setFrame(12)
-            });
-            this.tweens.add({
-                targets: this.opponentSprite,
-                x: this._opponentCochoX, y: this._opponentCochoY,
-                scaleY: this._charScale || 1, duration: 500, ease: 'Sine.easeInOut',
-                onUpdate: () => {
-                    this.opponentSprite.setFrame(Math.floor(Date.now() / 150) % 4);
-                },
-                onComplete: () => this.opponentSprite.setFrame(0)
-            });
-            this.tweens.add({
-                targets: this.opponentTurnArrow,
-                x: this._opponentCochoX, y: this._opponentCochoY - 40,
-                duration: 500
-            });
-        }
+        // Active thrower goes to circle, watcher moves to the side
+        const thrower = team === 'player' ? this.playerSprite : this.opponentSprite;
+        const watcher = team === 'player' ? this.opponentSprite : this.playerSprite;
+        const watchX = team === 'player' ? this._opponentWatchX : this._playerWatchX;
+        const watchY = team === 'player' ? this._opponentWatchY : this._playerWatchY;
+
+        // Thrower walks to circle (faces north = looking at terrain)
+        this.tweens.add({
+            targets: thrower,
+            x: this._circleX, y: this._circleY,
+            scaleX: s, scaleY: s,
+            duration: 500, ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                // Walk animation: cycle south frames while moving
+                thrower.setFrame(Math.floor(Date.now() / 150) % 4);
+            },
+            onComplete: () => thrower.setFrame(12) // face north (looking at terrain)
+        });
+
+        // Watcher moves to sideline (faces south = watching)
+        this.tweens.add({
+            targets: watcher,
+            x: watchX, y: watchY,
+            scaleX: s, scaleY: s,
+            duration: 400, ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                watcher.setFrame(Math.floor(Date.now() / 150) % 4);
+            },
+            onComplete: () => watcher.setFrame(0) // face south (watching)
+        });
+
+        // Arrow follows the thrower at the circle
+        const arrow = team === 'player' ? this.playerTurnArrow : this.opponentTurnArrow;
+        this.tweens.add({
+            targets: arrow,
+            x: this._circleX, y: this._circleY - 72,
+            duration: 500
+        });
     }
 
     _animateCharThrow(team) {
@@ -387,7 +392,7 @@ export default class PetanqueScene extends Phaser.Scene {
                         onStart: () => throwerSprite.setFrame(throwerSouthFrames[2])
                     },
                     {
-                        y: throwerSprite.y, scaleX: 1.0, scaleY: this._charScale || 1,
+                        y: throwerSprite.y, scaleX: this._charScale || 1, scaleY: this._charScale || 1,
                         duration: 250, ease: 'Bounce.easeOut',
                         onStart: () => throwerSprite.setFrame(throwerSouthFrames[0])
                     }

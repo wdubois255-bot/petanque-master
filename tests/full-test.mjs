@@ -171,11 +171,18 @@ function generateScenarios() {
 async function runScenario(page, scenario) {
     // Navigate and wait for boot
     await page.goto(URL);
-    await sleep(2000);
+
+    // Wait for Phaser game to be ready (poll up to 8s)
+    for (let i = 0; i < 40; i++) {
+        const ready = await page.evaluate(() => !!window.__PHASER_GAME__);
+        if (ready) break;
+        await sleep(200);
+    }
+    await sleep(1500); // Extra time for assets to load
 
     // Start PetanqueScene directly
     const startResult = await page.evaluate((s) => {
-        const game = window.Phaser?.GAMES?.[0];
+        const game = window.__PHASER_GAME__;
         if (!game) return 'no_game';
         window.__TEST_GAME__ = game;
         const sm = game.scene;

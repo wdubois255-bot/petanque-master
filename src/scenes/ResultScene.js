@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -24,6 +25,10 @@ export default class ResultScene extends Phaser.Scene {
     }
 
     create() {
+        setSoundScene(this);
+        // Play victory/defeat sound
+        if (this.won) { sfxVictory(); } else { sfxDefeat(); }
+
         // Background
         const bg = this.add.graphics();
         if (this.won) {
@@ -60,7 +65,6 @@ export default class ResultScene extends Phaser.Scene {
 
         // Character sprites
         const winner = this.won ? this.playerCharacter : this.opponentCharacter;
-        const _loser = this.won ? this.opponentCharacter : this.playerCharacter;
 
         if (winner) {
             const winKey = this._getSpriteKey(winner);

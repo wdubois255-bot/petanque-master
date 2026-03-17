@@ -59,6 +59,20 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('terrain_fissure', `${BASE}assets/sprites/terrain_fissure.png`);
         this.load.image('terrain_planche_bord', `${BASE}assets/sprites/terrain_planche_bord.png`);
 
+        // Audio - SFX (ElevenLabs generated)
+        const sfxFiles = [
+            'boule_clac', 'boule_roulement', 'boule_atterrissage',
+            'cochonnet_touche', 'cigales_ambiance', 'lancer_swoosh',
+            'victoire', 'defaite', 'carreau', 'point_marque',
+            'ui_click', 'brise_vent'
+        ];
+        for (const sfx of sfxFiles) {
+            this.load.audio(`sfx_${sfx}`, `${BASE}assets/audio/sfx/${sfx}.mp3`);
+        }
+        // Audio - Music
+        this.load.audio('music_match', `${BASE}assets/audio/music/match_theme.mp3`);
+        this.load.audio('music_title', `${BASE}assets/audio/music/title_theme.mp3`);
+
         // Loading text
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'Chargement...', {
             fontFamily: 'monospace',

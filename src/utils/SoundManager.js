@@ -1,8 +1,15 @@
-// Procedural SFX using Web Audio API (no external files needed)
-// Generates retro-style sounds for petanque gameplay
+// Sound Manager - Uses real audio files (ElevenLabs) with procedural fallback
+// Requires Phaser scene reference for file-based audio
 
 let ctx = null;
 let cigalesSource = null;
+let _scene = null;
+let _musicPlaying = null;
+
+/** Set the active Phaser scene (call once per scene create) */
+export function setSoundScene(scene) {
+    _scene = scene;
+}
 
 function getCtx() {
     if (!ctx) {
@@ -11,6 +18,17 @@ function getCtx() {
     if (ctx.state === 'suspended') ctx.resume();
     return ctx;
 }
+
+/** Play a Phaser audio key if loaded, return true if played */
+function playFile(key, config = {}) {
+    if (_scene && _scene.cache.audio.exists(key)) {
+        _scene.sound.play(key, { volume: 0.5, ...config });
+        return true;
+    }
+    return false;
+}
+
+// === Procedural helpers (fallback) ===
 
 function playTone(freq, duration, type = 'sine', volume = 0.3, decay = true) {
     const c = getCtx();
@@ -50,40 +68,41 @@ function playNoise(duration, volume = 0.15, filterFreq = 2000, filterType = 'low
     source.start(c.currentTime);
 }
 
+// === SFX exports ===
+
 export function sfxBouleBoule() {
-    // Metallic clack: two short tones + 2nd harmonic + noise burst
+    if (playFile('sfx_boule_clac')) return;
     playTone(800, 0.08, 'square', 0.25);
     playTone(1200, 0.05, 'square', 0.15);
-    playTone(1600, 0.04, 'sine', 0.08); // 2nd harmonic for richness
+    playTone(1600, 0.04, 'sine', 0.08);
     playNoise(0.06, 0.2, 4000);
 }
 
 export function sfxBouleCochonnet() {
-    // Higher pitch, lighter impact
+    if (playFile('sfx_cochonnet_touche')) return;
     playTone(1400, 0.06, 'square', 0.2);
     playTone(2000, 0.04, 'sine', 0.1);
     playNoise(0.04, 0.12, 5000);
 }
 
 export function sfxLanding(terrainType = 'terre') {
-    // Thud + terrain-specific noise + gravel crunch
+    if (playFile('sfx_boule_atterrissage')) return;
     const freqMap = { terre: 200, herbe: 300, sable: 150, dalles: 600 };
     const noiseMap = { terre: 1500, herbe: 1000, sable: 800, dalles: 3000 };
     const freq = freqMap[terrainType] || 200;
     const nf = noiseMap[terrainType] || 1500;
     playTone(freq, 0.12, 'sine', 0.2);
     playNoise(0.1, 0.15, nf);
-    // Gravel crunch (bandpass noise 800-2000Hz)
     playNoise(0.08, 0.1, 1400, 'bandpass');
 }
 
 export function sfxRoll() {
-    // Low rumble
+    if (playFile('sfx_boule_roulement', { volume: 0.25 })) return;
     playNoise(0.08, 0.04, 400);
 }
 
 export function sfxCarreau() {
-    // Triumphant chime: ascending tones + reverb echo
+    if (playFile('sfx_carreau', { volume: 0.7 })) return;
     const c = getCtx();
     const now = c.currentTime;
     [523, 659, 784, 1047].forEach((freq, i) => {
@@ -97,8 +116,6 @@ export function sfxCarreau() {
         gain.connect(c.destination);
         osc.start(now + i * 0.08);
         osc.stop(now + i * 0.08 + 0.3);
-
-        // Echo (delay 100ms, lower volume)
         const osc2 = c.createOscillator();
         const gain2 = c.createGain();
         osc2.type = 'sine';
@@ -113,7 +130,7 @@ export function sfxCarreau() {
 }
 
 export function sfxThrow() {
-    // Swoosh: descending noise
+    if (playFile('sfx_lancer_swoosh')) return;
     const c = getCtx();
     const bufferSize = c.sampleRate * 0.2;
     const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
@@ -136,10 +153,12 @@ export function sfxThrow() {
 }
 
 export function sfxUIClick() {
+    if (playFile('sfx_ui_click', { volume: 0.4 })) return;
     playTone(600, 0.05, 'square', 0.1);
 }
 
 export function sfxVictory() {
+    if (playFile('sfx_victoire', { volume: 0.6 })) return;
     const c = getCtx();
     const now = c.currentTime;
     [392, 494, 587, 784, 784].forEach((freq, i) => {
@@ -157,6 +176,7 @@ export function sfxVictory() {
 }
 
 export function sfxDefeat() {
+    if (playFile('sfx_defaite', { volume: 0.6 })) return;
     const c = getCtx();
     const now = c.currentTime;
     [400, 350, 300, 250].forEach((freq, i) => {
@@ -174,13 +194,29 @@ export function sfxDefeat() {
 }
 
 export function sfxScore() {
+    if (playFile('sfx_point_marque', { volume: 0.5 })) return;
     playTone(880, 0.15, 'sine', 0.15);
     setTimeout(() => playTone(1100, 0.2, 'sine', 0.12), 100);
 }
 
-// --- AMBIANCE : cigales procedurales (boucle continue) ---
+// === AMBIANCE ===
+
 export function startCigales() {
-    if (cigalesSource) return; // already playing
+    if (cigalesSource) return;
+    // Try Phaser audio (real cigales loop)
+    if (_scene && _scene.cache.audio.exists('sfx_cigales_ambiance')) {
+        const cigales = _scene.sound.add('sfx_cigales_ambiance', { loop: true, volume: 0.3 });
+        cigales.play();
+        cigalesSource = { phaserSound: cigales };
+        // Also start breeze if available
+        if (_scene.cache.audio.exists('sfx_brise_vent')) {
+            const brise = _scene.sound.add('sfx_brise_vent', { loop: true, volume: 0.15 });
+            brise.play();
+            cigalesSource.brise = brise;
+        }
+        return;
+    }
+    // Fallback: procedural cigales
     const c = getCtx();
     const duration = 2;
     const sampleRate = c.sampleRate;
@@ -188,9 +224,8 @@ export function startCigales() {
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
         const t = i / sampleRate;
-        // High-freq chirp modulated at ~4Hz (cicada rhythm)
         const chirp = Math.sin(t * 4000 * Math.PI) * 0.5;
-        const envelope = Math.sin(t * 8 * Math.PI); // 4Hz modulation
+        const envelope = Math.sin(t * 8 * Math.PI);
         data[i] = chirp * Math.max(0, envelope) * 0.03;
     }
     const source = c.createBufferSource();
@@ -205,8 +240,30 @@ export function startCigales() {
 }
 
 export function stopCigales() {
-    if (cigalesSource) {
+    if (!cigalesSource) return;
+    if (cigalesSource.phaserSound) {
+        cigalesSource.phaserSound.stop();
+        if (cigalesSource.brise) cigalesSource.brise.stop();
+    } else if (cigalesSource.source) {
         cigalesSource.source.stop();
-        cigalesSource = null;
+    }
+    cigalesSource = null;
+}
+
+// === MUSIC ===
+
+export function startMusic(key = 'music_match', volume = 0.25) {
+    stopMusic();
+    if (_scene && _scene.cache.audio.exists(key)) {
+        _musicPlaying = _scene.sound.add(key, { loop: true, volume });
+        _musicPlaying.play();
+    }
+}
+
+export function stopMusic() {
+    if (_musicPlaying) {
+        _musicPlaying.stop();
+        _musicPlaying.destroy();
+        _musicPlaying = null;
     }
 }

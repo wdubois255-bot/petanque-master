@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, formatPlaytime } from '../utils/SaveManager.js';
+import { setSoundScene, startMusic, stopMusic, sfxUIClick } from '../utils/SoundManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 const SHADOW_HEAVY = { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true };
@@ -17,6 +18,9 @@ export default class TitleScene extends Phaser.Scene {
         this._inputEnabled = false;
         this._menuContainer = null;
 
+        setSoundScene(this);
+        startMusic('music_title', 0.3);
+
         this._createBackground();
         this._createAtmosphere();
         this._createCharacters();
@@ -25,6 +29,8 @@ export default class TitleScene extends Phaser.Scene {
         this._createControlsHint();
         this._createVersionTag();
         this._playIntroSequence();
+
+        this.events.on('shutdown', () => stopMusic());
 
         // Keyboard
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -733,6 +739,7 @@ export default class TitleScene extends Phaser.Scene {
         }
 
         if (confirm) {
+            sfxUIClick();
             if (this._mode === 'main') {
                 this._onMainSelect();
             } else if (this._mode === 'slots') {
