@@ -408,68 +408,47 @@ export default class PetanqueScene extends Phaser.Scene {
         }
     }
 
-    // === BALL TEXTURES (rolling spritesheets — 6 frames, highlight rotates) ===
+    // === BALL TEXTURES (rolling spritesheets from real PNG sprites) ===
 
     _createBallTextures() {
-        const ROLL_FRAMES = 6;
+        const ROLL_FRAMES = 8;
         const FRAME_SIZE = 32;
-        const defs = [
-            { key: 'ball_acier',     base: '#A8B5C2', hi: '#E0E8F0', shadow: '#606870' },
-            { key: 'ball_bronze',    base: '#CD7F32', hi: '#E8A050', shadow: '#8B5A20' },
-            { key: 'ball_chrome',    base: '#DCDCDC', hi: '#FFFFFF', shadow: '#909090' },
-            { key: 'ball_noire',     base: '#4A4A5A', hi: '#7A7A8A', shadow: '#2A2A35' },
-            { key: 'ball_rouge',     base: '#CC3333', hi: '#FF6060', shadow: '#882020' },
-            { key: 'ball_opponent',  base: '#C44B3F', hi: '#E87060', shadow: '#8A2A20' },
-            { key: 'ball_cochonnet', base: '#D4A574', hi: '#F0D0A0', shadow: '#8B6B4A' },
-            { key: 'ball_cochonnet_bleu', base: '#3355CC', hi: '#6688FF', shadow: '#1A2A6A' },
-            { key: 'ball_cochonnet_vert', base: '#33AA44', hi: '#66DD77', shadow: '#1A6620' }
+
+        // All ball texture keys that should become rolling spritesheets
+        const ballKeys = [
+            'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
+            'ball_opponent', 'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert'
         ];
 
-        for (const { key, base, hi, shadow } of defs) {
-            // Remove static PNG if loaded, replace with animated spritesheet
-            if (this.textures.exists(key)) this.textures.remove(key);
+        for (const key of ballKeys) {
+            if (!this.textures.exists(key)) continue;
 
+            // Get the original PNG image source
+            const srcImage = this.textures.get(key).getSourceImage();
+
+            // Create a spritesheet canvas: N frames of the same ball rotated
             const canvas = document.createElement('canvas');
             canvas.width = FRAME_SIZE * ROLL_FRAMES;
             canvas.height = FRAME_SIZE;
             const ctx = canvas.getContext('2d');
 
+            // Disable smoothing for pixel art
+            ctx.imageSmoothingEnabled = false;
+
             for (let f = 0; f < ROLL_FRAMES; f++) {
-                const cx = f * FRAME_SIZE + 16;
-                const cy = 16;
-                const r = 14;
-
-                // Highlight rotates around the ball center
+                const cx = f * FRAME_SIZE + FRAME_SIZE / 2;
+                const cy = FRAME_SIZE / 2;
                 const angle = (f / ROLL_FRAMES) * Math.PI * 2;
-                const hiX = cx + Math.cos(angle) * r * 0.35;
-                const hiY = cy + Math.sin(angle) * r * 0.35;
 
-                // Gradient follows highlight position
-                const grad = ctx.createRadialGradient(hiX, hiY, 1, cx, cy, r);
-                grad.addColorStop(0, hi);
-                grad.addColorStop(0.4, base);
-                grad.addColorStop(1, shadow);
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Specular highlight dot (follows angle)
-                const specX = cx + Math.cos(angle) * r * 0.45;
-                const specY = cy + Math.sin(angle) * r * 0.45;
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.beginPath();
-                ctx.arc(specX, specY, 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Secondary subtle highlight (opposite side, dimmer)
-                const sec = angle + Math.PI;
-                ctx.fillStyle = 'rgba(255,255,255,0.15)';
-                ctx.beginPath();
-                ctx.arc(cx + Math.cos(sec) * r * 0.3, cy + Math.sin(sec) * r * 0.3, 1.5, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.drawImage(srcImage, -FRAME_SIZE / 2, -FRAME_SIZE / 2, FRAME_SIZE, FRAME_SIZE);
+                ctx.restore();
             }
 
+            // Replace the static texture with the rolling spritesheet
+            this.textures.remove(key);
             this.textures.addSpriteSheet(key, canvas, {
                 frameWidth: FRAME_SIZE,
                 frameHeight: FRAME_SIZE
