@@ -435,55 +435,41 @@ export default class PetanqueScene extends Phaser.Scene {
         const watchX = team === 'player' ? this._opponentWatchX : this._playerWatchX;
         const watchY = team === 'player' ? this._opponentWatchY : this._playerWatchY;
 
-        // CRITICAL: kill ALL existing movement tweens on BOTH sprites first
-        // This prevents the "2 players in circle" bug
+        // CRITICAL: kill ALL tweens + cancel any pending delayedCall
         this.tweens.getTweensOf(this.playerSprite).forEach(t => t.stop());
         this.tweens.getTweensOf(this.opponentSprite).forEach(t => t.stop());
-        // Reset scale in case a tween was interrupted mid-squash
+        if (this._transitionTimer) { this._transitionTimer.destroy(); this._transitionTimer = null; }
+
+        // Reset both sprites to clean state
         this.playerSprite.scaleX = s;
         this.playerSprite.scaleY = s;
+        this.playerSprite.angle = 0;
         this.opponentSprite.scaleX = s;
         this.opponentSprite.scaleY = s;
+        this.opponentSprite.angle = 0;
 
-        // Step 1: Watcher leaves the circle FIRST (fast)
+        // IMMEDIATE: teleport watcher to sideline (no animation = no overlap possible)
+        watcher.x = watchX;
+        watcher.y = watchY;
         watcher.setFrame(0); // face south
+
+        // Thrower walks to circle (smooth animation)
         this.tweens.add({
-            targets: watcher,
-            x: watchX, y: watchY,
-            duration: 300, ease: 'Sine.easeIn',
+            targets: thrower,
+            x: this._circleX, y: this._circleY,
+            duration: 400, ease: 'Sine.easeInOut',
             onUpdate: () => {
                 const t = Date.now();
                 const phase = Math.sin(t / 80 * Math.PI);
-                watcher.setFrame(Math.floor(t / 150) % 4);
-                watcher.scaleY = s * (1 + phase * 0.04);
-                watcher.scaleX = s * (1 - phase * 0.015);
+                thrower.setFrame(Math.floor(t / 150) % 4);
+                thrower.scaleY = s * (1 + phase * 0.04);
+                thrower.scaleX = s * (1 - phase * 0.015);
             },
             onComplete: () => {
-                watcher.setFrame(0);
-                watcher.scaleX = s;
-                watcher.scaleY = s;
+                thrower.setFrame(12); // face north
+                thrower.scaleX = s;
+                thrower.scaleY = s;
             }
-        });
-
-        // Step 2: Thrower walks to circle AFTER a short delay (sequential feel)
-        this.time.delayedCall(150, () => {
-            this.tweens.add({
-                targets: thrower,
-                x: this._circleX, y: this._circleY,
-                duration: 450, ease: 'Sine.easeInOut',
-                onUpdate: () => {
-                    const t = Date.now();
-                    const phase = Math.sin(t / 80 * Math.PI);
-                    thrower.setFrame(Math.floor(t / 150) % 4);
-                    thrower.scaleY = s * (1 + phase * 0.04);
-                    thrower.scaleX = s * (1 - phase * 0.015);
-                },
-                onComplete: () => {
-                    thrower.setFrame(12); // face north (looking at terrain)
-                    thrower.scaleX = s;
-                    thrower.scaleY = s;
-                }
-            });
         });
 
         // Arrow follows the thrower
@@ -492,7 +478,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.tweens.add({
             targets: arrow,
             x: this._circleX, y: this._circleY - 72,
-            duration: 500
+            duration: 400
         });
     }
 
