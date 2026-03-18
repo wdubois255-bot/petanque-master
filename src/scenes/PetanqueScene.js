@@ -102,6 +102,11 @@ export default class PetanqueScene extends Phaser.Scene {
         const playerStats = this.playerCharacter?.stats || null;
         this.aimingSystem = new AimingSystem(this, this.engine, playerStats);
 
+        // Focus (Respire) + Character Unique Ability
+        this.aimingSystem.resetFocusCharges(5);
+        const ability = this._getCharacterAbility(this.playerCharId);
+        if (ability) this.aimingSystem.setCharacterAbility(ability);
+
         // AI
         if (this.localMultiplayer) {
             this.ai = null;
@@ -239,6 +244,49 @@ export default class PetanqueScene extends Phaser.Scene {
         this.input.keyboard.once('keydown-SPACE', dismiss);
     }
 
+    // === CHARACTER UNIQUE ABILITIES ===
+
+    _getCharacterAbility(charId) {
+        const ABILITIES = {
+            'ley': {
+                id: 'carreau_instinct',
+                name: 'Carreau Instinct',
+                charges: 1,
+                description: 'Tir: ejection 50% plus puissante'
+                // Effect: applied in PetanqueEngine when a ball-ball collision happens
+            },
+            'magicien': {
+                id: 'lecture_terrain',
+                name: 'Lecture du Terrain',
+                charges: 2,
+                description: 'Affiche la trajectoire complete pendant 3s'
+                // Effect: shows full predicted trajectory line
+            },
+            'la_choupe': {
+                id: 'coup_de_canon',
+                name: 'Coup de Canon',
+                charges: 2,
+                description: 'Puissance +30%, precision -20%'
+                // Effect: modifies power and wobble for this throw
+            },
+            'marcel': {
+                id: 'vieux_renard',
+                name: 'Vieux Renard',
+                charges: 3,
+                description: 'Annule le tremblement de pression'
+                // Effect: zeroes pressure tremble
+            },
+            'reyes': {
+                id: 'le_mur',
+                name: 'Le Mur',
+                charges: 2,
+                description: 'Boule 2x plus large pour bloquer'
+                // Effect: doubles collision radius of thrown ball
+            }
+        };
+        return ABILITIES[charId] || null;
+    }
+
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
 
     _getCharSpriteKey(charId) {
@@ -250,7 +298,8 @@ export default class PetanqueScene extends Phaser.Scene {
             'ley': PALETTES.player,
             'magicien': PALETTES.player,
             'la_choupe': PALETTES.player,
-            'marcel': PALETTES.npc_marcel
+            'marcel': PALETTES.npc_marcel,
+            'reyes': PALETTES.player
         };
         return mapping[charId] || PALETTES.player;
     }
@@ -706,6 +755,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // All ball texture keys that should become rolling spritesheets
         const ballKeys = [
             'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
+            'ball_doree', 'ball_rouille', 'ball_bleue', 'ball_cuivre', 'ball_titane',
             'ball_opponent', 'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert'
         ];
 

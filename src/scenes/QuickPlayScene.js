@@ -9,7 +9,8 @@ const CHAR_VALUES = [
     { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
     { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' },
     { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
-    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'marcel' }
+    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'marcel' },
+    { display: 'Reyes', key: 'reyes_animated', sprite: 'reyes_animated', charId: 'reyes' }
 ];
 
 const OPTIONS = [

@@ -49,6 +49,7 @@
         "post_match_win": ["C'etait serre ? Non.", "Reviens quand tu veux, meme resultat.", "Merci pour l'echauffement."],
         "post_match_lose": ["Bien joue. T'as gere.", "Faudra que j'ajuste mon tir.", "La prochaine, tu verras."]
       },
+      "ability": { "name": "Carreau Instinct", "charges": 1, "description": "Tir: ejection 50% plus puissante" },
       "sprite": "char_ley",
       "portrait": "portrait_ley",
       "palette": { "primary": "#4A6FA5", "secondary": "#3A2E28", "accent": "#D4A574" },
@@ -91,6 +92,7 @@
         "post_match_win": ["Classe magistrale.", "La precision, ca s'apprend. Ou pas.", "Simple formalite."],
         "post_match_lose": ["Tu as de bons reflexes. Respect.", "Je reviendrai avec de meilleurs angles.", "Bien joue, vraiment."]
       },
+      "ability": { "name": "Lecture du Terrain", "charges": 2, "description": "Affiche la trajectoire complete pendant 3s" },
       "sprite": "char_le_magicien",
       "portrait": "portrait_le_magicien",
       "palette": { "primary": "#8B4513", "secondary": "#F5E6D0", "accent": "#C44B3F" },
@@ -111,9 +113,9 @@
       },
       "ai": {
         "personality": "tireur",
-        "angleDev": 10,
-        "powerDev": 0.07,
-        "shootProbability": 0.82,
+        "angleDev": 7,
+        "powerDev": 0.06,
+        "shootProbability": 0.85,
         "loftPref": "tir",
         "targetsCocho": false
       },
@@ -133,6 +135,7 @@
         "post_match_win": ["Trop fort ! Comme d'hab !", "La puissance, y'a que ca !", "Qui veut la suite ?"],
         "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"]
       },
+      "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
       "sprite": "char_la_choupe",
       "portrait": "portrait_la_choupe",
       "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
@@ -175,9 +178,53 @@
         "post_match_win": ["Retourne t'entrainer.", "Classique.", "L'experience parle."],
         "post_match_lose": ["Bien joue. Mon successeur, peut-etre.", "Je reviendrai.", "T'as du merite."]
       },
+      "ability": { "name": "Vieux Renard", "charges": 3, "description": "Annule le tremblement de pression" },
       "sprite": "char_marcel",
       "portrait": "portrait_marcel",
       "palette": { "primary": "#A8B5C2", "secondary": "#3A2E28", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
+      "id": "reyes",
+      "name": "Reyes",
+      "title": "Le Mur du Sud",
+      "catchphrase": "Tu tires ou tu pointes ? Moi je fais les deux.",
+      "description": "Reyes est un colosse au sourire trompeur. Derriere son air jovial se cache un joueur complet qui maitrise aussi bien le tir que la pointe. Sa corpulence lui donne un avantage psychologique — on le sous-estime toujours. Erreur fatale. Son calme legendaire en fait un adversaire redoutable dans les moments de tension.",
+      "archetype": "equilibre",
+      "stats": {
+        "precision": 7,
+        "puissance": 7,
+        "effet": 6,
+        "sang_froid": 7
+      },
+      "ai": {
+        "personality": "equilibre",
+        "angleDev": 4,
+        "powerDev": 0.05,
+        "shootProbability": 0.45,
+        "loftPref": "adaptatif",
+        "targetsCocho": false
+      },
+      "barks": {
+        "good_shot": ["Voila.", "Tranquille.", "Comme a la maison.", "Facile."],
+        "bad_shot": ["Aie.", "C'est rien.", "La suivante.", "Le terrain glisse."],
+        "opponent_good": ["Pas mal.", "Joli.", "T'as du feeling."],
+        "opponent_bad": ["Fallait mieux viser.", "Trop court.", "Allez, concentre-toi."],
+        "carreau": ["CARREAU ! On est la !", "Degage !", "Ca, c'est Reyes.", "Propre et net."],
+        "opponent_carreau": ["Oh la...", "Costaud.", "Bien tape."],
+        "taking_lead": ["On gere.", "Comme prevu.", "Le mur tient."],
+        "losing_badly": ["On revient.", "C'est pas fini.", "Patience..."],
+        "match_point": ["Allez, on ferme.", "Dernier effort.", "Pour la gagne."],
+        "victory": ["Le Mur du Sud !", "Trop solide.", "Merci, c'etait sympa."],
+        "defeat": ["Bien joue. Vraiment.", "La prochaine, ca sera different.", "Respect."],
+        "pre_match": ["Tu tires ou tu pointes ?", "Allez, on s'amuse.", "Pret ? Parce que moi oui."],
+        "post_match_win": ["C'etait un plaisir.", "Reviens quand tu veux.", "Le Sud gagne toujours."],
+        "post_match_lose": ["T'es fort. Je note.", "La revanche sera terrible.", "Chapeau."]
+      },
+      "ability": { "name": "Le Mur", "charges": 2, "description": "Boule 2x plus large pour bloquer" },
+      "sprite": "char_reyes",
+      "portrait": "portrait_reyes",
+      "palette": { "primary": "#F0E8D8", "secondary": "#8B6B4A", "accent": "#D4A020" },
       "unlocked": true
     }
   ]

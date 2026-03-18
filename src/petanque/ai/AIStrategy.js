@@ -126,7 +126,10 @@ export default class AIStrategy {
 
     // Smart placement offset (used by Pointeur and Boss)
     _computePointeurOffset(cochonnet, sit) {
-        const baseOffset = 3 + this._noise(4);
+        // Offset scales with character precision: PRE 10 = 1-3px, PRE 5 = 4-8px
+        // A "good pointer" at PRE 10 should land 6-7/10 within ~5px (≈20cm)
+        const prec = this.ai._charStats?.precision || 6;
+        const baseOffset = (11 - prec) * 0.6 + this._noise((11 - prec) * 0.4);
 
         if (sit.playerBalls.length === 0 || sit.aiHasPoint) {
             const angle = Math.random() * Math.PI * 2;
@@ -139,11 +142,12 @@ export default class AIStrategy {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < 1) return { x: baseOffset, y: 0 };
 
+        // Place between threat and cochonnet (blocking position)
         const nx = dx / dist;
         const ny = dy / dist;
         return {
-            x: nx * baseOffset * 0.5 + this._noise(2),
-            y: ny * baseOffset * 0.5 + this._noise(2)
+            x: nx * baseOffset * 0.4 + this._noise(baseOffset * 0.3),
+            y: ny * baseOffset * 0.4 + this._noise(baseOffset * 0.3)
         };
     }
 
