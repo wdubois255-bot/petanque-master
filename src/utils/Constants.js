@@ -66,9 +66,11 @@ export const LOFT_PLOMBEE = {
 // - Cible recoit ~81% de l'energie → ejectee loin
 // - Friction arrete le tireur en ~15cm = carreau naturel
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
+// Tir au fer : atterrit quasi SUR la cible (98% vol), puis roule à peine
+// rollEfficiency élevé = la vitesse résiduelle est transférée en collision
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 14.0,
+    landingFactor: 0.98, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 16.0,
     precisionPenalty: 1.0, retroAllowed: true
 };
 
@@ -83,7 +85,7 @@ export const PREDICTION_SAMPLE_RATE = 3;
 export const PREDICTION_DOT_RADIUS = 2;
 
 // Petanque - carreau (detecte naturellement grace au COR 0.62)
-export const CARREAU_THRESHOLD = 24;
+export const CARREAU_THRESHOLD = 28;
 export const CARREAU_DISPLACED_MIN = 32;
 
 // Petanque - lisibilite

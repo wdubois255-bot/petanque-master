@@ -526,9 +526,9 @@ describe('Loft presets physics', () => {
         expect(LOFT_PLOMBEE.precisionPenalty).toBe(3.0);
     });
 
-    it('tir: 95% fly, high roll efficiency for energy transfer', () => {
-        expect(LOFT_TIR.landingFactor).toBe(0.95);
-        expect(LOFT_TIR.rollEfficiency).toBe(14.0);
+    it('tir: 98% fly, high roll efficiency for energy transfer', () => {
+        expect(LOFT_TIR.landingFactor).toBe(0.98);
+        expect(LOFT_TIR.rollEfficiency).toBe(16.0);
         expect(LOFT_TIR.retroAllowed).toBe(true);
     });
 

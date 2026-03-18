@@ -344,15 +344,20 @@ export default class Ball {
         // Apply knockback bonus (e.g. Bronze hits harder)
         impulse *= Math.max(a.knockbackMult || 1, b.knockbackMult || 1);
 
+        // === PUISSANCE impacts ejection distance ===
+        // The thrower's puissance stat amplifies how far the target gets pushed
+        // PUI 5 = 1.0x (baseline), PUI 10 = 1.25x, PUI 1 = 0.8x
+        const throwerPui = a.puissanceStat || b.puissanceStat || 0;
+        const puissanceBoost = throwerPui > 0 ? 0.8 + (throwerPui - 1) / 9 * 0.45 : 1.0;
+
         // Carreau Instinct (Ley): 50% stronger ejection on TARGET ball only
-        // Only applies when: (1) the THROWER (a) has the flag, (2) it's boule-vs-boule (not cochonnet)
         const carreauBoostB = (a.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
         const carreauBoostA = (b.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
 
         a.vx -= impulse * b.mass * nx * carreauBoostA;
         a.vy -= impulse * b.mass * ny * carreauBoostA;
-        b.vx += impulse * a.mass * nx * carreauBoostB;
-        b.vy += impulse * a.mass * ny * carreauBoostB;
+        b.vx += impulse * a.mass * nx * carreauBoostB * puissanceBoost;
+        b.vy += impulse * a.mass * ny * carreauBoostB * puissanceBoost;
 
         const overlap = minDist - dist;
         const sepX = (overlap / 2 + 0.5) * nx;

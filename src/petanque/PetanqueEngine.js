@@ -370,9 +370,14 @@ export default class PetanqueEngine {
         // Apply retro (backspin) if the loft allows it, amplified by boule retroBonus
         const baseRetro = (loftPreset || LOFT_DEMI_PORTEE).retroAllowed ? retro : 0;
         ball.retro = baseRetro * (bouleStats.retroBonus || 1);
-        // Store boule bonuses for collision resolution
+        // Store boule bonuses + character puissance for collision resolution
         ball.restitutionMult = bouleStats.restitutionMult || 1;
         ball.knockbackMult = bouleStats.knockbackMult || 1;
+        // Puissance stat affects how far target is pushed on collision
+        const charPui = team === 'player'
+            ? (this.scene.playerCharacter?.stats?.puissance || 6)
+            : (this.scene.opponentCharacter?.stats?.puissance || 6);
+        ball.puissanceStat = charPui;
 
         // === Unique ability effects ===
         // Le Mur (Reyes): double collision radius
@@ -974,16 +979,25 @@ export default class PetanqueEngine {
                 return;
             }
 
-            // Palet: tir where thrown ball stays near impact zone (but not carreau)
+            // Detect tir results: palet, recul, or miss
             const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
             if (hitEnemy.length > 0) {
-                // Check if ball stayed relatively close (within 50px of an original target position)
-                for (const check of (this._pendingCarreauChecks || [])) {
-                    // pendingCarreauChecks already cleared by _checkCarreau, so skip palet
+                // Check how far the target was displaced
+                const targetBall = hitEnemy[0];
+                const targetSpeed = Math.sqrt(targetBall.vx ** 2 + targetBall.vy ** 2);
+                const throwerSpeed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
+
+                // Recul: target pushed gently (speed < 3), thrower stays near
+                // This happens on glancing/tangential hits — the "tir devant"
+                if (targetSpeed > 0.5 && targetSpeed < 3.5 && throwerSpeed < 4) {
+                    this._showShotLabel(targetBall, 'Recul !', '#D4A574', 13);
+                    this._shotCollisions = [];
+                    return;
                 }
-                // Simple palet check: ball is still near cochonnet after tir
+
+                // Palet: thrower stays near cochonnet after a good hit
                 const distToCoch = ball.distanceTo(this.cochonnet);
-                if (distToCoch < 60) {
+                if (distToCoch < 60 && targetSpeed > 2) {
                     this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
                     this._shotCollisions = [];
                     return;
