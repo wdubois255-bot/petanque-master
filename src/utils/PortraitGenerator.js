@@ -51,6 +51,17 @@ const CHAR_VISUALS = {
         eyeColor: 0x4A3A2A,
         expression: 'fierce',
         accessories: [],
+    },
+    reyes: {
+        // Reyes - Costaud jovial, peau foncée, polo rayé blanc/jaune/rouge
+        skinTone: 0x8B6B4A,
+        hairColor: 0x2A2018,
+        hairStyle: 'short',
+        shirtColor: 0xF0E8D8,
+        shirtStyle: 'polo',
+        eyeColor: 0x3A2A1A,
+        expression: 'smile',
+        accessories: [],
     }
 };
 
@@ -360,8 +371,8 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    const archetypes = ['pointeur', 'brute', 'magicien', 'la_choupe'];
-    const names = ['marcel', 'ley', 'le_magicien', 'la_choupe'];
+    const archetypes = ['pointeur', 'brute', 'magicien', 'la_choupe', 'reyes'];
+    const names = ['marcel', 'ley', 'le_magicien', 'la_choupe', 'reyes'];
 
     for (let i = 0; i < archetypes.length; i++) {
         generatePortrait(scene, `portrait_${names[i]}`, archetypes[i]);

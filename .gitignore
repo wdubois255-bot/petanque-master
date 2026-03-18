@@ -9,3 +9,5 @@ Thumbs.db
 screenshots/
 .mcp.json
 /assets/
+test-results/
+test-screenshots/

@@ -193,7 +193,7 @@ export default class PetanqueAI {
         const arrowColor = isTir ? 0xFF6644 : 0xC44B3F;
         const retro = retroIntensity;
         this._showAimingArrow(angle, power, arrowColor, () => {
-            this.engine.throwBall(angle, power, 'opponent', shotMode, loftPreset, retro);
+            this.engine.throwBall(angle, power, 'opponent', shotMode, loftPreset, retro, {});
         });
     }
 
