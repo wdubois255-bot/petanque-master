@@ -44,6 +44,18 @@ export default class AimingSystem {
         // Retro (backspin) toggle
         this.retroActive = false;
 
+        // === FOCUS (Respire) system: reduces wobble by 80% for one throw ===
+        this._focusCharges = 5;           // charges per match
+        this._focusActive = false;        // active this throw?
+        this._focusUI = [];
+        this._focusReduction = 0.20;      // multiplier when active (80% reduction = 0.20)
+
+        // === UNIQUE ABILITIES per character ===
+        this._abilityCharges = 0;
+        this._abilityActive = false;
+        this._abilityUI = [];
+        this._abilityDef = null;          // set by setCharacterAbility()
+
         this.arrowGfx = scene.add.graphics().setDepth(50);
         this._predictionGfx = scene.add.graphics().setDepth(49);
 
@@ -64,10 +76,14 @@ export default class AimingSystem {
                 this._clearModeUI();
                 this._clearLoftUI();
                 this._clearRetroUI();
+                this._clearFocusUI();
+                this._clearAbilityUI();
             } else if (state === 'WAITING_STOP' || state === 'SCORE_MENE' || state === 'GAME_OVER') {
                 this._clearModeUI();
                 this._clearLoftUI();
                 this._clearRetroUI();
+                this._clearFocusUI();
+                this._clearAbilityUI();
             }
         };
 
@@ -76,8 +92,29 @@ export default class AimingSystem {
         const existingTurnChange = this.engine.onTurnChange;
         this.engine.onTurnChange = (team) => {
             if (existingTurnChange) existingTurnChange(team);
+            // Reset per-throw abilities
+            this._focusActive = false;
+            this._abilityActive = false;
             this._onTurnChange(team);
         };
+    }
+
+    // === ABILITIES API ===
+
+    /**
+     * Set up the character's unique ability for this match.
+     * Called once from PetanqueScene when the match starts.
+     * @param {object} def - { id, name, key, charges, description, onActivate, onThrow }
+     */
+    setCharacterAbility(def) {
+        this._abilityDef = def;
+        this._abilityCharges = def?.charges || 0;
+    }
+
+    /** Reset Focus charges (call at match start) */
+    resetFocusCharges(count = 5) {
+        this._focusCharges = count;
+        this._focusActive = false;
     }
 
     _onTurnChange(team) {
@@ -169,6 +206,14 @@ export default class AimingSystem {
 
         this._allOptions = allOptions;
         this._updateCombinedHighlight();
+
+        // === FOCUS indicator (top of panel) ===
+        this._showFocusUI(cx, baseY - panelH / 2 - 22);
+
+        // === UNIQUE ABILITY indicator ===
+        if (this._abilityDef && this._abilityCharges > 0) {
+            this._showAbilityUI(cx, baseY - panelH / 2 - 42);
+        }
     }
 
     _drawMiniArc(gfx, cx, cy, arcHeight, color, selected) {
@@ -289,6 +334,183 @@ export default class AimingSystem {
         this._keyR = null;
     }
 
+    // === FOCUS (Respire) UI & Logic ===
+
+    _showFocusUI(cx, y) {
+        this._clearFocusUI();
+        if (this._focusCharges <= 0) return;
+
+        const active = this._focusActive;
+        const bx = 16, by = y;
+        const bw = 110, bh = 28;
+
+        // Pill-shaped background
+        const bg = this.scene.add.graphics().setDepth(96);
+        bg.fillStyle(active ? 0x2A5A3A : 0x2A3A5A, 0.85);
+        bg.fillRoundedRect(bx, by - bh / 2, bw, bh, 8);
+        bg.lineStyle(1, active ? 0x4ADE80 : 0x87CEEB, 0.5);
+        bg.strokeRoundedRect(bx, by - bh / 2, bw, bh, 8);
+        this._focusUI.push(bg);
+        this._modeUI.push(bg);
+
+        // Label
+        const label = this.scene.add.text(bx + 8, by, active ? 'F FOCUS !' : 'F Respire', {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: active ? '#4ADE80' : '#87CEEB', shadow: SHADOW
+        }).setOrigin(0, 0.5).setDepth(97);
+        this._focusUI.push(label);
+        this._modeUI.push(label);
+
+        // Charge dots
+        const dotsG = this.scene.add.graphics().setDepth(97);
+        for (let d = 0; d < 5; d++) {
+            const filled = d < this._focusCharges;
+            dotsG.fillStyle(filled ? 0x87CEEB : 0x3A4A5A, filled ? 0.9 : 0.4);
+            dotsG.fillCircle(bx + bw - 38 + d * 8, by, 3);
+        }
+        this._focusUI.push(dotsG);
+        this._modeUI.push(dotsG);
+
+        // Click zone
+        const hitZone = this.scene.add.zone(bx + bw / 2, by, bw, bh)
+            .setDepth(98).setInteractive({ useHandCursor: true });
+        hitZone.on('pointerdown', () => this._toggleFocus());
+        this._focusUI.push(hitZone);
+        this._modeUI.push(hitZone);
+
+        this._keyF = this.scene.input.keyboard.addKey('F');
+        this._keyF.on('down', () => this._toggleFocus());
+    }
+
+    _toggleFocus() {
+        if (this._focusCharges <= 0 && !this._focusActive) return;
+        this._focusActive = !this._focusActive;
+        if (this._focusActive) {
+            this._focusCharges--;
+            // Visual feedback: brief screen tint
+            const overlay = this.scene.add.rectangle(
+                this.scene.scale.width / 2, this.scene.scale.height / 2,
+                this.scene.scale.width, this.scene.scale.height,
+                0x88CCFF, 0.15
+            ).setDepth(200);
+            this.scene.tweens.add({
+                targets: overlay, alpha: 0, duration: 600,
+                onComplete: () => overlay.destroy()
+            });
+            this.engine._showMessage('Focus... Respire...', 1000);
+        } else {
+            this._focusCharges++; // refund
+        }
+        // Refresh UI
+        const cx = this.scene.scale.width / 2;
+        const baseY = this.scene.scale.height - 52 - 28 - 22;
+        this._clearFocusUI();
+        this._showFocusUI(cx, baseY + 6);
+    }
+
+    _clearFocusUI() {
+        this._focusUI.forEach(e => { if (e && e.destroy) e.destroy(); });
+        this._focusUI = [];
+        if (this._keyF) { this._keyF.removeAllListeners(); this._keyF = null; }
+    }
+
+    // === UNIQUE ABILITY UI & Logic ===
+
+    _showAbilityUI(cx, y) {
+        this._clearAbilityUI();
+        const def = this._abilityDef;
+        if (!def || this._abilityCharges <= 0) return;
+
+        const active = this._abilityActive;
+        const sw = this.scene.scale.width;
+        const bw = 140, bh = 28;
+        const bx = sw - bw - 16, by = y;
+
+        // Pill-shaped background (right side of screen)
+        const bg = this.scene.add.graphics().setDepth(96);
+        bg.fillStyle(active ? 0x5A4A10 : 0x3A2E28, 0.85);
+        bg.fillRoundedRect(bx, by - bh / 2, bw, bh, 8);
+        bg.lineStyle(1, active ? 0xFFD700 : 0xD4A574, 0.5);
+        bg.strokeRoundedRect(bx, by - bh / 2, bw, bh, 8);
+        this._abilityUI.push(bg);
+        this._modeUI.push(bg);
+
+        // Short name with key hint
+        const shortName = def.name.length > 14 ? def.name.slice(0, 13) + '.' : def.name;
+        const label = this.scene.add.text(bx + 8, by, active ? `C ${shortName} !` : `C ${shortName}`, {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: active ? '#FFD700' : '#D4A574', shadow: SHADOW
+        }).setOrigin(0, 0.5).setDepth(97);
+        this._abilityUI.push(label);
+        this._modeUI.push(label);
+
+        // Charge dots
+        const maxCharges = def.charges || 3;
+        const dotsG = this.scene.add.graphics().setDepth(97);
+        for (let d = 0; d < maxCharges; d++) {
+            const filled = d < this._abilityCharges;
+            dotsG.fillStyle(filled ? 0xFFD700 : 0x5A4A38, filled ? 0.9 : 0.4);
+            dotsG.fillCircle(bx + bw - 8 - (maxCharges - 1 - d) * 8, by, 3);
+        }
+        this._abilityUI.push(dotsG);
+        this._modeUI.push(dotsG);
+
+        // Click zone
+        const hitZone = this.scene.add.zone(bx + bw / 2, by, bw, bh)
+            .setDepth(98).setInteractive({ useHandCursor: true });
+        hitZone.on('pointerdown', () => this._toggleAbility());
+        this._abilityUI.push(hitZone);
+        this._modeUI.push(hitZone);
+
+        this._keyC = this.scene.input.keyboard.addKey('C');
+        this._keyC.on('down', () => this._toggleAbility());
+    }
+
+    _toggleAbility() {
+        const def = this._abilityDef;
+        if (!def) return;
+        if (this._abilityCharges <= 0 && !this._abilityActive) return;
+
+        this._abilityActive = !this._abilityActive;
+        if (this._abilityActive) {
+            this._abilityCharges--;
+            // Visual flash
+            const overlay = this.scene.add.rectangle(
+                this.scene.scale.width / 2, this.scene.scale.height / 2,
+                this.scene.scale.width, this.scene.scale.height,
+                0xFFD700, 0.12
+            ).setDepth(200);
+            this.scene.tweens.add({
+                targets: overlay, alpha: 0, duration: 500,
+                onComplete: () => overlay.destroy()
+            });
+            this.engine._showMessage(`${def.name} active !`, 1000);
+        } else {
+            this._abilityCharges++;
+        }
+        // Refresh UI
+        const cx = this.scene.scale.width / 2;
+        const baseY = this.scene.scale.height - 52 - 28 - 42;
+        this._clearAbilityUI();
+        this._showAbilityUI(cx, baseY + 6);
+    }
+
+    _clearAbilityUI() {
+        this._abilityUI.forEach(e => { if (e && e.destroy) e.destroy(); });
+        this._abilityUI = [];
+        if (this._keyC) { this._keyC.removeAllListeners(); this._keyC = null; }
+    }
+
+    /** Get the wobble multiplier for this throw (Focus reduces by 80%) */
+    _getFocusMultiplier() {
+        return this._focusActive ? this._focusReduction : 1.0;
+    }
+
+    /** Check if a specific ability effect is active for this throw */
+    isAbilityActive(effectId) {
+        return this._abilityActive && this._abilityDef?.id === effectId;
+    }
+
     _updateModeHighlight() {
         if (!this._pointerBtn || !this._tirerBtn) return;
         if (this._modeSelected === 0) {
@@ -386,6 +608,9 @@ export default class AimingSystem {
         this._loftUI.forEach(e => e.destroy());
         this._loftUI = [];
         this._loftBtns = null;
+        // Clean up loft keyboard listeners
+        if (this._keyUp) { this._keyUp.destroy(); this._keyUp = null; }
+        if (this._keyDown) { this._keyDown.destroy(); this._keyDown = null; }
     }
 
     // --- TARGET HIGHLIGHTS ---
@@ -421,6 +646,17 @@ export default class AimingSystem {
         this._combinedBtns = null;
         this._pointerBtn = null;
         this._tirerBtn = null;
+        // Clean up keyboard listeners to prevent memory leak
+        if (this._keyLeft) { this._keyLeft.destroy(); this._keyLeft = null; }
+        if (this._keyRight) { this._keyRight.destroy(); this._keyRight = null; }
+        if (this._keySpace) { this._keySpace.destroy(); this._keySpace = null; }
+        if (this._key1) { this._key1.destroy(); this._key1 = null; }
+        if (this._key2) { this._key2.destroy(); this._key2 = null; }
+        if (this._key3) { this._key3.destroy(); this._key3 = null; }
+        if (this._keyT) { this._keyT.destroy(); this._keyT = null; }
+        // Also clean Focus/Ability UI (they're in _modeUI but keys need explicit cleanup)
+        this._clearFocusUI();
+        this._clearAbilityUI();
     }
 
     // --- POINTER EVENTS ---
@@ -497,8 +733,28 @@ export default class AimingSystem {
             // Retro intensity scales with effet stat (effet 1 = 10%, effet 10 = 100%)
             const effetStat = this.charStats.effet || 6;
             const retroIntensity = this.retroActive ? (0.1 + (effetStat - 1) / 9 * 0.9) : 0;
-            this.engine.throwBall(angle, power, team, this.shotMode || 'pointer', this.loftPreset, retroIntensity);
+
+            let finalPower = power;
+
+            // === Apply unique ability effects ===
+            if (this.isAbilityActive('coup_de_canon')) {
+                // La Choupe: +30% power
+                finalPower = Math.min(finalPower * 1.3, 1.0);
+            }
+
+            // Pass ability flags to engine for collision-time effects
+            const throwMeta = {
+                carreauInstinct: this.isAbilityActive('carreau_instinct'),
+                leMur: this.isAbilityActive('le_mur'),
+                lectureTerrainActive: this.isAbilityActive('lecture_terrain'),
+            };
+
+            this.engine.throwBall(angle, finalPower, team, this.shotMode || 'pointer', this.loftPreset, retroIntensity, throwMeta);
         }
+
+        // Reset per-throw flags
+        this._focusActive = false;
+        this._abilityActive = false;
         this.retroActive = false;
     }
 
@@ -518,13 +774,17 @@ export default class AimingSystem {
         const techniquePenalty = loft?.precisionPenalty || 0;
         // Precision 10 = 2px wobble, Precision 1 = 18px wobble
         // Technique penalty adds more (plombee +3 = extra 6px)
-        return 2 + (10 - precision) * 1.8 + techniquePenalty * 2;
+        let base = 2 + (10 - precision) * 1.8 + techniquePenalty * 2;
+        // Coup de Canon: +20% wobble (precision penalty)
+        if (this.isAbilityActive('coup_de_canon')) base *= 1.2;
+        return base * this._getFocusMultiplier();
     }
 
     _getWobbleSpeed() {
         const precision = this.charStats.precision || 6;
         // Precision 10 = slow (1.2 Hz), Precision 1 = fast (3.5 Hz)
-        return 1.2 + (10 - precision) * 0.26;
+        const base = 1.2 + (10 - precision) * 0.26;
+        return base * this._getFocusMultiplier();
     }
 
     _updateWobble() {
@@ -552,6 +812,13 @@ export default class AimingSystem {
     // When both scores >= 10, the aiming arrow trembles.
     // Sang-froid stat reduces the effect (10 = almost no tremble, 1 = max tremble)
     _updatePressureTremble() {
+        // Vieux Renard (Marcel): completely cancels pressure tremble
+        if (this.isAbilityActive('vieux_renard')) {
+            this._trembleOffset.x = 0;
+            this._trembleOffset.y = 0;
+            return;
+        }
+
         const scores = this.engine.scores;
         const threshold = 10;
         if (scores.player >= threshold && scores.opponent >= threshold) {
@@ -560,7 +827,7 @@ export default class AimingSystem {
             const frequency = 3.5;
             // Sang-froid reduces amplitude: sf=10 -> 30% of base, sf=1 -> 100% of base
             const sangFroidReduction = 1 - (this.charStats.sang_froid - 1) / 9 * 0.7;
-            const amplitude = baseAmplitude * sangFroidReduction;
+            const amplitude = baseAmplitude * sangFroidReduction * this._getFocusMultiplier();
 
             this._trembleTime += 0.016; // ~60fps
             this._trembleOffset.x = Math.sin(this._trembleTime * frequency * Math.PI * 2) * amplitude;

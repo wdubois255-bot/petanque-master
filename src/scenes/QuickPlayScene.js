@@ -49,7 +49,12 @@ const OPTIONS = [
         values: [
             { display: 'Classique', key: 'classique' },
             { display: 'Bleu', key: 'bleu' },
-            { display: 'Vert', key: 'vert' }
+            { display: 'Vert', key: 'vert' },
+            { display: 'Rouge', key: 'rouge' },
+            { display: 'Dore', key: 'dore' },
+            { display: 'Noir', key: 'noir' },
+            { display: 'Rose', key: 'rose' },
+            { display: 'Orange', key: 'orange' }
         ]
     },
     {

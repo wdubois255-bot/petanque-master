@@ -195,6 +195,46 @@
       "textureKey": "ball_cochonnet_vert",
       "color": "#33BB44",
       "unlocked": true
+    },
+    {
+      "id": "rouge",
+      "name": "Cochonnet Rouge",
+      "description": "Cochonnet peint en rouge vif. Impossible a perdre de vue.",
+      "textureKey": "ball_cochonnet_rouge",
+      "color": "#CC3333",
+      "unlocked": true
+    },
+    {
+      "id": "dore",
+      "name": "Cochonnet Dore",
+      "description": "Cochonnet plaque or. Le prestige du champion.",
+      "textureKey": "ball_cochonnet_dore",
+      "color": "#D4A040",
+      "unlocked": true
+    },
+    {
+      "id": "noir",
+      "name": "Cochonnet Noir",
+      "description": "Cochonnet noir mat. Discret, elegance sobre.",
+      "textureKey": "ball_cochonnet_noir",
+      "color": "#2A2A3A",
+      "unlocked": true
+    },
+    {
+      "id": "rose",
+      "name": "Cochonnet Rose",
+      "description": "Cochonnet rose pastel. Fun et visible sur terre battue.",
+      "textureKey": "ball_cochonnet_rose",
+      "color": "#E88AAA",
+      "unlocked": true
+    },
+    {
+      "id": "orange",
+      "name": "Cochonnet Orange",
+      "description": "Cochonnet orange fluo. Ideal pour les matchs en soiree.",
+      "textureKey": "ball_cochonnet_orange",
+      "color": "#E87830",
+      "unlocked": true
     }
   ],
   "cochonnet": {

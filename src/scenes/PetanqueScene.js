@@ -756,7 +756,10 @@ export default class PetanqueScene extends Phaser.Scene {
         const ballKeys = [
             'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
             'ball_doree', 'ball_rouille', 'ball_bleue', 'ball_cuivre', 'ball_titane',
-            'ball_opponent', 'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert'
+            'ball_opponent',
+            'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert',
+            'ball_cochonnet_rouge', 'ball_cochonnet_dore', 'ball_cochonnet_noir',
+            'ball_cochonnet_rose', 'ball_cochonnet_orange'
         ];
 
         for (const key of ballKeys) {
