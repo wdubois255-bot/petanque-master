@@ -248,20 +248,20 @@ export default class TitleScene extends Phaser.Scene {
     _createCharacters() {
         this._charSprites = [];
 
-        // Player side (left) - René
-        if (this.textures.exists('rene_animated')) {
-            const rene = this.add.sprite(190, 410, 'rene_animated', 0).setScale(0.75).setAlpha(0);
+        // Player side (left) - Ley
+        if (this.textures.exists('ley_animated')) {
+            const ley = this.add.sprite(190, 410, 'ley_animated', 0).setScale(0.75).setAlpha(0);
             // Subtle idle bob
             this.tweens.add({
-                targets: rene, y: 407, duration: 1800,
+                targets: ley, y: 407, duration: 1800,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
             });
-            this._charSprites.push(rene);
+            this._charSprites.push(ley);
         }
 
-        // Opponent side (right) - Marius
-        if (this.textures.exists('marius_animated')) {
-            const marius = this.add.sprite(640, 412, 'marius_animated', 0).setScale(0.75).setAlpha(0).setFlipX(true);
+        // Opponent side (right) - La Choupe
+        if (this.textures.exists('la_choupe_animated')) {
+            const marius = this.add.sprite(640, 412, 'la_choupe_animated', 0).setScale(0.75).setAlpha(0).setFlipX(true);
             this.tweens.add({
                 targets: marius, y: 409, duration: 2000,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 400

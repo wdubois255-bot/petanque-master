@@ -5,7 +5,7 @@ import { saveGame } from '../utils/SaveManager.js';
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 const INTRO_DIALOGUE = [
-    "Ah, te voila gamin ! Approche, approche.",
+    "Ah, te voila ! Approche, approche.",
     "Moi c'est le Papet. Ancien champion du canton.",
     "7 fois vainqueur du Grand Tournoi... avant le lumbago.",
     "Tu sais comment est nee la petanque ?",
@@ -13,10 +13,11 @@ const INTRO_DIALOGUE = [
     "Alors il a plante ses pieds au sol et il a lance.",
     "Pes tanquats. Pieds plantes. Petanque.",
     "Et depuis, c'est devenu un art. UN ART !",
-    "Il y a 3 Maitres d'Arene dans ce canton.",
-    "Marcel sur la terre. Fanny sur l'herbe. Ricardo sur le sable.",
-    "Et au bout du chemin... le Grand Marius. L'Ogre.",
-    "Personne l'a battu depuis 20 ans.",
+    "Au boulodrome de La Ciotat, y'a 4 joueurs.",
+    "Ley le tireur. Le Magicien le pointeur.",
+    "La Choupe le bourrin. Et Marcel le malin.",
+    "Chaque dimanche, ils s'affrontent.",
+    "Le Tournoi des Quatre, c'est aujourd'hui.",
     "Mais d'abord... il te faut de bonnes boules.",
     "Choisis bien. C'est le debut de tout."
 ];

@@ -1,6 +1,6 @@
 import {
     AI_EASY, AI_MEDIUM, AI_HARD,
-    AI_MARCEL, AI_FANNY, AI_RICARDO, AI_MARIUS,
+    AI_POINTEUR, AI_TIREUR, AI_STRATEGE, AI_BOSS,
     AI_DELAY_MIN, AI_DELAY_MAX,
     LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE,
     TERRAIN_HEIGHT
@@ -95,14 +95,14 @@ export default class PetanqueAI {
     }
 
     _resolvePersonality(personality, difficulty) {
-        if (personality === 'pointeur') return AI_MARCEL;
-        if (personality === 'tireur') return AI_FANNY;
-        if (personality === 'stratege') return AI_RICARDO;
-        if (personality === 'complet') return AI_MARIUS;
+        if (personality === 'pointeur') return AI_POINTEUR;
+        if (personality === 'tireur') return AI_TIREUR;
+        if (personality === 'stratege') return AI_STRATEGE;
+        if (personality === 'complet') return AI_BOSS;
 
         // Default: derive from difficulty
-        if (difficulty === 'hard') return AI_RICARDO;
-        if (difficulty === 'medium') return AI_FANNY;
+        if (difficulty === 'hard') return AI_STRATEGE;
+        if (difficulty === 'medium') return AI_TIREUR;
         return AI_EASY;
     }
 

@@ -91,22 +91,22 @@ export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
 
 // Petanque - IA personnalites (fallback quand pas de characterData)
 // Valeurs alignees avec characters.json
-export const AI_MARCEL = {
+export const AI_POINTEUR = {
     angleDev: 2, powerDev: 0.03,
     personality: 'pointeur', shootProbability: 0.08,
     loftPref: 'roulette', targetsCocho: false
 };
-export const AI_FANNY = {
+export const AI_TIREUR = {
     angleDev: 6, powerDev: 0.10,
     personality: 'tireur', shootProbability: 0.90,
     loftPref: 'tir', targetsCocho: false
 };
-export const AI_RICARDO = {
+export const AI_STRATEGE = {
     angleDev: 4, powerDev: 0.06,
     personality: 'stratege', shootProbability: 0.45,
     loftPref: 'adaptatif', targetsCocho: true
 };
-export const AI_MARIUS = {
+export const AI_BOSS = {
     angleDev: 1.5, powerDev: 0.03,
     personality: 'complet', shootProbability: 0.55,
     loftPref: 'adaptatif', targetsCocho: true
@@ -228,17 +228,12 @@ export const THROW_CIRCLE_Y_OFFSET = 20;
 
 // Character ID → spritesheet key mapping (centralized, used by all scenes)
 export const CHAR_SPRITE_MAP = {
-    'equilibre': 'rene_animated',
-    'pointeur': 'marcel_animated',
-    'tireur': 'fanny_animated',
-    'stratege': 'ricardo_animated',
-    'wildcard': 'thierry_animated',
-    'boss': 'marius_animated',
-    'brute': 'ley_animated',
+    'ley': 'ley_animated',
     'magicien': 'le_magicien_animated',
-    'la_choupe': 'la_choupe_animated'
+    'la_choupe': 'la_choupe_animated',
+    'marcel': 'marcel_animated'
 };
 
 export function getCharSpriteKey(char) {
-    return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'rene_animated';
+    return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'ley_animated';
 }

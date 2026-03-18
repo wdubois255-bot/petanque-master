@@ -6,10 +6,10 @@ import UIFactory from '../ui/UIFactory.js';
 const SHADOW = UIFactory.SHADOW;
 
 const CHAR_VALUES = [
-    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'pointeur' },
-    { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'brute' },
+    { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
+    { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' },
     { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
-    { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' }
+    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'marcel' }
 ];
 
 const OPTIONS = [

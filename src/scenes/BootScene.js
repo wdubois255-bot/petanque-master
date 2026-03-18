@@ -83,10 +83,8 @@ export default class BootScene extends Phaser.Scene {
 
         // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [
-            'rene_animated', 'marcel_animated', 'fanny_animated',
-            'ricardo_animated', 'thierry_animated', 'marius_animated',
             'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated'
+            'la_choupe_animated', 'marcel_animated'
         ];
         for (const key of charSprites) {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
@@ -157,13 +155,11 @@ export default class BootScene extends Phaser.Scene {
 
     create() {
         // Enable LINEAR filtering on HD character spritesheets (128px displayed at 0.5x)
-        const charSprites = [
-            'rene_animated', 'marcel_animated', 'fanny_animated',
-            'ricardo_animated', 'thierry_animated', 'marius_animated',
+        const charSprites2 = [
             'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated'
+            'la_choupe_animated', 'marcel_animated'
         ];
-        for (const key of charSprites) {
+        for (const key of charSprites2) {
             if (this.textures.exists(key)) {
                 this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
             }

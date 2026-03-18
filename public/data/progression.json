@@ -1,20 +1,10 @@
 {
   "badges": [
-    { "id": "badge_marcel", "name": "Badge Terre", "master": "marcel", "icon": "badge_terre", "order": 1 },
-    { "id": "badge_fanny", "name": "Badge Herbe", "master": "fanny", "icon": "badge_herbe", "order": 2 },
-    { "id": "badge_ricardo", "name": "Badge Sable", "master": "ricardo", "icon": "badge_sable", "order": 3 },
-    { "id": "badge_marius", "name": "Badge Maitre", "master": "marius", "icon": "badge_maitre", "order": 4 }
+    { "id": "badge_choupe", "name": "Badge Village", "master": "la_choupe", "icon": "badge_terre", "order": 1 },
+    { "id": "badge_marcel", "name": "Badge Parc", "master": "marcel", "icon": "badge_herbe", "order": 2 },
+    { "id": "badge_magicien", "name": "Badge Colline", "master": "magicien", "icon": "badge_maitre", "order": 3 }
   ],
-  "gates": [
-    { "map": "route_1", "tile_x": 10, "tile_y": 0, "requires": [], "npc_blocker": "gate_route1" },
-    { "map": "route_2", "tile_x": 10, "tile_y": 0, "requires": ["badge_marcel"], "npc_blocker": "gate_route2" },
-    { "map": "route_3", "tile_x": 10, "tile_y": 0, "requires": ["badge_fanny"], "npc_blocker": "gate_route3" },
-    { "map": "arene_finale", "tile_x": 15, "tile_y": 28, "requires": ["badge_marcel", "badge_fanny", "badge_ricardo"], "npc_blocker": "gate_finale" }
-  ],
-  "partners": [
-    { "id": "touriste", "name": "Bob le Touriste", "map": "route_1", "skill": 2, "dialogue_recruit": "Moi aussi je veux jouer ! On fait equipe ?" },
-    { "id": "mamie", "name": "Mamie Rose", "map": "route_2", "skill": 3, "dialogue_recruit": "Ah la jeunesse ! Allez, je t'accompagne." },
-    { "id": "kid", "name": "Le Petit Lucas", "map": "route_3", "skill": 4, "dialogue_recruit": "Je suis le meilleur de ma classe ! Prends-moi !" }
-  ],
+  "gates": [],
+  "partners": [],
   "victory_score": 13
 }

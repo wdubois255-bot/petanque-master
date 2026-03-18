@@ -108,6 +108,9 @@ export default class AIStrategy {
         if (p.loftPref === 'plombee') {
             return LOFT_PLOMBEE;
         }
+        if (p.loftPref === 'demi_plombee') {
+            return Math.random() < 0.5 ? LOFT_DEMI_PORTEE : LOFT_PLOMBEE;
+        }
         if (p.loftPref === 'adaptatif') {
             if (terrain === 'terre' || terrain === 'dalles') return LOFT_ROULETTE;
             if (terrain === 'herbe') return LOFT_DEMI_PORTEE;

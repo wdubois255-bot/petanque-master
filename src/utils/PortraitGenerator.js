@@ -8,17 +8,6 @@ const PORTRAIT_SIZE = 128;
 
 // Character visual definitions
 const CHAR_VISUALS = {
-    equilibre: {
-        // René - Homme provençal décontracté, cheveux châtains, polo vert
-        skinTone: 0xE8C8A0,
-        hairColor: 0x8B6B4A,
-        hairStyle: 'short',
-        shirtColor: 0x6B8E4E,
-        shirtStyle: 'polo',
-        eyeColor: 0x5A4A3A,
-        expression: 'smile',
-        accessories: [],
-    },
     pointeur: {
         // Marcel - Vieux, casquette, cheveux blancs, polo rouge
         skinTone: 0xDEBE9E,
@@ -29,39 +18,6 @@ const CHAR_VISUALS = {
         eyeColor: 0x4A5A6A,
         expression: 'stern',
         accessories: ['casquette'],
-    },
-    tireur: {
-        // Fanny - Femme, cheveux auburn, tenue verte, chapeau
-        skinTone: 0xF0D0B0,
-        hairColor: 0xA04020,
-        hairStyle: 'long',
-        shirtColor: 0x5A8A3A,
-        shirtStyle: 'tank',
-        eyeColor: 0x4A8A4A,
-        expression: 'fierce',
-        accessories: ['chapeau'],
-    },
-    stratege: {
-        // Ricardo - Lunettes de soleil, peau bronzée, chemise lin blanc
-        skinTone: 0xC8A878,
-        hairColor: 0x2A2A2A,
-        hairStyle: 'slick',
-        shirtColor: 0xF0E8D8,
-        shirtStyle: 'chemise',
-        eyeColor: 0x000000,
-        expression: 'cool',
-        accessories: ['lunettes'],
-    },
-    wildcard: {
-        // Thierry - Cheveux blonds en désordre, tenue flashy
-        skinTone: 0xE8C8A0,
-        hairColor: 0xD4A030,
-        hairStyle: 'spiky',
-        shirtColor: 0xD4A574,
-        shirtStyle: 'hawaii',
-        eyeColor: 0x4A7ABA,
-        expression: 'excited',
-        accessories: [],
     },
     boss: {
         // Le Grand Marius - Barbe blanche, chaîne en or, tenue sombre royale
@@ -134,7 +90,7 @@ function toCSS(color) {
  * @param {string} archetype - character archetype id
  */
 export function generatePortrait(scene, textureKey, archetype) {
-    const vis = CHAR_VISUALS[archetype] || CHAR_VISUALS.equilibre;
+    const vis = CHAR_VISUALS[archetype] || CHAR_VISUALS.pointeur;
     const S = PORTRAIT_SIZE;
     const canvas = document.createElement('canvas');
     canvas.width = S;
@@ -415,8 +371,8 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    const archetypes = ['equilibre', 'pointeur', 'tireur', 'stratege', 'wildcard', 'boss', 'brute', 'magicien', 'la_choupe'];
-    const names = ['rene', 'marcel', 'fanny', 'ricardo', 'thierry', 'marius', 'ley', 'le_magicien', 'la_choupe'];
+    const archetypes = ['pointeur', 'brute', 'magicien', 'la_choupe'];
+    const names = ['marcel', 'ley', 'le_magicien', 'la_choupe'];
 
     for (let i = 0; i < archetypes.length; i++) {
         generatePortrait(scene, `portrait_${names[i]}`, archetypes[i]);

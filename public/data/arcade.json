@@ -1,20 +1,28 @@
 {
-  "name": "Mode Arcade",
-  "description": "Affrontez 5 adversaires de plus en plus coriaces. Battez-les tous pour debloquer le boss secret !",
+  "name": "Le Terrain des Quatre",
+  "description": "Affrontez les 3 autres joueurs du boulodrome au Tournoi annuel de La Ciotat.",
   "intro_narrative": [
-    "Les meilleurs joueurs de Provence se retrouvent",
-    "pour le Grand Tournoi de la Ciotat.",
+    "Chaque dimanche, quatre joueurs se retrouvent",
+    "sur le meme terrain de petanque a La Ciotat.",
     "",
-    "Toi, tu vas prouver que tu merites",
-    "ta place parmi les legendes."
+    "Ley le tireur. Le Magicien le pointeur.",
+    "La Choupe le bourrin. Marcel le malin.",
+    "",
+    "Aujourd'hui, c'est le Tournoi des Quatre.",
+    "Plus d'amis. Juste des adversaires.",
+    "",
+    "Montre-leur qui est le patron."
   ],
   "ending_narrative": [
-    "Le tournoi est termine.",
+    "Le Tournoi des Quatre est termine.",
     "",
-    "Un nouveau champion s'est revele",
-    "sur les terrains de la Ciotat.",
+    "Un seul joueur reste debout",
+    "sur le terrain de La Ciotat.",
     "",
-    "La legende ne fait que commencer."
+    "Les trois autres applaudissent.",
+    "Enfin... presque.",
+    "",
+    "A dimanche prochain !"
   ],
   "matches": [
     {
@@ -26,38 +34,17 @@
     },
     {
       "round": 2,
-      "opponent": "pointeur",
-      "terrain": "plage",
-      "difficulty_label": "Facile+",
-      "intro_text": "Marcel ne rate jamais sa cible. Attention a sa precision..."
+      "opponent": "marcel",
+      "terrain": "parc",
+      "difficulty_label": "Moyen",
+      "intro_text": "Marcel pointe bien et sait quand tirer. Le parc et ses zones mixtes n'aident pas..."
     },
     {
       "round": 3,
-      "opponent": "brute",
-      "terrain": "parc",
-      "difficulty_label": "Moyen",
-      "intro_text": "Ley frappe fort. Tres fort. Protegez vos boules !"
-    },
-    {
-      "round": 4,
       "opponent": "magicien",
       "terrain": "colline",
-      "difficulty_label": "Moyen+",
-      "intro_text": "Le Magicien et ses trajectoires impossibles. Et la pente n'aide pas..."
-    },
-    {
-      "round": 5,
-      "opponent": "pointeur",
-      "terrain": "docks",
       "difficulty_label": "Difficile",
-      "intro_text": "Marcel revient. Cette fois sur les Docks, avec les rebonds muraux."
+      "intro_text": "Le Magicien et sa precision diabolique. Sur la colline, chaque boule compte."
     }
-  ],
-  "boss": {
-    "opponent": "boss",
-    "terrain": "village",
-    "difficulty_label": "Expert",
-    "intro_text": "Le Grand Marius vous attend. Personne ne l'a battu depuis des annees.",
-    "unlock_condition": "Terminer les 5 matchs de l'arcade"
-  }
+  ]
 }

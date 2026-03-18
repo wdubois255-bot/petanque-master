@@ -28,7 +28,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.personality = data.personality || null;
         this.playerCharacter = data.playerCharacter || null;
         this.opponentCharacter = data.opponentCharacter || null;
-        this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'equilibre';
+        this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'pointeur';
         this.opponentId = this.opponentCharacter?.id || data.opponentId?.replace('char_', '')?.replace('quickplay_', '') || null;
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;
@@ -232,17 +232,16 @@ export default class PetanqueScene extends Phaser.Scene {
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
 
     _getCharSpriteKey(charId) {
-        return CHAR_SPRITE_MAP[charId] || 'rene_animated';
+        return CHAR_SPRITE_MAP[charId] || 'marcel_animated';
     }
 
     _getCharPalette(charId) {
         const mapping = {
-            'equilibre': PALETTES.player,
             'pointeur': PALETTES.npc_marcel,
-            'tireur': PALETTES.npc_fanny,
-            'stratege': PALETTES.npc_ricardo,
-            'wildcard': PALETTES.npc_rival,
-            'boss': PALETTES.npc_marius
+            'boss': PALETTES.npc_marius,
+            'brute': PALETTES.player,
+            'magicien': PALETTES.player,
+            'la_choupe': PALETTES.player
         };
         return mapping[charId] || PALETTES.player;
     }
@@ -267,7 +266,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists('petanque_opponent')) {
             this.textures.remove('petanque_opponent');
         }
-        const opponentId = this.opponentId || 'equilibre';
+        const opponentId = this.opponentId || 'pointeur';
         const opponentKey = this._getCharSpriteKey(opponentId);
         if (this.textures.exists(opponentKey)) {
             this.textures.addSpriteSheet('petanque_opponent',
