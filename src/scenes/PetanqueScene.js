@@ -371,38 +371,49 @@ export default class PetanqueScene extends Phaser.Scene {
         this._updateWatchPositions();
         const s = this._charScale || 1;
 
-        // Active thrower goes to circle, watcher moves to the side
         const thrower = team === 'player' ? this.playerSprite : this.opponentSprite;
         const watcher = team === 'player' ? this.opponentSprite : this.playerSprite;
         const watchX = team === 'player' ? this._opponentWatchX : this._playerWatchX;
         const watchY = team === 'player' ? this._opponentWatchY : this._playerWatchY;
 
-        // Thrower walks to circle (faces north = looking at terrain)
+        // Walk cycle with bounce (works even when sprite frames are identical)
+        const walkBounce = (sprite, baseScale, startFrame) => {
+            const t = Date.now();
+            const walkPhase = Math.sin(t / 80 * Math.PI);
+            // Frame cycling through available walk frames
+            sprite.setFrame(startFrame + Math.floor(t / 150) % 4);
+            // Vertical bounce: -3px at peak, subtle squash/stretch
+            sprite.scaleY = baseScale * (1 + walkPhase * 0.05);
+            sprite.scaleX = baseScale * (1 - walkPhase * 0.02);
+        };
+
+        // Thrower walks to circle
         this.tweens.add({
             targets: thrower,
             x: this._circleX, y: this._circleY,
-            scaleX: s, scaleY: s,
             duration: 500, ease: 'Sine.easeInOut',
-            onUpdate: () => {
-                // Walk animation: cycle south frames while moving
-                thrower.setFrame(Math.floor(Date.now() / 150) % 4);
-            },
-            onComplete: () => thrower.setFrame(12) // face north (looking at terrain)
+            onUpdate: () => walkBounce(thrower, s, 0),
+            onComplete: () => {
+                thrower.setFrame(12); // face north
+                thrower.scaleX = s;
+                thrower.scaleY = s;
+            }
         });
 
-        // Watcher moves to sideline (faces south = watching)
+        // Watcher moves to sideline
         this.tweens.add({
             targets: watcher,
             x: watchX, y: watchY,
-            scaleX: s, scaleY: s,
             duration: 400, ease: 'Sine.easeInOut',
-            onUpdate: () => {
-                watcher.setFrame(Math.floor(Date.now() / 150) % 4);
-            },
-            onComplete: () => watcher.setFrame(0) // face south (watching)
+            onUpdate: () => walkBounce(watcher, s, 0),
+            onComplete: () => {
+                watcher.setFrame(0); // face south
+                watcher.scaleX = s;
+                watcher.scaleY = s;
+            }
         });
 
-        // Arrow follows the thrower at the circle
+        // Arrow follows the thrower
         const arrow = team === 'player' ? this.playerTurnArrow : this.opponentTurnArrow;
         this.tweens.add({
             targets: arrow,

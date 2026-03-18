@@ -82,15 +82,31 @@
     {
       "id": "colline",
       "name": "Colline aux Oliviers",
-      "description": "Terrain en pente ! Les boules roulent vers le bas. Il faut compenser en visant plus haut. Game-changer total.",
+      "description": "Terrain en devers ! Certaines zones penchent legerement, les boules derivent. Il faut lire le terrain.",
       "surface": "terre",
       "friction": 1.0,
       "zones": [],
-      "slope": {
-        "direction": "down",
-        "angle": 5.0,
-        "gravity_component": 0.08
-      },
+      "slope": null,
+      "slope_zones": [
+        {
+          "rect": { "x": 0.0, "y": 0.0, "w": 0.55, "h": 0.35 },
+          "direction": "down",
+          "gravity_component": 0.06,
+          "label": "Devers haut-gauche"
+        },
+        {
+          "rect": { "x": 0.4, "y": 0.55, "w": 0.6, "h": 0.45 },
+          "direction": "down",
+          "gravity_component": 0.05,
+          "label": "Devers bas-droite"
+        },
+        {
+          "rect": { "x": 0.0, "y": 0.3, "w": 0.35, "h": 0.4 },
+          "direction": "right",
+          "gravity_component": 0.04,
+          "label": "Devers lateral gauche"
+        }
+      ],
       "walls": false,
       "colors": {
         "bg": "#C4954A",

@@ -794,11 +794,8 @@ export default class TerrainRenderer {
             ctx.restore();
         }
 
-        // Slope shading (gradient showing downhill direction)
-        const slopeGrad = ctx.createLinearGradient(0, 0, 0, TERRAIN_HEIGHT);
-        slopeGrad.addColorStop(0, 'rgba(255,255,200,0.08)');
-        slopeGrad.addColorStop(1, 'rgba(0,0,0,0.10)');
-        ctx.fillStyle = slopeGrad;
+        // Subtle ambient variation (slope zones handle directional shading)
+        ctx.fillStyle = 'rgba(0,0,0,0.03)';
         ctx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
         this._drawPebbles(ctx, 12, '#A08040', '#C4A858');
@@ -956,11 +953,67 @@ export default class TerrainRenderer {
     }
 
     _drawSlopeIndicator(ctx) {
+        // Slope zones: subtle gradient + small arrows per zone
+        if (this.data?.slope_zones?.length) {
+            for (const sz of this.data.slope_zones) {
+                const zx = sz.rect.x * TERRAIN_WIDTH;
+                const zy = sz.rect.y * TERRAIN_HEIGHT;
+                const zw = sz.rect.w * TERRAIN_WIDTH;
+                const zh = sz.rect.h * TERRAIN_HEIGHT;
+
+                // Subtle tinted gradient showing the slope direction
+                ctx.save();
+                const intensity = Math.min(sz.gravity_component * 1.2, 0.12);
+                let grad;
+                if (sz.direction === 'down') {
+                    grad = ctx.createLinearGradient(zx, zy, zx, zy + zh);
+                    grad.addColorStop(0, `rgba(255,255,220,${intensity})`);
+                    grad.addColorStop(1, `rgba(60,40,20,${intensity})`);
+                } else if (sz.direction === 'up') {
+                    grad = ctx.createLinearGradient(zx, zy + zh, zx, zy);
+                    grad.addColorStop(0, `rgba(255,255,220,${intensity})`);
+                    grad.addColorStop(1, `rgba(60,40,20,${intensity})`);
+                } else if (sz.direction === 'right') {
+                    grad = ctx.createLinearGradient(zx, zy, zx + zw, zy);
+                    grad.addColorStop(0, `rgba(255,255,220,${intensity})`);
+                    grad.addColorStop(1, `rgba(60,40,20,${intensity})`);
+                } else {
+                    grad = ctx.createLinearGradient(zx + zw, zy, zx, zy);
+                    grad.addColorStop(0, `rgba(255,255,220,${intensity})`);
+                    grad.addColorStop(1, `rgba(60,40,20,${intensity})`);
+                }
+                ctx.fillStyle = grad;
+                ctx.fillRect(zx, zy, zw, zh);
+
+                // Small chevron arrows showing slope direction
+                ctx.globalAlpha = 0.10;
+                ctx.fillStyle = '#3A2E28';
+                const arrowDx = sz.direction === 'right' ? 1 : sz.direction === 'left' ? -1 : 0;
+                const arrowDy = sz.direction === 'down' ? 1 : sz.direction === 'up' ? -1 : 0;
+                const cols = Math.max(2, Math.floor(zw / 40));
+                const rows = Math.max(2, Math.floor(zh / 50));
+                for (let c = 0; c < cols; c++) {
+                    for (let r = 0; r < rows; r++) {
+                        const ax = zx + (c + 0.5) * zw / cols;
+                        const ay = zy + (r + 0.5) * zh / rows;
+                        ctx.beginPath();
+                        ctx.moveTo(ax + arrowDx * 5, ay + arrowDy * 5);
+                        ctx.lineTo(ax - arrowDx * 3 - arrowDy * 4, ay - arrowDy * 3 + arrowDx * 4);
+                        ctx.lineTo(ax - arrowDx * 3 + arrowDy * 4, ay - arrowDy * 3 - arrowDx * 4);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+            }
+            return;
+        }
+
+        // Legacy: global slope (fallback)
         if (!this.data?.slope) return;
         ctx.save();
         ctx.globalAlpha = 0.12;
         ctx.fillStyle = '#3A2E28';
-        // Arrows showing downhill direction
         for (let i = 0; i < 5; i++) {
             const ax = 25 + i * (TERRAIN_WIDTH - 50) / 4;
             for (let j = 0; j < 4; j++) {

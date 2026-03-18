@@ -139,20 +139,34 @@ export default class Ball {
         const cappedDt = Math.min(dt, 50) / 1000;
         const terrain = this._terrain;
 
-        // --- Slope: apply gravity component (terrain Colline) ---
-        if (terrain?.slope) {
-            const s = terrain.slope;
-            // "down" = boules roll toward +Y (bottom of screen)
-            const slopeForce = s.gravity_component * 60;
-            if (s.direction === 'down') {
-                this.vy += slopeForce * cappedDt;
-            } else if (s.direction === 'up') {
-                this.vy -= slopeForce * cappedDt;
-            } else if (s.direction === 'left') {
-                this.vx -= slopeForce * cappedDt;
-            } else if (s.direction === 'right') {
-                this.vx += slopeForce * cappedDt;
+        // --- Slope: apply gravity component ---
+        // Supports both global slope (legacy) and slope_zones (realistic per-zone devers)
+        let slopeApplied = false;
+        if (terrain?.slope_zones?.length && this._bounds) {
+            const b = this._bounds;
+            for (const sz of terrain.slope_zones) {
+                const zx = b.x + sz.rect.x * b.w;
+                const zy = b.y + sz.rect.y * b.h;
+                const zw = sz.rect.w * b.w;
+                const zh = sz.rect.h * b.h;
+                if (this.x >= zx && this.x <= zx + zw && this.y >= zy && this.y <= zy + zh) {
+                    const force = sz.gravity_component * 60;
+                    if (sz.direction === 'down') this.vy += force * cappedDt;
+                    else if (sz.direction === 'up') this.vy -= force * cappedDt;
+                    else if (sz.direction === 'left') this.vx -= force * cappedDt;
+                    else if (sz.direction === 'right') this.vx += force * cappedDt;
+                    slopeApplied = true;
+                    break;
+                }
             }
+        }
+        if (!slopeApplied && terrain?.slope) {
+            const s = terrain.slope;
+            const slopeForce = s.gravity_component * 60;
+            if (s.direction === 'down') this.vy += slopeForce * cappedDt;
+            else if (s.direction === 'up') this.vy -= slopeForce * cappedDt;
+            else if (s.direction === 'left') this.vx -= slopeForce * cappedDt;
+            else if (s.direction === 'right') this.vx += slopeForce * cappedDt;
         }
 
         // --- Dynamic friction: check if ball is in a zone (terrain Parc) ---
@@ -185,15 +199,25 @@ export default class Ball {
             this._rollDist += speed * cappedDt * 60;
         } else {
             // On slopes, don't stop if gravity is still pushing the ball
-            const hasSlope = terrain?.slope && terrain.slope.gravity_component > 0;
-            if (hasSlope) {
-                // Check if slope force exceeds friction (ball should keep rolling)
-                const slopeForce = terrain.slope.gravity_component * 60;
-                const frictionForce = FRICTION_BASE * effectiveFriction * 60;
-                if (slopeForce > frictionForce * 0.5) {
-                    // Don't stop — slope keeps the ball moving
-                    return;
+            let activeSlopeForce = 0;
+            if (terrain?.slope_zones?.length && this._bounds) {
+                const b = this._bounds;
+                for (const sz of terrain.slope_zones) {
+                    const zx = b.x + sz.rect.x * b.w;
+                    const zy = b.y + sz.rect.y * b.h;
+                    const zw = sz.rect.w * b.w;
+                    const zh = sz.rect.h * b.h;
+                    if (this.x >= zx && this.x <= zx + zw && this.y >= zy && this.y <= zy + zh) {
+                        activeSlopeForce = sz.gravity_component * 60;
+                        break;
+                    }
                 }
+            } else if (terrain?.slope) {
+                activeSlopeForce = terrain.slope.gravity_component * 60;
+            }
+            if (activeSlopeForce > 0) {
+                const frictionForce = FRICTION_BASE * effectiveFriction * 60;
+                if (activeSlopeForce > frictionForce * 0.5) return;
             }
             this.vx = 0;
             this.vy = 0;
