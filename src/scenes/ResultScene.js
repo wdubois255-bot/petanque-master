@@ -45,7 +45,12 @@ export default class ResultScene extends Phaser.Scene {
 
         this.tweens.add({
             targets: title, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 200,
-            onComplete: () => { if (this.won) this.cameras.main.flash(100, 255, 215, 0); }
+            onComplete: () => {
+                if (this.won) {
+                    this.cameras.main.flash(100, 255, 215, 0);
+                    this._spawnConfetti();
+                }
+            }
         });
 
         // Score
@@ -189,6 +194,33 @@ export default class ResultScene extends Phaser.Scene {
         this.events.on('shutdown', this._shutdown, this);
     }
 
+    _spawnConfetti() {
+        const colors = [0xFFD700, 0xC44B3F, 0x44CC44, 0x5B9BD5, 0x9B7BB8, 0xD4A574];
+        for (let i = 0; i < 40; i++) {
+            const x = Phaser.Math.Between(40, GAME_WIDTH - 40);
+            const startY = Phaser.Math.Between(-60, -200);
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const w = Phaser.Math.Between(4, 8);
+            const h = Phaser.Math.Between(6, 12);
+
+            const conf = this.add.graphics().setDepth(150);
+            conf.fillStyle(color, 0.85);
+            conf.fillRect(-w / 2, -h / 2, w, h);
+            conf.setPosition(x, startY);
+
+            this.tweens.add({
+                targets: conf,
+                y: GAME_HEIGHT + 50,
+                x: x + Phaser.Math.Between(-100, 100),
+                angle: Phaser.Math.Between(-540, 540),
+                duration: Phaser.Math.Between(1800, 4000),
+                ease: 'Sine.easeIn',
+                delay: Phaser.Math.Between(0, 1200),
+                onComplete: () => conf.destroy()
+            });
+        }
+    }
+
     _shutdown() {
         this.input.keyboard.removeAllListeners();
         this.tweens.killAll();
@@ -266,21 +298,23 @@ export default class ResultScene extends Phaser.Scene {
             const unlocked = JSON.parse(localStorage.getItem('pm_cosmetic_unlocks') || '[]');
             const newUnlocks = [];
 
-            if (stats.carreaux >= 10 && !unlocked.includes('boule_doree')) {
-                unlocked.push('boule_doree');
-                newUnlocks.push('Boule Doree debloquee !');
-            }
-            if (stats.victories >= 20 && !unlocked.includes('boule_diamant')) {
-                unlocked.push('boule_diamant');
-                newUnlocks.push('Boule Diamant debloquee !');
-            }
-            if (stats.biberons >= 5 && !unlocked.includes('cochonnet_bleu')) {
-                unlocked.push('cochonnet_bleu');
-                newUnlocks.push('Cochonnet Bleu debloque !');
-            }
-            if (stats.carreaux >= 25 && !unlocked.includes('cochonnet_vert')) {
-                unlocked.push('cochonnet_vert');
-                newUnlocks.push('Cochonnet Vert debloque !');
+            // Boules unlock milestones
+            const bouleUnlocks = [
+                { id: 'boule_bronze', cond: stats.matches >= 3, msg: 'Boules Bronze debloquees ! (3 matchs)' },
+                { id: 'boule_chrome', cond: stats.victories >= 5, msg: 'Boules Chrome debloquees ! (5 victoires)' },
+                { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
+                { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
+            ];
+            // Cochonnet unlock milestones
+            const cochUnlocks = [
+                { id: 'cochonnet_bleu', cond: stats.biberons >= 5, msg: 'Cochonnet Bleu debloque ! (5 biberons)' },
+                { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
+            ];
+            for (const u of [...bouleUnlocks, ...cochUnlocks]) {
+                if (u.cond && !unlocked.includes(u.id)) {
+                    unlocked.push(u.id);
+                    newUnlocks.push(u.msg);
+                }
             }
 
             if (newUnlocks.length > 0) {

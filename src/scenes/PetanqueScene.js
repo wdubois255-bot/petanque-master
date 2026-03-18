@@ -147,7 +147,14 @@ export default class PetanqueScene extends Phaser.Scene {
 
         setSoundScene(this);
         startCigales();
-        startMusic('music_match', 0.2);
+        // Music per terrain (falls back to music_match if terrain-specific doesn't exist)
+        const terrainMusicMap = {
+            terre: 'music_village', herbe: 'music_parc', sable: 'music_plage',
+            dalles: 'music_docks', village: 'music_village', parc: 'music_parc',
+            plage: 'music_plage', colline: 'music_colline', docks: 'music_docks'
+        };
+        const musicKey = terrainMusicMap[this.terrainFullData?.id] || terrainMusicMap[surfaceType] || 'music_match';
+        startMusic(musicKey, 0.2);
 
         // Iris wipe opening (circle expands from center)
         this._playIrisOpen();
