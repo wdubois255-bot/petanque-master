@@ -236,6 +236,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _shutdown() {
+        this.input.keyboard.removeAllListeners();
+        this.input.removeAllListeners();
         stopTerrainAmbiance();
         stopMusic();
         stopRollingSound();

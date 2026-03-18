@@ -101,9 +101,7 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _shutdown() {
-        this.input.keyboard.removeKey('SPACE');
-        this.input.keyboard.removeKey('ENTER');
-        this.input.keyboard.removeKey('ESC');
+        this.input.keyboard.removeAllListeners();
         this.tweens.killAll();
     }
 

@@ -88,8 +88,7 @@ export default class TutorialScene extends Phaser.Scene {
     }
 
     _shutdown() {
-        this.input.keyboard.removeKey('ENTER');
-        this.input.keyboard.removeKey('ESC');
+        this.input.keyboard.removeAllListeners();
         this.tweens.killAll();
     }
 

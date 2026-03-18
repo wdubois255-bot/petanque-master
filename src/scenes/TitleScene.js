@@ -46,11 +46,9 @@ export default class TitleScene extends Phaser.Scene {
 
     _shutdown() {
         stopMusic();
-        this.input.keyboard.removeKey('ENTER');
-        this.input.keyboard.removeKey('SPACE');
-        this.input.keyboard.removeKey('ESC');
+        this.input.keyboard.removeAllListeners();
         this._clearMenu();
-        if (this._pressStartTween) this._pressStartTween.destroy();
+        if (this._pressStartTween) { this._pressStartTween.stop(); this._pressStartTween = null; }
         this.tweens.killAll();
     }
 

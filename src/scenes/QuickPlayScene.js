@@ -204,9 +204,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     _shutdown() {
-        this.input.keyboard.removeKey('ENTER');
-        this.input.keyboard.removeKey('SPACE');
-        this.input.keyboard.removeKey('ESC');
+        this.input.keyboard.removeAllListeners();
         this._infoLabels.forEach(l => l.destroy());
         this._infoLabels = [];
         if (this._boulePreview) { this._boulePreview.destroy(); this._boulePreview = null; }

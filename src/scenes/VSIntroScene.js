@@ -269,9 +269,8 @@ export default class VSIntroScene extends Phaser.Scene {
     }
 
     _shutdown() {
-        this.input.keyboard.off('keydown-SPACE', this._skipSpace);
-        this.input.keyboard.off('keydown-ENTER', this._skipEnter);
-        if (this._typewriterTimer) this._typewriterTimer.destroy();
+        this.input.keyboard.removeAllListeners();
+        if (this._typewriterTimer) { this._typewriterTimer.destroy(); this._typewriterTimer = null; }
         this.tweens.killAll();
     }
 

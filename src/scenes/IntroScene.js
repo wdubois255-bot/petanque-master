@@ -97,9 +97,8 @@ export default class IntroScene extends Phaser.Scene {
     }
 
     _shutdown() {
-        this.input.off('pointerdown', this._onPointerDown);
-        this.input.keyboard.removeKey('ENTER');
-        this.input.keyboard.removeKey('SPACE');
+        this.input.removeAllListeners();
+        this.input.keyboard.removeAllListeners();
         this.tweens.killAll();
     }
 
