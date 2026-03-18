@@ -261,12 +261,12 @@ export default class TitleScene extends Phaser.Scene {
 
         // Opponent side (right) - La Choupe
         if (this.textures.exists('la_choupe_animated')) {
-            const marius = this.add.sprite(640, 412, 'la_choupe_animated', 0).setScale(0.75).setAlpha(0).setFlipX(true);
+            const choupe = this.add.sprite(640, 412, 'la_choupe_animated', 0).setScale(0.75).setAlpha(0).setFlipX(true);
             this.tweens.add({
-                targets: marius, y: 409, duration: 2000,
+                targets: choupe, y: 409, duration: 2000,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 400
             });
-            this._charSprites.push(marius);
+            this._charSprites.push(choupe);
         }
 
         // Background character - Marcel watching

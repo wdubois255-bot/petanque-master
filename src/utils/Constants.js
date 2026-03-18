@@ -101,16 +101,6 @@ export const AI_TIREUR = {
     personality: 'tireur', shootProbability: 0.90,
     loftPref: 'tir', targetsCocho: false
 };
-export const AI_STRATEGE = {
-    angleDev: 4, powerDev: 0.06,
-    personality: 'stratege', shootProbability: 0.45,
-    loftPref: 'adaptatif', targetsCocho: true
-};
-export const AI_BOSS = {
-    angleDev: 1.5, powerDev: 0.03,
-    personality: 'complet', shootProbability: 0.55,
-    loftPref: 'adaptatif', targetsCocho: true
-};
 
 // Petanque - timing & feedback
 export const HITSTOP_BOULE_MS = 60;

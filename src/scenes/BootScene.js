@@ -9,7 +9,7 @@ const TIPS = [
     'Le tir deplace les boules adverses, mais demande de la precision.',
     'Sous pression (10-10+), la visee tremble !',
     'La roulette roule plus loin mais est plus previsible.',
-    'Le Grand Marius est le boss final du mode Arcade.',
+    'Le Tournoi des Quatre : 3 matchs, 4 legendes du boulodrome.',
     'Un carreau, c\'est quand votre boule prend exactement la place de l\'autre.',
 ];
 

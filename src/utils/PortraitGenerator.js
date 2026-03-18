@@ -19,17 +19,6 @@ const CHAR_VISUALS = {
         expression: 'stern',
         accessories: ['casquette'],
     },
-    boss: {
-        // Le Grand Marius - Barbe blanche, chaîne en or, tenue sombre royale
-        skinTone: 0xDEBE9E,
-        hairColor: 0xE0E0E0,
-        hairStyle: 'wild',
-        shirtColor: 0x2A2028,
-        shirtStyle: 'royal',
-        eyeColor: 0x3A3A3A,
-        expression: 'imposing',
-        accessories: ['barbe', 'chaine'],
-    },
     brute: {
         // Ley - Colosse débonnaire, costaud, cheveux courts foncés, polo bleu
         skinTone: 0xC8A078,

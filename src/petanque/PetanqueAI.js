@@ -1,25 +1,18 @@
 import {
     AI_EASY, AI_MEDIUM, AI_HARD,
-    AI_POINTEUR, AI_TIREUR, AI_STRATEGE, AI_BOSS,
+    AI_POINTEUR, AI_TIREUR,
     AI_DELAY_MIN, AI_DELAY_MAX,
-    LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE,
     TERRAIN_HEIGHT
 } from '../utils/Constants.js';
 
 import PointeurStrategy from './ai/PointeurStrategy.js';
 import TireurStrategy from './ai/TireurStrategy.js';
-import StrategeStrategy from './ai/StrategeStrategy.js';
-import WildcardStrategy from './ai/WildcardStrategy.js';
-import BossStrategy from './ai/BossStrategy.js';
 import EquilibreStrategy from './ai/EquilibreStrategy.js';
 import DefaultStrategy from './ai/DefaultStrategy.js';
 
 const strategyMap = {
     'pointeur': PointeurStrategy,
     'tireur': TireurStrategy,
-    'stratege': StrategeStrategy,
-    'wildcard': WildcardStrategy,
-    'boss': BossStrategy,
     'equilibre': EquilibreStrategy
 };
 
@@ -72,12 +65,9 @@ export default class PetanqueAI {
     _getMomentumSensitivity() {
         const p = this.personality?.personality || 'equilibre';
         switch (p) {
-            case 'equilibre': return 0.10;
             case 'pointeur':  return 0.05;
             case 'tireur':    return 0.20;
-            case 'stratege':  return 0.08;
-            case 'wildcard':  return 0.50;
-            case 'boss':      return 0.03;
+            case 'equilibre': return 0.10;
             default:          return 0.10;
         }
     }
@@ -97,11 +87,9 @@ export default class PetanqueAI {
     _resolvePersonality(personality, difficulty) {
         if (personality === 'pointeur') return AI_POINTEUR;
         if (personality === 'tireur') return AI_TIREUR;
-        if (personality === 'stratege') return AI_STRATEGE;
-        if (personality === 'complet') return AI_BOSS;
 
         // Default: derive from difficulty
-        if (difficulty === 'hard') return AI_STRATEGE;
+        if (difficulty === 'hard') return AI_POINTEUR;
         if (difficulty === 'medium') return AI_TIREUR;
         return AI_EASY;
     }
@@ -128,13 +116,6 @@ export default class PetanqueAI {
         } else if (p.personality === 'tireur') {
             angle = -Math.PI / 2 + this._noise(5) * Math.PI / 180;
             power = 0.7 + this._noise(0.12);
-        } else if (p.personality === 'stratege') {
-            const side = Math.random() < 0.5 ? -1 : 1;
-            angle = -Math.PI / 2 + side * (8 + this._noise(4)) * Math.PI / 180;
-            power = 0.5 + this._noise(0.1);
-        } else if (p.personality === 'wildcard') {
-            power = Math.random() < 0.3 ? 0.25 + this._noise(0.05) : 0.75 + this._noise(0.1);
-            angle = -Math.PI / 2 + this._noise(8) * Math.PI / 180;
         } else {
             angle = -Math.PI / 2 + this._noise(5) * Math.PI / 180;
             power = 0.5 + this._noise(0.15);
@@ -178,29 +159,6 @@ export default class PetanqueAI {
         if (this.personality.personality === 'pointeur') {
             if (shotMode === 'pointer') { angleDev *= 0.6; powerDev *= 0.6; }
             else { angleDev *= 1.5; powerDev *= 1.5; }
-        }
-
-        // Boss: consistently good at everything
-        if (this.personality.personality === 'boss') {
-            angleDev *= 0.7;
-            powerDev *= 0.7;
-        }
-
-        // Wildcard: extreme hot/cold streaks driven by momentum
-        if (this.personality.personality === 'wildcard') {
-            if (this._momentum > 0.3) {
-                const zoneBoost = 0.3 + this._momentum * 0.4;
-                angleDev *= zoneBoost;
-                powerDev *= zoneBoost;
-            } else if (this._momentum < -0.3) {
-                const tiltPenalty = 1.5 + Math.abs(this._momentum) * 1.5;
-                angleDev *= tiltPenalty;
-                powerDev *= tiltPenalty;
-            } else {
-                const streakFactor = Math.random();
-                if (streakFactor < 0.20) { angleDev *= 0.4; powerDev *= 0.4; }
-                else if (streakFactor > 0.85) { angleDev *= 1.8; powerDev *= 1.8; }
-            }
         }
 
         // === MOMENTUM EFFECT (all personalities) ===

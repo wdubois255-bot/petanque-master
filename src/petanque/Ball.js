@@ -184,6 +184,17 @@ export default class Ball {
             // Accumulate rolling distance for frame animation
             this._rollDist += speed * cappedDt * 60;
         } else {
+            // On slopes, don't stop if gravity is still pushing the ball
+            const hasSlope = terrain?.slope && terrain.slope.gravity_component > 0;
+            if (hasSlope) {
+                // Check if slope force exceeds friction (ball should keep rolling)
+                const slopeForce = terrain.slope.gravity_component * 60;
+                const frictionForce = FRICTION_BASE * effectiveFriction * 60;
+                if (slopeForce > frictionForce * 0.5) {
+                    // Don't stop — slope keeps the ball moving
+                    return;
+                }
+            }
             this.vx = 0;
             this.vy = 0;
             this.isMoving = false;

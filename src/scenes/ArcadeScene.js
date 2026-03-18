@@ -4,8 +4,8 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
 /**
- * Arcade Mode - Manages progression through 5 matches + boss
- * This scene acts as a hub between matches, showing progress and launching VS intros
+ * Arcade Mode - Le Terrain des Quatre (3 matches)
+ * Hub between matches: shows progress, launches VS intros
  */
 export default class ArcadeScene extends Phaser.Scene {
     constructor() {
@@ -56,24 +56,18 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Check if arcade is complete
         const totalMatches = this.arcadeData.matches.length;
-        const bossDefeated = this.matchResults.some(r => r.round === totalMatches + 1 && r.won);
-
-        if (bossDefeated) {
+        if (this.wins >= totalMatches) {
             this._showArcadeComplete();
             return;
         }
 
-        // Check if all 5 matches done -> boss fight
-        const allRegularWon = this.wins >= totalMatches && !bossDefeated;
-
-        this._buildProgressScreen(allRegularWon);
+        this._buildProgressScreen();
 
         this.events.on('shutdown', this._shutdown, this);
     }
 
-    _buildProgressScreen(allRegularWon) {
-        // Show the arcade progress screen
-        this._showProgressScreen(allRegularWon);
+    _buildProgressScreen() {
+        this._showProgressScreen();
     }
 
     // === NARRATIVE SCREENS (intro/ending text crawl) ===
@@ -129,7 +123,7 @@ export default class ArcadeScene extends Phaser.Scene {
         this.input.on('pointerdown', proceed);
     }
 
-    _showProgressScreen(bossUnlocked) {
+    _showProgressScreen() {
         // Background
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
@@ -148,8 +142,8 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Progress track (horizontal bar with nodes)
         const trackY = 140;
-        const startX = 80;
-        const endX = GAME_WIDTH - 80;
+        const startX = 100;
+        const endX = GAME_WIDTH - 100;
         const matches = this.arcadeData.matches;
 
         // Track line
@@ -162,15 +156,14 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Match nodes
         for (let i = 0; i < matches.length; i++) {
-            const x = startX + (i / (matches.length)) * (endX - startX);
+            const x = startX + (i / (matches.length - 1)) * (endX - startX);
             const match = matches[i];
             const result = this.matchResults.find(r => r.round === i + 1);
-            const isCurrent = (i + 1 === this.currentRound) && !bossUnlocked;
+            const isCurrent = (i + 1 === this.currentRound);
 
             // Node circle
             const nodeG = this.add.graphics();
             if (result && result.won) {
-                // Won: green
                 nodeG.fillStyle(0x44CC44, 1);
                 nodeG.fillCircle(x, trackY, 14);
                 nodeG.fillStyle(0xFFFFFF, 0.3);
@@ -179,7 +172,6 @@ export default class ArcadeScene extends Phaser.Scene {
                     fontFamily: 'monospace', fontSize: '16px', color: '#FFFFFF'
                 }).setOrigin(0.5);
             } else if (isCurrent) {
-                // Current: gold pulsing
                 nodeG.fillStyle(0xFFD700, 1);
                 nodeG.fillCircle(x, trackY, 14);
                 this.tweens.add({
@@ -187,7 +179,6 @@ export default class ArcadeScene extends Phaser.Scene {
                     duration: 500, yoyo: true, repeat: -1
                 });
             } else {
-                // Future: dark
                 nodeG.fillStyle(0x5A4A38, 0.8);
                 nodeG.fillCircle(x, trackY, 12);
             }
@@ -204,35 +195,11 @@ export default class ArcadeScene extends Phaser.Scene {
             }).setOrigin(0.5);
         }
 
-        // Boss node at the end
-        const bossX = endX;
-        const bossG = this.add.graphics();
-        if (bossUnlocked) {
-            bossG.fillStyle(0xC44B3F, 1);
-            bossG.fillCircle(bossX, trackY, 16);
-            this.add.text(bossX, trackY, '\u2605', {
-                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700'
-            }).setOrigin(0.5);
-            this.tweens.add({
-                targets: bossG, alpha: 0.6,
-                duration: 400, yoyo: true, repeat: -1
-            });
-        } else {
-            bossG.fillStyle(0x3A2E28, 0.8);
-            bossG.fillCircle(bossX, trackY, 16);
-            this.add.text(bossX, trackY, '?', {
-                fontFamily: 'monospace', fontSize: '20px', color: '#5A4A38'
-            }).setOrigin(0.5);
-        }
-        this.add.text(bossX, trackY + 26, 'BOSS', {
-            fontFamily: 'monospace', fontSize: '11px', color: bossUnlocked ? '#C44B3F' : '#5A4A38', shadow: SHADOW
-        }).setOrigin(0.5);
-
         // Next match info panel
         const panelY = 200;
-        const nextMatch = bossUnlocked ? this.arcadeData.boss : this.arcadeData.matches[this.currentRound - 1];
+        const nextMatch = this.arcadeData.matches[this.currentRound - 1];
         const nextOpponent = this._getCharById(nextMatch.opponent);
-        const nextTerrain = this._getTerrainById(bossUnlocked ? nextMatch.terrain : nextMatch.terrain);
+        const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
         if (nextOpponent) {
             // Panel bg
@@ -243,9 +210,9 @@ export default class ArcadeScene extends Phaser.Scene {
             panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
 
             // "PROCHAIN COMBAT" header
-            this.add.text(GAME_WIDTH / 2, panelY + 18, bossUnlocked ? 'COMBAT FINAL' : 'PROCHAIN COMBAT', {
+            this.add.text(GAME_WIDTH / 2, panelY + 18, 'PROCHAIN COMBAT', {
                 fontFamily: 'monospace', fontSize: '18px',
-                color: bossUnlocked ? '#C44B3F' : '#FFD700', shadow: SHADOW
+                color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
 
             // Opponent info
@@ -314,11 +281,11 @@ export default class ArcadeScene extends Phaser.Scene {
             duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
 
-        btnText.on('pointerdown', () => this._launchNextMatch(bossUnlocked));
+        btnText.on('pointerdown', () => this._launchNextMatch());
 
         // Keyboard
-        this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch(bossUnlocked));
-        this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch(bossUnlocked));
+        this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch());
+        this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
 
         // Controls hint
@@ -327,11 +294,11 @@ export default class ArcadeScene extends Phaser.Scene {
         }).setOrigin(0.5);
     }
 
-    _launchNextMatch(isBoss) {
+    _launchNextMatch() {
         if (this._launched) return;
         this._launched = true;
 
-        const match = isBoss ? this.arcadeData.boss : this.arcadeData.matches[this.currentRound - 1];
+        const match = this.arcadeData.matches[this.currentRound - 1];
         const opponent = this._getCharById(match.opponent);
         const terrain = this._getTerrainById(match.terrain);
 
@@ -342,7 +309,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 opponentCharacter: opponent,
                 terrain: terrain ? terrain.surface : 'terre',
                 terrainName: terrain ? terrain.name : 'Place du Village',
-                roundNumber: isBoss ? 'BOSS' : this.currentRound,
+                roundNumber: this.currentRound,
                 introText: match.intro_text || '',
                 matchData: {
                     difficulty: 'medium',
@@ -350,11 +317,10 @@ export default class ArcadeScene extends Phaser.Scene {
                     returnScene: 'ArcadeScene',
                     arcadeState: {
                         playerCharacter: this.playerCharacter,
-                        currentRound: isBoss ? this.currentRound : this.currentRound + 1,
+                        currentRound: this.currentRound + 1,
                         wins: this.wins,
                         losses: this.losses,
-                        matchResults: this.matchResults,
-                        isBoss
+                        matchResults: this.matchResults
                     }
                 }
             });
@@ -416,19 +382,9 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '18px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Unlock boss character
-        this.add.text(GAME_WIDTH / 2, 300, 'Le Grand Marius est debloque !', {
+        this.add.text(GAME_WIDTH / 2, 300, 'Le Terrain des Quatre est a toi !', {
             fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5);
-
-        // Save unlock
-        try {
-            const unlocked = JSON.parse(localStorage.getItem('pm_unlocked_chars') || '[]');
-            if (!unlocked.includes('boss')) {
-                unlocked.push('boss');
-                localStorage.setItem('pm_unlocked_chars', JSON.stringify(unlocked));
-            }
-        } catch { /* ignore */ }
 
         // Return button
         const btn = this.add.text(GAME_WIDTH / 2, 380, '[ MENU PRINCIPAL ]', {
