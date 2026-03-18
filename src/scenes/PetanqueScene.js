@@ -916,8 +916,12 @@ export default class PetanqueScene extends Phaser.Scene {
         for (const key of ballKeys) {
             if (!this.textures.exists(key)) continue;
 
+            // Skip if already converted to rolling spritesheet (match replay)
+            const existingTex = this.textures.get(key);
+            if (existingTex.frameTotal > 2) continue; // already a multi-frame spritesheet
+
             // Get the original PNG image source
-            const srcImage = this.textures.get(key).getSourceImage();
+            const srcImage = existingTex.getSourceImage();
 
             // Create a spritesheet canvas: N frames of the same ball rotated
             const canvas = document.createElement('canvas');
