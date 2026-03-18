@@ -294,8 +294,8 @@ export default class PetanqueEngine {
         // Resolve cochonnet texture from selection
         const cochonnetTexMap = {
             classique: 'ball_cochonnet', bleu: 'ball_cochonnet_bleu', vert: 'ball_cochonnet_vert',
-            rouge: 'ball_cochonnet_rouge', dore: 'ball_cochonnet_dore', noir: 'ball_cochonnet_noir',
-            rose: 'ball_cochonnet_rose', orange: 'ball_cochonnet_orange'
+            rouge: 'ball_cochonnet_rouge', jungle: 'ball_cochonnet_jungle',
+            multicolor: 'ball_cochonnet_multicolor'
         };
         const cochonnetTex = cochonnetTexMap[this.scene.cochonnetType] || 'ball_cochonnet';
         this.cochonnet = new Cochonnet(this.scene, cx, cy, this.frictionMult, cochonnetTex, this.terrainData, this.bounds);
