@@ -22,6 +22,10 @@ export default class VSIntroScene extends Phaser.Scene {
         this.roundNumber = data.roundNumber || null;
         this.introText = data.introText || '';
         this.matchData = data.matchData || {};
+        // Reset flags — Phaser reuses scene instances!
+        this._started = false;
+        this._canSkip = false;
+        this._typewriterTimer = null;
     }
 
     create() {

@@ -53,10 +53,8 @@ const OPTIONS = [
             { display: 'Bleu', key: 'bleu' },
             { display: 'Vert', key: 'vert' },
             { display: 'Rouge', key: 'rouge' },
-            { display: 'Dore', key: 'dore' },
-            { display: 'Noir', key: 'noir' },
-            { display: 'Rose', key: 'rose' },
-            { display: 'Orange', key: 'orange' }
+            { display: 'Jungle', key: 'jungle' },
+            { display: 'Multicolor', key: 'multicolor' }
         ]
     },
     {

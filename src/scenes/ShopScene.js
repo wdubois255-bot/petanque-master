@@ -320,11 +320,17 @@ export default class ShopScene extends Phaser.Scene {
             save.purchases.push(item.id);
         }
 
-        // Also unlock in the appropriate category
-        if (item.type === 'boule' && !save.unlockedBoules.includes(item.id)) {
-            save.unlockedBoules.push(item.id);
-        } else if (item.type === 'cochonnet' && !save.unlockedCochonnets.includes(item.id)) {
-            save.unlockedCochonnets.push(item.id);
+        // Also unlock in the appropriate category (normalize IDs)
+        if (item.type === 'boule') {
+            const shortId = item.id.replace(/^boule_/, '');
+            if (!save.unlockedBoules.includes(shortId)) {
+                save.unlockedBoules.push(shortId);
+            }
+        } else if (item.type === 'cochonnet') {
+            const shortId = item.id.replace(/^cochonnet_/, '');
+            if (!save.unlockedCochonnets.includes(shortId)) {
+                save.unlockedCochonnets.push(shortId);
+            }
         }
 
         saveSave(save);
@@ -415,23 +421,17 @@ export default class ShopScene extends Phaser.Scene {
         const centerX = 230;
         objects.push(UIFactory.addText(this, centerX + 90, topY, 'BOULES', '14px', '#FFD700', { originX: 0.5 }));
 
-        // All owned boules: start with acier (always owned) + purchased ones
+        // Normalize boule ID: "boule_bronze" → "bronze", "acier" stays "acier"
+        const normBoule = (id) => id.replace(/^boule_/, '');
+
+        // All owned boules: start with acier (always owned) + purchased + unlocked
         const allBouleIds = ['acier'];
-        const boulesPurchased = save.purchases.filter(p => p.startsWith('boule_') && !p.includes('retro'));
-        boulesPurchased.forEach(p => {
-            const id = p.replace('boule_', '');
+        const addBoule = (raw) => {
+            const id = normBoule(raw);
             if (!allBouleIds.includes(id)) allBouleIds.push(id);
-        });
-        // Add retro variants
-        const retroPurchased = save.purchases.filter(p => p.includes('retro'));
-        retroPurchased.forEach(p => {
-            const id = p.replace('boule_', '');
-            if (!allBouleIds.includes(id)) allBouleIds.push(id);
-        });
-        // Also add from unlockedBoules
-        (save.unlockedBoules || []).forEach(id => {
-            if (!allBouleIds.includes(id)) allBouleIds.push(id);
-        });
+        };
+        save.purchases.filter(p => p.startsWith('boule_') || p === 'acier').forEach(addBoule);
+        (save.unlockedBoules || []).forEach(addBoule);
 
         const bouleSize = 36;
         const bouleCols = 4;
@@ -472,15 +472,14 @@ export default class ShopScene extends Phaser.Scene {
         const rightX = centerX + bouleCols * (bouleSize + 12) + 40;
         objects.push(UIFactory.addText(this, rightX + 60, topY, 'COCHONNETS', '14px', '#FFD700', { originX: 0.5 }));
 
+        const normCoch = (id) => id.replace(/^cochonnet_/, '');
         const allCochIds = ['classique'];
-        const cochPurchased = save.purchases.filter(p => p.startsWith('cochonnet_'));
-        cochPurchased.forEach(p => {
-            const id = p.replace('cochonnet_', '');
+        const addCoch = (raw) => {
+            const id = normCoch(raw);
             if (!allCochIds.includes(id)) allCochIds.push(id);
-        });
-        (save.unlockedCochonnets || []).forEach(id => {
-            if (!allCochIds.includes(id)) allCochIds.push(id);
-        });
+        };
+        save.purchases.filter(p => p.startsWith('cochonnet_')).forEach(addCoch);
+        (save.unlockedCochonnets || []).forEach(addCoch);
 
         const cochCols = 3;
         allCochIds.forEach((id, i) => {
