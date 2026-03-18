@@ -41,14 +41,22 @@ export default class Ball {
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
 
-        // Use sprite if texture exists (spritesheet with roll frames), fallback to graphics
+        // Use sprite if texture exists, fallback to graphics
         if (this.textureKey && scene.textures.exists(this.textureKey)) {
-            const scale = this.radius / 28; // texture is 64x64 with radius 28
-            this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
-            this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x000000, 0.2).setDepth(9);
-            // Detect number of frames in spritesheet
             const tex = scene.textures.get(this.textureKey);
             this._rollFrames = tex.frameTotal - 1 || 1; // -1 because Phaser adds __BASE frame
+
+            // Scale: match displayed radius to game radius
+            // Pixel art boules: visual radius ~23px in 64x64 image
+            // Pixel art cochonnets: visual radius ~11px in 64x64 image
+            this._visualRadius = this.team === 'cochonnet' ? 11 : 23;
+            const scale = this.radius / this._visualRadius;
+            if (this._rollFrames <= 1) {
+                this.sprite = scene.add.image(x, y, this.textureKey).setScale(scale).setDepth(10);
+            } else {
+                this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
+            }
+            this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x000000, 0.2).setDepth(9);
             this.gfx = null;
             this.shadow = null;
         } else {
@@ -95,10 +103,10 @@ export default class Ball {
                 if (this._squashTimer > 0) {
                     this._squashTimer--;
                     this.sprite.setTint(0xFFFFFF);
-                    this.sprite.setScale((this.radius + 2) / 28);
+                    this.sprite.setScale((this.radius + 2) / (this._visualRadius || 23));
                 } else {
                     this.sprite.clearTint();
-                    this.sprite.setScale(this.radius / 28);
+                    this.sprite.setScale(this.radius / (this._visualRadius || 23));
                 }
             } else {
                 this.sprite.setVisible(false);
