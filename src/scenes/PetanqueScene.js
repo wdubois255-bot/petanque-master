@@ -175,9 +175,9 @@ export default class PetanqueScene extends Phaser.Scene {
     _shutdown() {
         stopCigales();
         stopMusic();
-        // Kill barks mid-animation
         if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
         if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
+        if (this._activeThrowSprite) { this._activeThrowSprite.destroy(); this._activeThrowSprite = null; }
         if (this.aimingSystem) this.aimingSystem.destroy();
         if (this.scorePanel) this.scorePanel.destroy();
         if (this.engine?.renderer) this.engine.renderer.destroy();
@@ -435,15 +435,21 @@ export default class PetanqueScene extends Phaser.Scene {
         const watchX = team === 'player' ? this._opponentWatchX : this._playerWatchX;
         const watchY = team === 'player' ? this._opponentWatchY : this._playerWatchY;
 
-        // CRITICAL: kill ALL tweens + cancel any pending delayedCall
+        // CRITICAL: kill ALL tweens + destroy any lingering throw sprites
         this.tweens.getTweensOf(this.playerSprite).forEach(t => t.stop());
         this.tweens.getTweensOf(this.opponentSprite).forEach(t => t.stop());
-        if (this._transitionTimer) { this._transitionTimer.destroy(); this._transitionTimer = null; }
+        if (this._activeThrowSprite) {
+            this.tweens.getTweensOf(this._activeThrowSprite).forEach(t => t.stop());
+            this._activeThrowSprite.destroy();
+            this._activeThrowSprite = null;
+        }
 
-        // Reset both sprites to clean state
+        // Reset both sprites to clean, visible state
+        this.playerSprite.setVisible(true);
         this.playerSprite.scaleX = s;
         this.playerSprite.scaleY = s;
         this.playerSprite.angle = 0;
+        this.opponentSprite.setVisible(true);
         this.opponentSprite.scaleX = s;
         this.opponentSprite.scaleY = s;
         this.opponentSprite.angle = 0;
@@ -502,10 +508,16 @@ export default class PetanqueScene extends Phaser.Scene {
 
         if (hasThrowSprite) {
             // === REAL THROW FRAMES ===
+            // Destroy previous throw sprite if still alive
+            if (this._activeThrowSprite) {
+                this.tweens.getTweensOf(this._activeThrowSprite).forEach(t => t.stop());
+                this._activeThrowSprite.destroy();
+            }
             // Hide main sprite, show throw sprite at same position
             sprite.setVisible(false);
             const throwSprite = this.add.sprite(baseX, baseY, throwInfo.key, 0)
                 .setOrigin(0.5, 1).setDepth(20).setScale(s);
+            this._activeThrowSprite = throwSprite;
             const nFrames = throwInfo.frames;
 
             // Timing per frame: idle, wind-up, release, follow-through, (recovery)
@@ -518,6 +530,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 if (currentFrame >= nFrames) {
                     // Animation done — destroy throw sprite, show main sprite at idle
                     throwSprite.destroy();
+                    if (this._activeThrowSprite === throwSprite) this._activeThrowSprite = null;
                     sprite.setVisible(true);
                     sprite.setFrame(idleFrame);
                     sprite.scaleX = s;
