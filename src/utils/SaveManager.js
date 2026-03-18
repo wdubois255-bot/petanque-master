@@ -82,6 +82,18 @@ export function spendEcus(amount) {
     return true;
 }
 
+export function setSelectedBoule(bouleId) {
+    const save = loadSave();
+    save.selectedBoule = bouleId;
+    saveSave(save);
+}
+
+export function setSelectedCochonnet(cochonnetId) {
+    const save = loadSave();
+    save.selectedCochonnet = cochonnetId;
+    saveSave(save);
+}
+
 export function unlockCharacter(charId) {
     const save = loadSave();
     if (!save.unlockedCharacters.includes(charId)) {

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
-import { loadSave, saveSave, spendEcus, getRookieStats } from '../utils/SaveManager.js';
+import { loadSave, saveSave, spendEcus, getRookieStats, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -364,126 +364,155 @@ export default class ShopScene extends Phaser.Scene {
         const stats = rookie.stats;
         const totalPts = rookie.totalPoints;
         const objects = [];
-
-        const leftX = GAME_WIDTH / 2 - 180;
-        const rightX = GAME_WIDTH / 2 + 100;
-
-        // -- LEFT: Rookie character --
-        const headerY = GRID_START_Y - 10;
-
-        // Rookie sprite
-        if (this.textures.exists('rookie_static')) {
-            const spr = this.add.image(leftX + 60, headerY + 60, 'rookie_static')
-                .setScale(0.55).setOrigin(0.5);
-            objects.push(spr);
-        }
-
-        const nameText = UIFactory.addText(this, leftX + 60, headerY + 110, 'LE ROOKIE', '16px', '#FFD700', { originX: 0.5 });
-        objects.push(nameText);
-
-        const titleText = UIFactory.addText(this, leftX + 60, headerY + 130, `${totalPts}/40 pts`, '12px', '#D4A574', { originX: 0.5 });
-        objects.push(titleText);
-
-        // Stats bars
-        const barDefs = [
-            { key: 'precision',  label: 'Precision',  color: 0x87CEEB },
-            { key: 'puissance',  label: 'Puissance',  color: 0xC4854A },
-            { key: 'effet',      label: 'Effet',      color: 0x9B7BB8 },
-            { key: 'sang_froid', label: 'Sang-froid',  color: 0x6B8E4E }
-        ];
-        const barsY = headerY + 155;
-        const barW = 100;
-        const barH = 10;
         const gfx = this.add.graphics();
         objects.push(gfx);
 
-        barDefs.forEach((def, i) => {
-            const by = barsY + i * 28;
-            const lbl = UIFactory.addText(this, leftX, by, def.label, '11px', '#D4A574', { originX: 0 });
-            objects.push(lbl);
+        // === LEFT COLUMN: Rookie Stats ===
+        const leftX = 50;
+        const topY = GRID_START_Y - 5;
 
+        // Sprite + name
+        if (this.textures.exists('rookie_static')) {
+            const spr = this.add.image(leftX + 55, topY + 50, 'rookie_static').setScale(0.45).setOrigin(0.5);
+            objects.push(spr);
+        }
+        objects.push(UIFactory.addText(this, leftX + 55, topY + 95, 'LE ROOKIE', '14px', '#FFD700', { originX: 0.5 }));
+        objects.push(UIFactory.addText(this, leftX + 55, topY + 112, `${totalPts}/40 pts`, '10px', '#D4A574', { originX: 0.5 }));
+
+        // Stats bars
+        const barDefs = [
+            { key: 'precision', label: 'PRE', color: 0x87CEEB },
+            { key: 'puissance', label: 'PUI', color: 0xC4854A },
+            { key: 'effet', label: 'EFF', color: 0x9B7BB8 },
+            { key: 'sang_froid', label: 'S-F', color: 0x6B8E4E }
+        ];
+        barDefs.forEach((def, i) => {
+            const by = topY + 132 + i * 22;
+            objects.push(UIFactory.addText(this, leftX, by, def.label, '10px', '#D4A574', { originX: 0 }));
             const val = stats[def.key] || 0;
-            // Bar background
             gfx.fillStyle(0x1A1510, 0.7);
-            gfx.fillRoundedRect(leftX + 80, by + 1, barW, barH, 3);
-            // Bar fill
-            const ratio = Math.min(val / 10, 1);
-            if (ratio > 0) {
-                gfx.fillStyle(def.color, 0.85);
-                gfx.fillRoundedRect(leftX + 80, by + 1, barW * ratio, barH, 3);
-            }
-            // Value number
-            const numText = UIFactory.addText(this, leftX + 80 + barW + 8, by, `${val}`, '11px', '#F5E6D0', { originX: 0 });
-            objects.push(numText);
+            gfx.fillRoundedRect(leftX + 30, by + 2, 70, 8, 3);
+            if (val > 0) { gfx.fillStyle(def.color, 0.85); gfx.fillRoundedRect(leftX + 30, by + 2, 70 * val / 10, 8, 3); }
+            objects.push(UIFactory.addText(this, leftX + 106, by, `${val}`, '10px', '#F5E6D0', { originX: 0 }));
         });
 
-        // Abilities unlocked
-        const abY = barsY + barDefs.length * 28 + 10;
-        const abilText = UIFactory.addText(this, leftX, abY, 'Capacites:', '11px', '#FFD700', { originX: 0 });
-        objects.push(abilText);
-
+        // Capacites
+        const abY = topY + 132 + barDefs.length * 22 + 8;
         const abilNames = { instinct: "L'Instinct", determination: 'Determination', naturel: 'Le Naturel' };
+        objects.push(UIFactory.addText(this, leftX, abY, 'Capacites:', '10px', '#FFD700', { originX: 0 }));
         if (rookie.abilitiesUnlocked.length > 0) {
             rookie.abilitiesUnlocked.forEach((id, i) => {
-                const t = UIFactory.addText(this, leftX + 10, abY + 18 + i * 16, `- ${abilNames[id] || id}`, '10px', '#F5E6D0', { originX: 0 });
-                objects.push(t);
+                objects.push(UIFactory.addText(this, leftX + 8, abY + 14 + i * 14, `- ${abilNames[id] || id}`, '9px', '#F5E6D0', { originX: 0 }));
             });
         } else {
-            const t = UIFactory.addText(this, leftX + 10, abY + 18, 'Aucune (18 pts pour debloquer)', '10px', '#9E9E8E', { originX: 0 });
-            objects.push(t);
+            objects.push(UIFactory.addText(this, leftX + 8, abY + 14, 'Aucune (18pts)', '9px', '#9E9E8E', { originX: 0 }));
         }
 
-        // -- RIGHT: Equipped items --
-        const equipY = headerY;
-        const equipTitle = UIFactory.addText(this, rightX, equipY, 'EQUIPE', '16px', '#FFD700', { originX: 0 });
-        objects.push(equipTitle);
+        // Record
+        objects.push(UIFactory.addText(this, leftX, abY + 50, `V:${save.totalWins} D:${save.totalLosses} Arcade:${save.arcadeProgress}/5`, '9px', '#9E9E8E', { originX: 0 }));
 
-        // Boule equipped
-        const bouleY = equipY + 30;
-        const bouleLabel = UIFactory.addText(this, rightX, bouleY, 'Boule:', '12px', '#D4A574', { originX: 0 });
-        objects.push(bouleLabel);
+        // === CENTER COLUMN: Boules Inventory ===
+        const centerX = 230;
+        objects.push(UIFactory.addText(this, centerX + 90, topY, 'BOULES', '14px', '#FFD700', { originX: 0.5 }));
 
-        const bouleKey = `ball_${save.selectedBoule}`;
-        if (this.textures.exists(bouleKey)) {
-            const bouleSpr = this.add.image(rightX + 100, bouleY + 20, bouleKey)
-                .setScale(1.2).setOrigin(0.5);
-            objects.push(bouleSpr);
-        }
-        const bouleName = UIFactory.addText(this, rightX + 100, bouleY + 45, save.selectedBoule, '11px', '#F5E6D0', { originX: 0.5 });
-        objects.push(bouleName);
+        // All owned boules: start with acier (always owned) + purchased ones
+        const allBouleIds = ['acier'];
+        const boulesPurchased = save.purchases.filter(p => p.startsWith('boule_') && !p.includes('retro'));
+        boulesPurchased.forEach(p => {
+            const id = p.replace('boule_', '');
+            if (!allBouleIds.includes(id)) allBouleIds.push(id);
+        });
+        // Add retro variants
+        const retroPurchased = save.purchases.filter(p => p.includes('retro'));
+        retroPurchased.forEach(p => {
+            const id = p.replace('boule_', '');
+            if (!allBouleIds.includes(id)) allBouleIds.push(id);
+        });
+        // Also add from unlockedBoules
+        (save.unlockedBoules || []).forEach(id => {
+            if (!allBouleIds.includes(id)) allBouleIds.push(id);
+        });
 
-        // Cochonnet equipped
-        const cochY = bouleY + 70;
-        const cochLabel = UIFactory.addText(this, rightX, cochY, 'Cochonnet:', '12px', '#D4A574', { originX: 0 });
-        objects.push(cochLabel);
+        const bouleSize = 36;
+        const bouleCols = 4;
+        allBouleIds.forEach((id, i) => {
+            const col = i % bouleCols;
+            const row = Math.floor(i / bouleCols);
+            const bx = centerX + col * (bouleSize + 12) + bouleSize / 2;
+            const by = topY + 22 + row * (bouleSize + 24);
+            const isEquipped = save.selectedBoule === id;
 
-        const cochKey = `ball_cochonnet${save.selectedCochonnet !== 'classique' ? '_' + save.selectedCochonnet : ''}`;
-        if (this.textures.exists(cochKey)) {
-            const cochSpr = this.add.image(rightX + 100, cochY + 20, cochKey)
-                .setScale(1.5).setOrigin(0.5);
-            objects.push(cochSpr);
-        }
-        const cochName = UIFactory.addText(this, rightX + 100, cochY + 45, save.selectedCochonnet, '11px', '#F5E6D0', { originX: 0.5 });
-        objects.push(cochName);
+            // Selection highlight
+            if (isEquipped) {
+                gfx.lineStyle(2, 0xFFD700, 1);
+                gfx.strokeRoundedRect(bx - bouleSize / 2 - 4, by - bouleSize / 2 - 4, bouleSize + 8, bouleSize + 20, 4);
+            }
 
-        // Ecus
-        const ecuY = cochY + 80;
-        const ecuLabel = UIFactory.addText(this, rightX, ecuY, 'Ecus:', '12px', '#D4A574', { originX: 0 });
-        objects.push(ecuLabel);
-        const ecuVal = UIFactory.addText(this, rightX + 70, ecuY, `${save.ecus}`, '16px', '#FFD700', { originX: 0 });
-        objects.push(ecuVal);
+            // Sprite
+            const sprKey = `ball_${id}`;
+            if (this.textures.exists(sprKey)) {
+                const img = this.add.image(bx, by, sprKey).setScale(0.8).setOrigin(0.5)
+                    .setInteractive({ useHandCursor: true });
+                img.on('pointerdown', () => {
+                    setSelectedBoule(id);
+                    sfxUIClick();
+                    this._drawItems(); // refresh
+                    this._drawEcusDisplay();
+                });
+                objects.push(img);
+            }
 
-        // Wins/Losses
-        const recordY = ecuY + 28;
-        const recordLabel = UIFactory.addText(this, rightX, recordY, `Victoires: ${save.totalWins}  Defaites: ${save.totalLosses}`, '10px', '#9E9E8E', { originX: 0 });
-        objects.push(recordLabel);
+            // Label
+            const lbl = UIFactory.addText(this, bx, by + bouleSize / 2 + 4, isEquipped ? `[${id}]` : id, '8px',
+                isEquipped ? '#FFD700' : '#9E9E8E', { originX: 0.5 });
+            objects.push(lbl);
+        });
 
-        // Arcade progress
-        const arcY = recordY + 18;
-        const arcLabel = UIFactory.addText(this, rightX, arcY, `Arcade: Round ${save.arcadeProgress}/5`, '10px', '#9E9E8E', { originX: 0 });
-        objects.push(arcLabel);
+        // === RIGHT COLUMN: Cochonnets Inventory ===
+        const rightX = centerX + bouleCols * (bouleSize + 12) + 40;
+        objects.push(UIFactory.addText(this, rightX + 60, topY, 'COCHONNETS', '14px', '#FFD700', { originX: 0.5 }));
 
-        // Store all for cleanup (as a single "card")
+        const allCochIds = ['classique'];
+        const cochPurchased = save.purchases.filter(p => p.startsWith('cochonnet_'));
+        cochPurchased.forEach(p => {
+            const id = p.replace('cochonnet_', '');
+            if (!allCochIds.includes(id)) allCochIds.push(id);
+        });
+        (save.unlockedCochonnets || []).forEach(id => {
+            if (!allCochIds.includes(id)) allCochIds.push(id);
+        });
+
+        const cochCols = 3;
+        allCochIds.forEach((id, i) => {
+            const col = i % cochCols;
+            const row = Math.floor(i / cochCols);
+            const cx = rightX + col * (bouleSize + 12) + bouleSize / 2;
+            const cy = topY + 22 + row * (bouleSize + 24);
+            const isEquipped = save.selectedCochonnet === id;
+
+            if (isEquipped) {
+                gfx.lineStyle(2, 0xFFD700, 1);
+                gfx.strokeRoundedRect(cx - bouleSize / 2 - 4, cy - bouleSize / 2 - 4, bouleSize + 8, bouleSize + 20, 4);
+            }
+
+            const sprKey = id === 'classique' ? 'ball_cochonnet' : `ball_cochonnet_${id}`;
+            if (this.textures.exists(sprKey)) {
+                const img = this.add.image(cx, cy, sprKey).setScale(1.0).setOrigin(0.5)
+                    .setInteractive({ useHandCursor: true });
+                img.on('pointerdown', () => {
+                    setSelectedCochonnet(id);
+                    sfxUIClick();
+                    this._drawItems();
+                    this._drawEcusDisplay();
+                });
+                objects.push(img);
+            }
+
+            const lbl = UIFactory.addText(this, cx, cy + bouleSize / 2 + 4, isEquipped ? `[${id}]` : id, '8px',
+                isEquipped ? '#FFD700' : '#9E9E8E', { originX: 0.5 });
+            objects.push(lbl);
+        });
+
         this.cardObjects.push(objects);
     }
 

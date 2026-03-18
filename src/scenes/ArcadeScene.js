@@ -362,30 +362,27 @@ export default class ArcadeScene extends Phaser.Scene {
         const bouleType = save.selectedBoule || 'acier';
         const cochonnetType = save.selectedCochonnet || 'classique';
 
-        this.cameras.main.fadeOut(300);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start('VSIntroScene', {
-                playerCharacter: this.playerCharacter,
-                opponentCharacter: opponent,
-                terrain: terrain ? terrain.surface : 'terre',
-                terrainName: terrain ? terrain.name : 'Place du Village',
-                roundNumber: this.currentRound,
-                introText: match.intro_text || '',
-                matchData: {
-                    difficulty: match.difficulty || 'medium',
-                    format: 'tete_a_tete',
-                    bouleType,
-                    cochonnetType,
-                    returnScene: 'ArcadeScene',
-                    arcadeState: {
-                        playerCharacter: this.playerCharacter,
-                        currentRound: this.currentRound + 1,
-                        wins: this.wins,
-                        losses: this.losses,
-                        matchResults: this.matchResults
-                    }
+        this.scene.start('VSIntroScene', {
+            playerCharacter: this.playerCharacter,
+            opponentCharacter: opponent,
+            terrain: terrain ? terrain.surface : 'terre',
+            terrainName: terrain ? terrain.name : 'Place du Village',
+            roundNumber: this.currentRound,
+            introText: match.intro_text || '',
+            matchData: {
+                difficulty: match.difficulty || 'medium',
+                format: 'tete_a_tete',
+                bouleType,
+                cochonnetType,
+                returnScene: 'ArcadeScene',
+                arcadeState: {
+                    playerCharacter: this.playerCharacter,
+                    currentRound: this.currentRound + 1,
+                    wins: this.wins,
+                    losses: this.losses,
+                    matchResults: this.matchResults
                 }
-            });
+            }
         });
     }
 

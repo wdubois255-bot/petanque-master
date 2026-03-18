@@ -425,12 +425,9 @@ export default class LevelUpScene extends Phaser.Scene {
         // Save the new stats
         setRookieStats(this.newStats);
 
-        // Flash feedback
+        // Flash feedback then direct transition
         this.cameras.main.flash(150, 255, 215, 0);
-
-        // Brief delay then transition
-        this.cameras.main.fadeOut(400, 26, 21, 16);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.time.delayedCall(200, () => {
             this.scene.start(this.returnScene, this.returnData);
         });
     }

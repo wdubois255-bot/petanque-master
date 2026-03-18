@@ -293,17 +293,7 @@ export default class VSIntroScene extends Phaser.Scene {
             ...this.matchData
         };
 
-        // Use camera fadeOut instead of iris wipe to avoid tween/shutdown race condition
-        this.cameras.main.fadeOut(400, 26, 21, 16);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start('PetanqueScene', sceneData);
-        });
-
-        // Safety fallback: if fadeOut doesn't fire within 600ms, force transition
-        this.time.delayedCall(600, () => {
-            if (this.scene.isActive('VSIntroScene')) {
-                this.scene.start('PetanqueScene', sceneData);
-            }
-        });
+        // Direct transition — no async callbacks that can be killed by shutdown
+        this.scene.start('PetanqueScene', sceneData);
     }
 }

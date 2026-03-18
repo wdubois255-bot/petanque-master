@@ -398,36 +398,33 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
-        this.cameras.main.fadeOut(300);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-            // If Rookie won, go to LevelUpScene first
-            if (this.won && isRookie && xpEarned > 0) {
-                const save = loadSave();
-                this.scene.start('LevelUpScene', {
-                    pointsToDistribute: xpEarned,
-                    currentStats: save.rookie.stats,
-                    totalPoints: save.rookie.totalPoints,
-                    returnScene: 'ArcadeScene',
-                    returnData: {
-                        playerCharacter: this.arcadeState.playerCharacter,
-                        currentRound: this.arcadeState.currentRound,
-                        wins: this.arcadeState.wins,
-                        losses: this.arcadeState.losses,
-                        matchResults: this.arcadeState.matchResults,
-                        lastMatchResult: { won: true }
-                    }
-                });
-            } else {
-                this.scene.start('ArcadeScene', {
+        // Direct transition — no async camera callbacks
+        if (this.won && isRookie && xpEarned > 0) {
+            const save = loadSave();
+            this.scene.start('LevelUpScene', {
+                pointsToDistribute: xpEarned,
+                currentStats: save.rookie.stats,
+                totalPoints: save.rookie.totalPoints,
+                returnScene: 'ArcadeScene',
+                returnData: {
                     playerCharacter: this.arcadeState.playerCharacter,
                     currentRound: this.arcadeState.currentRound,
                     wins: this.arcadeState.wins,
                     losses: this.arcadeState.losses,
                     matchResults: this.arcadeState.matchResults,
-                    lastMatchResult: { won: this.won }
-                });
-            }
-        });
+                    lastMatchResult: { won: true }
+                }
+            });
+        } else {
+            this.scene.start('ArcadeScene', {
+                playerCharacter: this.arcadeState.playerCharacter,
+                currentRound: this.arcadeState.currentRound,
+                wins: this.arcadeState.wins,
+                losses: this.arcadeState.losses,
+                matchResults: this.arcadeState.matchResults,
+                lastMatchResult: { won: this.won }
+            });
+        }
     }
 
     _getSpriteKey(char) {
