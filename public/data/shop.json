@@ -1,0 +1,49 @@
+{
+  "categories": [
+    {
+      "id": "boules",
+      "label": "Boules",
+      "items": [
+        { "id": "boule_bronze", "name": "Boule Bronze", "price": 150, "type": "boule", "description": "Puissance +5%, Precision -5%", "icon": "ball_bronze" },
+        { "id": "boule_chrome", "name": "Boule Chrome", "price": 150, "type": "boule", "description": "Precision +5%, Puissance -5%", "icon": "ball_chrome" },
+        { "id": "boule_noire", "name": "Boule Noire", "price": 250, "type": "boule", "description": "Intimidation visuelle", "icon": "ball_noire" },
+        { "id": "boule_rouge", "name": "Boule Rouge", "price": 250, "type": "boule", "description": "Style flamboyant", "icon": "ball_rouge" },
+        { "id": "boule_doree", "name": "Boule Doree", "price": 500, "type": "boule", "description": "+2% toutes stats", "icon": "ball_doree" },
+        { "id": "boule_bleue", "name": "Boule Bleue", "price": 300, "type": "boule", "description": "Elegance azuree", "icon": "ball_bleue" },
+        { "id": "boule_cuivre", "name": "Boule Cuivre", "price": 300, "type": "boule", "description": "Patine provencale", "icon": "ball_cuivre" },
+        { "id": "boule_rouille", "name": "Boule Rouillee", "price": 200, "type": "boule", "description": "Grip naturel, friction +10%", "icon": "ball_rouille" },
+        { "id": "boule_titane", "name": "Boule Titane", "price": 800, "type": "boule", "description": "+3% precision, +3% puissance", "icon": "ball_titane" }
+      ]
+    },
+    {
+      "id": "boules_retro",
+      "label": "Retro (Pixel Art)",
+      "items": [
+        { "id": "boule_acier_retro", "name": "Acier Retro", "price": 500, "type": "boule", "description": "Edition pixel art vintage. Old school.", "icon": "ball_acier_retro" },
+        { "id": "boule_bronze_retro", "name": "Bronze Retro", "price": 500, "type": "boule", "description": "Bronze pixel art. Collector.", "icon": "ball_bronze_retro" },
+        { "id": "boule_chrome_retro", "name": "Chrome Retro", "price": 500, "type": "boule", "description": "Chrome pixel art. Classique.", "icon": "ball_chrome_retro" },
+        { "id": "boule_noire_retro", "name": "Noire Retro", "price": 600, "type": "boule", "description": "Sombre et vintage.", "icon": "ball_noire_retro" },
+        { "id": "boule_rouge_retro", "name": "Rouge Retro", "price": 600, "type": "boule", "description": "Rouge pixel art. Flamboyante.", "icon": "ball_rouge_retro" }
+      ]
+    },
+    {
+      "id": "cochonnets",
+      "label": "Cochonnets",
+      "items": [
+        { "id": "cochonnet_bleu", "name": "Cochonnet Bleu", "price": 50, "type": "cochonnet", "description": "Bleu nuit classique", "icon": "ball_cochonnet_bleu" },
+        { "id": "cochonnet_vert", "name": "Cochonnet Vert", "price": 50, "type": "cochonnet", "description": "Vert olive provencal", "icon": "ball_cochonnet_vert" },
+        { "id": "cochonnet_rouge", "name": "Cochonnet Rouge", "price": 100, "type": "cochonnet", "description": "Rouge passion", "icon": "ball_cochonnet_rouge" },
+        { "id": "cochonnet_jungle", "name": "Cochonnet Jungle", "price": 250, "type": "cochonnet", "description": "Camouflage tropical", "icon": "ball_cochonnet_jungle" },
+        { "id": "cochonnet_multicolor", "name": "Cochonnet Multicolor", "price": 400, "type": "cochonnet", "description": "Arc-en-ciel psychedelique", "icon": "ball_cochonnet_multicolor" }
+      ]
+    },
+    {
+      "id": "capacites",
+      "label": "Capacites",
+      "items": [
+        { "id": "focus_extra", "name": "Focus +1", "price": 300, "type": "ability", "description": "6 charges Focus au lieu de 5", "icon": null },
+        { "id": "charge_extra", "name": "Charge +1", "price": 500, "type": "ability", "description": "+1 charge capacite unique", "icon": null }
+      ]
+    }
+  ]
+}

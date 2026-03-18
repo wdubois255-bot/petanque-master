@@ -371,10 +371,21 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    const archetypes = ['pointeur', 'brute', 'magicien', 'la_choupe', 'reyes'];
-    const names = ['marcel', 'ley', 'le_magicien', 'la_choupe', 'reyes'];
+    const archetypes = ['adaptable', 'pointeur', 'brute', 'magicien', 'la_choupe', 'reyes'];
+    const names = ['rookie', 'marcel', 'ley', 'le_magicien', 'la_choupe', 'reyes'];
 
     for (let i = 0; i < archetypes.length; i++) {
+        // For Rookie: use the loaded static sprite as portrait if available
+        if (names[i] === 'rookie' && scene.textures.exists('rookie_static')) {
+            const src = scene.textures.get('rookie_static').getSourceImage();
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
+            scene.textures.addCanvas('portrait_rookie', canvas);
+            continue;
+        }
         generatePortrait(scene, `portrait_${names[i]}`, archetypes[i]);
     }
 }

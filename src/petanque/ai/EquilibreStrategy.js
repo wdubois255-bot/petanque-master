@@ -2,95 +2,82 @@ import AIStrategy from './AIStrategy.js';
 import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE } from '../../utils/Constants.js';
 
 /**
- * Rene: L'Equilibre
- * The chill guy who plays for fun but has flashes of genius.
- * Adapts style to score, varies lofts, and has unpredictable "moments pastis".
+ * Marcel: Le Vieux Renard (L'Equilibre)
+ * 40 ans d'experience. Calme, calculateur, patient.
+ * Pointe avec precision chirurgicale, tire uniquement quand c'est strategiquement optimal.
+ * Ne fait JAMAIS de coups aleatoires — chaque boule est reflechie.
+ * Adapte son loft au terrain (loftPref: adaptatif).
  */
 export default class EquilibreStrategy extends AIStrategy {
     chooseTarget(cochonnet, sit) {
-        // "Moment pastis" -- 15% instinctive shot (brilliant or ridiculous)
-        if (Math.random() < 0.15) {
-            return this._momentPastis(cochonnet, sit);
+        const prec = this.ai._charStats?.precision || 8;
+        const sangFroid = this.ai._charStats?.sang_froid || 8;
+
+        // Marcel ne tire que quand c'est strategiquement justifie
+        if (this._shouldShoot(sit, sangFroid)) {
+            const target = this._chooseShootTarget(sit);
+            if (target) return this._makeShot(target);
         }
 
-        const isRelaxed = sit.scoreDiff >= 2;
-        const isStressed = sit.scoreDiff <= -3;
-
-        // Shooting decision
-        let shouldShoot = false;
-        if (!sit.aiHasPoint && sit.playerBalls.length > 0) {
-            const shootThreshold = isStressed ? 35 : 25;
-            const shootProb = isRelaxed ? 0.40 : isStressed ? 0.45 : 0.30;
-            if (sit.bestPlayerDist < shootThreshold) {
-                shouldShoot = Math.random() < shootProb;
-            }
-        }
-
-        if (sit.isDesperate && Math.random() < 0.4) shouldShoot = true;
-
-        // 8% pure instinct flip
-        if (Math.random() < 0.08) shouldShoot = !shouldShoot;
-
-        if (shouldShoot && sit.bestPlayerBall) {
-            return this._makeShot(sit.bestPlayerBall.ball);
-        }
-
-        // Pointing: vary lofts based on mood
-        let loft;
-        if (isRelaxed) {
-            const roll = Math.random();
-            if (roll < 0.3) loft = LOFT_ROULETTE;
-            else if (roll < 0.6) loft = LOFT_DEMI_PORTEE;
-            else loft = LOFT_PLOMBEE;
-        } else {
-            loft = this._chooseLoft();
-        }
-
-        const spread = isRelaxed ? 8 : 5;
-        return {
-            target: { x: cochonnet.x + this._noise(spread), y: cochonnet.y + this._noise(spread) },
-            shotMode: 'pointer',
-            loftPreset: loft
-        };
+        // Sinon, placement calculé — precision basee sur les stats
+        return this._calculatedPoint(cochonnet, sit, prec);
     }
 
-    _momentPastis(cochonnet, sit) {
-        const roll = Math.random();
+    _shouldShoot(sit, sangFroid) {
+        // Marcel ne tire pas s'il a le point — patience
+        if (sit.aiHasPoint) return false;
+        // Pas de boules adverses a viser
+        if (sit.playerBalls.length === 0) return false;
+        // Pas de cible proche
+        if (!sit.bestPlayerBall) return false;
 
-        if (roll < 0.35 && sit.playerBalls.length > 0) {
-            const balls = sit.playerBalls;
-            const target = balls[Math.floor(Math.random() * balls.length)];
-            return this._makeShot(target);
+        const shootProb = this.ai.personality?.shootProbability || 0.25;
+
+        // Situation critique : adversaire a 3+ points projetés et Marcel n'a pas le point
+        if (sit.playerProjectedPoints >= 3 && !sit.aiHasPoint) {
+            return Math.random() < 0.70; // tir de necessity (70%)
         }
 
-        if (roll < 0.60) {
-            return {
-                target: { x: cochonnet.x + this._noise(3), y: cochonnet.y + this._noise(3) },
-                shotMode: 'pointer',
-                loftPreset: LOFT_PLOMBEE
-            };
+        // Match point adverse : Marcel se concentre, tire si menacé
+        if (sit.isMatchPoint && !sit.aiHasPoint && sit.bestPlayerDist < 30) {
+            return Math.random() < 0.60;
         }
 
-        if (roll < 0.80) {
-            return {
-                target: { x: cochonnet.x + this._noise(6), y: cochonnet.y + this._noise(6) },
-                shotMode: 'pointer',
-                loftPreset: LOFT_ROULETTE
-            };
+        // Desespere : le renard sort les crocs
+        if (sit.isDesperate) {
+            return Math.random() < 0.50;
         }
 
-        if (sit.playerBalls.length > 0 && !sit.isLastBall) {
-            return {
-                target: { x: cochonnet.x, y: cochonnet.y },
-                shotMode: 'tirer',
-                loftPreset: LOFT_TIR
-            };
+        // Situation normale : tire si la boule adverse est bien placee
+        // Plus la boule est proche du cochonnet, plus Marcel considere le tir
+        if (sit.bestPlayerDist < 15) {
+            return Math.random() < shootProb * 1.5; // boule tres proche → tir probable
         }
+        if (sit.bestPlayerDist < 25) {
+            return Math.random() < shootProb;
+        }
+
+        // Boule loin → pas la peine de tirer, mieux vaut pointer
+        return false;
+    }
+
+    _chooseShootTarget(sit) {
+        // Marcel choisit la cible la plus menacante (la plus proche du cochonnet)
+        if (sit.bestPlayerBall) return sit.bestPlayerBall.ball;
+        return null;
+    }
+
+    _calculatedPoint(cochonnet, sit, prec) {
+        // Marcel adapte son loft au terrain (adaptatif)
+        const loft = this._chooseLoft();
+
+        // Placement chirurgical : offset basé sur la précision du personnage
+        const offset = this._computePointeurOffset(cochonnet, sit);
 
         return {
-            target: { x: cochonnet.x + this._noise(5), y: cochonnet.y + this._noise(5) },
+            target: { x: cochonnet.x + offset.x, y: cochonnet.y + offset.y },
             shotMode: 'pointer',
-            loftPreset: this._chooseLoft()
+            loftPreset: loft
         };
     }
 }

@@ -1,0 +1,586 @@
+import Phaser from 'phaser';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
+import { loadSave, saveSave, spendEcus, getRookieStats } from '../utils/SaveManager.js';
+import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
+
+const SHADOW = UIFactory.SHADOW;
+
+const TABS = ['equipement', 'boules', 'cochonnets', 'capacites'];
+const TAB_LABELS = { equipement: 'Equipement', boules: 'Boules', cochonnets: 'Cochonnets', capacites: 'Capacites' };
+
+// Grid layout
+const GRID_COLS = 3;
+const GRID_ROWS = 2;
+const CARD_W = 170;
+const CARD_H = 130;
+const CARD_GAP_X = 20;
+const CARD_GAP_Y = 16;
+const GRID_START_X = (GAME_WIDTH - (CARD_W * GRID_COLS + CARD_GAP_X * (GRID_COLS - 1))) / 2;
+const GRID_START_Y = 120;
+
+export default class ShopScene extends Phaser.Scene {
+    constructor() {
+        super('ShopScene');
+    }
+
+    create() {
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+        setSoundScene(this);
+
+        this.shopData = this.cache.json.get('shop');
+        this.activeTab = 0;
+        this.selectedIndex = 0;
+        this.cardObjects = [];
+        this.tabObjects = [];
+        this._purchasing = false;
+
+        this._drawBackground();
+        this._drawHeader();
+        this._drawTabs();
+        this._drawItems();
+        this._drawRetourButton();
+        this._drawControlsHint();
+        this._setupInput();
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    // ================================================================
+    // BACKGROUND
+    // ================================================================
+
+    _drawBackground() {
+        const bg = this.add.graphics();
+        bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x2A2A28, 0x2A2A28, 1);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    }
+
+    // ================================================================
+    // HEADER: Title + Ecus balance
+    // ================================================================
+
+    _drawHeader() {
+        // Title left-aligned
+        UIFactory.addText(this, 30, 28, 'BOUTIQUE', '28px', '#FFD700', {
+            originX: 0, originY: 0.5, heavyShadow: true
+        });
+
+        // Ecus balance top-right
+        this._drawEcusDisplay();
+    }
+
+    _drawEcusDisplay() {
+        if (this.ecusGroup) {
+            this.ecusGroup.forEach(o => o.destroy());
+        }
+        this.ecusGroup = [];
+
+        const save = loadSave();
+        const ecus = save.ecus;
+
+        // Coin icon (small gold circle)
+        const coinGfx = this.add.graphics();
+        coinGfx.fillStyle(0xFFD700, 1);
+        coinGfx.fillCircle(GAME_WIDTH - 110, 28, 8);
+        coinGfx.lineStyle(1.5, 0xB8860B, 1);
+        coinGfx.strokeCircle(GAME_WIDTH - 110, 28, 8);
+        // "E" on coin
+        const coinLetter = this.add.text(GAME_WIDTH - 110, 28, 'E', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28',
+            fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        const ecusText = UIFactory.addText(this, GAME_WIDTH - 88, 28, `${ecus}`, '20px', '#FFD700', {
+            originX: 0, originY: 0.5, heavyShadow: true
+        });
+
+        this.ecusGroup = [coinGfx, coinLetter, ecusText];
+    }
+
+    // ================================================================
+    // TAB BAR
+    // ================================================================
+
+    _drawTabs() {
+        this._clearTabs();
+
+        const tabY = 68;
+        const tabWidth = 140;
+        const totalW = tabWidth * TABS.length;
+        const startX = (GAME_WIDTH - totalW) / 2;
+
+        for (let i = 0; i < TABS.length; i++) {
+            const x = startX + i * tabWidth + tabWidth / 2;
+            const isActive = i === this.activeTab;
+
+            const label = UIFactory.addText(this, x, tabY, TAB_LABELS[TABS[i]], '16px',
+                isActive ? '#FFD700' : '#9E9E8E', { originX: 0.5, originY: 0.5 }
+            );
+            label.setInteractive({ useHandCursor: true });
+            label.on('pointerdown', () => {
+                sfxUIClick();
+                this._switchTab(i);
+            });
+
+            // Underline for active tab
+            let underline = null;
+            if (isActive) {
+                underline = this.add.graphics();
+                underline.lineStyle(3, 0xFFD700, 0.9);
+                underline.lineBetween(x - 40, tabY + 14, x + 40, tabY + 14);
+            }
+
+            this.tabObjects.push({ label, underline });
+        }
+    }
+
+    _clearTabs() {
+        for (const t of this.tabObjects) {
+            t.label.destroy();
+            if (t.underline) t.underline.destroy();
+        }
+        this.tabObjects = [];
+    }
+
+    _switchTab(index) {
+        this.activeTab = index;
+        this.selectedIndex = 0;
+        this._clearTabs();
+        this._drawTabs();
+        this._drawItems();
+    }
+
+    // ================================================================
+    // ITEM CARDS
+    // ================================================================
+
+    _drawItems() {
+        this._clearCards();
+
+        // Equipement tab: special rendering
+        if (TABS[this.activeTab] === 'equipement') {
+            this._drawEquipmentPanel();
+            return;
+        }
+
+        const tabId = TABS[this.activeTab];
+        // Map tab to shop category (boules_retro not a tab, boules includes both)
+        const category = this.shopData.categories.find(c => c.id === tabId);
+        if (!category) return;
+
+        const items = category.items;
+        const save = loadSave();
+
+        for (let i = 0; i < items.length; i++) {
+            const col = i % GRID_COLS;
+            const row = Math.floor(i / GRID_COLS);
+            if (row >= GRID_ROWS) break; // max 6 items per page
+
+            const cx = GRID_START_X + col * (CARD_W + CARD_GAP_X) + CARD_W / 2;
+            const cy = GRID_START_Y + row * (CARD_H + CARD_GAP_Y) + CARD_H / 2;
+
+            this._createCard(items[i], i, cx, cy, save);
+        }
+    }
+
+    _createCard(item, index, cx, cy, save) {
+        const owned = save.purchases.includes(item.id);
+        const canAfford = save.ecus >= item.price;
+        const isSelected = index === this.selectedIndex;
+        const objects = [];
+
+        // Card background
+        const cardGfx = this.add.graphics();
+        const cardX = cx - CARD_W / 2;
+        const cardY = cy - CARD_H / 2;
+
+        cardGfx.fillStyle(isSelected ? 0x4A3A28 : 0x2A2218, 0.9);
+        cardGfx.fillRoundedRect(cardX, cardY, CARD_W, CARD_H, 6);
+
+        if (owned) {
+            cardGfx.lineStyle(2, 0xFFD700, 0.7);
+        } else if (isSelected) {
+            cardGfx.lineStyle(2, 0xD4A574, 0.8);
+        } else {
+            cardGfx.lineStyle(1, 0xD4A574, 0.3);
+        }
+        cardGfx.strokeRoundedRect(cardX, cardY, CARD_W, CARD_H, 6);
+        objects.push(cardGfx);
+
+        // Item icon
+        const iconY = cardY + 28;
+        if (item.icon && this.textures.exists(item.icon)) {
+            const icon = this.add.image(cx, iconY, item.icon).setScale(1.5);
+            objects.push(icon);
+        } else {
+            // Colored rectangle placeholder
+            const placeholder = this.add.graphics();
+            const placeholderColor = this._getPlaceholderColor(item.type);
+            placeholder.fillStyle(placeholderColor, 0.8);
+            placeholder.fillRoundedRect(cx - 12, iconY - 12, 24, 24, 4);
+            placeholder.lineStyle(1, 0xFFFFFF, 0.3);
+            placeholder.strokeRoundedRect(cx - 12, iconY - 12, 24, 24, 4);
+            objects.push(placeholder);
+        }
+
+        // Item name
+        const nameText = UIFactory.addText(this, cx, cardY + 55, item.name, '14px', '#F5E6D0', {
+            originX: 0.5, originY: 0.5
+        });
+        objects.push(nameText);
+
+        // Description
+        const descText = UIFactory.addText(this, cx, cardY + 72, item.description, '10px', '#9E9E8E', {
+            originX: 0.5, originY: 0.5, wrapWidth: CARD_W - 16
+        });
+        objects.push(descText);
+
+        // Price or POSSEDE badge
+        if (owned) {
+            const badge = UIFactory.addText(this, cx, cardY + CARD_H - 20, '\u2713 POSSEDE', '12px', '#FFD700', {
+                originX: 0.5, originY: 0.5
+            });
+            objects.push(badge);
+        } else {
+            // Price display
+            const priceColor = canAfford ? '#FFD700' : '#C44B3F';
+            const priceText = UIFactory.addText(this, cx - 20, cardY + CARD_H - 20, `${item.price} E`, '12px', priceColor, {
+                originX: 0.5, originY: 0.5
+            });
+            objects.push(priceText);
+
+            // Buy button
+            if (canAfford) {
+                const buyBtn = this.add.text(cx + 38, cardY + CARD_H - 20, 'ACHETER', {
+                    fontFamily: 'monospace', fontSize: '11px', color: '#FFFFFF',
+                    backgroundColor: '#44CC44', padding: { x: 6, y: 3 },
+                    shadow: SHADOW
+                }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+                buyBtn.on('pointerdown', () => this._purchaseItem(item, index));
+                objects.push(buyBtn);
+            }
+        }
+
+        // Make card interactive for selection
+        const hitZone = this.add.zone(cx, cy, CARD_W, CARD_H).setInteractive({ useHandCursor: true });
+        hitZone.on('pointerdown', () => {
+            if (this.selectedIndex !== index) {
+                sfxUIClick();
+                this.selectedIndex = index;
+                this._drawItems();
+            } else if (!owned && canAfford) {
+                this._purchaseItem(item, index);
+            }
+        });
+        objects.push(hitZone);
+
+        this.cardObjects.push(objects);
+    }
+
+    _clearCards() {
+        for (const card of this.cardObjects) {
+            for (const obj of card) {
+                obj.destroy();
+            }
+        }
+        this.cardObjects = [];
+    }
+
+    _getPlaceholderColor(type) {
+        switch (type) {
+            case 'boule': return 0xCD7F32;
+            case 'cochonnet': return 0xFFD700;
+            case 'ability': return 0x9B7BB8;
+            default: return 0xD4A574;
+        }
+    }
+
+    // ================================================================
+    // PURCHASE
+    // ================================================================
+
+    _purchaseItem(item, index) {
+        if (this._purchasing) return;
+        this._purchasing = true;
+
+        sfxUIClick();
+
+        const success = spendEcus(item.price);
+        if (!success) {
+            this._purchasing = false;
+            return;
+        }
+
+        // Add to purchases
+        const save = loadSave();
+        if (!save.purchases.includes(item.id)) {
+            save.purchases.push(item.id);
+        }
+
+        // Also unlock in the appropriate category
+        if (item.type === 'boule' && !save.unlockedBoules.includes(item.id)) {
+            save.unlockedBoules.push(item.id);
+        } else if (item.type === 'cochonnet' && !save.unlockedCochonnets.includes(item.id)) {
+            save.unlockedCochonnets.push(item.id);
+        }
+
+        saveSave(save);
+
+        // Animate "Debloque !" feedback
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        const col = index % GRID_COLS;
+        const row = Math.floor(index / GRID_COLS);
+        const cx = GRID_START_X + col * (CARD_W + CARD_GAP_X) + CARD_W / 2;
+        const cy = GRID_START_Y + row * (CARD_H + CARD_GAP_Y) + CARD_H / 2;
+
+        // Flash effect
+        this.cameras.main.flash(150, 255, 215, 0, false);
+
+        // Floating text
+        UIFactory.showFloatingText(this, cx, cy - 20, 'Debloque !', '#FFD700', {
+            fontSize: '18px', rise: 50, duration: 1500
+        });
+
+        // Refresh display after short delay
+        this.time.delayedCall(300, () => {
+            this._drawEcusDisplay();
+            this._drawItems();
+            this._purchasing = false;
+        });
+    }
+
+    // ================================================================
+    // RETOUR BUTTON
+    // ================================================================
+    // EQUIPMENT PANEL (Rookie stats + equipped items)
+    // ================================================================
+
+    _drawEquipmentPanel() {
+        const save = loadSave();
+        const rookie = save.rookie;
+        const stats = rookie.stats;
+        const totalPts = rookie.totalPoints;
+        const objects = [];
+
+        const leftX = GAME_WIDTH / 2 - 180;
+        const rightX = GAME_WIDTH / 2 + 100;
+
+        // -- LEFT: Rookie character --
+        const headerY = GRID_START_Y - 10;
+
+        // Rookie sprite
+        if (this.textures.exists('rookie_static')) {
+            const spr = this.add.image(leftX + 60, headerY + 60, 'rookie_static')
+                .setScale(0.55).setOrigin(0.5);
+            objects.push(spr);
+        }
+
+        const nameText = UIFactory.addText(this, leftX + 60, headerY + 110, 'LE ROOKIE', '16px', '#FFD700', { originX: 0.5 });
+        objects.push(nameText);
+
+        const titleText = UIFactory.addText(this, leftX + 60, headerY + 130, `${totalPts}/40 pts`, '12px', '#D4A574', { originX: 0.5 });
+        objects.push(titleText);
+
+        // Stats bars
+        const barDefs = [
+            { key: 'precision',  label: 'Precision',  color: 0x87CEEB },
+            { key: 'puissance',  label: 'Puissance',  color: 0xC4854A },
+            { key: 'effet',      label: 'Effet',      color: 0x9B7BB8 },
+            { key: 'sang_froid', label: 'Sang-froid',  color: 0x6B8E4E }
+        ];
+        const barsY = headerY + 155;
+        const barW = 100;
+        const barH = 10;
+        const gfx = this.add.graphics();
+        objects.push(gfx);
+
+        barDefs.forEach((def, i) => {
+            const by = barsY + i * 28;
+            const lbl = UIFactory.addText(this, leftX, by, def.label, '11px', '#D4A574', { originX: 0 });
+            objects.push(lbl);
+
+            const val = stats[def.key] || 0;
+            // Bar background
+            gfx.fillStyle(0x1A1510, 0.7);
+            gfx.fillRoundedRect(leftX + 80, by + 1, barW, barH, 3);
+            // Bar fill
+            const ratio = Math.min(val / 10, 1);
+            if (ratio > 0) {
+                gfx.fillStyle(def.color, 0.85);
+                gfx.fillRoundedRect(leftX + 80, by + 1, barW * ratio, barH, 3);
+            }
+            // Value number
+            const numText = UIFactory.addText(this, leftX + 80 + barW + 8, by, `${val}`, '11px', '#F5E6D0', { originX: 0 });
+            objects.push(numText);
+        });
+
+        // Abilities unlocked
+        const abY = barsY + barDefs.length * 28 + 10;
+        const abilText = UIFactory.addText(this, leftX, abY, 'Capacites:', '11px', '#FFD700', { originX: 0 });
+        objects.push(abilText);
+
+        const abilNames = { instinct: "L'Instinct", determination: 'Determination', naturel: 'Le Naturel' };
+        if (rookie.abilitiesUnlocked.length > 0) {
+            rookie.abilitiesUnlocked.forEach((id, i) => {
+                const t = UIFactory.addText(this, leftX + 10, abY + 18 + i * 16, `- ${abilNames[id] || id}`, '10px', '#F5E6D0', { originX: 0 });
+                objects.push(t);
+            });
+        } else {
+            const t = UIFactory.addText(this, leftX + 10, abY + 18, 'Aucune (18 pts pour debloquer)', '10px', '#9E9E8E', { originX: 0 });
+            objects.push(t);
+        }
+
+        // -- RIGHT: Equipped items --
+        const equipY = headerY;
+        const equipTitle = UIFactory.addText(this, rightX, equipY, 'EQUIPE', '16px', '#FFD700', { originX: 0 });
+        objects.push(equipTitle);
+
+        // Boule equipped
+        const bouleY = equipY + 30;
+        const bouleLabel = UIFactory.addText(this, rightX, bouleY, 'Boule:', '12px', '#D4A574', { originX: 0 });
+        objects.push(bouleLabel);
+
+        const bouleKey = `ball_${save.selectedBoule}`;
+        if (this.textures.exists(bouleKey)) {
+            const bouleSpr = this.add.image(rightX + 100, bouleY + 20, bouleKey)
+                .setScale(1.2).setOrigin(0.5);
+            objects.push(bouleSpr);
+        }
+        const bouleName = UIFactory.addText(this, rightX + 100, bouleY + 45, save.selectedBoule, '11px', '#F5E6D0', { originX: 0.5 });
+        objects.push(bouleName);
+
+        // Cochonnet equipped
+        const cochY = bouleY + 70;
+        const cochLabel = UIFactory.addText(this, rightX, cochY, 'Cochonnet:', '12px', '#D4A574', { originX: 0 });
+        objects.push(cochLabel);
+
+        const cochKey = `ball_cochonnet${save.selectedCochonnet !== 'classique' ? '_' + save.selectedCochonnet : ''}`;
+        if (this.textures.exists(cochKey)) {
+            const cochSpr = this.add.image(rightX + 100, cochY + 20, cochKey)
+                .setScale(1.5).setOrigin(0.5);
+            objects.push(cochSpr);
+        }
+        const cochName = UIFactory.addText(this, rightX + 100, cochY + 45, save.selectedCochonnet, '11px', '#F5E6D0', { originX: 0.5 });
+        objects.push(cochName);
+
+        // Ecus
+        const ecuY = cochY + 80;
+        const ecuLabel = UIFactory.addText(this, rightX, ecuY, 'Ecus:', '12px', '#D4A574', { originX: 0 });
+        objects.push(ecuLabel);
+        const ecuVal = UIFactory.addText(this, rightX + 70, ecuY, `${save.ecus}`, '16px', '#FFD700', { originX: 0 });
+        objects.push(ecuVal);
+
+        // Wins/Losses
+        const recordY = ecuY + 28;
+        const recordLabel = UIFactory.addText(this, rightX, recordY, `Victoires: ${save.totalWins}  Defaites: ${save.totalLosses}`, '10px', '#9E9E8E', { originX: 0 });
+        objects.push(recordLabel);
+
+        // Arcade progress
+        const arcY = recordY + 18;
+        const arcLabel = UIFactory.addText(this, rightX, arcY, `Arcade: Round ${save.arcadeProgress}/5`, '10px', '#9E9E8E', { originX: 0 });
+        objects.push(arcLabel);
+
+        // Store all for cleanup (as a single "card")
+        this.cardObjects.push(objects);
+    }
+
+    // ================================================================
+
+    _drawRetourButton() {
+        UIFactory.createButton(this, GAME_WIDTH / 2, GAME_HEIGHT - 40, '[ RETOUR ]', {
+            fontSize: '18px', textColor: '#F5E6D0', bgColor: '#3A2E28',
+            padding: { x: 20, y: 8 },
+            onDown: () => {
+                sfxUIClick();
+                this.scene.start('TitleScene');
+            }
+        });
+    }
+
+    // ================================================================
+    // CONTROLS HINT
+    // ================================================================
+
+    _drawControlsHint() {
+        UIFactory.addControlsHint(this, '1/2/3/4 Onglets     Fleches Naviguer     Entree Acheter     Echap Retour');
+    }
+
+    // ================================================================
+    // INPUT
+    // ================================================================
+
+    _setupInput() {
+        this.input.keyboard.on('keydown-ESC', () => {
+            sfxUIClick();
+            this.scene.start('TitleScene');
+        });
+
+        // Tab switching with number keys
+        this.input.keyboard.on('keydown-ONE', () => this._switchTab(0));
+        this.input.keyboard.on('keydown-TWO', () => this._switchTab(1));
+        this.input.keyboard.on('keydown-THREE', () => this._switchTab(2));
+        this.input.keyboard.on('keydown-FOUR', () => this._switchTab(3));
+
+        // Arrow navigation
+        this.input.keyboard.on('keydown-RIGHT', () => this._moveSelection(1, 0));
+        this.input.keyboard.on('keydown-LEFT', () => this._moveSelection(-1, 0));
+        this.input.keyboard.on('keydown-DOWN', () => this._moveSelection(0, 1));
+        this.input.keyboard.on('keydown-UP', () => this._moveSelection(0, -1));
+
+        // Enter to buy
+        this.input.keyboard.on('keydown-ENTER', () => this._buySelected());
+    }
+
+    _moveSelection(dx, dy) {
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        if (!category) return;
+
+        const count = Math.min(category.items.length, GRID_COLS * GRID_ROWS);
+        if (count === 0) return;
+
+        const col = this.selectedIndex % GRID_COLS;
+        const row = Math.floor(this.selectedIndex / GRID_COLS);
+
+        let newCol = col + dx;
+        let newRow = row + dy;
+
+        // Clamp
+        newCol = Math.max(0, Math.min(GRID_COLS - 1, newCol));
+        newRow = Math.max(0, Math.min(GRID_ROWS - 1, newRow));
+
+        const newIndex = newRow * GRID_COLS + newCol;
+        if (newIndex < count && newIndex !== this.selectedIndex) {
+            sfxUIClick();
+            this.selectedIndex = newIndex;
+            this._drawItems();
+        }
+    }
+
+    _buySelected() {
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        if (!category) return;
+
+        const item = category.items[this.selectedIndex];
+        if (!item) return;
+
+        const save = loadSave();
+        const owned = save.purchases.includes(item.id);
+        const canAfford = save.ecus >= item.price;
+
+        if (!owned && canAfford) {
+            this._purchaseItem(item, this.selectedIndex);
+        }
+    }
+
+    // ================================================================
+    // CLEANUP
+    // ================================================================
+
+    _shutdown() {
+        this.input.keyboard.removeAllListeners();
+        this.tweens.killAll();
+    }
+}

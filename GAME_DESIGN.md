@@ -1,5 +1,10 @@
 # GAME DESIGN - Petanque Master
 
+> **ATTENTION** : Ce fichier est une bible de design generique.
+> Les personnages "TBD" ont ete remplaces par le roster actuel : Rookie, Ley, Le Magicien, La Choupe, Marcel, Reyes.
+> Pour les stats et donnees reelles : **public/data/characters.json** (source de verite).
+> Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.1.
+
 ## Concept
 
 **Petanque Master** : jeu de petanque competitif en 1v1, style jeu de combat (Street Fighter / Tekken).

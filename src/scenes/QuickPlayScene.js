@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
 
 const CHAR_VALUES = [
+    { display: 'Le Rookie', key: 'rookie_static', sprite: 'rookie_static', charId: 'rookie', isStatic: true },
     { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
     { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' },
     { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
@@ -98,6 +100,8 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
         setSoundScene(this);
         this._selections = OPTIONS.map(() => 0);
         this._selectedRow = 0;
@@ -468,8 +472,16 @@ export default class QuickPlayScene extends Phaser.Scene {
     _drawCharPanel(cx, top, charsData, isP1 = true) {
         const rowIdx = isP1 ? ROW_P1 : ROW_P2;
         const charOption = OPTIONS[rowIdx].values[this._selections[rowIdx]];
-        const char = charsData.roster.find(c => c.id === charOption.charId);
+        let char = charsData.roster.find(c => c.id === charOption.charId);
         if (!char) return;
+
+        // Use saved stats for Rookie
+        if (char.isRookie || char.id === 'rookie') {
+            const save = loadSave();
+            if (save.rookie) {
+                char = { ...char, stats: { ...save.rookie.stats } };
+            }
+        }
 
         const teamColor = isP1 ? '#5B9BD5' : '#C44B3F';
         const teamLabel = isP1 ? 'JOUEUR 1' : 'JOUEUR 2';
@@ -643,8 +655,16 @@ export default class QuickPlayScene extends Phaser.Scene {
         this.registry.set('gameState', { ...gs, bouleType });
 
         const charsData = this.cache.json.get('characters');
-        const p1Char = charsData?.roster?.find(c => c.id === p1Option.charId) || null;
+        let p1Char = charsData?.roster?.find(c => c.id === p1Option.charId) || null;
         const p2Char = charsData?.roster?.find(c => c.id === p2Option.charId) || null;
+
+        // Merge saved Rookie stats if Rookie is selected
+        if (p1Char && (p1Char.isRookie || p1Char.id === 'rookie')) {
+            const save = loadSave();
+            if (save.rookie) {
+                p1Char = { ...p1Char, stats: { ...save.rookie.stats } };
+            }
+        }
 
         this.cameras.main.fadeOut(300);
         this.cameras.main.once('camerafadeoutcomplete', () => {

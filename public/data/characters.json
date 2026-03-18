@@ -13,6 +13,48 @@
   },
   "roster": [
     {
+      "id": "rookie",
+      "name": "Le Rookie",
+      "title": "L'Apprenti du Boulodrome",
+      "catchphrase": "J'apprends vite.",
+      "description": "Le Rookie vient d'arriver au boulodrome. Il n'a pas d'experience, mais il a du potentiel. Ses stats evoluent avec chaque victoire — a terme, il peut devenir le joueur le plus polyvalent du jeu.",
+      "archetype": "adaptable",
+      "stats": {
+        "precision": 3,
+        "puissance": 3,
+        "effet": 2,
+        "sang_froid": 2
+      },
+      "isRookie": true,
+      "maxStatPoints": 40,
+      "abilities_unlock": [
+        { "threshold": 18, "id": "instinct", "ability": { "name": "L'Instinct", "charges": 1, "type": "active", "description": "Slow-mo 2s pendant la visee" } },
+        { "threshold": 26, "id": "determination", "ability": { "name": "Determination", "charges": 0, "type": "passive", "description": "Apres mene perdue, -50% wobble" } },
+        { "threshold": 34, "id": "naturel", "ability": { "name": "Le Naturel", "charges": 1, "type": "active", "description": "Throw quasi-parfait, wobble ~0" } }
+      ],
+      "barks": {
+        "good_shot": ["Ouais !", "Ca passe !", "Pas mal, non ?", "J'apprends vite."],
+        "bad_shot": ["Oups.", "La prochaine...", "C'est le debut.", "Faut que j'ajuste."],
+        "opponent_good": ["Wow.", "Pas mal !", "Comment il fait ?"],
+        "opponent_bad": ["Hehe.", "Meme moi je fais mieux.", "Allez !"],
+        "carreau": ["CARREAU ! J'y crois pas !", "Incroyable !", "C'est moi qui ai fait ca ?!", "BOOOOM !"],
+        "opponent_carreau": ["... Oh.", "Costaud.", "Faudra que j'apprenne ca."],
+        "taking_lead": ["On mene !", "Ca commence a rentrer.", "Je progresse !"],
+        "losing_badly": ["C'est pas fini.", "J'apprends encore.", "Allez, focus."],
+        "match_point": ["Dernier point... Concentre.", "C'est maintenant.", "Focus total."],
+        "victory": ["J'ai gagne ?! J'AI GAGNE !", "Merci les boules !", "Le Rookie monte !"],
+        "defeat": ["Bien joue. J'apprendrai.", "La prochaine...", "Je reviens plus fort."],
+        "pre_match": ["J'suis pret !", "On va voir ce que ca donne.", "J'apprends vite."],
+        "post_match_win": ["C'est que le debut !", "Merci, c'etait bien.", "A la prochaine !"],
+        "post_match_lose": ["GG. J'ai encore a apprendre.", "La prochaine sera differente.", "Pas grave, je progresse."]
+      },
+      "ability": null,
+      "sprite": "rookie_static",
+      "portrait": "portrait_rookie",
+      "palette": { "primary": "#5B9BD5", "secondary": "#F5E6D0", "accent": "#FFD700" },
+      "unlocked": true
+    },
+    {
       "id": "ley",
       "name": "Ley",
       "title": "Le Carreau Vivant",
@@ -53,7 +95,7 @@
       "sprite": "char_ley",
       "portrait": "portrait_ley",
       "palette": { "primary": "#4A6FA5", "secondary": "#3A2E28", "accent": "#D4A574" },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "magicien",
@@ -96,7 +138,7 @@
       "sprite": "char_le_magicien",
       "portrait": "portrait_le_magicien",
       "palette": { "primary": "#8B4513", "secondary": "#F5E6D0", "accent": "#C44B3F" },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "la_choupe",
@@ -139,7 +181,7 @@
       "sprite": "char_la_choupe",
       "portrait": "portrait_la_choupe",
       "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "marcel",
@@ -182,7 +224,7 @@
       "sprite": "char_marcel",
       "portrait": "portrait_marcel",
       "palette": { "primary": "#A8B5C2", "secondary": "#3A2E28", "accent": "#FFD700" },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "reyes",
@@ -225,7 +267,7 @@
       "sprite": "char_reyes",
       "portrait": "portrait_reyes",
       "palette": { "primary": "#F0E8D8", "secondary": "#8B6B4A", "accent": "#D4A020" },
-      "unlocked": true
+      "unlocked": false
     }
   ]
 }

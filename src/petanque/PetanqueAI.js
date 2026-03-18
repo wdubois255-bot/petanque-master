@@ -123,6 +123,10 @@ export default class PetanqueAI {
             // Reyes places cochonnet at medium distance, very centered — optimal for his game
             angle = -Math.PI / 2 + this._noise(1.5) * Math.PI / 180;
             power = 0.55 + this._noise(0.06);
+        } else if (p.personality === 'equilibre') {
+            // Marcel: place le cochonnet avec calme et precision — 40 ans d'experience
+            angle = -Math.PI / 2 + this._noise(2.5) * Math.PI / 180;
+            power = 0.50 + this._noise(0.08);
         } else {
             angle = -Math.PI / 2 + this._noise(5) * Math.PI / 180;
             power = 0.5 + this._noise(0.15);
@@ -172,6 +176,13 @@ export default class PetanqueAI {
         if (this.personality.personality === 'complet') {
             angleDev *= 0.75;
             powerDev *= 0.75;
+        }
+
+        // Equilibre (Marcel): Le Vieux Renard — bon partout, pas aussi specialise
+        // Bonus moderé dans les deux modes (entre specialiste et generique)
+        if (this.personality.personality === 'equilibre') {
+            if (shotMode === 'pointer') { angleDev *= 0.80; powerDev *= 0.80; }
+            else { angleDev *= 0.85; powerDev *= 0.85; }
         }
 
         // === MOMENTUM EFFECT (all personalities) ===

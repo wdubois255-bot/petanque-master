@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -24,12 +25,36 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+
         setSoundScene(this);
         const chars = this.cache.json.get('characters');
+        const save = loadSave();
+
         // Filter out hidden characters (sprites not finished)
         const visibleRoster = chars.roster.filter(c => !c.hidden);
-        this.roster = visibleRoster.filter(c => c.unlocked || this._isUnlocked(c.id));
+
+        // Determine unlock status based on mode
+        // Arcade mode: ONLY the Rookie is selectable
+        // Quick Play / other: use save data for unlocks
+        if (this.mode === 'arcade') {
+            this.roster = visibleRoster.filter(c => c.isRookie);
+        } else {
+            this.roster = visibleRoster.filter(c =>
+                c.isRookie || save.unlockedCharacters.includes(c.id)
+            );
+        }
+
+        // Reorder so Rookie is always first
+        const rookieIdx = visibleRoster.findIndex(c => c.isRookie);
+        if (rookieIdx > 0) {
+            const rookie = visibleRoster.splice(rookieIdx, 1)[0];
+            visibleRoster.unshift(rookie);
+        }
+
         this.allRoster = visibleRoster;
+        this._save = save;
         this._selectedIndex = 0;
         this._confirmed = false;
         this._uiElements = [];
@@ -83,11 +108,12 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _isUnlocked(charId) {
-        // Check localStorage for unlocked characters
-        try {
-            const unlocked = JSON.parse(localStorage.getItem('pm_unlocked_chars') || '[]');
-            return unlocked.includes(charId);
-        } catch { return false; }
+        // In arcade mode, only the Rookie is unlocked
+        if (this.mode === 'arcade') {
+            return charId === 'rookie';
+        }
+        // Use save data for unlock status
+        return this._save && this._save.unlockedCharacters.includes(charId);
     }
 
     _createCharacterGrid() {
@@ -107,7 +133,9 @@ export default class CharSelectScene extends Phaser.Scene {
             const cx = gridX + col * cellW + cellW / 2;
             const cy = gridY + row * cellH + cellH / 2;
 
-            const isLocked = !char.unlocked && !this._isUnlocked(char.id);
+            // A character is locked if it's NOT the Rookie AND not in save's unlockedCharacters
+            // In arcade mode, everything except Rookie is locked
+            const isLocked = !char.isRookie && !this._isUnlocked(char.id);
             const isInRoster = this.roster.includes(char);
 
             // Cell background
@@ -116,16 +144,27 @@ export default class CharSelectScene extends Phaser.Scene {
             cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 8);
 
             if (isLocked) {
-                // Locked: show dark silhouette of the character sprite
+                // Locked: show darkened silhouette with padlock
                 const spriteKey = this._getCharSpriteKey(char);
+                const charIsStatic = CHAR_STATIC_SPRITES.includes(char.id);
                 if (this.textures.exists(spriteKey)) {
-                    const sil = this.add.sprite(cx, cy - 12, spriteKey, 0)
-                        .setScale(0.5).setOrigin(0.5).setTint(0x1A1510).setAlpha(0.6);
+                    if (charIsStatic) {
+                        this.add.image(cx, cy - 12, spriteKey)
+                            .setScale(0.35).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                    } else {
+                        this.add.sprite(cx, cy - 12, spriteKey, 0)
+                            .setScale(0.5).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                    }
                 } else {
-                    this.add.text(cx, cy - 10, '?', {
-                        fontFamily: 'monospace', fontSize: '40px', color: '#2A2420', shadow: SHADOW
+                    this.add.text(cx, cy - 18, '?', {
+                        fontFamily: 'monospace', fontSize: '36px', color: '#2A2420', shadow: SHADOW
                     }).setOrigin(0.5);
                 }
+                // Padlock icon over the slot
+                this.add.text(cx, cy + 8, '\uD83D\uDD12', {
+                    fontSize: '18px'
+                }).setOrigin(0.5).setAlpha(0.7);
+                // Show ??? instead of name
                 this.add.text(cx, cy + 30, '???', {
                     fontFamily: 'monospace', fontSize: '12px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
@@ -136,9 +175,15 @@ export default class CharSelectScene extends Phaser.Scene {
 
                 // Try to use existing sprite, fallback to colored circle
                 const spriteKey = this._getCharSpriteKey(char);
+                const charIsStatic2 = CHAR_STATIC_SPRITES.includes(char.id);
                 if (this.textures.exists(spriteKey)) {
-                    this.add.sprite(cx, cy - 12, spriteKey, 0)
-                        .setScale(0.5).setOrigin(0.5);
+                    if (charIsStatic2) {
+                        this.add.image(cx, cy - 12, spriteKey)
+                            .setScale(0.35).setOrigin(0.5);
+                    } else {
+                        this.add.sprite(cx, cy - 12, spriteKey, 0)
+                            .setScale(0.5).setOrigin(0.5);
+                    }
                 } else {
                     const portrait = this.add.graphics();
                     portrait.fillStyle(primaryColor, 1);
@@ -325,31 +370,38 @@ export default class CharSelectScene extends Phaser.Scene {
         }
 
         const spriteKey = this._getCharSpriteKey(char);
+        const isStatic = CHAR_STATIC_SPRITES.includes(char.id);
         if (this.textures.exists(spriteKey)) {
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
             this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);
 
-            this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 370, spriteKey, 0)
-                .setScale(0.75).setOrigin(0.5).setDepth(5);
+            if (isStatic) {
+                // Static sprite: display as image, no animation
+                this._previewSprite = this.add.image(GAME_WIDTH - 220, 360, spriteKey)
+                    .setScale(0.65).setOrigin(0.5).setDepth(5);
+            } else {
+                this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 370, spriteKey, 0)
+                    .setScale(0.75).setOrigin(0.5).setDepth(5);
+
+                // Walk animation (frames 0-3 = south walk)
+                const animKey = `preview_walk_${char.id}`;
+                if (!this.anims.exists(animKey)) {
+                    this.anims.create({
+                        key: animKey,
+                        frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
+                        frameRate: 6, repeat: -1
+                    });
+                }
+                this._previewSprite.play(animKey);
+            }
 
             // Gentle idle bounce
             this.tweens.add({
                 targets: this._previewSprite,
-                y: 366, duration: 800, yoyo: true, repeat: -1,
+                y: this._previewSprite.y - 4, duration: 800, yoyo: true, repeat: -1,
                 ease: 'Sine.easeInOut'
             });
-
-            // Walk animation (frames 0-3 = south walk)
-            const animKey = `preview_walk_${char.id}`;
-            if (!this.anims.exists(animKey)) {
-                this.anims.create({
-                    key: animKey,
-                    frames: this.anims.generateFrameNumbers(spriteKey, { start: 0, end: 3 }),
-                    frameRate: 6, repeat: -1
-                });
-            }
-            this._previewSprite.play(animKey);
         }
     }
 

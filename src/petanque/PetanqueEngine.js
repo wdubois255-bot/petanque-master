@@ -14,11 +14,18 @@ import {
     DUST_COUNT_ROULETTE, DUST_COUNT_DEMI, DUST_COUNT_PLOMBEE, DUST_COUNT_TIR,
     MIN_IMPACT_SPEED,
     COCHONNET_ROLL_MIN, COCHONNET_ROLL_MAX, COCHONNET_SAFE_MARGIN, COCHONNET_CLAMP_MARGIN,
-    BALL_CLAMP_MARGIN
+    BALL_CLAMP_MARGIN,
+    MAX_THROW_SPEED,
+    SLOWMO_DISTANCE, SLOWMO_SPEED_THRESHOLD, SLOWMO_FACTOR, SLOWMO_LERP_SPEED,
+    SPEED_THRESHOLD,
+    ECU_WIN_ARCADE, ECU_WIN_QUICKPLAY, ECU_CARREAU_BONUS,
+    PALET_THRESHOLD,
+    CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
-    sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore
+    sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore,
+    startRollingSound, updateRollingSound, stopRollingSound
 } from '../utils/SoundManager.js';
 
 const STATES = {
@@ -76,6 +83,7 @@ export default class PetanqueEngine {
 
         // Shot result tracking
         this._shotCollisions = []; // balls hit by lastThrownBall this throw
+        this._lastImpactPoint = null; // {x, y} position of target ball at moment of collision
 
         // Point indicator
         this._lastBestBallId = null;
@@ -86,6 +94,13 @@ export default class PetanqueEngine {
 
         // Dramatic zoom state
         this._zoomActive = false;
+
+        // Slow-motion state
+        this._slowMoActive = false;
+        this._timeScale = 1.0; // current time scale (lerps toward target)
+
+        // Rolling sound state
+        this._rollingSoundActive = false;
 
         // Renderer: handles ALL visual effects (SRP separation)
         this.renderer = new EngineRenderer(scene, this);
@@ -398,6 +413,11 @@ export default class PetanqueEngine {
         this.lastShotWasTir = shotMode === 'tirer';
         this._pendingCarreauChecks = [];
         this._shotCollisions = [];
+        this._lastImpactPoint = null;
+
+        // Store throw direction for recul detection
+        ball._throwDirX = Math.cos(angle);
+        ball._throwDirY = Math.sin(angle);
 
         // Track shot/point stats
         if (this.matchStats) {
@@ -637,16 +657,20 @@ export default class PetanqueEngine {
         const winnerName = this._teamName(winner);
         this._showMessage(`${winnerName} ${winner === 'player' ? 'gagnez' : 'gagne'} ${points} point${points > 1 ? 's' : ''} !`);
 
-        sfxScore();
-        if (this.onScore) this.onScore(this.scores, winner, points);
+        // Dramatic pause: 1.5s of suspense before showing score
+        this.scene.events.emit('dramatic-pause');
+        this.scene.time.delayedCall(1500, () => {
+            sfxScore();
+            if (this.onScore) this.onScore(this.scores, winner, points);
 
-        this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
-            if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
-                this.setState(STATES.GAME_OVER);
-            } else {
-                this.mene++;
-                this.startMene();
-            }
+            this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
+                if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
+                    this.setState(STATES.GAME_OVER);
+                } else {
+                    this.mene++;
+                    this.startMene();
+                }
+            });
         });
     }
 
@@ -692,6 +716,14 @@ export default class PetanqueEngine {
 
         // If arcade/versus mode: redirect to ResultScene
         if (this.scene.arcadeState || this.scene.playerCharacter) {
+            // Calculate Ecus earned
+            const playerCarreaux = this.matchStats?.carreaux?.player || 0;
+            let ecuEarned = 0;
+            if (isVictory) {
+                ecuEarned = this.scene.arcadeState ? ECU_WIN_ARCADE : ECU_WIN_QUICKPLAY;
+                ecuEarned += playerCarreaux * ECU_CARREAU_BONUS;
+            }
+
             this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, () => {
                 this.scene.scene.start('ResultScene', {
                     won: isVictory,
@@ -701,11 +733,12 @@ export default class PetanqueEngine {
                     terrainName: this.terrainType,
                     returnScene: this.scene.returnScene || 'TitleScene',
                     arcadeState: this.scene.arcadeState,
+                    ecuEarned,
                     matchStats: {
                         menes: this.matchStats?.menesPlayed || this.mene,
                         fanny: isFanny,
                         bestMene: this.matchStats?.bestMeneScore || 0,
-                        carreaux: this.matchStats?.carreaux?.player || 0,
+                        carreaux: playerCarreaux,
                         biberons: this.matchStats?.biberons?.player || 0,
                         shots: this.matchStats?.shots?.player || 0,
                         points_attempted: this.matchStats?.points?.player || 0,
@@ -802,6 +835,41 @@ export default class PetanqueEngine {
 
         const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive);
 
+        // === SLOW-MOTION: check if any moving ball is near the cochonnet ===
+        let shouldSlowMo = false;
+        if (this.cochonnet && this.cochonnet.isAlive) {
+            for (const ball of this.balls) {
+                if (!ball.isAlive || !ball.isMoving) continue;
+                const spd = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (spd <= SPEED_THRESHOLD) continue; // not truly moving
+                const dx = ball.x - this.cochonnet.x;
+                const dy = ball.y - this.cochonnet.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < SLOWMO_DISTANCE && spd < SLOWMO_SPEED_THRESHOLD) {
+                    shouldSlowMo = true;
+                    break;
+                }
+            }
+        }
+
+        // Smooth lerp of timeScale
+        const targetScale = shouldSlowMo ? SLOWMO_FACTOR : 1.0;
+        this._timeScale += (targetScale - this._timeScale) * SLOWMO_LERP_SPEED;
+        // Snap when close enough
+        if (Math.abs(this._timeScale - targetScale) < 0.01) this._timeScale = targetScale;
+
+        // Emit slow-mo events
+        if (shouldSlowMo && !this._slowMoActive) {
+            this._slowMoActive = true;
+            this.scene.events.emit('slowmo-start');
+        } else if (!shouldSlowMo && this._slowMoActive && this._timeScale > 0.95) {
+            this._slowMoActive = false;
+            this.scene.events.emit('slowmo-end');
+        }
+
+        // Apply time scale to delta
+        delta *= this._timeScale;
+
         // Sub-stepping: fast balls need multiple small steps to avoid tunneling
         // A ball moving at speed 10+ can skip over a target between frames
         let maxSpeed = 0;
@@ -848,25 +916,52 @@ export default class PetanqueEngine {
                         }
 
                         if (collided && this.lastThrownBall) {
-                            // Track carreau candidates
-                            if (this._pendingCarreauChecks) {
-                                if (allBodies[i] === this.lastThrownBall) {
+                            // Track carreau candidates + impact point + recoil detection
+                            if (allBodies[i] === this.lastThrownBall) {
+                                if (this._pendingCarreauChecks) {
                                     this._pendingCarreauChecks.push({
                                         thrownBall: allBodies[i],
                                         targetOrigX: bx, targetOrigY: by
                                     });
-                                } else if (allBodies[j] === this.lastThrownBall) {
+                                }
+                                // Store impact point (target's pre-collision position)
+                                if (!this._lastImpactPoint) {
+                                    this._lastImpactPoint = { x: bx, y: by };
+                                }
+                                // Detect recoil: dot product of thrower velocity vs throw direction
+                                const tb = this.lastThrownBall;
+                                if (tb._throwDirX !== undefined) {
+                                    const dot = tb.vx * tb._throwDirX + tb.vy * tb._throwDirY;
+                                    if (dot < 0) tb._isRecoiling = true;
+                                }
+                            } else if (allBodies[j] === this.lastThrownBall) {
+                                if (this._pendingCarreauChecks) {
                                     this._pendingCarreauChecks.push({
                                         thrownBall: allBodies[j],
                                         targetOrigX: ax, targetOrigY: ay
                                     });
                                 }
+                                if (!this._lastImpactPoint) {
+                                    this._lastImpactPoint = { x: ax, y: ay };
+                                }
+                                const tb = this.lastThrownBall;
+                                if (tb._throwDirX !== undefined) {
+                                    const dot = tb.vx * tb._throwDirX + tb.vy * tb._throwDirY;
+                                    if (dot < 0) tb._isRecoiling = true;
+                                }
                             }
                             // Track all collisions for shot result detection
                             if (allBodies[i] === this.lastThrownBall && !this._shotCollisions.includes(allBodies[j])) {
                                 this._shotCollisions.push(allBodies[j]);
+                                // Store impact point (target's position at moment of collision) for palet detection
+                                if (!this._lastImpactPoint) {
+                                    this._lastImpactPoint = { x: allBodies[j].x, y: allBodies[j].y };
+                                }
                             } else if (allBodies[j] === this.lastThrownBall && !this._shotCollisions.includes(allBodies[i])) {
                                 this._shotCollisions.push(allBodies[i]);
+                                if (!this._lastImpactPoint) {
+                                    this._lastImpactPoint = { x: allBodies[i].x, y: allBodies[i].y };
+                                }
                             }
                         }
                     }
@@ -876,9 +971,11 @@ export default class PetanqueEngine {
 
         // Rolling SFX + trail particles (throttled)
         this._rollSfxCooldown -= delta || 16;
+        let rollingMaxSpeed = 0;
         for (const ball of allBodies) {
             if (ball.isAlive && ball.isMoving) {
                 const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                if (speed > rollingMaxSpeed) rollingMaxSpeed = speed;
                 if (speed > 1 && this._rollSfxCooldown <= 0) {
                     sfxRoll();
                     this._rollSfxCooldown = 120;
@@ -889,6 +986,18 @@ export default class PetanqueEngine {
             }
         }
 
+        // Continuous rolling sound (Web Audio pink noise)
+        if (rollingMaxSpeed > SPEED_THRESHOLD) {
+            if (!this._rollingSoundActive) {
+                startRollingSound();
+                this._rollingSoundActive = true;
+            }
+            updateRollingSound(rollingMaxSpeed / MAX_THROW_SPEED);
+        } else if (this._rollingSoundActive) {
+            stopRollingSound();
+            this._rollingSoundActive = false;
+        }
+
         // Check bounds
         this._checkBoundsAll();
 
@@ -897,6 +1006,12 @@ export default class PetanqueEngine {
 
         // If waiting for stop and everything stopped
         if (this.state === STATES.WAITING_STOP && !anyMoving) {
+            // Stop rolling sound when all balls stop
+            if (this._rollingSoundActive) {
+                stopRollingSound();
+                this._rollingSoundActive = false;
+            }
+
             // Trigger reaction animations
             if (this.onAfterStop) this.onAfterStop(this.lastTeamPlayed);
 
@@ -942,6 +1057,7 @@ export default class PetanqueEngine {
     }
 
     // --- SHOT RESULT DETECTION (discreet feedback) ---
+    // Priority: Contre > Trou > Ciseau > Carreau (separate) > Casquette > Blessee > Palet > Recul
     _detectShotResult() {
         if (!this.lastThrownBall || !this.lastThrownBall.isAlive) return;
         if (!this.cochonnet || !this.cochonnet.isAlive) return;
@@ -958,61 +1074,91 @@ export default class PetanqueEngine {
             }
         }
 
-        // Biberon: boule collee au cochonnet (pointage only)
+        // === POINTAGE : Biberon ===
         if (!isTir) {
             const distToCoch = ball.distanceTo(this.cochonnet);
             if (distToCoch <= ball.radius + this.cochonnet.radius + 2) {
                 if (this.matchStats && ball.team) this.matchStats.biberons[ball.team]++;
                 this._showShotLabel(ball, 'BIBERON !', '#FFD700', 14);
-                this._shotCollisions = [];
-                return;
             }
+            this._shotCollisions = [];
+            return;
         }
 
-        // Tir-specific results (skip if carreau already celebrated)
-        if (isTir && hitBalls.length > 0) {
-            // Contre: hit an allied ball during tir
-            const hitAllied = hitBalls.filter(b => b.team === ball.team && b.team !== 'cochonnet');
-            if (hitAllied.length > 0) {
-                this._showShotLabel(ball, 'Contre...', '#C44B3F', 12);
+        // === TIR : analyse complete ===
+
+        // Trou : tir rate, aucune collision
+        if (hitBalls.length === 0) {
+            this._showShotLabel(ball, '...', '#888888', 11);
+            this._shotCollisions = [];
+            return;
+        }
+
+        // Contre : touche une boule alliee
+        const hitAllied = hitBalls.filter(b => b.team === ball.team && b.team !== 'cochonnet');
+        if (hitAllied.length > 0) {
+            this._showShotLabel(ball, 'Contre !', '#C44B3F', 13);
+            this._shotCollisions = [];
+            return;
+        }
+
+        const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
+
+        // Ciseau : touche 2+ boules adverses
+        if (hitEnemy.length >= 2) {
+            this._showShotLabel(ball, 'CISEAU !!', '#FFD700', 16);
+            this.scene.cameras.main.shake(120, 0.005);
+            this._shotCollisions = [];
+            return;
+        }
+
+        // Analyse du tir contre une seule cible
+        if (hitEnemy.length === 1) {
+            const target = hitEnemy[0];
+            const targetSpeed = Math.sqrt(target.vx ** 2 + target.vy ** 2);
+            const throwerSpeed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
+
+            // Casquette : cible a a peine bouge
+            if (targetSpeed < CASQUETTE_MAX_SPEED) {
+                this._showShotLabel(ball, 'Casquette...', '#888888', 12);
                 this._shotCollisions = [];
                 return;
             }
 
-            // Detect tir results: carreau (already handled), recul, palet, or miss
-            const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
-            if (hitEnemy.length > 0) {
-                const targetBall = hitEnemy[0];
-                const targetSpeed = Math.sqrt(targetBall.vx ** 2 + targetBall.vy ** 2);
-                const throwerSpeed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
+            // Blessee : cible a un peu bouge mais pas assez
+            if (targetSpeed < BLESSER_MAX_SPEED) {
+                this._showShotLabel(ball, 'Blessee...', '#AA8866', 12);
+                this._shotCollisions = [];
+                return;
+            }
 
-                // Recul: thrower ball slides back 10-15% from impact point
-                // Target is ejected far (like a carreau but thrower doesn't take the place)
-                // Detected when: thrower has moderate residual speed (1-5) in reverse direction
-                // and target is ejected fast (>3)
-                const puiStat = ball.puissanceStat || 6;
-                const reculPct = 0.10 + (puiStat - 1) / 9 * 0.05; // 10-15% based on puissance
+            // Carreau est deja detecte separement dans _checkCarreau/_celebrateCarreau
 
-                if (throwerSpeed > 0.8 && throwerSpeed < 5 && targetSpeed > 3) {
-                    // Check if thrower is moving roughly backwards (away from target)
-                    const dx = targetBall.x - ball.x;
-                    const dy = targetBall.y - ball.y;
-                    const dot = ball.vx * dx + ball.vy * dy;
-                    if (dot < 0) {
-                        // Thrower IS moving away from target = recul
-                        // Amplify the thrower's backward slide proportionally to puissance
-                        ball.vx *= (1 + reculPct * 3);
-                        ball.vy *= (1 + reculPct * 3);
-                        this._showShotLabel(ball, 'Recul !', '#D4A574', 14);
-                        this._shotCollisions = [];
-                        return;
-                    }
-                }
+            // Palet CORRIGE : boule tiree reste pres du POINT D'IMPACT (pas du cochonnet)
+            const impactPoint = this._lastImpactPoint;
+            if (impactPoint) {
+                const dxImpact = ball.x - impactPoint.x;
+                const dyImpact = ball.y - impactPoint.y;
+                const distFromImpact = Math.sqrt(dxImpact * dxImpact + dyImpact * dyImpact);
 
-                // Palet: thrower stays near cochonnet after a solid hit
-                const distToCoch = ball.distanceTo(this.cochonnet);
-                if (distToCoch < 60 && targetSpeed > 2) {
+                if (distFromImpact > CARREAU_THRESHOLD && distFromImpact < PALET_THRESHOLD) {
                     this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
+                    this._shotCollisions = [];
+                    return;
+                }
+            }
+
+            // Recul CORRIGE : detection basee sur la direction, PAS d'amplification de vitesse
+            // Le recul existe naturellement grace au COR 0.62 — on le detecte et le nomme, c'est tout
+            if (throwerSpeed > 0.3) {
+                const dx = target.x - ball.x;
+                const dy = target.y - ball.y;
+                const dot = ball.vx * dx + ball.vy * dy;
+                if (dot < 0) {
+                    // Thrower moving backward = recul naturel
+                    // Mark ball as recoiling for backspin interaction
+                    ball._isRecoiling = true;
+                    this._showShotLabel(ball, 'Recul', '#D4A574', 12);
                     this._shotCollisions = [];
                     return;
                 }

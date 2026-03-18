@@ -151,9 +151,9 @@ export default class CompletStrategy extends AIStrategy {
         for (const ball of sit.playerBalls) {
             const dist = ball.distanceTo(this.ai.engine.cochonnet);
             // Closer balls are more valuable to remove
-            const value = 100 / (dist + 5);
+            let value = 100 / (dist + 5);
             // Bonus: if this ball is the ONLY one giving points, removing it flips the mene
-            if (dist < sit.bestAiDist) value * 1.5;
+            if (dist < sit.bestAiDist) value *= 1.5;
             if (value > bestScore) {
                 bestScore = value;
                 bestTarget = ball;

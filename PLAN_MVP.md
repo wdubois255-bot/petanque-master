@@ -2,6 +2,8 @@
 ## Plan de développement orienté lancement
 
 > **Dernière mise à jour** : 17 mars 2026
+> **ATTENTION** : Ce fichier utilise l'ancien roster (Rene, Fanny, Ricardo...).
+> Pour l'etat actuel : **CAHIER_DES_CHARGES.md** v2.1. Pour le plan d'implementation : **SPRINT_FINAL.md**.
 > **Statut** : Jeu jouable. Prochaine étape = polish + ship.
 > Résultat d'un audit complet (code, docs, marché, distribution).
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
     DEAD_ZONE_PX,
-    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR,
+    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
@@ -267,10 +267,12 @@ export default class AimingSystem {
 
         if (opt.mode === 'tirer') {
             this.shotMode = 'tirer';
+            this._tirDevant = false;
             this.loftPreset = LOFT_TIR;
             this._highlightOpponentBalls();
             this._showRetroToggle();
-            this.engine._showMessage('Visez une boule adverse !');
+            this._showTirDevantToggle();
+            this.engine._showMessage('Visez une boule adverse ! [D] Tir Devant');
         } else {
             this.shotMode = 'pointer';
             this.loftIndex = opt.loft;
@@ -332,6 +334,61 @@ export default class AimingSystem {
         }
         this._retroLabel = null;
         this._keyR = null;
+    }
+
+    // Tir devant toggle: [D] switches between TIR and TIR DEVANT
+    _showTirDevantToggle() {
+        this._clearTirDevantUI();
+        this._tirDevantUI = [];
+
+        const x = this.scene.scale.width - 90;
+        const y = this.scene.scale.height - 54;
+
+        const label = this.scene.add.text(x, y, '[D] Tir devant', {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: '#AA8866', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
+            .setInteractive({ useHandCursor: true });
+        this._tirDevantUI.push(label);
+        this._tirDevantLabel = label;
+
+        label.on('pointerdown', (pointer) => {
+            pointer.event.stopPropagation();
+            this._toggleTirDevant();
+        });
+
+        this._keyD = this.scene.input.keyboard.addKey('D');
+    }
+
+    _toggleTirDevant() {
+        this._tirDevant = !this._tirDevant;
+        sfxUIClick();
+        if (this._tirDevant) {
+            this.loftPreset = LOFT_TIR_DEVANT;
+            if (this._tirDevantLabel) {
+                this._tirDevantLabel.setAlpha(1);
+                this._tirDevantLabel.setColor('#FFD700');
+                this._tirDevantLabel.setText('[D] TIR DEVANT !');
+            }
+            this.engine._showMessage('Tir devant : atterrit avant la cible !');
+        } else {
+            this.loftPreset = LOFT_TIR;
+            if (this._tirDevantLabel) {
+                this._tirDevantLabel.setAlpha(0.5);
+                this._tirDevantLabel.setColor('#AA8866');
+                this._tirDevantLabel.setText('[D] Tir devant');
+            }
+            this.engine._showMessage('Tir au fer : frappe directe !');
+        }
+    }
+
+    _clearTirDevantUI() {
+        if (this._tirDevantUI) {
+            this._tirDevantUI.forEach(e => e.destroy());
+            this._tirDevantUI = [];
+        }
+        this._tirDevantLabel = null;
+        this._keyD = null;
     }
 
     // === FOCUS (Respire) UI & Logic ===
@@ -888,13 +945,13 @@ export default class AimingSystem {
             if (this._key3 && Phaser.Input.Keyboard.JustDown(this._key3)) {
                 this._selectLoft(2); return;
             }
-            const keyUp = this.scene.input.keyboard.addKey('UP');
-            const keyDown = this.scene.input.keyboard.addKey('DOWN');
-            if (Phaser.Input.Keyboard.JustDown(keyUp)) {
+            if (!this._keyUp) this._keyUp = this.scene.input.keyboard.addKey('UP');
+            if (!this._keyDown) this._keyDown = this.scene.input.keyboard.addKey('DOWN');
+            if (Phaser.Input.Keyboard.JustDown(this._keyUp)) {
                 this.loftIndex = Math.max(0, this.loftIndex - 1);
                 this._updateLoftHighlight();
             }
-            if (Phaser.Input.Keyboard.JustDown(keyDown)) {
+            if (Phaser.Input.Keyboard.JustDown(this._keyDown)) {
                 this.loftIndex = Math.min(2, this.loftIndex + 1);
                 this._updateLoftHighlight();
             }
@@ -907,6 +964,11 @@ export default class AimingSystem {
         // Handle retro toggle [R] during aiming phase
         if (this._keyR && Phaser.Input.Keyboard.JustDown(this._keyR)) {
             this._toggleRetro();
+        }
+
+        // Handle tir devant toggle [D] during tir mode
+        if (this._keyD && Phaser.Input.Keyboard.JustDown(this._keyD) && this.shotMode === 'tirer') {
+            this._toggleTirDevant();
         }
 
         // Update pressure tremble + precision wobble

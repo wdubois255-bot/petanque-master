@@ -71,12 +71,29 @@ export const LOFT_PLOMBEE = {
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
     landingFactor: 0.98, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 16.0,
-    precisionPenalty: 1.0, retroAllowed: true
+    precisionPenalty: 1.0, retroAllowed: true, isTir: true
+};
+// Tir devant : atterrit 8px avant la cible, rebondit dedans
+// Moins precis que tir au fer mais plus tolerant sur la distance
+export const LOFT_TIR_DEVANT = {
+    id: 'tir_devant', label: 'TIR DEVANT',
+    landingFactor: 0.88, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 14.0,
+    precisionPenalty: 0.7, retroAllowed: true, isTir: true
 };
 
-// Retro (backspin) physics
-export const RETRO_FRICTION_MULT = 2.5;  // Max extra friction multiplier at full retro
+// Retro (backspin) physics — 2-phase model
+// Phase 1: high friction (sliding), Phase 2: transition back to normal
+export const RETRO_FRICTION_MULT = 2.5; // Simple retro: retroBoost = 1 + retro * 2.5 (max 3.5x)
+export const RETRO_PHASE1_MULT = 5.0;
+export const RETRO_PHASE1_FRAMES = 30;
+export const RETRO_PHASE2_FRAMES = 18;
+export const RETRO_TERRAIN_EFF = {
+    terre: 1.0, herbe: 1.3, sable: 2.0, dalles: 0.4
+};
 export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
+
+// Palet detection
+export const PALET_THRESHOLD = 50;
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 
 // Petanque - prediction trajectoire
@@ -87,6 +104,10 @@ export const PREDICTION_DOT_RADIUS = 2;
 // Petanque - carreau (detecte naturellement grace au COR 0.62)
 export const CARREAU_THRESHOLD = 28;
 export const CARREAU_DISPLACED_MIN = 32;
+
+// Petanque - shot result detection (tir labels)
+export const CASQUETTE_MAX_SPEED = 0.5;   // Target barely moved
+export const BLESSER_MAX_SPEED = 1.5;     // Target moved a little
 
 // Petanque - lisibilite
 export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
@@ -138,6 +159,12 @@ export const THROW_ANIM_RECOVERY_DURATION = 300;
 
 // Victoire
 export const VICTORY_SCORE = 13;
+
+// Slow-motion
+export const SLOWMO_DISTANCE = 40;      // px from cochonnet
+export const SLOWMO_SPEED_THRESHOLD = 2.0; // max speed to trigger
+export const SLOWMO_FACTOR = 0.3;        // time scale during slowmo
+export const SLOWMO_LERP_SPEED = 0.08;   // lerp speed for smooth transition
 
 // Camera
 export const CAMERA_LERP = 0.1;
@@ -220,12 +247,16 @@ export const THROW_CIRCLE_Y_OFFSET = 20;
 
 // Character ID → spritesheet key mapping (centralized, used by all scenes)
 export const CHAR_SPRITE_MAP = {
+    'rookie': 'rookie_static',
     'ley': 'ley_animated',
     'magicien': 'le_magicien_animated',
     'la_choupe': 'la_choupe_animated',
     'marcel': 'marcel_animated',
     'reyes': 'reyes_animated'
 };
+
+// Characters that use a single static image (not a spritesheet)
+export const CHAR_STATIC_SPRITES = ['rookie'];
 
 export function getCharSpriteKey(char) {
     return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'ley_animated';
@@ -243,3 +274,22 @@ export const CHAR_THROW_MAP = {
 export function getCharThrowKey(charId) {
     return CHAR_THROW_MAP[charId] || null;
 }
+
+// Ecus (currency)
+export const ECU_WIN_ARCADE = 50;
+export const ECU_WIN_QUICKPLAY = 20;
+export const ECU_CARREAU_BONUS = 10;
+export const ECU_ARCADE_COMPLETE = 100;
+export const ECU_ARCADE_PERFECT = 200;
+export const ECU_STARTING = 50;
+
+// Rookie progression
+export const ROOKIE_XP_ARCADE = 4;
+export const ROOKIE_XP_QUICKPLAY = 2;
+export const ROOKIE_MAX_POINTS = 40;
+export const ROOKIE_MAX_STAT = 10;
+
+// Crowd reactions
+export const CROWD_GOOD_DISTANCE = 25;
+export const CROWD_BAD_DISTANCE = 90;
+export const CROWD_PROBABILITY = 0.6;

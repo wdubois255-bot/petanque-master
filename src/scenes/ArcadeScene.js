@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, ECU_WIN_ARCADE, ECU_ARCADE_COMPLETE, ECU_ARCADE_PERFECT } from '../utils/Constants.js';
+import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addEcus, recordWin } from '../utils/SaveManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -23,14 +24,44 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     create() {
+        // Reset state for fresh scene entry
+        this._launched = false;
+        this._endingShown = false;
+        // Ensure camera is fully visible (previous scene may have faded out)
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+
+        // Register shutdown FIRST (before any early returns)
+        this.events.on('shutdown', this._shutdown, this);
+
         this.arcadeData = this.cache.json.get('arcade');
         this.charactersData = this.cache.json.get('characters');
         this.terrainsData = this.cache.json.get('terrains');
 
-        // If no player character yet, go to char select
+        // Force Rookie in Arcade mode
         if (!this.playerCharacter) {
-            this.scene.start('CharSelectScene', { mode: 'arcade' });
-            return;
+            const chars = this.cache.json.get('characters');
+            const rookie = chars.roster.find(c => c.id === 'rookie');
+            if (rookie) {
+                const save = loadSave();
+                if (save.rookie) {
+                    rookie.stats = { ...save.rookie.stats };
+                }
+                rookie.isRookie = true;
+                this.playerCharacter = rookie;
+            } else {
+                this.scene.start('CharSelectScene', { mode: 'arcade' });
+                return;
+            }
+        }
+
+        // Always refresh Rookie stats from save (may have been updated by LevelUpScene)
+        if (this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie') {
+            const save = loadSave();
+            if (save.rookie) {
+                this.playerCharacter.stats = { ...save.rookie.stats };
+            }
+            this.playerCharacter.isRookie = true;
         }
 
         // Show intro narrative on first entry (round 1, no results yet)
@@ -43,12 +74,20 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Process last match result (if returning from a match)
         if (this.lastMatchResult) {
+            const completedRound = this.currentRound - 1;
             if (this.lastMatchResult.won) {
                 this.wins++;
-                this.matchResults.push({ round: this.currentRound - 1, won: true });
+                this.matchResults.push({ round: completedRound, won: true });
+
+                // Unlock rewards based on round won
+                this._processRoundUnlocks(completedRound);
+
+                // Save arcade progress, record win (Ecus are added in ResultScene)
+                setArcadeProgress(completedRound);
+                recordWin();
             } else {
                 this.losses++;
-                this.matchResults.push({ round: this.currentRound - 1, won: false });
+                this.matchResults.push({ round: completedRound, won: false });
                 // In arcade: you can retry (no game over, you just replay the round)
                 this.currentRound--; // Go back to the failed round
             }
@@ -61,9 +100,15 @@ export default class ArcadeScene extends Phaser.Scene {
             return;
         }
 
-        this._buildProgressScreen();
+        // Show mid-narrative after winning round 3 (before round 4)
+        if (this.lastMatchResult?.won && this.currentRound === 4 && this.arcadeData.mid_narrative_after_3) {
+            this._showNarrative(this.arcadeData.mid_narrative_after_3, () => {
+                this._buildProgressScreen();
+            });
+            return;
+        }
 
-        this.events.on('shutdown', this._shutdown, this);
+        this._buildProgressScreen();
     }
 
     _buildProgressScreen() {
@@ -294,6 +339,16 @@ export default class ArcadeScene extends Phaser.Scene {
         }).setOrigin(0.5);
     }
 
+    _processRoundUnlocks(round) {
+        switch (round) {
+            case 1: unlockCharacter('la_choupe'); break;
+            case 2: unlockCharacter('marcel'); break;
+            case 3: unlockCharacter('magicien'); unlockTerrain('docks'); break;
+            case 4: unlockCharacter('reyes'); break;
+            case 5: unlockCharacter('ley'); unlockTerrain('plage'); break;
+        }
+    }
+
     _launchNextMatch() {
         if (this._launched) return;
         this._launched = true;
@@ -301,6 +356,11 @@ export default class ArcadeScene extends Phaser.Scene {
         const match = this.arcadeData.matches[this.currentRound - 1];
         const opponent = this._getCharById(match.opponent);
         const terrain = this._getTerrainById(match.terrain);
+
+        // Use player's equipped boule and cochonnet from save
+        const save = loadSave();
+        const bouleType = save.selectedBoule || 'acier';
+        const cochonnetType = save.selectedCochonnet || 'classique';
 
         this.cameras.main.fadeOut(300);
         this.cameras.main.once('camerafadeoutcomplete', () => {
@@ -312,8 +372,10 @@ export default class ArcadeScene extends Phaser.Scene {
                 roundNumber: this.currentRound,
                 introText: match.intro_text || '',
                 matchData: {
-                    difficulty: 'medium',
+                    difficulty: match.difficulty || 'medium',
                     format: 'tete_a_tete',
+                    bouleType,
+                    cochonnetType,
                     returnScene: 'ArcadeScene',
                     arcadeState: {
                         playerCharacter: this.playerCharacter,
@@ -328,6 +390,25 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _showArcadeComplete() {
+        // Save final arcade progress
+        setArcadeProgress(5);
+
+        // Check for perfect run (all 5 won, no losses)
+        const isPerfect = this.losses === 0;
+        this._isPerfect = isPerfect;
+
+        // Award completion bonus Ecus
+        const bonusEcus = isPerfect ? ECU_ARCADE_PERFECT : ECU_ARCADE_COMPLETE;
+        addEcus(bonusEcus);
+        this._completionEcus = bonusEcus;
+
+        // Mark arcade perfect in save if applicable
+        if (isPerfect) {
+            const save = loadSave();
+            save.arcadePerfect = true;
+            saveSave(save);
+        }
+
         // Show ending narrative first, then the completion screen
         if (this.arcadeData.ending_narrative && !this._endingShown) {
             this._endingShown = true;
@@ -382,8 +463,21 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '18px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
 
+        // Perfect run badge
+        if (this._isPerfect) {
+            this.add.text(GAME_WIDTH / 2, 270, 'PARCOURS PARFAIT !', {
+                fontFamily: 'monospace', fontSize: '22px', color: '#FFD700', shadow: SHADOW
+            }).setOrigin(0.5);
+        }
+
         this.add.text(GAME_WIDTH / 2, 300, 'Le Terrain des Quatre est a toi !', {
             fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', shadow: SHADOW
+        }).setOrigin(0.5);
+
+        // Ecus bonus display
+        const ecuLabel = this._isPerfect ? 'Bonus parfait' : 'Bonus completion';
+        this.add.text(GAME_WIDTH / 2, 335, `+${this._completionEcus} Ecus (${ecuLabel})`, {
+            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 
         // Return button

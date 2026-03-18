@@ -1,4 +1,9 @@
-# HANDOFF — Petanque Master (17 mars 2026)
+# HANDOFF — Petanque Master (17 mars 2026) — ⚠ OBSOLETE
+
+> **⚠ CE FICHIER EST OBSOLETE** (17 mars 2026). NE PAS UTILISER.
+> Roster, stats, friction Plage, et priorites sont tous depasses.
+> **Source de verite** : `CAHIER_DES_CHARGES.md` (v2.1, 18 mars 2026).
+> **Ce fichier est conserve uniquement comme archive historique.**
 
 ## État du projet
 

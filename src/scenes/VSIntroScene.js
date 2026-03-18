@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -25,6 +25,10 @@ export default class VSIntroScene extends Phaser.Scene {
     }
 
     create() {
+        // Reset camera state (previous scene may have faded out)
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+
         setSoundScene(this);
         const player = this.playerCharacter;
         const opponent = this.opponentCharacter;
@@ -79,10 +83,16 @@ export default class VSIntroScene extends Phaser.Scene {
 
         // Player sprite
         const playerSpriteKey = this._getSpriteKey(player);
+        const playerIsStatic = CHAR_STATIC_SPRITES.includes(player.id);
         let playerSprite = null;
         if (this.textures.exists(playerSpriteKey)) {
-            playerSprite = this.add.sprite(playerX, GAME_HEIGHT / 2 + 40, playerSpriteKey, 0)
-                .setScale(0.75).setOrigin(0.5).setX(-200);
+            if (playerIsStatic) {
+                playerSprite = this.add.image(playerX, GAME_HEIGHT / 2 + 30, playerSpriteKey)
+                    .setScale(0.65).setOrigin(0.5).setX(-200);
+            } else {
+                playerSprite = this.add.sprite(playerX, GAME_HEIGHT / 2 + 40, playerSpriteKey, 0)
+                    .setScale(0.75).setOrigin(0.5).setX(-200);
+            }
         }
 
         // Opponent side (right)
@@ -97,10 +107,16 @@ export default class VSIntroScene extends Phaser.Scene {
 
         // Opponent sprite
         const opponentSpriteKey = this._getSpriteKey(opponent);
+        const opponentIsStatic = CHAR_STATIC_SPRITES.includes(opponent.id);
         let opponentSprite = null;
         if (this.textures.exists(opponentSpriteKey)) {
-            opponentSprite = this.add.sprite(opponentX, GAME_HEIGHT / 2 + 40, opponentSpriteKey, 0)
-                .setScale(0.75).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+            if (opponentIsStatic) {
+                opponentSprite = this.add.image(opponentX, GAME_HEIGHT / 2 + 30, opponentSpriteKey)
+                    .setScale(0.65).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+            } else {
+                opponentSprite = this.add.sprite(opponentX, GAME_HEIGHT / 2 + 40, opponentSpriteKey, 0)
+                    .setScale(0.75).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+            }
         }
 
         // Opponent pre-match bark (from character data)
@@ -134,37 +150,87 @@ export default class VSIntroScene extends Phaser.Scene {
             }).setOrigin(0.5).setAlpha(0);
         }
 
-        // === ANIMATION SEQUENCE ===
+        // === ANIMATION SEQUENCE (Tekken 7 style timing) ===
+        // Collect all animatable objects for final fade-out
+        const allElements = [
+            vsText, playerNameText, playerTitleText, opponentNameText, opponentTitleText,
+            terrainText, divider
+        ];
+        if (playerSprite) allElements.push(playerSprite);
+        if (opponentSprite) allElements.push(opponentSprite);
+        if (hintText) allElements.push(hintText);
 
-        // 1. Slide in player from left
+        // 1. Slide in player from left (100ms delay)
         this.tweens.add({
             targets: [playerNameText, playerTitleText, ...(playerSprite ? [playerSprite] : [])],
-            x: playerX, duration: 500, ease: 'Back.easeOut', delay: 100
+            x: playerX, duration: 500, ease: 'Back.easeOut', delay: 100,
+            onComplete: () => {
+                // Player catchphrase typewriter (starts at ~600ms)
+                const catchphrase = this.playerCharacter.catchphrase;
+                if (catchphrase) {
+                    const catchphraseText = this.add.text(playerX, GAME_HEIGHT / 2 + 10, '', {
+                        fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+                        shadow: SHADOW, fontStyle: 'italic',
+                        wordWrap: { width: 180 }, align: 'center'
+                    }).setOrigin(0.5).setDepth(5);
+                    allElements.push(catchphraseText);
+
+                    let charIndex = 0;
+                    this._typewriterTimer = this.time.addEvent({
+                        delay: 30,
+                        repeat: catchphrase.length - 1,
+                        callback: () => {
+                            charIndex++;
+                            catchphraseText.setText(`"${catchphrase.substring(0, charIndex)}"`);
+                        }
+                    });
+                }
+            }
         });
 
-        // 2. Slide in opponent from right
+        // 2. Slide in opponent from right (200ms delay)
         this.tweens.add({
             targets: [opponentNameText, opponentTitleText, ...(opponentSprite ? [opponentSprite] : [])],
             x: opponentX, duration: 500, ease: 'Back.easeOut', delay: 200
         });
 
-        // 3. VS text slam in with flash + SFX
+        // 3. VS text slam with Bounce + stronger shake (700ms delay)
         this.tweens.add({
             targets: vsText,
-            scale: 1, duration: 300, ease: 'Back.easeOut', delay: 500,
+            scale: 1, duration: 400, ease: 'Bounce.easeOut', delay: 700,
             onComplete: () => {
                 sfxVSSlam();
-                this.cameras.main.shake(150, 0.008);
+                this.cameras.main.shake(150, 0.012);
                 this.cameras.main.flash(80, 255, 255, 255);
+                // Second smaller shake after 200ms
+                this.time.delayedCall(200, () => {
+                    this.cameras.main.shake(100, 0.006);
+                });
             }
         });
 
-        // 4. Round number and terrain fade in
+        // 4. "MATCH !" text slam (1200ms delay)
+        const matchText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50, 'MATCH !', {
+            fontFamily: 'monospace', fontSize: '36px', color: '#F5E6D0',
+            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setScale(0).setDepth(10);
+        allElements.push(matchText);
+
+        this.tweens.add({
+            targets: matchText,
+            scale: 1, duration: 400, ease: 'Elastic.easeOut', delay: 1200,
+            onComplete: () => {
+                this.cameras.main.flash(60, 255, 255, 255);
+            }
+        });
+
+        // 5. Round number and terrain fade in
         if (this.roundNumber) {
             const roundText = this.children.list.find(c =>
                 c.type === 'Text' && c.text === `ROUND ${this.roundNumber}`
             );
             if (roundText) {
+                allElements.push(roundText);
                 this.tweens.add({ targets: roundText, alpha: 1, duration: 300, delay: 700 });
             }
         }
@@ -173,9 +239,17 @@ export default class VSIntroScene extends Phaser.Scene {
             this.tweens.add({ targets: hintText, alpha: 1, duration: 300, delay: 900 });
         }
 
-        // 5. Auto-proceed after 2.5s (or on space/enter)
+        // 6. Fade out everything before iris wipe (1700ms)
+        this.time.delayedCall(1700, () => {
+            this.tweens.add({
+                targets: allElements,
+                alpha: 0, duration: 250, ease: 'Quad.easeIn'
+            });
+        });
+
+        // 7. Auto-proceed with iris wipe (2000ms)
         this._canSkip = false;
-        this.time.delayedCall(800, () => { this._canSkip = true; });
+        this.time.delayedCall(600, () => { this._canSkip = true; });
 
         this.time.delayedCall(2500, () => {
             this._startMatch();
@@ -193,6 +267,7 @@ export default class VSIntroScene extends Phaser.Scene {
     _shutdown() {
         this.input.keyboard.off('keydown-SPACE', this._skipSpace);
         this.input.keyboard.off('keydown-ENTER', this._skipEnter);
+        if (this._typewriterTimer) this._typewriterTimer.destroy();
         this.tweens.killAll();
     }
 
@@ -204,59 +279,30 @@ export default class VSIntroScene extends Phaser.Scene {
         if (this._started) return;
         this._started = true;
 
-        // Iris wipe transition (circle closing to center)
-        this._irisWipe(() => {
-            this.scene.start('PetanqueScene', {
-                terrain: this.terrain,
-                difficulty: this.matchData.difficulty || 'medium',
-                format: this.matchData.format || 'tete_a_tete',
-                opponentName: this.opponentCharacter.name,
-                opponentId: 'char_' + this.opponentCharacter.id,
-                returnScene: this.matchData.returnScene || 'ArcadeScene',
-                personality: this.opponentCharacter.ai?.personality || null,
-                playerCharacter: this.playerCharacter,
-                opponentCharacter: this.opponentCharacter,
-                arcadeRound: this.roundNumber,
-                ...this.matchData
-            });
+        const sceneData = {
+            terrain: this.terrain,
+            difficulty: this.matchData.difficulty || 'medium',
+            format: this.matchData.format || 'tete_a_tete',
+            opponentName: this.opponentCharacter.name,
+            opponentId: 'char_' + this.opponentCharacter.id,
+            returnScene: this.matchData.returnScene || 'ArcadeScene',
+            personality: this.opponentCharacter.ai?.personality || null,
+            playerCharacter: this.playerCharacter,
+            opponentCharacter: this.opponentCharacter,
+            arcadeRound: this.roundNumber,
+            ...this.matchData
+        };
+
+        // Use camera fadeOut instead of iris wipe to avoid tween/shutdown race condition
+        this.cameras.main.fadeOut(400, 26, 21, 16);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('PetanqueScene', sceneData);
         });
-    }
 
-    _irisWipe(callback) {
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
-        const maxRadius = Math.sqrt(cx * cx + cy * cy) + 20;
-
-        // Black overlay that covers everything
-        const overlay = this.add.graphics().setDepth(200);
-        // Circle shape used as mask (inverted: overlay is visible OUTSIDE the circle)
-        const shape = this.make.graphics({ add: false });
-        shape.fillStyle(0xffffff);
-        shape.fillCircle(cx, cy, maxRadius);
-        const mask = shape.createGeometryMask();
-        mask.invertAlpha = true;
-
-        overlay.fillStyle(0x1A1510, 1);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        overlay.setMask(mask);
-
-        const anim = { r: maxRadius };
-        this.tweens.add({
-            targets: anim,
-            r: 0,
-            duration: 500,
-            ease: 'Quad.easeIn',
-            onUpdate: () => {
-                shape.clear();
-                shape.fillStyle(0xffffff);
-                shape.fillCircle(cx, cy, Math.max(0, anim.r));
-            },
-            onComplete: () => {
-                overlay.clearMask(true);
-                overlay.clear();
-                overlay.fillStyle(0x1A1510, 1);
-                overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                callback();
+        // Safety fallback: if fadeOut doesn't fire within 600ms, force transition
+        this.time.delayedCall(600, () => {
+            if (this.scene.isActive('VSIntroScene')) {
+                this.scene.start('PetanqueScene', sceneData);
             }
         });
     }

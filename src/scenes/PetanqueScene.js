@@ -4,7 +4,7 @@ import {
     TERRAIN_WIDTH, TERRAIN_HEIGHT,
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
-    CHAR_SPRITE_MAP, CHAR_THROW_MAP
+    CHAR_SPRITE_MAP, CHAR_THROW_MAP, CHAR_STATIC_SPRITES
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -12,7 +12,7 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { setSoundScene, startCigales, stopCigales, startMusic, stopMusic } from '../utils/SoundManager.js';
+import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -38,6 +38,10 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     create() {
+        // Reset camera state (previous scene may have faded out)
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+
         // Load full terrain data - support both terrain IDs and surface types
         const terrainsJson = this.cache.json.get('terrains');
         let terrainData = terrainsJson?.stages?.find(s => s.id === this.terrainType);
@@ -145,13 +149,15 @@ export default class PetanqueScene extends Phaser.Scene {
             const team = ball.team;
             const other = team === 'player' ? 'opponent' : 'player';
             self._showBark(team, 'carreau');
+            // Crowd goes wild on carreau
+            sfxCrowdCheer();
             self.time.delayedCall(1200, () => {
                 if (Math.random() < 0.5) self._showBark(other, 'opponent_carreau');
             });
         };
 
         setSoundScene(this);
-        startCigales();
+        startTerrainAmbiance(this.terrainFullData?.id || 'village');
         // Music per terrain (falls back to music_match if terrain-specific doesn't exist)
         const terrainMusicMap = {
             terre: 'music_village', herbe: 'music_parc', sable: 'music_plage',
@@ -161,20 +167,79 @@ export default class PetanqueScene extends Phaser.Scene {
         const musicKey = terrainMusicMap[this.terrainFullData?.id] || terrainMusicMap[surfaceType] || 'music_match';
         startMusic(musicKey, 0.2);
 
+        // === SLOW-MOTION vignette overlay ===
+        this._vignetteGraphics = null;
+        this.events.on('slowmo-start', () => {
+            if (this._vignetteGraphics) return;
+            const g = this.add.graphics().setDepth(150).setAlpha(0);
+            const w = GAME_WIDTH;
+            const h = GAME_HEIGHT;
+            // Vignette: concentric bands from edges to center with decreasing opacity
+            const bands = 12;
+            for (let i = 0; i < bands; i++) {
+                const frac = i / bands;
+                const nextFrac = (i + 1) / bands;
+                const alpha = 0.45 * (1 - frac) * (1 - frac);
+                g.fillStyle(0x1A1510, alpha);
+                const ix = w * 0.5 * frac * 0.8;
+                const iy = h * 0.5 * frac * 0.8;
+                const nix = w * 0.5 * nextFrac * 0.8;
+                const niy = h * 0.5 * nextFrac * 0.8;
+                // Top band
+                g.fillRect(ix, iy, w - ix * 2, niy - iy);
+                // Bottom band
+                g.fillRect(ix, h - niy, w - ix * 2, niy - iy);
+                // Left band
+                g.fillRect(ix, niy, nix - ix, h - niy * 2);
+                // Right band
+                g.fillRect(w - nix, niy, nix - ix, h - niy * 2);
+            }
+            this._vignetteGraphics = g;
+            this.tweens.add({
+                targets: g,
+                alpha: 1,
+                duration: 200,
+                ease: 'Sine.easeIn'
+            });
+        });
+
+        this.events.on('slowmo-end', () => {
+            if (!this._vignetteGraphics) return;
+            const g = this._vignetteGraphics;
+            this._vignetteGraphics = null;
+            this.tweens.add({
+                targets: g,
+                alpha: 0,
+                duration: 300,
+                ease: 'Sine.easeOut',
+                onComplete: () => g.destroy()
+            });
+        });
+
+        // === DRAMATIC PAUSE: lower music volume temporarily ===
+        this.events.on('dramatic-pause', () => {
+            setMusicVolume(0.02); // drop to ~10% (from 0.2 base)
+            this.time.delayedCall(1500, () => {
+                setMusicVolume(0.2); // restore
+            });
+        });
+
         // Iris wipe opening (circle expands from center)
         this._playIrisOpen();
 
         this.engine.startGame();
 
-        // First-time tutorial overlay
-        this._checkTutorial();
+        // Tutorial overlay disabled — replaced by TutorialScene from main menu
+        // this._checkTutorial();
 
         this.events.on('shutdown', this._shutdown, this);
     }
 
     _shutdown() {
-        stopCigales();
+        stopTerrainAmbiance();
         stopMusic();
+        stopRollingSound();
+        if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
         if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
         if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
         if (this._activeThrowSprite) { this._activeThrowSprite.destroy(); this._activeThrowSprite = null; }
@@ -310,11 +375,20 @@ export default class PetanqueScene extends Phaser.Scene {
             this.textures.remove('petanque_player');
         }
         const playerKey = this._getCharSpriteKey(this.playerCharId);
+        const playerIsStatic = CHAR_STATIC_SPRITES.includes(this.playerCharId);
         if (this.textures.exists(playerKey)) {
-            this.textures.addSpriteSheet('petanque_player',
-                this.textures.get(playerKey).getSourceImage(),
-                { frameWidth: 128, frameHeight: 128 }
-            );
+            if (playerIsStatic) {
+                // Static image: create a 1-frame spritesheet from the image
+                const src = this.textures.get(playerKey).getSourceImage();
+                this.textures.addSpriteSheet('petanque_player', src,
+                    { frameWidth: src.width, frameHeight: src.height }
+                );
+            } else {
+                this.textures.addSpriteSheet('petanque_player',
+                    this.textures.get(playerKey).getSourceImage(),
+                    { frameWidth: 128, frameHeight: 128 }
+                );
+            }
             this.textures.get('petanque_player').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
             generateCharacterSprite(this, 'petanque_player', this._getCharPalette(this.playerCharId));
@@ -326,11 +400,19 @@ export default class PetanqueScene extends Phaser.Scene {
         }
         const opponentId = this.opponentId || 'marcel';
         const opponentKey = this._getCharSpriteKey(opponentId);
+        const opponentIsStatic = CHAR_STATIC_SPRITES.includes(opponentId);
         if (this.textures.exists(opponentKey)) {
-            this.textures.addSpriteSheet('petanque_opponent',
-                this.textures.get(opponentKey).getSourceImage(),
-                { frameWidth: 128, frameHeight: 128 }
-            );
+            if (opponentIsStatic) {
+                const src = this.textures.get(opponentKey).getSourceImage();
+                this.textures.addSpriteSheet('petanque_opponent', src,
+                    { frameWidth: src.width, frameHeight: src.height }
+                );
+            } else {
+                this.textures.addSpriteSheet('petanque_opponent',
+                    this.textures.get(opponentKey).getSourceImage(),
+                    { frameWidth: 128, frameHeight: 128 }
+                );
+            }
             this.textures.get('petanque_opponent').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
             generateCharacterSprite(this, 'petanque_opponent', this._getCharPalette(opponentId));
@@ -725,6 +807,17 @@ export default class PetanqueScene extends Phaser.Scene {
         if (!lastBall || !lastBall.isAlive) return;
         const dist = lastBall.distanceTo(this.engine.cochonnet);
 
+        // Crowd audio reactions (60% probability)
+        if (Math.random() < 0.6) {
+            if (dist < 25) {
+                // Great shot: applause
+                this.time.delayedCall(500, () => sfxCrowdApplause());
+            } else if (dist > 90) {
+                // Terrible shot: groan
+                this.time.delayedCall(300, () => sfxCrowdGroan());
+            }
+        }
+
         const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
         const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
         const s = this._charScale || 1;
@@ -812,10 +905,12 @@ export default class PetanqueScene extends Phaser.Scene {
         const ballKeys = [
             'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
             'ball_doree', 'ball_rouille', 'ball_bleue', 'ball_cuivre', 'ball_titane',
+            // Retro pixel art variants
+            'ball_acier_retro', 'ball_bronze_retro', 'ball_chrome_retro',
+            'ball_noire_retro', 'ball_rouge_retro',
             'ball_opponent',
             'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert',
-            'ball_cochonnet_rouge', 'ball_cochonnet_dore', 'ball_cochonnet_noir',
-            'ball_cochonnet_rose', 'ball_cochonnet_orange'
+            'ball_cochonnet_rouge', 'ball_cochonnet_jungle', 'ball_cochonnet_multicolor'
         ];
 
         for (const key of ballKeys) {

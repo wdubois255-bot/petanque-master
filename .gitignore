@@ -11,3 +11,8 @@ screenshots/
 /assets/
 test-results/
 test-screenshots/
+playwright-report/
+comparison/
+photo vrai joueur/
+*.pxo
+docs/

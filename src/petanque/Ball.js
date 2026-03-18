@@ -2,7 +2,8 @@ import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
-    RETRO_FRICTION_MULT, WALL_RESTITUTION
+    RETRO_FRICTION_MULT, RETRO_PHASE1_MULT, RETRO_PHASE1_FRAMES, RETRO_PHASE2_FRAMES,
+    RETRO_TERRAIN_EFF, WALL_RESTITUTION
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -29,6 +30,13 @@ export default class Ball {
 
         // Spin (retro/backspin): 0 = no effect, 1 = max backspin
         this.retro = 0;
+
+        // 2-phase retro model
+        this._retroPhase = 0;       // 0 = inactive, 1 = sliding, 2 = transition
+        this._retroFrames = 0;      // frames remaining in current phase
+        this._retroTerrainEff = 1.0; // terrain efficiency multiplier
+        this._retroIntensity = 0;   // stored intensity for phase calculations
+        this._isRecoiling = false;  // true when ball moves backward after collision
 
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
@@ -133,6 +141,15 @@ export default class Ball {
         this.isMoving = true;
     }
 
+    activateRetro(intensity, terrainType) {
+        if (intensity <= 0) return;
+        this._retroIntensity = intensity;
+        this._retroPhase = 1;
+        this._retroFrames = Math.round(RETRO_PHASE1_FRAMES * intensity);
+        this._retroTerrainEff = (RETRO_TERRAIN_EFF[terrainType] ?? 1.0);
+        this._isRecoiling = false;
+    }
+
     update(dt) {
         if (!this.isAlive || !this.isMoving) return;
 
@@ -187,9 +204,40 @@ export default class Ball {
 
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         if (speed > SPEED_THRESHOLD) {
-            // Retro (backspin) increases friction — ball stops faster
-            const retroBoost = this.retro > 0 ? 1 + this.retro * RETRO_FRICTION_MULT : 1;
-            const frictionDecel = FRICTION_BASE * effectiveFriction * retroBoost * 60;
+            // Retro (backspin) friction boost
+            // Simple mode: ball.retro > 0 without activateRetro() → linear friction mult
+            // Advanced mode: activateRetro() activates 2-phase model (overrides simple)
+            let retroMult = 1.0;
+            if (this._retroPhase === 0 && this.retro > 0) {
+                // Simple retro: retroBoost = 1 + retro * RETRO_FRICTION_MULT
+                retroMult = 1 + this.retro * RETRO_FRICTION_MULT;
+            } else if (this._retroPhase === 1) {
+                // Phase 1 — Glissement: high friction (or reduced if recoiling)
+                if (this._isRecoiling) {
+                    retroMult = 0.7; // spin and motion same direction = less friction
+                } else {
+                    retroMult = 1 + (RETRO_PHASE1_MULT - 1) * this._retroIntensity * this._retroTerrainEff;
+                }
+                this._retroFrames--;
+                if (this._retroFrames <= 0) {
+                    this._retroPhase = 2;
+                    this._retroFrames = RETRO_PHASE2_FRAMES;
+                }
+            } else if (this._retroPhase === 2) {
+                // Phase 2 — Transition: linearly decrease from phase1 level to 1.0
+                const progress = 1 - (this._retroFrames / RETRO_PHASE2_FRAMES);
+                const phase1Level = this._isRecoiling
+                    ? 0.7
+                    : 1 + (RETRO_PHASE1_MULT - 1) * this._retroIntensity * this._retroTerrainEff;
+                retroMult = phase1Level + (1.0 - phase1Level) * progress;
+                this._retroFrames--;
+                if (this._retroFrames <= 0) {
+                    this._retroPhase = 0;
+                    this.retro = 0; // backspin fully consumed
+                    this._isRecoiling = false;
+                }
+            }
+            const frictionDecel = FRICTION_BASE * effectiveFriction * retroMult * 60;
             const newSpeed = Math.max(0, speed - frictionDecel * cappedDt);
             const ratio = newSpeed / speed;
             this.vx *= ratio;

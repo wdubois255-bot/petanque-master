@@ -1,7 +1,7 @@
 import AIStrategy from './AIStrategy.js';
 
 /**
- * Marcel: Le Pointeur
+ * Le Magicien: Le Pointeur (Le Chirurgien)
  * Never shoots except in absolute desperation.
  * Places balls surgically with smart offsets. Roulette obsessive.
  */

@@ -77,9 +77,13 @@ export default class BootScene extends Phaser.Scene {
         this.load.json('arcade', `${BASE}data/arcade.json`);
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
+        this.load.json('shop', `${BASE}data/shop.json`);
 
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
+
+        // Rookie static sprite (single image, not spritesheet)
+        this.load.image('rookie_static', `${BASE}assets/sprites/rookie_static.png`);
 
         // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [
@@ -122,7 +126,7 @@ export default class BootScene extends Phaser.Scene {
             }
         });
 
-        // Boules sprites (custom pixel art)
+        // Boules sprites — standard (3D style)
         this.load.image('ball_acier', `${BASE}assets/sprites/boule_acier.png`);
         this.load.image('ball_bronze', `${BASE}assets/sprites/boule_bronze.png`);
         this.load.image('ball_chrome', `${BASE}assets/sprites/boule_chrome.png`);
@@ -133,14 +137,19 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_bleue', `${BASE}assets/sprites/boule_bleue.png`);
         this.load.image('ball_cuivre', `${BASE}assets/sprites/boule_cuivre.png`);
         this.load.image('ball_titane', `${BASE}assets/sprites/boule_titane.png`);
+        // Boules sprites — retro pixel art (premium, achetables en boutique)
+        this.load.image('ball_acier_retro', `${BASE}assets/sprites/boule_acier_retro.png`);
+        this.load.image('ball_bronze_retro', `${BASE}assets/sprites/boule_bronze_retro.png`);
+        this.load.image('ball_chrome_retro', `${BASE}assets/sprites/boule_chrome_retro.png`);
+        this.load.image('ball_noire_retro', `${BASE}assets/sprites/boule_noire_retro.png`);
+        this.load.image('ball_rouge_retro', `${BASE}assets/sprites/boule_rouge_retro.png`);
+        // Cochonnets (pixel art only — classique + variantes)
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
         this.load.image('ball_cochonnet_bleu', `${BASE}assets/sprites/cochonnet_bleu.png`);
         this.load.image('ball_cochonnet_vert', `${BASE}assets/sprites/cochonnet_vert.png`);
         this.load.image('ball_cochonnet_rouge', `${BASE}assets/sprites/cochonnet_rouge.png`);
-        this.load.image('ball_cochonnet_dore', `${BASE}assets/sprites/cochonnet_dore.png`);
-        this.load.image('ball_cochonnet_noir', `${BASE}assets/sprites/cochonnet_noir.png`);
-        this.load.image('ball_cochonnet_rose', `${BASE}assets/sprites/cochonnet_rose.png`);
-        this.load.image('ball_cochonnet_orange', `${BASE}assets/sprites/cochonnet_orange.png`);
+        this.load.image('ball_cochonnet_jungle', `${BASE}assets/sprites/cochonnet_jungle.png`);
+        this.load.image('ball_cochonnet_multicolor', `${BASE}assets/sprites/cochonnet_multicolor.png`);
 
         // Terrain decoration sprites (PixelLab)
         this.load.image('terrain_herbe_touffe', `${BASE}assets/sprites/terrain_herbe_touffe.png`);

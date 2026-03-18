@@ -1,25 +1,36 @@
 {
-  "name": "Le Terrain des Quatre",
-  "description": "Affrontez les 3 autres joueurs du boulodrome au Tournoi annuel de La Ciotat.",
+  "name": "Le Tournoi de La Ciotat",
+  "description": "Le Rookie debarque au boulodrome de La Ciotat. Cinq joueurs reguliers l'attendent. Pour gagner sa place, il devra tous les battre.",
   "intro_narrative": [
-    "Chaque dimanche, quatre joueurs se retrouvent",
-    "sur le meme terrain de petanque a La Ciotat.",
+    "Boulodrome de La Ciotat.",
+    "Chaque dimanche, cinq joueurs se retrouvent ici.",
     "",
-    "Ley le tireur. Le Magicien le pointeur.",
-    "La Choupe le bourrin. Marcel le malin.",
+    "La Choupe, le bourrin. Marcel, le renard.",
+    "Le Magicien, le pointeur. Reyes, le mur.",
+    "Et Ley... le tireur que personne ne bat.",
     "",
-    "Aujourd'hui, c'est le Tournoi des Quatre.",
-    "Plus d'amis. Juste des adversaires.",
+    "Aujourd'hui, c'est le Tournoi annuel.",
+    "Un nouveau venu entre sur le terrain.",
     "",
-    "Montre-leur qui est le patron."
+    "Montre-leur de quoi tu es capable."
+  ],
+  "mid_narrative_after_3": [
+    "Trois victoires. Pas mal pour un debutant.",
+    "",
+    "Mais les deux prochains ne sont pas du meme calibre.",
+    "Reyes joue sur les Docks. Son terrain.",
+    "Et Ley... il vous attend sur la plage.",
+    "",
+    "Plus le droit a l'erreur."
   ],
   "ending_narrative": [
-    "Le Tournoi des Quatre est termine.",
+    "Cinq matchs. Cinq victoires.",
     "",
-    "Un seul joueur reste debout",
-    "sur le terrain de La Ciotat.",
+    "Le Rookie a fait ce que personne",
+    "n'avait fait depuis des annees.",
     "",
-    "Les trois autres applaudissent.",
+    "Le boulodrome a un nouveau champion.",
+    "Les cinq autres applaudissent.",
     "Enfin... presque.",
     "",
     "A dimanche prochain !"
@@ -29,13 +40,15 @@
       "round": 1,
       "opponent": "la_choupe",
       "terrain": "village",
+      "difficulty": "easy",
       "difficulty_label": "Facile",
-      "intro_text": "La Choupe envoie du lourd, mais vise mal. Profitez-en !"
+      "intro_text": "La Choupe envoie du lourd, mais vise mal. Profitez-en pour apprendre !"
     },
     {
       "round": 2,
       "opponent": "marcel",
       "terrain": "parc",
+      "difficulty": "medium",
       "difficulty_label": "Moyen",
       "intro_text": "Marcel pointe bien et sait quand tirer. Le parc et ses zones mixtes n'aident pas..."
     },
@@ -43,8 +56,25 @@
       "round": 3,
       "opponent": "magicien",
       "terrain": "colline",
+      "difficulty": "hard",
       "difficulty_label": "Difficile",
       "intro_text": "Le Magicien et sa precision diabolique. Sur la colline, chaque boule compte."
+    },
+    {
+      "round": 4,
+      "opponent": "reyes",
+      "terrain": "docks",
+      "difficulty": "hard",
+      "difficulty_label": "Tres difficile",
+      "intro_text": "Reyes, Le Mur. Sur les dalles glissantes des Docks, ses boules sont imprevisibles."
+    },
+    {
+      "round": 5,
+      "opponent": "ley",
+      "terrain": "plage",
+      "difficulty": "hard",
+      "difficulty_label": "Expert",
+      "intro_text": "Ley. Le tireur legendaire. Sur le sable lourd de la plage, ses carreaux sont devastateurs."
     }
   ]
 }

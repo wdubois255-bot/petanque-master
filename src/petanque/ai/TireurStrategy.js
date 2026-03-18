@@ -2,10 +2,10 @@ import AIStrategy from './AIStrategy.js';
 import { LOFT_DEMI_PORTEE } from '../../utils/Constants.js';
 
 /**
- * Fanny: La Tireuse
- * If she doesn't have the point, she shoots. Always.
+ * Ley & La Choupe: Les Tireurs
+ * If they don't have the point, they shoot. Always.
  * Targets the most dangerous player ball (closest to cochonnet).
- * When pointing: demi-portee (not roulette, not her style).
+ * When pointing: demi-portee (not roulette, not their style).
  */
 export default class TireurStrategy extends AIStrategy {
     chooseTarget(cochonnet, sit) {

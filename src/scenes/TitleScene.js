@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, formatPlaytime } from '../utils/SaveManager.js';
-import { setSoundScene, startMusic, stopMusic, sfxUIClick } from '../utils/SoundManager.js';
+import { setSoundScene, startMusic, stopMusic, sfxUIClick, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -13,6 +13,9 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
+
         this._menuItems = [];
         this._selectedIndex = 0;
         this._mode = 'pressstart'; // pressstart | main | slots
@@ -465,8 +468,7 @@ export default class TitleScene extends Phaser.Scene {
         // Show controls hint
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Nouvelle Partie'];
-        if (hasSaveData()) items.push('Continuer');
+        const items = ['Mode Arcade', 'Partie Rapide', 'Boutique', 'Tuto', 'Parametres'];
 
         // Menu container
         this._menuContainer = this.add.container(0, 0);
@@ -759,6 +761,29 @@ export default class TitleScene extends Phaser.Scene {
             return;
         }
 
+        const left = Phaser.Input.Keyboard.JustDown(this.cursors.left);
+        const right = Phaser.Input.Keyboard.JustDown(this.cursors.right);
+
+        // Settings mode: left/right adjusts values
+        if (this._mode === 'settings') {
+            const itemCount = Math.floor(this._menuItems.length / 2);
+            if (up) {
+                this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
+                sfxUIClick();
+                this._updateSettingsSelection();
+            }
+            if (down) {
+                this._selectedIndex = (this._selectedIndex + 1) % itemCount;
+                sfxUIClick();
+                this._updateSettingsSelection();
+            }
+            if (left) this._onSettingsLeftRight(-1);
+            if (right) this._onSettingsLeftRight(1);
+            if (confirm) { sfxUIClick(); this._onSettingsConfirm(); }
+            if (back) this._showMainMenu();
+            return;
+        }
+
         const itemCount = Math.floor(this._menuItems.length / 2);
         if (up) {
             this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
@@ -797,15 +822,11 @@ export default class TitleScene extends Phaser.Scene {
         } else if (this._selectedIndex === 1) {
             this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 2) {
-            if (hasSaveData()) {
-                this._showSlotMenu();
-                this._newGame = true;
-            } else {
-                this._startNewGame(0);
-            }
+            this._transitionTo(() => this.scene.start('ShopScene'));
         } else if (this._selectedIndex === 3) {
-            this._showSlotMenu();
-            this._newGame = false;
+            this._transitionTo(() => this.scene.start('TutorialScene'));
+        } else if (this._selectedIndex === 4) {
+            this._showSettingsMenu();
         }
     }
 
@@ -824,6 +845,165 @@ export default class TitleScene extends Phaser.Scene {
                 this._continueGame(slot, data);
             }
         }
+    }
+
+    // ================================================================
+    // SETTINGS MENU
+    // ================================================================
+    _showSettingsMenu() {
+        this._clearMenu();
+        this._mode = 'settings';
+        this._selectedIndex = 0;
+
+        this._menuContainer = this.add.container(0, 0);
+
+        // Header
+        const header = this.add.text(GAME_WIDTH / 2, 210, 'PARAMETRES', {
+            fontFamily: 'monospace', fontSize: '22px', color: '#FFD700', shadow: SHADOW_HEAVY
+        }).setOrigin(0.5);
+        this._menuContainer.add(header);
+
+        this._settingsValues = getAudioSettings();
+        this._rebuildSettingsItems();
+    }
+
+    _rebuildSettingsItems() {
+        // Clear old items (keep container + header)
+        this._menuItems.forEach(t => t.destroy());
+        this._menuItems = [];
+        if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
+
+        const settings = this._settingsValues;
+        const items = [
+            { label: `Son : ${settings.muted ? 'OFF' : 'ON'}`, key: 'mute' },
+            { label: `Musique : ${Math.round(settings.musicVolume * 100)}%`, key: 'music' },
+            { label: `Effets : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
+            { label: '\u2190 Retour', key: 'back' }
+        ];
+
+        const startY = 255;
+        const pillW = 300;
+        const pillH = 36;
+
+        items.forEach((item, i) => {
+            const pillY = startY + i * 44;
+
+            const pill = this.add.graphics();
+            pill.fillStyle(0x3A2E28, 0.75);
+            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+            pill.lineStyle(1, 0xD4A574, 0.3);
+            pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+            this._menuContainer.add(pill);
+            this._menuItems.push(pill);
+
+            const txt = this.add.text(GAME_WIDTH / 2, pillY, item.label, {
+                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center', shadow: SHADOW
+            }).setOrigin(0.5);
+            this._menuContainer.add(txt);
+            this._menuItems.push(txt);
+
+            // Hint for sliders
+            if (item.key === 'music' || item.key === 'sfx') {
+                const hint = this.add.text(GAME_WIDTH / 2 + pillW / 2 - 8, pillY, '\u2190 \u2192', {
+                    fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+                }).setOrigin(1, 0.5);
+                this._menuContainer.add(hint);
+            }
+
+            // Mouse
+            txt.setInteractive({ useHandCursor: true });
+            pill.setInteractive(
+                new Phaser.Geom.Rectangle(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH),
+                Phaser.Geom.Rectangle.Contains
+            );
+            const hoverIn = () => { this._selectedIndex = i; this._updateSettingsSelection(); };
+            txt.on('pointerover', hoverIn);
+            pill.on('pointerover', hoverIn);
+            txt.on('pointerdown', () => { this._selectedIndex = i; this._onSettingsConfirm(); });
+            pill.on('pointerdown', () => { this._selectedIndex = i; this._onSettingsConfirm(); });
+        });
+
+        this._settingsItemKeys = items.map(it => it.key);
+        this._updateSettingsSelection();
+    }
+
+    _updateSettingsSelection() {
+        const itemCount = Math.floor(this._menuItems.length / 2);
+        if (this._cursor) this._cursor.destroy();
+
+        for (let i = 0; i < itemCount; i++) {
+            const txtIdx = i * 2 + 1;
+            const pillIdx = i * 2;
+            const txt = this._menuItems[txtIdx];
+            const pill = this._menuItems[pillIdx];
+            if (!txt || !txt.style) continue;
+
+            const pillW = 300, pillH = 36, startY = 255;
+            const pillY = startY + i * 44;
+
+            if (i === this._selectedIndex) {
+                txt.setColor('#FFD700').setScale(1.05);
+                if (pill && pill.clear) {
+                    pill.clear();
+                    pill.fillStyle(0x5A4030, 0.85);
+                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                    pill.lineStyle(2, 0xFFD700, 0.6);
+                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                }
+                this._cursor = this.add.text(
+                    txt.x - txt.width * 0.55 - 26, txt.y, '\u25b6',
+                    { fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW }
+                ).setOrigin(0.5);
+                this.tweens.add({
+                    targets: this._cursor, x: this._cursor.x + 4,
+                    duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                });
+                if (this._menuContainer) this._menuContainer.add(this._cursor);
+            } else {
+                txt.setColor(i === itemCount - 1 ? '#D4A574' : '#F5E6D0').setScale(1.0);
+                if (pill && pill.clear) {
+                    pill.clear();
+                    pill.fillStyle(0x3A2E28, 0.75);
+                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                    pill.lineStyle(1, 0xD4A574, 0.3);
+                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                }
+            }
+        }
+    }
+
+    _onSettingsConfirm() {
+        const key = this._settingsItemKeys[this._selectedIndex];
+        if (key === 'back') {
+            this._showMainMenu();
+            return;
+        }
+        if (key === 'mute') {
+            toggleMute();
+            this._settingsValues = getAudioSettings();
+            this._rebuildSettingsItems();
+        }
+    }
+
+    _onSettingsLeftRight(dir) {
+        const key = this._settingsItemKeys?.[this._selectedIndex];
+        if (!key) return;
+        const step = 0.1 * dir;
+
+        if (key === 'music') {
+            const newVal = Math.max(0, Math.min(1, this._settingsValues.musicVolume + step));
+            setMusicVolumeLevel(newVal);
+        } else if (key === 'sfx') {
+            const newVal = Math.max(0, Math.min(1, this._settingsValues.sfxVolume + step));
+            setSfxVolume(newVal);
+            sfxUIClick(); // preview
+        } else if (key === 'mute') {
+            toggleMute();
+        } else {
+            return;
+        }
+        this._settingsValues = getAudioSettings();
+        this._rebuildSettingsItems();
     }
 
     _transitionTo(callback) {

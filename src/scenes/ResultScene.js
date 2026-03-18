@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, PIXELS_TO_METERS } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
+import { addEcus, loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -19,10 +20,14 @@ export default class ResultScene extends Phaser.Scene {
         this.returnScene = data.returnScene || 'TitleScene';
         this.arcadeState = data.arcadeState || null;
         this.matchStats = data.matchStats || {};
+        this.ecuEarned = data.ecuEarned || 0;
     }
 
     create() {
         setSoundScene(this);
+        this._returning = false;
+        this.cameras.main.setAlpha(1);
+        this.cameras.main.resetFX();
         if (this.won) { sfxVictory(); } else { sfxDefeat(); }
 
         // Background
@@ -71,8 +76,10 @@ export default class ResultScene extends Phaser.Scene {
         if (winner) {
             const winKey = this._getSpriteKey(winner);
             if (this.textures.exists(winKey)) {
-                const winSprite = this.add.sprite(GAME_WIDTH / 2 - 200, 200, winKey, 0)
-                    .setScale(0.625).setOrigin(0.5);
+                const isStatic = CHAR_STATIC_SPRITES.includes(winner.id);
+                const winSprite = isStatic
+                    ? this.add.image(GAME_WIDTH / 2 - 200, 200, winKey).setScale(0.55).setOrigin(0.5)
+                    : this.add.sprite(GAME_WIDTH / 2 - 200, 200, winKey, 0).setScale(0.625).setOrigin(0.5);
                 this.tweens.add({
                     targets: winSprite, y: 193, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
@@ -143,6 +150,43 @@ export default class ResultScene extends Phaser.Scene {
             this.add.text(panelX, panelY + panelH + 8, 'FANNY !', {
                 fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
             }).setOrigin(0.5);
+        }
+
+        // === ECUS EARNED ===
+        if (this.won && this.ecuEarned > 0) {
+            addEcus(this.ecuEarned);
+            const ecuText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${this.ecuEarned} Ecus`, {
+                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setAlpha(0).setScale(0.5);
+
+            this.tweens.add({
+                targets: ecuText, alpha: 1, scale: 1,
+                duration: 500, ease: 'Back.easeOut', delay: 800
+            });
+        }
+
+        // === ROOKIE XP ===
+        const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
+        let xpEarned = 0;
+        if (this.won && isRookie) {
+            if (this.arcadeState) {
+                // In Arcade: only give XP for NEW round progress (no farming)
+                const save = loadSave();
+                const currentRound = this.arcadeState.currentRound - 1; // round just completed
+                xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+            } else {
+                xpEarned = ROOKIE_XP_QUICKPLAY;
+            }
+            const xpText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 50, `+${xpEarned} pts`, {
+                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setAlpha(0);
+
+            this.tweens.add({
+                targets: xpText, alpha: 1,
+                duration: 400, ease: 'Sine.easeOut', delay: 1200
+            });
         }
 
         // === ACTION BUTTONS ===
@@ -342,16 +386,47 @@ export default class ResultScene extends Phaser.Scene {
         if (this._returning) return;
         this._returning = true;
 
+        const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
+        let xpEarned = 0;
+        if (this.won && isRookie) {
+            if (this.arcadeState) {
+                const save = loadSave();
+                const currentRound = this.arcadeState.currentRound - 1;
+                xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+            } else {
+                xpEarned = ROOKIE_XP_QUICKPLAY;
+            }
+        }
+
         this.cameras.main.fadeOut(300);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start('ArcadeScene', {
-                playerCharacter: this.arcadeState.playerCharacter,
-                currentRound: this.arcadeState.currentRound,
-                wins: this.arcadeState.wins,
-                losses: this.arcadeState.losses,
-                matchResults: this.arcadeState.matchResults,
-                lastMatchResult: { won: this.won }
-            });
+            // If Rookie won, go to LevelUpScene first
+            if (this.won && isRookie && xpEarned > 0) {
+                const save = loadSave();
+                this.scene.start('LevelUpScene', {
+                    pointsToDistribute: xpEarned,
+                    currentStats: save.rookie.stats,
+                    totalPoints: save.rookie.totalPoints,
+                    returnScene: 'ArcadeScene',
+                    returnData: {
+                        playerCharacter: this.arcadeState.playerCharacter,
+                        currentRound: this.arcadeState.currentRound,
+                        wins: this.arcadeState.wins,
+                        losses: this.arcadeState.losses,
+                        matchResults: this.arcadeState.matchResults,
+                        lastMatchResult: { won: true }
+                    }
+                });
+            } else {
+                this.scene.start('ArcadeScene', {
+                    playerCharacter: this.arcadeState.playerCharacter,
+                    currentRound: this.arcadeState.currentRound,
+                    wins: this.arcadeState.wins,
+                    losses: this.arcadeState.losses,
+                    matchResults: this.arcadeState.matchResults,
+                    lastMatchResult: { won: this.won }
+                });
+            }
         });
     }
 
