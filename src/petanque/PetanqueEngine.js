@@ -343,7 +343,7 @@ export default class PetanqueEngine {
         return { targetX, targetY, rollVx, rollVy };
     }
 
-    throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null, retro = 0) {
+    throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null, retro = 0, throwMeta = {}) {
         if (this.remaining[team] <= 0) return;
 
         const cx = this.scene.throwCircleX;
@@ -363,8 +363,24 @@ export default class PetanqueEngine {
             bounds: this.bounds,
             id: `${team}_${this.ballsPerPlayer - this.remaining[team]}`
         });
-        // Apply retro (backspin) if the loft allows it
-        ball.retro = (loftPreset || LOFT_DEMI_PORTEE).retroAllowed ? retro : 0;
+        // Apply retro (backspin) if the loft allows it, amplified by boule retroBonus
+        const baseRetro = (loftPreset || LOFT_DEMI_PORTEE).retroAllowed ? retro : 0;
+        ball.retro = baseRetro * (bouleStats.retroBonus || 1);
+        // Store boule bonuses for collision resolution
+        ball.restitutionMult = bouleStats.restitutionMult || 1;
+        ball.knockbackMult = bouleStats.knockbackMult || 1;
+
+        // === Unique ability effects ===
+        // Le Mur (Reyes): double collision radius
+        if (throwMeta.leMur) {
+            ball.collisionRadiusMult = 2.0;
+        }
+        // Carreau Instinct (Ley): flag for stronger ejection
+        if (throwMeta.carreauInstinct) {
+            ball.carreauInstinct = true;
+        }
+        // Store throwMeta for later use
+        ball.throwMeta = throwMeta;
 
         this.balls.push(ball);
         this.remaining[team]--;
@@ -1027,15 +1043,22 @@ export default class PetanqueEngine {
             const set = boulesData.sets?.find(s => s.id === bouleType);
             if (set) {
                 const colorNum = parseInt(set.color.replace('#', ''), 16);
-                let frictionMult = 1;
-                if (set.bonus === 'friction_x0.9') frictionMult = 0.9;
-                if (set.bonus === 'friction_x1.1') frictionMult = 1.1;
+                const bonus = set.bonus || '';
+                // Parse bonus string into multipliers
+                let frictionMult = 1, retroBonus = 1, restitutionMult = 1, knockbackMult = 1;
+                if (bonus.startsWith('friction_x')) frictionMult = parseFloat(bonus.split('x')[1]) || 1;
+                if (bonus.startsWith('retro_x')) retroBonus = parseFloat(bonus.split('x')[1]) || 1;
+                if (bonus.startsWith('restitution_x')) restitutionMult = parseFloat(bonus.split('x')[1]) || 1;
+                if (bonus.startsWith('knockback_x')) knockbackMult = parseFloat(bonus.split('x')[1]) || 1;
                 return {
                     mass: set.stats.masse,
                     radius: set.stats.rayon,
                     color: colorNum,
                     textureKey: set.textureKey || null,
-                    frictionMult
+                    frictionMult,
+                    retroBonus,
+                    restitutionMult,
+                    knockbackMult
                 };
             }
         }

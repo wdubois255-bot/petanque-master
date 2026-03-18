@@ -313,7 +313,10 @@ export default class Ball {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.radius + b.radius;
+        // Le Mur ability: larger collision radius
+        const radiusA = a.radius * (a.collisionRadiusMult || 1);
+        const radiusB = b.radius * (b.collisionRadiusMult || 1);
+        const minDist = radiusA + radiusB;
 
         if (dist >= minDist || dist === 0) return false;
 
@@ -331,15 +334,25 @@ export default class Ball {
         // de l'energie au contact → carreau naturel sans hack
         // Boule mass ~700g, Cochonnet ~30g → difference > 200 = mixed collision
         const isBouleVsCochonnet = Math.abs(a.mass - b.mass) > (BALL_MASS * 0.3);
-        const restitution = isBouleVsCochonnet ? RESTITUTION_COCHONNET : RESTITUTION_BOULE;
+        let restitution = isBouleVsCochonnet ? RESTITUTION_COCHONNET : RESTITUTION_BOULE;
+        // Apply boule-specific restitution bonus (e.g. Titane bounces more)
+        restitution *= (a.restitutionMult || 1) * (b.restitutionMult || 1);
+        restitution = Math.min(restitution, 0.95); // cap to prevent infinite energy
 
         const totalMass = a.mass + b.mass;
-        const impulse = (1 + restitution) * dvn / totalMass;
+        let impulse = (1 + restitution) * dvn / totalMass;
+        // Apply knockback bonus (e.g. Bronze hits harder)
+        impulse *= Math.max(a.knockbackMult || 1, b.knockbackMult || 1);
 
-        a.vx -= impulse * b.mass * nx;
-        a.vy -= impulse * b.mass * ny;
-        b.vx += impulse * a.mass * nx;
-        b.vy += impulse * a.mass * ny;
+        // Carreau Instinct (Ley): 50% stronger ejection on TARGET ball only
+        // Only applies when: (1) the THROWER (a) has the flag, (2) it's boule-vs-boule (not cochonnet)
+        const carreauBoostB = (a.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
+        const carreauBoostA = (b.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
+
+        a.vx -= impulse * b.mass * nx * carreauBoostA;
+        a.vy -= impulse * b.mass * ny * carreauBoostA;
+        b.vx += impulse * a.mass * nx * carreauBoostB;
+        b.vy += impulse * a.mass * ny * carreauBoostB;
 
         const overlap = minDist - dist;
         const sepX = (overlap / 2 + 0.5) * nx;

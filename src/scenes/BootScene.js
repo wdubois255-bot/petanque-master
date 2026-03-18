@@ -84,7 +84,8 @@ export default class BootScene extends Phaser.Scene {
         // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [
             'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated', 'marcel_animated'
+            'la_choupe_animated', 'marcel_animated',
+            'reyes_animated'
         ];
         for (const key of charSprites) {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
@@ -113,6 +114,11 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_chrome', `${BASE}assets/sprites/boule_chrome.png`);
         this.load.image('ball_noire', `${BASE}assets/sprites/boule_noire.png`);
         this.load.image('ball_rouge', `${BASE}assets/sprites/boule_rouge.png`);
+        this.load.image('ball_doree', `${BASE}assets/sprites/boule_doree.png`);
+        this.load.image('ball_rouille', `${BASE}assets/sprites/boule_rouille.png`);
+        this.load.image('ball_bleue', `${BASE}assets/sprites/boule_bleue.png`);
+        this.load.image('ball_cuivre', `${BASE}assets/sprites/boule_cuivre.png`);
+        this.load.image('ball_titane', `${BASE}assets/sprites/boule_titane.png`);
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
         this.load.image('ball_cochonnet_bleu', `${BASE}assets/sprites/cochonnet_bleu.png`);
         this.load.image('ball_cochonnet_vert', `${BASE}assets/sprites/cochonnet_vert.png`);
@@ -157,7 +163,8 @@ export default class BootScene extends Phaser.Scene {
         // Enable LINEAR filtering on HD character spritesheets (128px displayed at 0.5x)
         const charSprites2 = [
             'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated', 'marcel_animated'
+            'la_choupe_animated', 'marcel_animated',
+            'reyes_animated'
         ];
         for (const key of charSprites2) {
             if (this.textures.exists(key)) {

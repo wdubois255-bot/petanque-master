@@ -35,7 +35,12 @@ const OPTIONS = [
             { display: 'Bronze', key: 'bronze' },
             { display: 'Chrome', key: 'chrome' },
             { display: 'Noire', key: 'noire' },
-            { display: 'Rouge', key: 'rouge' }
+            { display: 'Rouge', key: 'rouge' },
+            { display: 'Doree', key: 'doree' },
+            { display: 'Rouillee', key: 'rouille' },
+            { display: 'Bleue', key: 'bleue' },
+            { display: 'Cuivre', key: 'cuivre' },
+            { display: 'Titane', key: 'titane' }
         ]
     },
     {
@@ -321,13 +326,27 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Stats bars
         const barsY = sphereY + 76;
+        // Compute glisse score from bonus
+        const bonus = boule.bonus || '';
+        let glisseVal = 5, glisseDesc = 'Normal';
+        if (bonus.startsWith('friction_x')) {
+            const f = parseFloat(bonus.split('x')[1]) || 1;
+            glisseVal = f < 1 ? Math.round(5 + (1 - f) * 30) : Math.round(5 - (f - 1) * 10);
+            glisseDesc = f < 1 ? 'Roule longtemps' : 'Grip fort, s\'arrete vite';
+        }
+        if (bonus.startsWith('knockback_x')) { glisseVal = 3; glisseDesc = 'Impact fort'; }
+        if (bonus.startsWith('retro_x')) { glisseVal = 6; glisseDesc = 'Retro amplifie'; }
+        if (bonus.startsWith('restitution_x')) {
+            const r = parseFloat(bonus.split('x')[1]) || 1;
+            glisseVal = r > 1 ? 7 : 4; glisseDesc = r > 1 ? 'Rebondit plus' : 'Absorbe les chocs';
+        }
         const bars = [
-            { label: 'Poids', value: boule.stats.masse, min: 600, max: 850, color: 0xC4854A,
+            { label: 'Poids', value: boule.stats.masse, min: 550, max: 900, color: 0xC4854A,
               desc: boule.stats.masse >= 750 ? 'Lourde, deplace plus' : boule.stats.masse <= 650 ? 'Legere, roule plus loin' : 'Equilibree' },
             { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x87CEEB,
-              desc: boule.stats.rayon >= 11 ? 'Grande, facile a toucher' : boule.stats.rayon <= 9 ? 'Petite, discrette' : 'Standard' },
-            { label: 'Glisse', value: boule.bonus === 'friction_x0.9' ? 8 : boule.bonus === 'knockback_x1.2' ? 3 : 5, min: 1, max: 10, color: 0xD4A574,
-              desc: boule.bonus === 'friction_x0.9' ? 'Roule longtemps' : boule.bonus === 'knockback_x1.2' ? 'Impact fort' : 'Normal' }
+              desc: boule.stats.rayon >= 11 ? 'Grande, facile a toucher' : boule.stats.rayon <= 9 ? 'Petite, discrete' : 'Standard' },
+            { label: 'Special', value: glisseVal, min: 1, max: 10, color: 0x9B7BB8,
+              desc: glisseDesc }
         ];
         this._drawBars(cx, barsY, bars);
 
