@@ -979,23 +979,37 @@ export default class PetanqueEngine {
                 return;
             }
 
-            // Detect tir results: palet, recul, or miss
+            // Detect tir results: carreau (already handled), recul, palet, or miss
             const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
             if (hitEnemy.length > 0) {
-                // Check how far the target was displaced
                 const targetBall = hitEnemy[0];
                 const targetSpeed = Math.sqrt(targetBall.vx ** 2 + targetBall.vy ** 2);
                 const throwerSpeed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
 
-                // Recul: target pushed gently (speed < 3), thrower stays near
-                // This happens on glancing/tangential hits — the "tir devant"
-                if (targetSpeed > 0.5 && targetSpeed < 3.5 && throwerSpeed < 4) {
-                    this._showShotLabel(targetBall, 'Recul !', '#D4A574', 13);
-                    this._shotCollisions = [];
-                    return;
+                // Recul: thrower ball slides back 10-15% from impact point
+                // Target is ejected far (like a carreau but thrower doesn't take the place)
+                // Detected when: thrower has moderate residual speed (1-5) in reverse direction
+                // and target is ejected fast (>3)
+                const puiStat = ball.puissanceStat || 6;
+                const reculPct = 0.10 + (puiStat - 1) / 9 * 0.05; // 10-15% based on puissance
+
+                if (throwerSpeed > 0.8 && throwerSpeed < 5 && targetSpeed > 3) {
+                    // Check if thrower is moving roughly backwards (away from target)
+                    const dx = targetBall.x - ball.x;
+                    const dy = targetBall.y - ball.y;
+                    const dot = ball.vx * dx + ball.vy * dy;
+                    if (dot < 0) {
+                        // Thrower IS moving away from target = recul
+                        // Amplify the thrower's backward slide proportionally to puissance
+                        ball.vx *= (1 + reculPct * 3);
+                        ball.vy *= (1 + reculPct * 3);
+                        this._showShotLabel(ball, 'Recul !', '#D4A574', 14);
+                        this._shotCollisions = [];
+                        return;
+                    }
                 }
 
-                // Palet: thrower stays near cochonnet after a good hit
+                // Palet: thrower stays near cochonnet after a solid hit
                 const distToCoch = ball.distanceTo(this.cochonnet);
                 if (distToCoch < 60 && targetSpeed > 2) {
                     this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
