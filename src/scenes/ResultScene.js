@@ -212,12 +212,13 @@ export default class ResultScene extends Phaser.Scene {
             this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
             this.input.keyboard.on('keydown-ENTER', () => this._returnToArcade());
         } else {
+            // Quick Play / other modes
             const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, '[ REJOUER ]', {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
-                backgroundColor: '#C44B3F', padding: { x: 14, y: 8 }, shadow: SHADOW
+                backgroundColor: this.won ? '#44CC44' : '#C44B3F', padding: { x: 14, y: 8 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-            replayBtn.on('pointerdown', () => this.scene.start(this.returnScene));
+            replayBtn.on('pointerdown', () => this._returnToArcade());
 
             const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, '[ MENU ]', {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
@@ -226,7 +227,7 @@ export default class ResultScene extends Phaser.Scene {
 
             menuBtn.on('pointerdown', () => this.scene.start('TitleScene'));
 
-            this.input.keyboard.on('keydown-SPACE', () => this.scene.start(this.returnScene));
+            this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
         }
 
         this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
@@ -398,32 +399,49 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
-        // Direct transition — no async camera callbacks
+        // === ARCADE MODE: return to ArcadeScene (with optional LevelUp) ===
+        if (this.arcadeState) {
+            if (this.won && isRookie && xpEarned > 0) {
+                const save = loadSave();
+                this.scene.start('LevelUpScene', {
+                    pointsToDistribute: xpEarned,
+                    currentStats: save.rookie.stats,
+                    totalPoints: save.rookie.totalPoints,
+                    returnScene: 'ArcadeScene',
+                    returnData: {
+                        playerCharacter: this.arcadeState.playerCharacter,
+                        currentRound: this.arcadeState.currentRound,
+                        wins: this.arcadeState.wins,
+                        losses: this.arcadeState.losses,
+                        matchResults: this.arcadeState.matchResults,
+                        lastMatchResult: { won: true }
+                    }
+                });
+            } else {
+                this.scene.start('ArcadeScene', {
+                    playerCharacter: this.arcadeState.playerCharacter,
+                    currentRound: this.arcadeState.currentRound,
+                    wins: this.arcadeState.wins,
+                    losses: this.arcadeState.losses,
+                    matchResults: this.arcadeState.matchResults,
+                    lastMatchResult: { won: this.won }
+                });
+            }
+            return;
+        }
+
+        // === QUICK PLAY / OTHER: return to returnScene (with optional LevelUp) ===
         if (this.won && isRookie && xpEarned > 0) {
             const save = loadSave();
             this.scene.start('LevelUpScene', {
                 pointsToDistribute: xpEarned,
                 currentStats: save.rookie.stats,
                 totalPoints: save.rookie.totalPoints,
-                returnScene: 'ArcadeScene',
-                returnData: {
-                    playerCharacter: this.arcadeState.playerCharacter,
-                    currentRound: this.arcadeState.currentRound,
-                    wins: this.arcadeState.wins,
-                    losses: this.arcadeState.losses,
-                    matchResults: this.arcadeState.matchResults,
-                    lastMatchResult: { won: true }
-                }
+                returnScene: this.returnScene || 'QuickPlayScene',
+                returnData: {}
             });
         } else {
-            this.scene.start('ArcadeScene', {
-                playerCharacter: this.arcadeState.playerCharacter,
-                currentRound: this.arcadeState.currentRound,
-                wins: this.arcadeState.wins,
-                losses: this.arcadeState.losses,
-                matchResults: this.arcadeState.matchResults,
-                lastMatchResult: { won: this.won }
-            });
+            this.scene.start(this.returnScene || 'TitleScene');
         }
     }
 

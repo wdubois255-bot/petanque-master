@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT } from '../utils/Constants.js';
-import { setRookieStats } from '../utils/SaveManager.js';
+import { setRookieStats, addRookiePoints } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -422,8 +422,9 @@ export default class LevelUpScene extends Phaser.Scene {
         this._confirmed = true;
         sfxUIClick();
 
-        // Save the new stats
+        // Save the new stats + increment total points (triggers ability unlocks at 18/26/34)
         setRookieStats(this.newStats);
+        addRookiePoints(this.totalPointsGiven);
 
         // Flash feedback then direct transition
         this.cameras.main.flash(150, 255, 215, 0);
