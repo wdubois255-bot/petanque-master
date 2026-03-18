@@ -8,12 +8,14 @@ import {
 import PointeurStrategy from './ai/PointeurStrategy.js';
 import TireurStrategy from './ai/TireurStrategy.js';
 import EquilibreStrategy from './ai/EquilibreStrategy.js';
+import CompletStrategy from './ai/CompletStrategy.js';
 import DefaultStrategy from './ai/DefaultStrategy.js';
 
 const strategyMap = {
     'pointeur': PointeurStrategy,
     'tireur': TireurStrategy,
-    'equilibre': EquilibreStrategy
+    'equilibre': EquilibreStrategy,
+    'complet': CompletStrategy
 };
 
 export default class PetanqueAI {
@@ -68,6 +70,7 @@ export default class PetanqueAI {
             case 'pointeur':  return 0.05;
             case 'tireur':    return 0.20;
             case 'equilibre': return 0.10;
+            case 'complet':   return 0.03; // Reyes stays calm under any momentum
             default:          return 0.10;
         }
     }
@@ -116,6 +119,10 @@ export default class PetanqueAI {
         } else if (p.personality === 'tireur') {
             angle = -Math.PI / 2 + this._noise(5) * Math.PI / 180;
             power = 0.7 + this._noise(0.12);
+        } else if (p.personality === 'complet') {
+            // Reyes places cochonnet at medium distance, very centered — optimal for his game
+            angle = -Math.PI / 2 + this._noise(1.5) * Math.PI / 180;
+            power = 0.55 + this._noise(0.06);
         } else {
             angle = -Math.PI / 2 + this._noise(5) * Math.PI / 180;
             power = 0.5 + this._noise(0.15);
@@ -159,6 +166,12 @@ export default class PetanqueAI {
         if (this.personality.personality === 'pointeur') {
             if (shotMode === 'pointer') { angleDev *= 0.6; powerDev *= 0.6; }
             else { angleDev *= 1.5; powerDev *= 1.5; }
+        }
+
+        // Complet (Reyes): good at everything — slight bonus in both modes, no penalty
+        if (this.personality.personality === 'complet') {
+            angleDev *= 0.75;
+            powerDev *= 0.75;
         }
 
         // === MOMENTUM EFFECT (all personalities) ===
