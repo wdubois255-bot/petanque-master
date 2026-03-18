@@ -316,6 +316,10 @@ export default class EngineRenderer {
     }
 
     destroy() {
+        // Kill pulse tween to prevent orphaned infinite loop
+        if (this._bestPulse && this.scene?.tweens) {
+            this.scene.tweens.getTweensOf(this._bestPulse).forEach(t => t.stop());
+        }
         if (this._bestGfx) { this._bestGfx.destroy(); this._bestGfx = null; }
         if (this._msgText) { this._msgText.destroy(); this._msgText = null; }
     }

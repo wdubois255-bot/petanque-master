@@ -124,7 +124,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.impactLayer = this.add.renderTexture(
             this.terrainX, this.terrainY,
             TERRAIN_WIDTH, TERRAIN_HEIGHT
-        ).setOrigin(0, 0).setDepth(3).setAlpha(0.5);
+        ).setOrigin(0, 0).setDepth(8).setAlpha(0.5);
 
         // Hook score events for barks
         this.engine.onScore = (scores, winner, points) => {
@@ -163,9 +163,12 @@ export default class PetanqueScene extends Phaser.Scene {
     _shutdown() {
         stopCigales();
         stopMusic();
+        // Kill barks mid-animation
+        if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
+        if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
         if (this.aimingSystem) this.aimingSystem.destroy();
         if (this.scorePanel) this.scorePanel.destroy();
-        if (this.engine && this.engine._bestGfx) this.engine._bestGfx.destroy();
+        if (this.engine?.renderer) this.engine.renderer.destroy();
         this.tweens.killAll();
     }
 
@@ -376,45 +379,60 @@ export default class PetanqueScene extends Phaser.Scene {
         const watchX = team === 'player' ? this._opponentWatchX : this._playerWatchX;
         const watchY = team === 'player' ? this._opponentWatchY : this._playerWatchY;
 
-        // Walk cycle with bounce (works even when sprite frames are identical)
-        const walkBounce = (sprite, baseScale, startFrame) => {
-            const t = Date.now();
-            const walkPhase = Math.sin(t / 80 * Math.PI);
-            // Frame cycling through available walk frames
-            sprite.setFrame(startFrame + Math.floor(t / 150) % 4);
-            // Vertical bounce: -3px at peak, subtle squash/stretch
-            sprite.scaleY = baseScale * (1 + walkPhase * 0.05);
-            sprite.scaleX = baseScale * (1 - walkPhase * 0.02);
-        };
+        // CRITICAL: kill ALL existing movement tweens on BOTH sprites first
+        // This prevents the "2 players in circle" bug
+        this.tweens.getTweensOf(this.playerSprite).forEach(t => t.stop());
+        this.tweens.getTweensOf(this.opponentSprite).forEach(t => t.stop());
+        // Reset scale in case a tween was interrupted mid-squash
+        this.playerSprite.scaleX = s;
+        this.playerSprite.scaleY = s;
+        this.opponentSprite.scaleX = s;
+        this.opponentSprite.scaleY = s;
 
-        // Thrower walks to circle
-        this.tweens.add({
-            targets: thrower,
-            x: this._circleX, y: this._circleY,
-            duration: 500, ease: 'Sine.easeInOut',
-            onUpdate: () => walkBounce(thrower, s, 0),
-            onComplete: () => {
-                thrower.setFrame(12); // face north
-                thrower.scaleX = s;
-                thrower.scaleY = s;
-            }
-        });
-
-        // Watcher moves to sideline
+        // Step 1: Watcher leaves the circle FIRST (fast)
+        watcher.setFrame(0); // face south
         this.tweens.add({
             targets: watcher,
             x: watchX, y: watchY,
-            duration: 400, ease: 'Sine.easeInOut',
-            onUpdate: () => walkBounce(watcher, s, 0),
+            duration: 300, ease: 'Sine.easeIn',
+            onUpdate: () => {
+                const t = Date.now();
+                const phase = Math.sin(t / 80 * Math.PI);
+                watcher.setFrame(Math.floor(t / 150) % 4);
+                watcher.scaleY = s * (1 + phase * 0.04);
+                watcher.scaleX = s * (1 - phase * 0.015);
+            },
             onComplete: () => {
-                watcher.setFrame(0); // face south
+                watcher.setFrame(0);
                 watcher.scaleX = s;
                 watcher.scaleY = s;
             }
         });
 
+        // Step 2: Thrower walks to circle AFTER a short delay (sequential feel)
+        this.time.delayedCall(150, () => {
+            this.tweens.add({
+                targets: thrower,
+                x: this._circleX, y: this._circleY,
+                duration: 450, ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    const t = Date.now();
+                    const phase = Math.sin(t / 80 * Math.PI);
+                    thrower.setFrame(Math.floor(t / 150) % 4);
+                    thrower.scaleY = s * (1 + phase * 0.04);
+                    thrower.scaleX = s * (1 - phase * 0.015);
+                },
+                onComplete: () => {
+                    thrower.setFrame(12); // face north (looking at terrain)
+                    thrower.scaleX = s;
+                    thrower.scaleY = s;
+                }
+            });
+        });
+
         // Arrow follows the thrower
         const arrow = team === 'player' ? this.playerTurnArrow : this.opponentTurnArrow;
+        this.tweens.getTweensOf(arrow).forEach(t => t.stop());
         this.tweens.add({
             targets: arrow,
             x: this._circleX, y: this._circleY - 72,
@@ -426,53 +444,69 @@ export default class PetanqueScene extends Phaser.Scene {
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;
         const baseY = sprite.y;
         const baseX = sprite.x;
-        const s = this._charScale || 1; // base scale
+        const s = this._charScale || 1;
+
+        // Kill any existing animations on this sprite to prevent frame conflicts
+        this.tweens.getTweensOf(sprite).forEach(t => t.stop());
+        sprite.scaleX = s;
+        sprite.scaleY = s;
+        sprite.x = baseX;
+        sprite.y = baseY;
+        sprite.angle = 0;
 
         // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
-        // Use north-facing (12-15) as "looking at terrain" during throw
         const profileFrames = team === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
+        const idleFrame = team === 'player' ? 12 : 0;
 
-        // Phase 1: Wind-up — turn to profile, crouch down
         sprite.setFrame(profileFrames[0]);
-        this.tweens.chain({
+        this._throwChain = this.tweens.chain({
             targets: sprite,
             tweens: [
-                // Crouch: compress + shift weight
+                // Phase 1: Wind-up — crouch down, gather weight
                 {
                     scaleX: s * 0.85, scaleY: s * 1.15, y: baseY + 4,
-                    duration: 250, ease: 'Sine.easeOut',
+                    duration: 220, ease: 'Sine.easeOut',
                     onStart: () => sprite.setFrame(profileFrames[1])
                 },
-                // Arm back: lean back slightly
+                // Phase 2: Arm back — lean back slightly
                 {
                     scaleX: s * 0.9, scaleY: s * 1.1, x: baseX - (team === 'player' ? 4 : -4),
-                    duration: 150, ease: 'Quad.easeIn',
+                    duration: 130, ease: 'Quad.easeIn',
                     onStart: () => sprite.setFrame(profileFrames[2])
                 },
-                // Phase 2: Release! — explosive extension + flash
+                // Phase 3: RELEASE — explosive extension + white flash
                 {
-                    scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 12,
-                    x: baseX + (team === 'player' ? 5 : -5),
-                    duration: 100, ease: 'Quad.easeIn',
+                    scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 14,
+                    x: baseX + (team === 'player' ? 6 : -6),
+                    duration: 80, ease: 'Quad.easeIn',
                     onStart: () => {
                         sprite.setFrame(profileFrames[3]);
                         sprite.setTint(0xFFFFFF);
-                        this.time.delayedCall(60, () => sprite.clearTint());
+                        this.time.delayedCall(50, () => sprite.clearTint());
                     }
                 },
-                // Phase 3: Follow-through — body extends forward
+                // Phase 4: Follow-through — body extends forward
                 {
-                    scaleX: s * 1.1, scaleY: s * 0.95, y: baseY - 5,
-                    duration: 120, ease: 'Sine.easeOut',
+                    scaleX: s * 1.08, scaleY: s * 0.96, y: baseY - 5,
+                    duration: 100, ease: 'Sine.easeOut',
                     onStart: () => sprite.setFrame(profileFrames[0])
                 },
-                // Phase 4: Recovery — bounce back to idle
+                // Phase 5: Recovery — bounce back to idle
                 {
                     scaleX: s, scaleY: s, y: baseY, x: baseX,
-                    duration: 300, ease: 'Bounce.easeOut',
-                    onComplete: () => sprite.setFrame(team === 'player' ? 12 : 0)
+                    duration: 280, ease: 'Bounce.easeOut',
+                    onComplete: () => sprite.setFrame(idleFrame)
                 }
-            ]
+            ],
+            // Safety: if chain is interrupted, ensure idle frame
+            onStop: () => {
+                sprite.setFrame(idleFrame);
+                sprite.scaleX = s;
+                sprite.scaleY = s;
+                sprite.x = baseX;
+                sprite.y = baseY;
+                sprite.angle = 0;
+            }
         });
     }
 
@@ -581,8 +615,12 @@ export default class PetanqueScene extends Phaser.Scene {
 
         const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
         const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
-        // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
+        const s = this._charScale || 1;
         const throwerSouthFrames = lastTeam === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
+
+        // Don't start reaction if a transition is about to happen
+        // (prevents visual glitch where reaction plays then immediately transitions)
+        if (this.engine.remaining.player === 0 && this.engine.remaining.opponent === 0) return;
 
         if (dist < 30) {
             // Great shot — thrower celebrates with jump + fist pump
