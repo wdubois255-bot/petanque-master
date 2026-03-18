@@ -93,6 +93,20 @@ export default class BootScene extends Phaser.Scene {
             });
         }
 
+        // Throw animation spritesheets (frame-by-frame lancer)
+        const throwSprites = [
+            { key: 'ley_throw', frames: 5 },
+            { key: 'le_magicien_throw', frames: 4 },
+            { key: 'la_choupe_throw', frames: 4 },
+            { key: 'marcel_throw', frames: 4 },
+            { key: 'reyes_throw', frames: 5 }
+        ];
+        for (const ts of throwSprites) {
+            this.load.spritesheet(ts.key, `${BASE}assets/sprites/${ts.key}.png`, {
+                frameWidth: 128, frameHeight: 128
+            });
+        }
+
         // Tiled maps (.tmj) - try to load for each map, will silently fail if not found
         const mapNames = [
             'village_depart', 'route_1', 'village_arene_1', 'route_2',

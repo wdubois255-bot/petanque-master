@@ -4,7 +4,7 @@ import {
     TERRAIN_WIDTH, TERRAIN_HEIGHT,
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
-    CHAR_SPRITE_MAP
+    CHAR_SPRITE_MAP, CHAR_THROW_MAP
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -501,69 +501,126 @@ export default class PetanqueScene extends Phaser.Scene {
         const baseY = sprite.y;
         const baseX = sprite.x;
         const s = this._charScale || 1;
+        const idleFrame = team === 'player' ? 12 : 0;
 
-        // Kill any existing animations on this sprite to prevent frame conflicts
+        // Kill any existing animations
         this.tweens.getTweensOf(sprite).forEach(t => t.stop());
         sprite.scaleX = s;
         sprite.scaleY = s;
-        sprite.x = baseX;
-        sprite.y = baseY;
         sprite.angle = 0;
 
-        // Frames: 0-3=south, 4-7=west, 8-11=east, 12-15=north
-        const profileFrames = team === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
-        const idleFrame = team === 'player' ? 12 : 0;
+        // Get throw spritesheet for this character
+        const charId = team === 'player' ? this.playerCharId : this.opponentId;
+        const throwInfo = CHAR_THROW_MAP[charId] || null;
+        const hasThrowSprite = throwInfo && this.textures.exists(throwInfo.key);
 
-        sprite.setFrame(profileFrames[0]);
-        this._throwChain = this.tweens.chain({
-            targets: sprite,
-            tweens: [
-                // Phase 1: Wind-up — crouch down, gather weight
-                {
-                    scaleX: s * 0.85, scaleY: s * 1.15, y: baseY + 4,
-                    duration: 220, ease: 'Sine.easeOut',
-                    onStart: () => sprite.setFrame(profileFrames[1])
-                },
-                // Phase 2: Arm back — lean back slightly
-                {
-                    scaleX: s * 0.9, scaleY: s * 1.1, x: baseX - (team === 'player' ? 4 : -4),
-                    duration: 130, ease: 'Quad.easeIn',
-                    onStart: () => sprite.setFrame(profileFrames[2])
-                },
-                // Phase 3: RELEASE — explosive extension + white flash
-                {
-                    scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 14,
-                    x: baseX + (team === 'player' ? 6 : -6),
-                    duration: 80, ease: 'Quad.easeIn',
-                    onStart: () => {
-                        sprite.setFrame(profileFrames[3]);
-                        sprite.setTint(0xFFFFFF);
-                        this.time.delayedCall(50, () => sprite.clearTint());
-                    }
-                },
-                // Phase 4: Follow-through — body extends forward
-                {
-                    scaleX: s * 1.08, scaleY: s * 0.96, y: baseY - 5,
-                    duration: 100, ease: 'Sine.easeOut',
-                    onStart: () => sprite.setFrame(profileFrames[0])
-                },
-                // Phase 5: Recovery — bounce back to idle
-                {
-                    scaleX: s, scaleY: s, y: baseY, x: baseX,
-                    duration: 280, ease: 'Bounce.easeOut',
-                    onComplete: () => sprite.setFrame(idleFrame)
+        if (hasThrowSprite) {
+            // === REAL THROW FRAMES ===
+            // Hide main sprite, show throw sprite at same position
+            sprite.setVisible(false);
+            const throwSprite = this.add.sprite(baseX, baseY, throwInfo.key, 0)
+                .setOrigin(0.5, 1).setDepth(20).setScale(s);
+            const nFrames = throwInfo.frames;
+
+            // Timing per frame: idle, wind-up, release, follow-through, (recovery)
+            const frameDurations = nFrames === 5
+                ? [180, 150, 80, 120, 250]   // 5 frames: idle, wind-up, arm-back, release, follow
+                : [200, 160, 90, 280];         // 4 frames: idle, wind-up, release, follow
+
+            let currentFrame = 0;
+            const advanceFrame = () => {
+                if (currentFrame >= nFrames) {
+                    // Animation done — destroy throw sprite, show main sprite at idle
+                    throwSprite.destroy();
+                    sprite.setVisible(true);
+                    sprite.setFrame(idleFrame);
+                    sprite.scaleX = s;
+                    sprite.scaleY = s;
+                    sprite.x = baseX;
+                    sprite.y = baseY;
+                    return;
                 }
-            ],
-            // Safety: if chain is interrupted, ensure idle frame
-            onStop: () => {
-                sprite.setFrame(idleFrame);
-                sprite.scaleX = s;
-                sprite.scaleY = s;
-                sprite.x = baseX;
-                sprite.y = baseY;
-                sprite.angle = 0;
-            }
-        });
+
+                throwSprite.setFrame(currentFrame);
+
+                // Squash/stretch + movement per phase
+                const isRelease = (nFrames === 5 && currentFrame === 3) || (nFrames === 4 && currentFrame === 2);
+                const isRecovery = currentFrame === nFrames - 1;
+
+                if (isRelease) {
+                    // Release: explosive stretch + white flash
+                    this.tweens.add({
+                        targets: throwSprite,
+                        scaleX: s * 1.15, scaleY: s * 0.88, y: baseY - 10,
+                        duration: frameDurations[currentFrame], ease: 'Quad.easeOut',
+                        onStart: () => {
+                            throwSprite.setTint(0xFFFFFF);
+                            this.time.delayedCall(40, () => throwSprite.clearTint());
+                        },
+                        onComplete: () => { currentFrame++; advanceFrame(); }
+                    });
+                } else if (isRecovery) {
+                    // Recovery: bounce back to idle position
+                    this.tweens.add({
+                        targets: throwSprite,
+                        scaleX: s, scaleY: s, y: baseY, x: baseX,
+                        duration: frameDurations[currentFrame], ease: 'Bounce.easeOut',
+                        onComplete: () => { currentFrame++; advanceFrame(); }
+                    });
+                } else if (currentFrame === 0) {
+                    // Idle: slight crouch
+                    this.tweens.add({
+                        targets: throwSprite,
+                        scaleX: s * 0.95, scaleY: s * 1.05, y: baseY + 3,
+                        duration: frameDurations[currentFrame], ease: 'Sine.easeOut',
+                        onComplete: () => { currentFrame++; advanceFrame(); }
+                    });
+                } else {
+                    // Wind-up / mid-throw: lean
+                    this.tweens.add({
+                        targets: throwSprite,
+                        scaleX: s * 0.9, scaleY: s * 1.08,
+                        x: baseX - (team === 'player' ? 3 : -3),
+                        duration: frameDurations[currentFrame], ease: 'Sine.easeInOut',
+                        onComplete: () => { currentFrame++; advanceFrame(); }
+                    });
+                }
+            };
+
+            advanceFrame();
+        } else {
+            // === FALLBACK: squash/stretch only (no throw spritesheet) ===
+            const profileFrames = team === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
+            sprite.setFrame(profileFrames[0]);
+            this.tweens.chain({
+                targets: sprite,
+                tweens: [
+                    { scaleX: s * 0.85, scaleY: s * 1.15, y: baseY + 4,
+                      duration: 220, ease: 'Sine.easeOut',
+                      onStart: () => sprite.setFrame(profileFrames[1]) },
+                    { scaleX: s * 0.9, scaleY: s * 1.1,
+                      x: baseX - (team === 'player' ? 4 : -4),
+                      duration: 130, ease: 'Quad.easeIn',
+                      onStart: () => sprite.setFrame(profileFrames[2]) },
+                    { scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 14,
+                      x: baseX + (team === 'player' ? 6 : -6),
+                      duration: 80, ease: 'Quad.easeIn',
+                      onStart: () => {
+                          sprite.setFrame(profileFrames[3]);
+                          sprite.setTint(0xFFFFFF);
+                          this.time.delayedCall(50, () => sprite.clearTint());
+                      } },
+                    { scaleX: s, scaleY: s, y: baseY, x: baseX,
+                      duration: 280, ease: 'Bounce.easeOut',
+                      onComplete: () => sprite.setFrame(idleFrame) }
+                ],
+                onStop: () => {
+                    sprite.setFrame(idleFrame);
+                    sprite.scaleX = s; sprite.scaleY = s;
+                    sprite.x = baseX; sprite.y = baseY; sprite.angle = 0;
+                }
+            });
+        }
     }
 
     // === BARKS SYSTEM (contextual character dialogue bubbles) ===

@@ -221,9 +221,23 @@ export const CHAR_SPRITE_MAP = {
     'ley': 'ley_animated',
     'magicien': 'le_magicien_animated',
     'la_choupe': 'la_choupe_animated',
-    'marcel': 'marcel_animated'
+    'marcel': 'marcel_animated',
+    'reyes': 'reyes_animated'
 };
 
 export function getCharSpriteKey(char) {
     return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'ley_animated';
+}
+
+// Throw animation spritesheets (null = use squash/stretch fallback)
+export const CHAR_THROW_MAP = {
+    'ley': { key: 'ley_throw', frames: 5 },
+    'magicien': { key: 'le_magicien_throw', frames: 4 },
+    'la_choupe': { key: 'la_choupe_throw', frames: 4 },
+    'marcel': { key: 'marcel_throw', frames: 4 },
+    'reyes': { key: 'reyes_throw', frames: 5 }
+};
+
+export function getCharThrowKey(charId) {
+    return CHAR_THROW_MAP[charId] || null;
 }
