@@ -157,8 +157,16 @@ export default class PetanqueScene extends Phaser.Scene {
         // First-time tutorial overlay
         this._checkTutorial();
 
-        this.events.on('shutdown', () => { stopCigales(); stopMusic(); });
-        this.events.on('destroy', () => { stopCigales(); stopMusic(); });
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        stopCigales();
+        stopMusic();
+        if (this.aimingSystem) this.aimingSystem.destroy();
+        if (this.scorePanel) this.scorePanel.destroy();
+        if (this.engine && this.engine._bestGfx) this.engine._bestGfx.destroy();
+        this.tweens.killAll();
     }
 
     _checkTutorial() {
@@ -275,8 +283,8 @@ export default class PetanqueScene extends Phaser.Scene {
     // === PLAYER SPRITES & ANIMATIONS ===
 
     _createPlayerSprites() {
-        // Character sprite scale: 0.5x (sprites are 128x128, displayed at 64px for HD quality)
-        const CHAR_SCALE = 0.5;
+        // Character sprite scale: 0.4x (sprites are 128x128, displayed at ~51px — avoids overlap)
+        const CHAR_SCALE = 0.4;
         this._charScale = CHAR_SCALE;
 
         // Throw circle position (where the active thrower stands)
@@ -284,12 +292,12 @@ export default class PetanqueScene extends Phaser.Scene {
         const circleY = this.throwCircleY + 20;
 
         // Watcher positions (where the non-active player stands, well separated)
-        // Player watches from the LEFT of the terrain
-        this._playerWatchX = this.terrainX - 40;
-        this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.4;
-        // Opponent watches from the RIGHT of the terrain (near cochonnet)
-        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 40;
-        this._opponentWatchY = this.terrainY + 120;
+        // Player watches from the LEFT of the terrain (further out to avoid overlap)
+        this._playerWatchX = this.terrainX - 55;
+        this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.35;
+        // Opponent watches from the RIGHT of the terrain
+        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 55;
+        this._opponentWatchY = this.terrainY + 100;
 
         // Shared circle position (both players use the same throw circle)
         this._circleX = circleX;

@@ -52,7 +52,8 @@
       "sprite": "char_rene",
       "portrait": "portrait_rene",
       "palette": { "primary": "#6B8E4E", "secondary": "#D4A574", "accent": "#FFFFFF" },
-      "unlocked": true
+      "unlocked": false,
+      "hidden": true
     },
     {
       "id": "pointeur",
@@ -136,7 +137,8 @@
       "sprite": "char_fanny",
       "portrait": "portrait_fanny",
       "palette": { "primary": "#C44B3F", "secondary": "#F5E6D0", "accent": "#FFD700" },
-      "unlocked": true
+      "unlocked": false,
+      "hidden": true
     },
     {
       "id": "stratege",
@@ -178,7 +180,8 @@
       "sprite": "char_ricardo",
       "portrait": "portrait_ricardo",
       "palette": { "primary": "#9B7BB8", "secondary": "#F5E6D0", "accent": "#FFD700" },
-      "unlocked": true
+      "unlocked": false,
+      "hidden": true
     },
     {
       "id": "wildcard",
@@ -220,6 +223,37 @@
       "sprite": "char_thierry",
       "portrait": "portrait_thierry",
       "palette": { "primary": "#D4A574", "secondary": "#C44B3F", "accent": "#FFD700" },
+      "unlocked": false,
+      "hidden": true
+    },
+    {
+      "id": "la_choupe",
+      "name": "La Choupe",
+      "title": "Le Bourrin du Village",
+      "catchphrase": "Allez, on envoie du lourd !",
+      "description": "La Choupe ne connait qu'une technique : envoyer fort. Tres fort. Avec un bon coeur et zero finesse.",
+      "archetype": "la_choupe",
+      "stats": { "precision": 3, "puissance": 10, "effet": 2, "sang_froid": 7 },
+      "ai": { "personality": "brute", "angleDev": 15, "powerDev": 0.06, "shootProbability": 0.80, "loftPref": "tir", "targetsCocho": false },
+      "barks": {
+        "good_shot": ["ALLEZ !", "Ca c'est envoye !", "BOUM !"],
+        "bad_shot": ["Oups.", "C'etait pas prevu.", "La prochaine !"],
+        "opponent_good": ["Pas mal !", "Oh, joli !"],
+        "opponent_bad": ["Haha !", "Fallait taper plus fort !"],
+        "carreau": ["CARREAU DE BOURRIN !", "WOOOH !"],
+        "opponent_carreau": ["... Costaud.", "OK, respect."],
+        "taking_lead": ["On roule !", "La Choupe en tete !"],
+        "losing_badly": ["J'me chauffe !", "Attends voir..."],
+        "match_point": ["Allez, le dernier !", "ENVOIE !"],
+        "victory": ["La Choupe gagne TOUJOURS !", "Facile !"],
+        "defeat": ["Bien joue... J'reviendrai !", "Pas grave !"],
+        "pre_match": ["Allez, on envoie du lourd !", "Pret ? Moi oui !"],
+        "post_match_win": ["Trop fort ! Comme d'hab !", "La puissance, y'a que ca !"],
+        "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !"]
+      },
+      "sprite": "char_la_choupe",
+      "portrait": "portrait_la_choupe",
+      "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
       "unlocked": true
     },
     {

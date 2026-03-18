@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW_HEAVY;
 
 /**
  * VS Intro Screen - "Player VS Opponent" split screen animation
@@ -181,12 +182,18 @@ export default class VSIntroScene extends Phaser.Scene {
         });
 
         // Skip on input
-        this.input.keyboard.on('keydown-SPACE', () => {
-            if (this._canSkip) this._startMatch();
-        });
-        this.input.keyboard.on('keydown-ENTER', () => {
-            if (this._canSkip) this._startMatch();
-        });
+        this._skipSpace = () => { if (this._canSkip) this._startMatch(); };
+        this._skipEnter = () => { if (this._canSkip) this._startMatch(); };
+        this.input.keyboard.on('keydown-SPACE', this._skipSpace);
+        this.input.keyboard.on('keydown-ENTER', this._skipEnter);
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.keyboard.off('keydown-SPACE', this._skipSpace);
+        this.input.keyboard.off('keydown-ENTER', this._skipEnter);
+        this.tweens.killAll();
     }
 
     _getSpriteKey(char) {

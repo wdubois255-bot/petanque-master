@@ -6,8 +6,9 @@ import {
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
 
 export default class AimingSystem {
     constructor(scene, engine, characterStats = null) {

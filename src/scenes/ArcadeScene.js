@@ -67,6 +67,8 @@ export default class ArcadeScene extends Phaser.Scene {
         const allRegularWon = this.wins >= totalMatches && !bossDefeated;
 
         this._buildProgressScreen(allRegularWon);
+
+        this.events.on('shutdown', this._shutdown, this);
     }
 
     _buildProgressScreen(allRegularWon) {
@@ -449,5 +451,10 @@ export default class ArcadeScene extends Phaser.Scene {
 
     _getSpriteKey(char) {
         return getCharSpriteKey(char);
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeAllListeners();
+        this.tweens.killAll();
     }
 }

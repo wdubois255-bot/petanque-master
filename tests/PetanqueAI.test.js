@@ -130,14 +130,14 @@ describe('Marcel (Pointeur) - Almost never shoots', () => {
     it('should prefer roulette on terre', () => {
         const engine = createMockEngine({ terrainType: 'terre', playerBalls: [] });
         const ai = new PetanqueAI(mockScene, engine, 'medium', null, MARCEL_DATA);
-        expect(ai._chooseLoft().id).toBe('roulette');
+        expect(ai._strategy._chooseLoft().id).toBe('roulette');
     });
 
     it('should switch to demi-portee on sable', () => {
         const engine = createMockEngine({ terrainType: 'sable', playerBalls: [] });
         engine.terrainType = 'sable';
         const ai = new PetanqueAI(mockScene, engine, 'medium', null, MARCEL_DATA);
-        expect(ai._chooseLoft().id).toBe('demi_portee');
+        expect(ai._strategy._chooseLoft().id).toBe('demi_portee');
     });
 
     it('should aim near cochonnet (tight offset)', () => {
@@ -234,15 +234,15 @@ describe('Ricardo (Stratege) - Utility-based decisions', () => {
         const engine = createMockEngine();
         engine.terrainType = 'terre';
         const aiTerre = new PetanqueAI(mockScene, engine, 'medium', null, RICARDO_DATA);
-        expect(aiTerre._chooseLoft().id).toBe('roulette');
+        expect(aiTerre._strategy._chooseLoft().id).toBe('roulette');
 
         engine.terrainType = 'herbe';
         const aiHerbe = new PetanqueAI(mockScene, engine, 'medium', null, RICARDO_DATA);
-        expect(aiHerbe._chooseLoft().id).toBe('demi_portee');
+        expect(aiHerbe._strategy._chooseLoft().id).toBe('demi_portee');
 
         engine.terrainType = 'sable';
         const aiSable = new PetanqueAI(mockScene, engine, 'medium', null, RICARDO_DATA);
-        expect(aiSable._chooseLoft().id).toBe('plombee');
+        expect(aiSable._strategy._chooseLoft().id).toBe('plombee');
     });
 
     it('should mix shooting and pointing based on utility', () => {

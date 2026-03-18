@@ -95,6 +95,17 @@ const CHAR_VISUALS = {
         eyeColor: 0x3A5A2A,
         expression: 'cool',
         accessories: ['chapeau'],
+    },
+    la_choupe: {
+        // La Choupe - Bourrin du village, costaud, cheveux courts foncés, débardeur marron
+        skinTone: 0xC8A078,
+        hairColor: 0x4A3020,
+        hairStyle: 'short',
+        shirtColor: 0x8B4513,
+        shirtStyle: 'tank',
+        eyeColor: 0x4A3A2A,
+        expression: 'fierce',
+        accessories: [],
     }
 };
 
@@ -404,8 +415,8 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    const archetypes = ['equilibre', 'pointeur', 'tireur', 'stratege', 'wildcard', 'boss', 'brute', 'magicien'];
-    const names = ['rene', 'marcel', 'fanny', 'ricardo', 'thierry', 'marius', 'ley', 'le_magicien'];
+    const archetypes = ['equilibre', 'pointeur', 'tireur', 'stratege', 'wildcard', 'boss', 'brute', 'magicien', 'la_choupe'];
+    const names = ['rene', 'marcel', 'fanny', 'ricardo', 'thierry', 'marius', 'ley', 'le_magicien', 'la_choupe'];
 
     for (let i = 0; i < archetypes.length; i++) {
         generatePortrait(scene, `portrait_${names[i]}`, archetypes[i]);

@@ -1,6 +1,7 @@
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS } from '../utils/Constants.js';
+import UIFactory from './UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
 
 export default class ScorePanel {
     constructor(scene, engine) {
@@ -182,19 +183,7 @@ export default class ScorePanel {
     }
 
     _showFloatingPoints(scoreTextObj, points, color) {
-        const x = scoreTextObj.x + 40;
-        const y = scoreTextObj.y + 10;
-        const floater = this.scene.add.text(x, y, `+${points}`, {
-            fontFamily: 'monospace', fontSize: '20px', color,
-            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setDepth(95).setAlpha(1);
-
-        this.scene.tweens.add({
-            targets: floater,
-            y: y - 40, alpha: 0,
-            duration: 1200, ease: 'Cubic.easeOut',
-            onComplete: () => floater.destroy()
-        });
+        UIFactory.showFloatingText(this.scene, scoreTextObj.x + 40, scoreTextObj.y + 10, `+${points}`, color, { depth: 95 });
     }
 
     _drawBallDots(e) {

@@ -1,5 +1,6 @@
 import Ball from './Ball.js';
 import Cochonnet from './Cochonnet.js';
+import EngineRenderer from './EngineRenderer.js';
 import {
     VICTORY_SCORE, BALL_COLORS,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
@@ -7,7 +8,13 @@ import {
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
     TERRAIN_HEIGHT,
     LOFT_DEMI_PORTEE, LOFT_TIR,
-    CARREAU_THRESHOLD
+    CARREAU_THRESHOLD,
+    HITSTOP_BOULE_MS, HITSTOP_CARREAU_MS,
+    SCORE_MENE_DELAY, GAME_OVER_REDIRECT_DELAY,
+    DUST_COUNT_ROULETTE, DUST_COUNT_DEMI, DUST_COUNT_PLOMBEE, DUST_COUNT_TIR,
+    MIN_IMPACT_SPEED,
+    COCHONNET_ROLL_MIN, COCHONNET_ROLL_MAX, COCHONNET_SAFE_MARGIN, COCHONNET_CLAMP_MARGIN,
+    BALL_CLAMP_MARGIN
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
@@ -79,6 +86,9 @@ export default class PetanqueEngine {
 
         // Dramatic zoom state
         this._zoomActive = false;
+
+        // Renderer: handles ALL visual effects (SRP separation)
+        this.renderer = new EngineRenderer(scene, this);
 
         // === MATCH STATS TRACKING ===
         this.matchStats = {
@@ -262,7 +272,7 @@ export default class PetanqueEngine {
         const targetY = cy + Math.sin(angle) * dist;
 
         // Clamp within terrain (with generous margin to avoid rolling out)
-        const margin = 35;
+        const margin = COCHONNET_CLAMP_MARGIN;
         const clampedX = Phaser.Math.Clamp(targetX, this.bounds.x + margin, this.bounds.x + this.bounds.w - margin);
         const clampedY = Phaser.Math.Clamp(targetY, this.bounds.y + margin, this.bounds.y + this.bounds.h - margin);
 
@@ -275,11 +285,11 @@ export default class PetanqueEngine {
         // But only if there's enough room — check distance to border in throw direction
         const throwDirX = Math.cos(angle);
         const throwDirY = Math.sin(angle);
-        const rollPct = 0.15 + Math.random() * 0.10; // 15-25%
+        const rollPct = COCHONNET_ROLL_MIN + Math.random() * (COCHONNET_ROLL_MAX - COCHONNET_ROLL_MIN);
         let targetRollDist = dist * rollPct;
 
         // Check remaining space in throw direction from landing point
-        const safeMargin = 15; // minimum pixels from border after roll
+        const safeMargin = COCHONNET_SAFE_MARGIN;
         let maxRollX = Infinity, maxRollY = Infinity;
         if (throwDirX < 0) maxRollX = (clampedX - this.bounds.x - safeMargin) / Math.abs(throwDirX);
         else if (throwDirX > 0) maxRollX = (this.bounds.x + this.bounds.w - safeMargin - clampedX) / throwDirX;
@@ -322,9 +332,8 @@ export default class PetanqueEngine {
         const rawTargetX = originX + Math.cos(angle) * landDist;
         const rawTargetY = originY + Math.sin(angle) * landDist;
 
-        const margin = 16;
-        const targetX = Phaser.Math.Clamp(rawTargetX, bounds.x + margin, bounds.x + bounds.w - margin);
-        const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + margin, bounds.y + bounds.h - margin);
+        const targetX = Phaser.Math.Clamp(rawTargetX, bounds.x + BALL_CLAMP_MARGIN, bounds.x + bounds.w - BALL_CLAMP_MARGIN);
+        const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + BALL_CLAMP_MARGIN, bounds.y + bounds.h - BALL_CLAMP_MARGIN);
 
         const perFrameFriction = FRICTION_BASE * frictionMult;
         const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * loftPreset.rollEfficiency);
@@ -492,7 +501,7 @@ export default class PetanqueEngine {
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
                             // Plombée/demi-portée with low roll: use landing direction as impulse
                             const landAngle = Math.atan2(targetY - startY, targetX - startX);
-                            const minSpeed = 2.0; // Minimum impact speed
+                            const minSpeed = MIN_IMPACT_SPEED;
                             rollVx = Math.cos(landAngle) * minSpeed;
                             rollVy = Math.sin(landAngle) * minSpeed;
                         }
@@ -507,18 +516,11 @@ export default class PetanqueEngine {
                 // Camera shake removed — fixed scene
 
                 if (isTir) {
-                    // Flash on tir impact
-                    const flash = this.scene.add.graphics().setDepth(60);
-                    flash.fillStyle(0xFFFFFF, 0.6);
-                    flash.fillCircle(targetX, targetY, ball.radius + 4);
-                    this.scene.tweens.add({
-                        targets: flash, alpha: 0, duration: 200,
-                        onComplete: () => flash.destroy()
-                    });
+                    this.renderer.flashTirImpact(targetX, targetY, ball.radius);
                 }
 
                 // Dust proportional to technique (more for plombee, less for roulette)
-                const dustCount = isRoulette ? 2 : isPlombee ? 10 : isTir ? 8 : 6;
+                const dustCount = isRoulette ? DUST_COUNT_ROULETTE : isPlombee ? DUST_COUNT_PLOMBEE : isTir ? DUST_COUNT_TIR : DUST_COUNT_DEMI;
                 sfxLanding(this.terrainType);
                 this._spawnDust(targetX, targetY, dustCount);
 
@@ -613,7 +615,7 @@ export default class PetanqueEngine {
         sfxScore();
         if (this.onScore) this.onScore(this.scores, winner, points);
 
-        this.scene.time.delayedCall(2500, () => {
+        this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
             if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
                 this.setState(STATES.GAME_OVER);
             } else {
@@ -644,7 +646,7 @@ export default class PetanqueEngine {
 
         if (this.onScore) this.onScore(this.scores, this.meneWinner, 0);
 
-        this.scene.time.delayedCall(2500, () => {
+        this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
             if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
                 this.setState(STATES.GAME_OVER);
             } else {
@@ -659,28 +661,13 @@ export default class PetanqueEngine {
         const isVictory = winner === 'player';
         const loser = isVictory ? 'opponent' : 'player';
         const isFanny = this.scores[loser] === 0;
-        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
         // SFX victory/defeat
         if (isVictory) sfxVictory(); else sfxDefeat();
 
-        // Fanny: 13-0 — discreet but memorable
-        if (isFanny) {
-            const fannyTxt = this.scene.add.text(
-                this.scene.scale.width / 2, this.scene.scale.height / 2 + 10,
-                'FANNY !', {
-                    fontFamily: 'monospace', fontSize: '18px', color: '#C44B3F',
-                    shadow
-                }
-            ).setOrigin(0.5).setDepth(102).setAlpha(0);
-            this.scene.tweens.add({
-                targets: fannyTxt, alpha: 1, duration: 800, delay: 600, ease: 'Cubic.easeOut'
-            });
-        }
-
         // If arcade/versus mode: redirect to ResultScene
         if (this.scene.arcadeState || this.scene.playerCharacter) {
-            this.scene.time.delayedCall(1500, () => {
+            this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, () => {
                 this.scene.scene.start('ResultScene', {
                     won: isVictory,
                     scores: { ...this.scores },
@@ -705,41 +692,10 @@ export default class PetanqueEngine {
             return;
         }
 
-        // Overlay sombre
-        const overlay = this.scene.add.graphics().setDepth(90);
-        overlay.fillStyle(0x3A2E28, 0.7);
-        overlay.fillRect(0, 0, this.scene.scale.width, this.scene.scale.height);
+        // Fallback overlay (no ResultScene redirect)
+        this.renderer.showGameOverOverlay(isVictory, this.scores, isFanny);
 
-        // Title
-        const titleMsg = isVictory ? 'VICTOIRE !' : 'DEFAITE...';
-        this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 - 80,
-            titleMsg,
-            {
-                fontFamily: 'monospace', fontSize: '40px',
-                color: isVictory ? '#FFD700' : '#C44B3F',
-                align: 'center',
-                shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-            }
-        ).setOrigin(0.5).setDepth(101);
-
-        // Subtitle
-        const subMsg = isVictory ? 'Vous etes le Petanque Master !' : 'L\'adversaire l\'emporte.';
-        this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 - 40,
-            subMsg,
-            { fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', align: 'center', shadow }
-        ).setOrigin(0.5).setDepth(101);
-
-        // Score final
-        const scoreText = `${this.scores.player} - ${this.scores.opponent}`;
-        this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 + 10,
-            scoreText,
-            { fontFamily: 'monospace', fontSize: '36px', color: '#F5E6D0', align: 'center', shadow }
-        ).setOrigin(0.5).setDepth(101);
-
-        // Bouton principal
+        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
         const hasReturnScene = !!this.scene.returnScene;
         const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
 
@@ -763,14 +719,12 @@ export default class PetanqueEngine {
                     && returnScene.scene.settings.status === Phaser.Scenes.SLEEPING;
 
                 if (isSleeping) {
-                    // Return scene is sleeping (launched from overworld) - wake it
                     this.scene.scene.stop();
                     this.scene.scene.wake(this.scene.returnScene);
                     if (returnScene.returnFromBattle) {
                         returnScene.returnFromBattle({ won: isVictory, opponentId: this.scene.opponentId });
                     }
                 } else {
-                    // Return scene is not active (quick play) - start it fresh
                     this.scene.scene.start(this.scene.returnScene);
                 }
             } else {
@@ -861,7 +815,7 @@ export default class PetanqueEngine {
                             } else {
                                 sfxBouleBoule();
                                 // Hit stop: brief freeze on boule-boule collision
-                                this._hitstopUntil = Math.max(this._hitstopUntil, Date.now() + 60);
+                                this._hitstopUntil = Math.max(this._hitstopUntil, Date.now() + HITSTOP_BOULE_MS);
                             }
                             const mx = (allBodies[i].x + allBodies[j].x) / 2;
                             const my = (allBodies[i].y + allBodies[j].y) / 2;
@@ -955,41 +909,11 @@ export default class PetanqueEngine {
         }
 
         // Hitstop
-        this._hitstopUntil = Date.now() + 100;
+        this._hitstopUntil = Date.now() + HITSTOP_CARREAU_MS;
 
-        // SFX carreau
+        // SFX + visuals
         sfxCarreau();
-
-        // Camera shake/flash removed — fixed scene
-
-        // "CARREAU !" text
-        const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {
-            fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
-            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setDepth(65);
-
-        this.scene.tweens.add({
-            targets: txt,
-            y: txt.y - 50, alpha: 0, scaleX: 1.5, scaleY: 1.5,
-            duration: 1500, ease: 'Cubic.easeOut',
-            onComplete: () => txt.destroy()
-        });
-
-        // Radial particles (gold sparks)
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            const spark = this.scene.add.graphics().setDepth(64);
-            spark.fillStyle(0xFFD700, 1);
-            spark.fillCircle(0, 0, 4);
-            spark.setPosition(ball.x, ball.y);
-            this.scene.tweens.add({
-                targets: spark,
-                x: ball.x + Math.cos(angle) * 36,
-                y: ball.y + Math.sin(angle) * 36,
-                alpha: 0, duration: 500,
-                onComplete: () => spark.destroy()
-            });
-        }
+        this.renderer.celebrateCarreau(ball);
     }
 
     // --- SHOT RESULT DETECTION (discreet feedback) ---
@@ -1051,74 +975,11 @@ export default class PetanqueEngine {
     }
 
     _showShotLabel(ball, text, color, fontSize) {
-        const txt = this.scene.add.text(ball.x, ball.y - 20, text, {
-            fontFamily: 'monospace', fontSize: `${fontSize}px`, color,
-            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setDepth(62).setAlpha(0.85);
-
-        this.scene.tweens.add({
-            targets: txt,
-            y: txt.y - 25, alpha: 0,
-            duration: 1200, ease: 'Cubic.easeOut',
-            onComplete: () => txt.destroy()
-        });
+        this.renderer.showShotLabel(ball, text, color, fontSize);
     }
 
     _updateBestIndicator() {
-        if (!this._bestGfx) {
-            this._bestGfx = this.scene.add.graphics().setDepth(10);
-            // Pulse tween
-            this.scene.tweens.add({
-                targets: this._bestPulse,
-                t: 1, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-            });
-        }
-        this._bestGfx.clear();
-
-        if (!this.cochonnet || !this.cochonnet.isAlive) return;
-        if (this.balls.filter(b => b.isAlive).length === 0) return;
-
-        let bestBall = null;
-        let bestDist = Infinity;
-        for (const ball of this.balls) {
-            if (!ball.isAlive) continue;
-            const d = ball.distanceTo(this.cochonnet);
-            if (d < bestDist) {
-                bestDist = d;
-                bestBall = ball;
-            }
-        }
-
-        if (bestBall) {
-            const color = bestBall.team === 'player' ? 0x44CC44 : 0xCC4444;
-            const t = this._bestPulse.t;
-            const alpha = 0.4 + t * 0.4;
-            const radius = bestBall.radius + 3 + t * 2;
-
-            this._bestGfx.lineStyle(1.5, color, alpha);
-            this._bestGfx.strokeCircle(bestBall.x, bestBall.y, radius);
-
-            // Detect point change and flash
-            if (bestBall.id !== this._lastBestBallId) {
-                if (this._lastBestBallId !== null) {
-                    // Point changed! Flash ring animation
-                    const flash = this.scene.add.graphics().setDepth(11);
-                    const flashColor = color;
-                    const fx = bestBall.x, fy = bestBall.y;
-                    const anim = { s: 1 };
-                    this.scene.tweens.add({
-                        targets: anim, s: 2.5, duration: 350, ease: 'Cubic.easeOut',
-                        onUpdate: () => {
-                            flash.clear();
-                            flash.lineStyle(2, flashColor, 0.8 * (1 - (anim.s - 1) / 1.5));
-                            flash.strokeCircle(fx, fy, (bestBall.radius + 3) * anim.s);
-                        },
-                        onComplete: () => flash.destroy()
-                    });
-                }
-                this._lastBestBallId = bestBall.id;
-            }
-        }
+        this.renderer.updateBestIndicator(this.balls, this.cochonnet);
     }
 
     _triggerAI() {
@@ -1133,136 +994,27 @@ export default class PetanqueEngine {
     }
 
     _showAimHint() {
-        if (this._aimHintShown) return;
-        this._aimHintShown = true;
-
-        const hint = this.scene.add.text(
-            this.scene.scale.width / 2,
-            this.scene.scale.height - 28,
-            'Glissez et relachez pour viser',
-            {
-                fontFamily: 'monospace', fontSize: '18px',
-                color: '#F5E6D0', align: 'center',
-                backgroundColor: '#3A2E28', padding: { x: 12, y: 6 },
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-            }
-        ).setOrigin(0.5).setDepth(100);
-
-        this.scene.time.delayedCall(5000, () => {
-            this.scene.tweens.add({
-                targets: hint, alpha: 0, duration: 600,
-                onComplete: () => hint.destroy()
-            });
-        });
+        this.renderer.showAimHint();
     }
 
     _showMessage(text, persistent = false) {
-        if (this._msgText) this._msgText.destroy();
-
-        this._msgText = this.scene.add.text(
-            this.scene.scale.width / 2,
-            24,
-            text,
-            {
-                fontFamily: 'monospace',
-                fontSize: '20px',
-                color: '#F5E6D0',
-                align: 'center',
-                backgroundColor: '#3A2E28',
-                padding: { x: 12, y: 6 },
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-            }
-        ).setOrigin(0.5, 0).setDepth(100);
-
-        if (!persistent) {
-            this.scene.time.delayedCall(2000, () => {
-                if (this._msgText) this._msgText.destroy();
-                this._msgText = null;
-            });
-        }
+        this.renderer.showMessage(text, persistent);
     }
-    // --- DUST PARTICLES (landing) ---
+    // --- VISUAL EFFECTS (delegated to EngineRenderer) ---
     _spawnDust(x, y, count = 6) {
-        const terrainColors = {
-            terre: [0xC4854A, 0xA87040, 0xD4955A],
-            herbe: [0x6B8E4E, 0x5E8A44, 0x7BA65E],
-            sable: [0xE8D5B7, 0xD4C0A0, 0xF0E0C8],
-            dalles: [0x9E9E8E, 0x808070, 0xB0A090]
-        };
-        const colors = terrainColors[this.terrainType] || terrainColors.terre;
-
-        for (let i = 0; i < count; i++) {
-            const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
-            const dist = 8 + Math.random() * 16;
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const size = 2 + Math.random() * 3;
-
-            const p = this.scene.add.graphics().setDepth(8);
-            p.fillStyle(color, 0.7);
-            p.fillCircle(0, 0, size);
-            p.setPosition(x, y);
-
-            this.scene.tweens.add({
-                targets: p,
-                x: x + Math.cos(angle) * dist,
-                y: y + Math.sin(angle) * dist - 8,
-                alpha: 0,
-                duration: 300 + Math.random() * 200,
-                ease: 'Quad.easeOut',
-                onComplete: () => p.destroy()
-            });
-        }
+        this.renderer.spawnDust(x, y, count, this.terrainType);
     }
 
-    // --- COLLISION SPARKS ---
     _spawnCollisionSparks(x, y) {
-        for (let i = 0; i < 5; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 6 + Math.random() * 12;
-            const spark = this.scene.add.graphics().setDepth(55);
-            spark.fillStyle(0xFFFFFF, 0.8);
-            spark.fillCircle(0, 0, 1.5);
-            spark.setPosition(x, y);
-
-            this.scene.tweens.add({
-                targets: spark,
-                x: x + Math.cos(angle) * dist,
-                y: y + Math.sin(angle) * dist,
-                alpha: 0,
-                duration: 200,
-                onComplete: () => spark.destroy()
-            });
-        }
+        this.renderer.spawnCollisionSparks(x, y);
     }
 
-    // --- ROLLING TRAIL PARTICLES ---
     _spawnRollTrail(ball) {
-        const color = this.terrainType === 'sable' ? 0xE8D5B7
-            : this.terrainType === 'herbe' ? 0x6B8E4E
-            : this.terrainType === 'dalles' ? 0x9E9E8E
-            : 0xC4854A;
-
-        const p = this.scene.add.graphics().setDepth(3);
-        p.fillStyle(color, 0.3);
-        p.fillCircle(0, 0, 2);
-        p.setPosition(ball.x, ball.y);
-
-        this.scene.tweens.add({
-            targets: p,
-            alpha: 0,
-            duration: 400,
-            onComplete: () => p.destroy()
-        });
+        this.renderer.spawnRollTrail(ball, this.terrainType);
     }
 
-    // --- IMPACT TRACES on terrain ---
     _drawImpactTrace(x, y, radius) {
-        if (!this.scene.impactLayer) return;
-        const crater = this.scene.add.graphics();
-        crater.fillStyle(0x000000, 0.15);
-        crater.fillCircle(0, 0, radius + 2);
-        this.scene.impactLayer.draw(crater, x - this.bounds.x, y - this.bounds.y);
-        crater.destroy();
+        this.renderer.drawImpactTrace(x, y, radius, this.bounds);
     }
 
     // --- BOULE STATS from boules.json ---

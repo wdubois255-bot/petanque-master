@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, PIXELS_TO_METERS } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
 
 export default class ResultScene extends Phaser.Scene {
     constructor() {
@@ -98,11 +99,9 @@ export default class ResultScene extends Phaser.Scene {
         const panelW = 340;
         const panelH = 130;
 
-        const panel = this.add.graphics();
-        panel.fillStyle(0x3A2E28, 0.85);
-        panel.fillRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
-        panel.lineStyle(1, 0xD4A574, 0.3);
-        panel.strokeRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
+        const panel = UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
+            fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
+        });
 
         const ms = this.matchStats;
         const bestDist = ms.bestBallDist && ms.bestBallDist < Infinity
@@ -186,6 +185,13 @@ export default class ResultScene extends Phaser.Scene {
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeAllListeners();
+        this.tweens.killAll();
     }
 
     // === STAR RATING ===

@@ -89,7 +89,17 @@ export default class IntroScene extends Phaser.Scene {
         this.enterKey = this.input.keyboard.addKey('ENTER');
         this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.input.on('pointerdown', () => this._advance());
+        this._onPointerDown = () => this._advance();
+        this.input.on('pointerdown', this._onPointerDown);
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.off('pointerdown', this._onPointerDown);
+        this.input.keyboard.removeKey('ENTER');
+        this.input.keyboard.removeKey('SPACE');
+        this.tweens.killAll();
     }
 
     _showDialogue() {

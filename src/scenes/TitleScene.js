@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
-const SHADOW_HEAVY = { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
+const SHADOW_HEAVY = UIFactory.SHADOW_HEAVY;
 
 export default class TitleScene extends Phaser.Scene {
     constructor() {
@@ -30,13 +31,24 @@ export default class TitleScene extends Phaser.Scene {
         this._createVersionTag();
         this._playIntroSequence();
 
-        this.events.on('shutdown', () => stopMusic());
-
         // Keyboard
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enterKey = this.input.keyboard.addKey('ENTER');
         this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.escKey = this.input.keyboard.addKey('ESC');
+
+        // Cleanup on scene shutdown
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        stopMusic();
+        this.input.keyboard.removeKey('ENTER');
+        this.input.keyboard.removeKey('SPACE');
+        this.input.keyboard.removeKey('ESC');
+        this._clearMenu();
+        if (this._pressStartTween) this._pressStartTween.destroy();
+        this.tweens.killAll();
     }
 
     // ================================================================

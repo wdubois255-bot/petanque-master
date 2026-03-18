@@ -112,6 +112,38 @@ export const AI_MARIUS = {
     loftPref: 'adaptatif', targetsCocho: true
 };
 
+// Petanque - timing & feedback
+export const HITSTOP_BOULE_MS = 60;
+export const HITSTOP_CARREAU_MS = 100;
+export const MESSAGE_DURATION = 2000;
+export const SCORE_MENE_DELAY = 2500;
+export const GAME_OVER_REDIRECT_DELAY = 1500;
+export const AIM_HINT_DURATION = 5000;
+export const BARK_DURATION = 2000;
+export const BARK_PROBABILITY = 0.4;
+export const DUST_COUNT_ROULETTE = 2;
+export const DUST_COUNT_DEMI = 6;
+export const DUST_COUNT_PLOMBEE = 10;
+export const DUST_COUNT_TIR = 8;
+export const WALL_RESTITUTION = 0.7;
+export const COLLISION_SPARK_COUNT = 5;
+export const CARREAU_SPARK_COUNT = 8;
+export const CARREAU_SPARK_RADIUS = 36;
+
+// Petanque - throw animation
+export const MIN_IMPACT_SPEED = 2.0;
+export const COCHONNET_ROLL_MIN = 0.15;
+export const COCHONNET_ROLL_MAX = 0.25;
+export const COCHONNET_SAFE_MARGIN = 15;
+export const COCHONNET_CLAMP_MARGIN = 35;
+export const BALL_CLAMP_MARGIN = 16;
+
+// Petanque - character sprite
+export const CHAR_SPRITE_SCALE = 0.5;
+export const THROW_ANIM_CROUCH_DURATION = 250;
+export const THROW_ANIM_RELEASE_DURATION = 100;
+export const THROW_ANIM_RECOVERY_DURATION = 300;
+
 // Victoire
 export const VICTORY_SCORE = 13;
 
@@ -203,7 +235,8 @@ export const CHAR_SPRITE_MAP = {
     'wildcard': 'thierry_animated',
     'boss': 'marius_animated',
     'brute': 'ley_animated',
-    'magicien': 'le_magicien_animated'
+    'magicien': 'le_magicien_animated',
+    'la_choupe': 'la_choupe_animated'
 };
 
 export function getCharSpriteKey(char) {

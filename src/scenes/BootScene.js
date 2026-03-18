@@ -85,7 +85,8 @@ export default class BootScene extends Phaser.Scene {
         const charSprites = [
             'rene_animated', 'marcel_animated', 'fanny_animated',
             'ricardo_animated', 'thierry_animated', 'marius_animated',
-            'ley_animated', 'le_magicien_animated'
+            'ley_animated', 'le_magicien_animated',
+            'la_choupe_animated'
         ];
         for (const key of charSprites) {
             this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
@@ -159,7 +160,8 @@ export default class BootScene extends Phaser.Scene {
         const charSprites = [
             'rene_animated', 'marcel_animated', 'fanny_animated',
             'ricardo_animated', 'thierry_animated', 'marius_animated',
-            'ley_animated', 'le_magicien_animated'
+            'ley_animated', 'le_magicien_animated',
+            'la_choupe_animated'
         ];
         for (const key of charSprites) {
             if (this.textures.exists(key)) {

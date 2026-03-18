@@ -26,24 +26,48 @@
 ## ANALYSE DE MARCHÉ (mars 2026)
 
 ### Opportunité
-- **Zéro concurrent sérieux** en jeu de pétanque web/browser
-- "Power of Petanque" (Steam, 2024) = seul concurrent, ~20 reviews, payant, pas browser
+- **Zéro concurrent sérieux** en pétanque browser, mobile ou Steam
+- "Power of Petanque" (Steam, 2024) = seul concurrent, ~20 reviews, payant, magie/druidique
 - Le créneau "sport casual compétitif à personnages" (Windjammers, Lethal League) a prouvé son potentiel
-
-### Plateformes cibles
-| Plateforme | Audience | Modèle |
-|------------|----------|--------|
-| **Poki** | 100M joueurs/mois, 1B plays/mois | Revenue share sur ads, 100% sur trafic organique |
-| **CrazyGames** | 30M joueurs/mois | Revenue share, +50% bonus pour exclusivité 2 mois |
-| **itch.io** | Communauté indie | Pay-what-you-want + devlogs |
-| **Newgrounds** | Communauté pixel art | Gratuit, ratings |
-| **GitHub Pages** | Trafic direct | 100% contrôle |
-
-### Tendances alignées
 - Pixel art = 35-50% des sorties indie, marché retro $3.8B → $8.5B d'ici 2033
-- Palette chaude provençale = pile dans la tendance 2026
-- Format "fighting game × sport" = unique et partageable (TikTok/Reels)
-- HTML5 games en plein renouveau via portails (Poki, CrazyGames)
+
+### Modèle économique : Démo gratuite → Jeu payant
+
+```
+GRATUIT (acquisition)              PAYANT (revenue)
+─────────────────────              ─────────────────
+Browser (itch.io, site, Newgrounds) Steam $9.99 (Electron)
+  2-3 persos, 1-2 terrains     →   itch.io $7.99 (download PWYW)
+  Quick Play uniquement             Mobile gratuit + IAP/ads
+  Pas de progression                Contenu complet
+  Lien "Wishlist on Steam!"        Arcade, Versus, Online, Unlocks
+```
+
+### Plateformes
+| Plateforme | Modèle | Rôle |
+|------------|--------|------|
+| **Steam** | Payant $9.99 (Electron) | Revenue principale |
+| **Mobile iOS/Android** | Freemium (Capacitor) — ads + IAP $3.99 "Remove Ads" | Volume + revenue secondaire |
+| **itch.io** (browser) | Démo gratuite | Acquisition, funnel Steam |
+| **itch.io** (download) | Payant $7.99 PWYW | Alternative DRM-free |
+| **Newgrounds** | Démo gratuite | Communauté pixel art |
+| **GitHub Pages** | Démo gratuite | Portfolio, démo directe |
+
+### Plateformes exclues (pour l'instant)
+- **Poki, CrazyGames** : modèle 100% ads, pas compatible avec jeu payant. Reconsidérer plus tard si besoin d'acquisition massive.
+
+### Budget prévu
+- Steam Direct : $100
+- Marketing (paid social, trailer) : $2,000-$5,000
+- Apple Developer : $99/an (pour iOS)
+- Google Play : $25 (one-time)
+
+### Revenue réaliste
+| Scénario | Steam | Mobile/an | Total |
+|----------|-------|-----------|-------|
+| Pessimiste | $1K-$5K | $60-$600 | ~$2K-$6K |
+| **Réaliste** | **$10K-$50K** | **$1K-$6K** | **$12K-$56K** |
+| Optimiste | $50K-$200K | $12K-$60K | $60K-$260K |
 
 ---
 
@@ -58,8 +82,12 @@
 | Tiles | 32x32 partout |
 | Sprites persos | 64x64 spritesheets (PixelLab → nearest-neighbor) |
 | Audio | Phaser built-in + ElevenLabs MCP |
-| Deploy | GitHub Pages (GitHub Actions CI/CD) |
-| Sauvegarde | localStorage JSON |
+| Desktop wrapper | **Electron** (Steam overlay OK, steamworks.js) |
+| Mobile wrapper | **Capacitor** (tutoriel officiel Phaser) |
+| Deploy browser | GitHub Pages + itch.io (démo) |
+| Deploy Steam | Electron → Steamworks |
+| Deploy mobile | Capacitor → App Store + Google Play |
+| Sauvegarde | localStorage JSON (+ Steam Cloud en Phase B) |
 
 ---
 
@@ -122,15 +150,22 @@ Les textures sont générées mais pas encore utilisées par le code.
 - [ ] Skip possible à tout moment
 - [ ] Ne plus afficher après la première partie
 
-#### A.7 — Préparation distribution (3h)
-- [ ] Page itch.io : screenshots, description, tags (petanque, pixel-art, competitive, french)
-- [ ] Intégration SDK Poki (GameDistributionSDK) — ads entre les matchs (natural break points)
-- [ ] Intégration SDK CrazyGames (alternative)
+#### A.7 — Préparation distribution (5h)
+- [ ] **Page Steam** "Coming Soon" : screenshots, description, tags, capsule image
+  - Tags : Sports, Casual, Local Multiplayer, Pixel Art, Competitive, Arcade, Retro, Funny
+  - Trailer court (30-60s) montrant gameplay + personnages + terrains
+  - Commencer à accumuler des wishlists dès maintenant
+- [ ] **Page itch.io** : screenshots, description, tags (petanque, pixel-art, competitive, french)
+  - Version browser jouable (démo : 2-3 persos, 1-2 terrains, Quick Play)
+  - Lien "Wishlist on Steam" visible dans le jeu
+- [ ] **Newgrounds** : poster la démo browser
 - [ ] Build optimisé : tree-shaking, compression assets, lazy loading par scène
 - [ ] Open Graph meta tags (preview quand partagé sur les réseaux)
-- [ ] Soumettre à Poki + CrazyGames (processus de review)
+- [ ] Créer un Discord communautaire
+- [ ] S'inscrire auto-entrepreneur (gratuit, immédiat)
+- [ ] S'inscrire au prochain Steam Next Fest (juin ou octobre 2026)
 
-**Livrable Phase A** : jeu publié sur itch.io, soumis à Poki et CrazyGames. Jouable desktop + mobile.
+**Livrable Phase A** : démo publiée sur itch.io + Newgrounds, page Steam avec wishlists, Discord créé. Jouable desktop + mobile.
 
 ---
 
@@ -177,7 +212,31 @@ Les textures sont générées mais pas encore utilisées par le code.
 - [ ] Cohérence de style entre les 6 persos (PixelLab bitforge avec style_image)
 - [ ] Optionnel : arm swing plus prononcé
 
-**Livrable Phase B** : jeu avec boucle de rétention (progression, unlocks, daily), roster élargi.
+#### B.7 — Wrapper Electron + Steam (4h)
+- [ ] Setup Electron wrapper (electron-builder)
+- [ ] Intégrer steamworks.js (achievements, overlay, cloud saves)
+- [ ] Fix Steam overlay (in-process-gpu + transparent canvas redraw)
+- [ ] Build multi-plateforme : Windows, Mac, Linux
+- [ ] CI/CD GitHub Actions pour builds automatiques
+- [ ] Tester achievements, overlay, cloud saves
+
+#### B.8 — Wrapper Capacitor + Mobile (8h)
+- [ ] Intégrer Capacitor (`@capacitor/core`, `@capacitor/cli`)
+- [ ] Optimisation touch : safe areas, no-bounce, 44px touch targets
+- [ ] Intégrer AdMob (rewarded video + interstitials entre matchs)
+- [ ] IAP : "Remove Ads" $3.99, boules cosmétiques $0.99-$2.99
+- [ ] Splash screen, app icon, status bar natifs
+- [ ] Tester sur vrais appareils iOS + Android
+- [ ] Soumettre App Store + Google Play
+
+#### B.9 — Lancement Steam + Mobile (3h)
+- [ ] Upload build Steam via Steamworks
+- [ ] Configurer pricing ($9.99) + regional pricing (défauts Steam)
+- [ ] Rédiger Steam devlog d'annonce
+- [ ] Coordonner lancement Steam + itch.io download ($7.99) + mobile
+- [ ] Campagne clips courts (TikTok/Reels/Shorts, 5-7 clips semaine du lancement)
+
+**Livrable Phase B** : jeu LANCÉ sur Steam ($9.99) + mobile (freemium) + itch.io ($7.99). Progression, unlocks, daily challenge, roster élargi.
 
 ---
 
@@ -235,40 +294,64 @@ Les textures sont générées mais pas encore utilisées par le code.
 
 ## STRATÉGIE DE LANCEMENT
 
-### Étape 1 — Soft Launch (dès fin Phase A)
-1. Publier sur **itch.io** (gratuit, devlog, communauté)
-2. Poster sur **r/WebGames**, **r/IndieGaming**, **r/PixelArt**
-3. Thread Twitter/X avec GIFs de gameplay
+### Phase A — Démo + Wishlists (dès maintenant)
+1. Créer page Steam "Coming Soon" → accumuler wishlists
+2. Publier démo browser sur **itch.io** + **Newgrounds**
+3. Poster sur **r/WebGames**, **r/IndieGaming**, **r/PixelArt**
+4. Créer Discord communautaire
+5. Commencer clips courts (TikTok/Reels, 2-3/semaine)
 
-### Étape 2 — Portails (1-2 semaines après)
-1. Soumettre à **Poki** (review ~1-2 semaines)
-2. Soumettre à **CrazyGames** (considérer exclusivité 2 mois pour +50% bonus)
-3. Poster sur **Newgrounds** (communauté pixel art)
+### Phase A → B — Steam Next Fest (juin ou octobre 2026)
+1. Participer avec une démo Steam jouable
+2. Objectif : 2,000-10,000 wishlists pendant le festival
+3. Amplifier les meilleurs clips avec budget paid ($200-500)
 
-### Étape 3 — Contenu social (continu)
+### Phase B — Lancement multi-plateforme
+1. Lancer Steam ($9.99) + itch.io download ($7.99) + mobile (freemium)
+2. Timing : 2-3 semaines APRÈS une grosse solde Steam
+3. Campagne : 5-7 clips/semaine, outreach streamers/créateurs niche
+4. Budget marketing : $2,000-$3,000 (paid social + potentiel freelance trailer)
+
+### Contenu social (continu)
 1. 3-5 clips courts/semaine (TikTok, YouTube Shorts, Reels)
 2. Moments dramatiques : carreaux, slow-mo, réactions IA
 3. "Did you know pétanque?" éducatif + gameplay
-4. Behind-the-scenes pixel art process
-
-### Étape 4 — Itérer avec les joueurs
-1. Analyser les retours itch.io et portails
-2. Prioriser Phase B selon les demandes les plus fréquentes
-3. A/B test monétisation (rewarded ads vs interstitials)
+4. Behind-the-scenes pixel art process / devlogs
 
 ---
 
-## MONÉTISATION RECOMMANDÉE
+## MONÉTISATION
 
-| Modèle | Où | Impact joueur |
-|--------|----|---------------|
-| **Rewarded video ads** | Retry arcade, unlock cosmétique | Faible (opt-in) |
-| **Interstitial ads** | Entre les matchs (pause naturelle) | Moyen |
-| **Revenue share portails** | Poki, CrazyGames | Transparent |
-| **Pay-what-you-want** | itch.io | Aucun |
-| Cosmetic IAP (Phase C) | Version directe | Faible |
+| Plateforme | Modèle | Prix |
+|------------|--------|------|
+| **Steam** | Payant | $9.99 |
+| **itch.io download** | Payant PWYW | $7.99 minimum |
+| **itch.io browser** | Gratuit (démo) | $0 |
+| **Mobile** | Freemium | Gratuit + ads + IAP |
+| Mobile IAP | "Remove Ads" | $3.99 |
+| Mobile IAP | Boules cosmétiques | $0.99-$2.99 |
+| Mobile ads | Rewarded video | Entre les matchs |
 
-**Règle** : jamais de pub pendant un match. Uniquement aux pauses naturelles.
+**Règles** :
+- Jamais de pub PENDANT un match
+- Jamais de pay-to-win (intégrité compétitive)
+- Mobile : interstitials max 1 toutes les 2-3 parties
+
+---
+
+## LÉGAL (FRANCE)
+
+| Aspect | Décision |
+|--------|----------|
+| Structure | Auto-entrepreneur (gratuit, immédiat) |
+| Charges | ~23% du CA (21.2% sociales + 1.7% IR) |
+| TVA | Franchise < 37,500€/an. Steam/Apple/Google gèrent la TVA |
+| PEGI | Gratuit via IARC (Steam/Apple/Google) |
+| RGPD | Privacy policy. Minimal si localStorage seul |
+| Marque | INPI 190€ (à faire quand prêt) |
+| Assets IA | Vérifier CGU PixelLab/ElevenLabs. Documenter retouches manuelles |
+
+Détails complets : `research/32_strategie_commerciale_complete.md`
 
 ---
 
@@ -282,7 +365,8 @@ Les textures sont générées mais pas encore utilisées par le code.
 | STORY.md | Histoire mode aventure (réservé Phase D) |
 | INFRA_RESEARCH.md | Architecture backend pour Phase C |
 | LORE_PETANQUE.md | Légendes et histoire vraie de la pétanque |
-| research/ | 17 fichiers de recherche technique |
+| research/32_strategie_commerciale_complete.md | **Recherche commerciale complète** |
+| research/ | 32+ fichiers de recherche technique |
 
 ---
 
@@ -290,11 +374,15 @@ Les textures sont générées mais pas encore utilisées par le code.
 
 ```
 ÉTAT ACTUEL : Jeu jouable, 6 persos, 5 terrains, arcade + quick play
-MARCHÉ : Zéro concurrent browser. Créneau grand ouvert.
-PRIORITÉ : Polish → Ship → Itérer avec retours joueurs
+MARCHÉ : Zéro concurrent. Créneau grand ouvert.
+MODÈLE : Démo gratuite browser → Payant Steam $9.99 + Mobile freemium
 
-Phase A (Polish & Ship)     ~20h → Release itch.io + Poki + CrazyGames
-Phase B (Rétention)         ~25h → Progression, unlocks, daily, roster élargi
+Phase A (Polish + Démo)     ~20h → Démo itch.io/Newgrounds, page Steam, wishlists
+Phase B (Contenu + Launch)  ~40h → Steam $9.99, mobile, progression, roster élargi
 Phase C (Online)            ~30h → Multiplayer async, leaderboards, viralité
 Phase D (Aventure)          ~40h → Mode histoire (si traction le justifie)
+
+BUDGET : ~$2,500-$5,000 (Steam + marketing + stores)
+REVENUE RÉALISTE : $12K-$56K (Steam + mobile combinés)
+LÉGAL : Auto-entrepreneur France, ~23% charges, TVA gérée par plateformes
 ```

@@ -1,0 +1,223 @@
+import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
+
+/**
+ * UIFactory — centralized UI component creation for Petanque Master.
+ * Eliminates ~400 lines of duplicated panel/button/text code across scenes.
+ *
+ * All methods are static — no instance needed.
+ */
+export default class UIFactory {
+
+    // ================================================================
+    // TEXT STYLES (reusable presets)
+    // ================================================================
+
+    static SHADOW = SHADOW_TEXT;
+    static SHADOW_HEAVY = SHADOW_HEAVY;
+
+    static textStyle(fontSize = '14px', color = CSS.CREME, options = {}) {
+        const style = {
+            fontFamily: 'monospace',
+            fontSize,
+            color,
+            shadow: options.heavyShadow ? SHADOW_HEAVY : SHADOW_TEXT
+        };
+        if (options.align) style.align = options.align;
+        if (options.wrapWidth) {
+            style.wordWrap = { width: options.wrapWidth };
+            style.lineSpacing = options.lineSpacing || 2;
+        }
+        if (options.backgroundColor) style.backgroundColor = options.backgroundColor;
+        if (options.padding) style.padding = options.padding;
+        return style;
+    }
+
+    // ================================================================
+    // TEXT CREATION
+    // ================================================================
+
+    static addText(scene, x, y, text, fontSize = '14px', color = CSS.CREME, options = {}) {
+        const style = UIFactory.textStyle(fontSize, color, options);
+        const t = scene.add.text(x, y, text, style);
+        if (options.origin !== undefined) {
+            t.setOrigin(options.origin);
+        } else {
+            t.setOrigin(options.originX ?? 0.5, options.originY ?? 0.5);
+        }
+        if (options.depth !== undefined) t.setDepth(options.depth);
+        if (options.alpha !== undefined) t.setAlpha(options.alpha);
+        return t;
+    }
+
+    static addTitle(scene, x, y, text, options = {}) {
+        return UIFactory.addText(scene, x, y, text, options.fontSize || '28px', CSS.OR, {
+            heavyShadow: true,
+            ...options
+        });
+    }
+
+    // ================================================================
+    // PANELS (rounded rect backgrounds)
+    // ================================================================
+
+    static drawPanel(graphics, x, y, w, h, options = {}) {
+        const {
+            fillColor = COLORS.OMBRE,
+            fillAlpha = 0.9,
+            strokeColor = COLORS.OCRE,
+            strokeAlpha = 0.5,
+            strokeWidth = 2,
+            radius = 8,
+            noStroke = false
+        } = options;
+
+        graphics.fillStyle(fillColor, fillAlpha);
+        graphics.fillRoundedRect(x, y, w, h, radius);
+
+        if (!noStroke) {
+            graphics.lineStyle(strokeWidth, strokeColor, strokeAlpha);
+            graphics.strokeRoundedRect(x, y, w, h, radius);
+        }
+    }
+
+    static createPanel(scene, x, y, w, h, options = {}) {
+        const gfx = scene.add.graphics();
+        if (options.depth !== undefined) gfx.setDepth(options.depth);
+        UIFactory.drawPanel(gfx, x, y, w, h, options);
+        return gfx;
+    }
+
+    // ================================================================
+    // MENU PILLS (selectable menu items)
+    // ================================================================
+
+    static createMenuPill(scene, x, y, w, h, label, options = {}) {
+        const {
+            selected = false,
+            radius = 8,
+            fontSize = '22px',
+            textColor = CSS.CREME,
+            selectedTextColor = CSS.OR,
+            depth = 0
+        } = options;
+
+        const pill = scene.add.graphics();
+        if (depth) pill.setDepth(depth);
+
+        if (selected) {
+            pill.fillStyle(0x5A4030, 0.85);
+            pill.fillRoundedRect(x - w / 2, y - h / 2, w, h, radius);
+            pill.lineStyle(2, COLORS.OR, 0.6);
+            pill.strokeRoundedRect(x - w / 2, y - h / 2, w, h, radius);
+        } else {
+            pill.fillStyle(COLORS.OMBRE, 0.75);
+            pill.fillRoundedRect(x - w / 2, y - h / 2, w, h, radius);
+            pill.lineStyle(1, COLORS.OCRE, 0.3);
+            pill.strokeRoundedRect(x - w / 2, y - h / 2, w, h, radius);
+        }
+
+        const txt = scene.add.text(x, y, label, {
+            fontFamily: 'monospace',
+            fontSize,
+            color: selected ? selectedTextColor : textColor,
+            align: 'center',
+            shadow: SHADOW_TEXT
+        }).setOrigin(0.5);
+        if (depth) txt.setDepth(depth + 1);
+
+        return { pill, txt };
+    }
+
+    // ================================================================
+    // STAT BARS
+    // ================================================================
+
+    static drawStatBar(graphics, x, y, width, height, value, maxValue, color, options = {}) {
+        const { bgColor = COLORS.OMBRE_DEEP, bgAlpha = 0.8, barAlpha = 0.85, radius = 3 } = options;
+
+        // Background
+        graphics.fillStyle(bgColor, bgAlpha);
+        graphics.fillRoundedRect(x, y, width, height, radius);
+
+        // Fill
+        const ratio = Math.max(0, Math.min(1, value / maxValue));
+        if (ratio > 0) {
+            graphics.fillStyle(color, barAlpha);
+            graphics.fillRoundedRect(x, y, width * ratio, height, radius);
+
+            // Highlight on top half
+            if (options.highlight !== false) {
+                graphics.fillStyle(0xFFFFFF, 0.15);
+                graphics.fillRoundedRect(x, y, width * ratio, height / 2, radius);
+            }
+        }
+    }
+
+    // ================================================================
+    // BUTTONS (interactive text with background)
+    // ================================================================
+
+    static createButton(scene, x, y, label, options = {}) {
+        const {
+            fontSize = '22px',
+            textColor = CSS.CREME,
+            bgColor = '#C44B3F',
+            padding = { x: 20, y: 10 },
+            depth = 0,
+            onDown = null,
+            onHover = null
+        } = options;
+
+        const btn = scene.add.text(x, y, label, {
+            fontFamily: 'monospace',
+            fontSize,
+            color: textColor,
+            backgroundColor: bgColor,
+            padding,
+            shadow: SHADOW_TEXT
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        if (depth) btn.setDepth(depth);
+        if (onDown) btn.on('pointerdown', onDown);
+        if (onHover) {
+            btn.on('pointerover', () => onHover(btn, true));
+            btn.on('pointerout', () => onHover(btn, false));
+        }
+
+        return btn;
+    }
+
+    // ================================================================
+    // CONTROLS HINT (bottom of screen)
+    // ================================================================
+
+    static addControlsHint(scene, text, options = {}) {
+        const { y, depth = 0 } = options;
+        const hintY = y ?? scene.scale.height - 16;
+        return UIFactory.addText(scene, scene.scale.width / 2, hintY, text, '12px', CSS.GRIS, {
+            depth
+        });
+    }
+
+    // ================================================================
+    // FLOATING TEXT (animated text that rises and fades)
+    // ================================================================
+
+    static showFloatingText(scene, x, y, text, color = CSS.OR, options = {}) {
+        const { fontSize = '20px', rise = 40, duration = 1200, depth = 95 } = options;
+
+        const floater = scene.add.text(x, y, text, {
+            fontFamily: 'monospace', fontSize, color,
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(depth);
+
+        scene.tweens.add({
+            targets: floater,
+            y: y - rise, alpha: 0,
+            duration, ease: 'Cubic.easeOut',
+            onComplete: () => floater.destroy()
+        });
+
+        return floater;
+    }
+}

@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
 
 /**
  * Character Selection Screen - Fighting game style
@@ -25,8 +26,10 @@ export default class CharSelectScene extends Phaser.Scene {
     create() {
         setSoundScene(this);
         const chars = this.cache.json.get('characters');
-        this.roster = chars.roster.filter(c => c.unlocked || this._isUnlocked(c.id));
-        this.allRoster = chars.roster;
+        // Filter out hidden characters (sprites not finished)
+        const visibleRoster = chars.roster.filter(c => !c.hidden);
+        this.roster = visibleRoster.filter(c => c.unlocked || this._isUnlocked(c.id));
+        this.allRoster = visibleRoster;
         this._selectedIndex = 0;
         this._confirmed = false;
         this._uiElements = [];
@@ -68,6 +71,15 @@ export default class CharSelectScene extends Phaser.Scene {
         this.escKey = this.input.keyboard.addKey('ESC');
 
         this._updateSelection();
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeKey('SPACE');
+        this.input.keyboard.removeKey('ENTER');
+        this.input.keyboard.removeKey('ESC');
+        this.tweens.killAll();
     }
 
     _isUnlocked(charId) {
@@ -298,7 +310,7 @@ export default class CharSelectScene extends Phaser.Scene {
             bar.num.setText(value.toString());
         }
 
-        // Update preview: portrait image or sprite fallback
+        // Update preview sprite (animated character, no portrait overlay)
         if (this._portraitImage) {
             this._portraitImage.destroy();
             this._portraitImage = null;
@@ -312,20 +324,8 @@ export default class CharSelectScene extends Phaser.Scene {
             this._previewShadow = null;
         }
 
-        // Try portrait first
-        const portraitKey = char.portrait || `portrait_${char.id}`;
         const spriteKey = this._getCharSpriteKey(char);
-        if (this.textures.exists(portraitKey)) {
-            this._portraitImage = this.add.image(GAME_WIDTH - 220, 365, portraitKey)
-                .setScale(0.7).setOrigin(0.5).setDepth(5);
-            // Entrance scale animation
-            this._portraitImage.setScale(0);
-            this.tweens.add({
-                targets: this._portraitImage,
-                scale: 0.7, duration: 250, ease: 'Back.easeOut'
-            });
-        } else if (this.textures.exists(spriteKey)) {
-            // Fallback to sprite
+        if (this.textures.exists(spriteKey)) {
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
             this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);

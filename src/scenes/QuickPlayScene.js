@@ -1,17 +1,14 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+const SHADOW = UIFactory.SHADOW;
 
 const CHAR_VALUES = [
-    { display: 'Rene', key: 'rene_animated', sprite: 'rene_animated', charId: 'equilibre' },
     { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'pointeur' },
-    { display: 'Fanny', key: 'fanny_animated', sprite: 'fanny_animated', charId: 'tireur' },
-    { display: 'Ricardo', key: 'ricardo_animated', sprite: 'ricardo_animated', charId: 'stratege' },
-    { display: 'Thierry', key: 'thierry_animated', sprite: 'thierry_animated', charId: 'wildcard' },
-    { display: 'Marius', key: 'marius_animated', sprite: 'marius_animated', charId: 'boss' },
     { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'brute' },
+    { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
     { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' }
 ];
 
@@ -189,6 +186,19 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         this._updateDisplay();
         this._updateInfoPanel();
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeKey('ENTER');
+        this.input.keyboard.removeKey('SPACE');
+        this.input.keyboard.removeKey('ESC');
+        this._infoLabels.forEach(l => l.destroy());
+        this._infoLabels = [];
+        if (this._boulePreview) { this._boulePreview.destroy(); this._boulePreview = null; }
+        if (this._charPreview) { this._charPreview.destroy(); this._charPreview = null; }
+        this.tweens.killAll();
     }
 
     _updateDisplay() {

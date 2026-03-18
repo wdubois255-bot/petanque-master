@@ -2,7 +2,7 @@ import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
-    RETRO_FRICTION_MULT
+    RETRO_FRICTION_MULT, WALL_RESTITUTION
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -196,7 +196,7 @@ export default class Ball {
         if (terrain?.walls && this._bounds) {
             const b = this._bounds;
             const r = this.radius;
-            const wallRestitution = 0.7; // lose 30% speed on wall bounce
+            const wallRestitution = WALL_RESTITUTION;
             if (this.x - r < b.x) {
                 this.x = b.x + r;
                 this.vx = Math.abs(this.vx) * wallRestitution;
@@ -294,7 +294,8 @@ export default class Ball {
         // Restitution basee sur physique reelle (acier COR ~0.62, bois/acier ~0.50)
         // Avec COR 0.62, un tir frontal entre masses egales transfere naturellement ~81%
         // de l'energie au contact → carreau naturel sans hack
-        const isBouleVsCochonnet = Math.abs(a.mass - b.mass) > 200;
+        // Boule mass ~700g, Cochonnet ~30g → difference > 200 = mixed collision
+        const isBouleVsCochonnet = Math.abs(a.mass - b.mass) > (BALL_MASS * 0.3);
         const restitution = isBouleVsCochonnet ? RESTITUTION_COCHONNET : RESTITUTION_BOULE;
 
         const totalMass = a.mass + b.mass;

@@ -19,10 +19,10 @@
   "matches": [
     {
       "round": 1,
-      "opponent": "equilibre",
+      "opponent": "la_choupe",
       "terrain": "village",
       "difficulty_label": "Facile",
-      "intro_text": "Premier match ! Montrez ce que vous valez."
+      "intro_text": "La Choupe envoie du lourd, mais vise mal. Profitez-en !"
     },
     {
       "round": 2,
@@ -33,24 +33,24 @@
     },
     {
       "round": 3,
-      "opponent": "tireur",
+      "opponent": "brute",
       "terrain": "parc",
       "difficulty_label": "Moyen",
-      "intro_text": "Fanny tire a vue. Protegez vos boules !"
+      "intro_text": "Ley frappe fort. Tres fort. Protegez vos boules !"
     },
     {
       "round": 4,
-      "opponent": "stratege",
+      "opponent": "magicien",
       "terrain": "colline",
       "difficulty_label": "Moyen+",
-      "intro_text": "Ricardo calcule tout. Et la pente change tout..."
+      "intro_text": "Le Magicien et ses trajectoires impossibles. Et la pente n'aide pas..."
     },
     {
       "round": 5,
-      "opponent": "wildcard",
+      "opponent": "pointeur",
       "terrain": "docks",
       "difficulty_label": "Difficile",
-      "intro_text": "Thierry est imprevisible. Les murs des Docks aussi."
+      "intro_text": "Marcel revient. Cette fois sur les Docks, avec les rebonds muraux."
     }
   ],
   "boss": {
