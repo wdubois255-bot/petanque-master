@@ -74,6 +74,13 @@ const OPTIONS = [
             { display: 'Moyen', key: 'medium' },
             { display: 'Difficile', key: 'hard' }
         ]
+    },
+    {
+        label: 'FORMAT',
+        values: [
+            { display: '3 Boules', key: 'tete_a_tete' },
+            { display: '1 Boule', key: 'une_boule' }
+        ]
     }
 ];
 
@@ -85,6 +92,7 @@ const ROW_BOULES = 3;
 const ROW_COCHONNET = 4;
 const ROW_TERRAIN = 5;
 const ROW_DIFF = 6;
+const ROW_FORMAT = 7;
 
 // Layout constants
 const LEFT_W = 500;       // Options column width
@@ -126,8 +134,8 @@ export default class QuickPlayScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Options (left column)
-        const startY = 86;
-        const rowH = 50;
+        const startY = 76;
+        const rowH = 46;
         this._optionTexts = [];
         this._valueTexts = [];
         this._arrowLeftTexts = [];
@@ -228,19 +236,19 @@ export default class QuickPlayScene extends Phaser.Scene {
 
             this._rowBgs[i].clear();
             this._rowBgs[i].fillStyle(isSelected ? 0x5A4A38 : 0x3A2E28, 0.7);
-            const y = 86 + i * 50;
+            const y = 76 + i * 46;
             this._rowBgs[i].fillRoundedRect(36, y - 14, LEFT_W - 56, 34, 6);
         }
 
         const jouerSelected = (this._selectedRow === OPTIONS.length);
         this._jouerBg.clear();
         this._jouerBg.fillStyle(jouerSelected ? 0x8B6B20 : 0x3A2E28, 0.8);
-        const jouerY = 86 + OPTIONS.length * 50 + 10;
+        const jouerY = 76 + OPTIONS.length * 46 + 10;
         this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
         this._jouerText.setColor(jouerSelected ? '#FFFFFF' : '#FFD700');
 
         if (this._selectedRow < OPTIONS.length) {
-            this._cursor.setPosition(42, 86 + this._selectedRow * 50);
+            this._cursor.setPosition(42, 76 + this._selectedRow * 46);
             this._cursor.setVisible(true);
         } else {
             this._cursor.setPosition(LEFT_W / 2 - 68, jouerY);
@@ -666,7 +674,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             this.scene.start('PetanqueScene', {
                 terrain,
                 difficulty: isLocal ? 'medium' : difficulty,
-                format: 'tete_a_tete',
+                format: OPTIONS[ROW_FORMAT].values[this._selections[ROW_FORMAT]].key,
                 opponentName: p2Option.display,
                 opponentId: 'quickplay_' + p2Option.key,
                 returnScene: 'QuickPlayScene',

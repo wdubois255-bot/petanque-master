@@ -55,7 +55,10 @@ export default class PetanqueEngine {
         this.lastTeamPlayed = null;
 
         // Balls per player based on format
-        this.ballsPerPlayer = this.format === 'triplette' ? 2 : 3;
+        this.ballsPerPlayer = this.format === 'une_boule' ? 1 : (this.format === 'triplette' ? 2 : 3);
+
+        // Victory score (7 for une_boule, 13 normally)
+        this.victoryScore = this.format === 'une_boule' ? 7 : VICTORY_SCORE;
 
         this.scores = { player: 0, opponent: 0 };
         this.mene = 1;
@@ -664,7 +667,7 @@ export default class PetanqueEngine {
             if (this.onScore) this.onScore(this.scores, winner, points);
 
             this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
-                if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
+                if (this.scores.player >= this.victoryScore || this.scores.opponent >= this.victoryScore) {
                     this.setState(STATES.GAME_OVER);
                 } else {
                     this.mene++;
@@ -696,7 +699,7 @@ export default class PetanqueEngine {
         if (this.onScore) this.onScore(this.scores, this.meneWinner, 0);
 
         this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
-            if (this.scores.player >= VICTORY_SCORE || this.scores.opponent >= VICTORY_SCORE) {
+            if (this.scores.player >= this.victoryScore || this.scores.opponent >= this.victoryScore) {
                 this.setState(STATES.GAME_OVER);
             } else {
                 this.mene++;
@@ -706,7 +709,7 @@ export default class PetanqueEngine {
     }
 
     _handleGameOver() {
-        const winner = this.scores.player >= VICTORY_SCORE ? 'player' : 'opponent';
+        const winner = this.scores.player >= this.victoryScore ? 'player' : 'opponent';
         const isVictory = winner === 'player';
         const loser = isVictory ? 'opponent' : 'player';
         const isFanny = this.scores[loser] === 0;
