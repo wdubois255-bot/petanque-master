@@ -108,9 +108,16 @@ export default class PetanqueScene extends Phaser.Scene {
         this.aimingSystem = new AimingSystem(this, this.engine, playerStats);
 
         // Focus (Respire) + Character Unique Ability
-        this.aimingSystem.resetFocusCharges(5);
+        const save = loadSave();
+        const extraFocus = save.purchases.filter(p => p === 'focus_extra').length;
+        this.aimingSystem.resetFocusCharges(5 + extraFocus);
         const ability = this._getCharacterAbility(this.playerCharId);
-        if (ability) this.aimingSystem.setCharacterAbility(ability);
+        if (ability) {
+            const extraCharge = save.purchases.filter(p => p === 'charge_extra').length;
+            ability.charges += extraCharge;
+            if (ability.secondary) ability.secondary.charges += extraCharge;
+            this.aimingSystem.setCharacterAbility(ability);
+        }
 
         // AI
         if (this.localMultiplayer) {

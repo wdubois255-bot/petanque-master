@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
-import { addGalets, loadSave } from '../utils/SaveManager.js';
+import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -349,16 +349,35 @@ export default class ResultScene extends Phaser.Scene {
                 { id: 'boule_chrome', cond: stats.victories >= 5, msg: 'Boules Chrome debloquees ! (5 victoires)' },
                 { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
                 { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
+                { id: 'boule_chrome_prestige', cond: stats.victories >= 10, msg: 'Boule Chrome Prestige ! (10 victoires)' },
             ];
             // Cochonnet unlock milestones
             const cochUnlocks = [
-                { id: 'cochonnet_bleu', cond: stats.biberons >= 5, msg: 'Cochonnet Bleu debloque ! (5 biberons)' },
+                { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: 'Cochonnet Bleu debloque ! (5 victoires)' },
                 { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
+                { id: 'cochonnet_dore', cond: stats.victories >= 50, msg: 'Cochonnet Dore debloque ! (50 victoires)' },
             ];
-            for (const u of [...bouleUnlocks, ...cochUnlocks]) {
+            // Title/badge milestones
+            const titleUnlocks = [
+                { id: 'title_artilleur', cond: stats.victories >= 20, msg: 'Titre "L\'Artilleur" debloque ! (20 victoires)' },
+                { id: 'title_maitre', cond: stats.victories >= 50, msg: 'Titre "Maitre Bouliste" debloque ! (50 victoires)' },
+                { id: 'badge_tireur', cond: (this.matchStats.carreaux || 0) >= 3, msg: 'Badge "Le Tireur" ! (3 carreaux en 1 match)' },
+            ];
+            for (const u of [...bouleUnlocks, ...cochUnlocks, ...titleUnlocks]) {
                 if (u.cond && !unlocked.includes(u.id)) {
                     unlocked.push(u.id);
                     newUnlocks.push(u.msg);
+                    // Also unlock in SaveManager for boules/cochonnets
+                    if (u.id.startsWith('boule_')) unlockBoule(u.id);
+                    if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id);
+                    // Save badges/titles
+                    if (u.id.startsWith('title_') || u.id.startsWith('badge_')) {
+                        const save = loadSave();
+                        if (!save.badges.includes(u.id)) {
+                            save.badges.push(u.id);
+                            saveSave(save);
+                        }
+                    }
                 }
             }
 
