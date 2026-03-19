@@ -287,11 +287,11 @@ export default class CharSelectScene extends Phaser.Scene {
             this._statBars[statNames[i]] = { fill: barFill, num: numText, color: statColors[i], y: by - 4 };
         }
 
-        // Description
-        this._previewDesc = this.add.text(px, barStartY + 160, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0',
-            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center', lineSpacing: 2
-        }).setOrigin(0.5, 0);
+        // Description (after stat bars, before sprite zone)
+        this._previewDesc = this.add.text(px, barStartY + 158, '', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0',
+            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center', lineSpacing: 1
+        }).setOrigin(0.5, 0).setDepth(10);
 
         // Large sprite preview
         this._previewSprite = null;
@@ -374,15 +374,14 @@ export default class CharSelectScene extends Phaser.Scene {
         if (this.textures.exists(spriteKey)) {
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
-            this._previewShadow.fillEllipse(GAME_WIDTH - 220, 388, 40, 10);
+            this._previewShadow.fillEllipse(GAME_WIDTH - 220, 418, 30, 8);
 
             if (isStatic) {
-                // Static sprite: display as image, no animation
-                this._previewSprite = this.add.image(GAME_WIDTH - 220, 360, spriteKey)
-                    .setScale(0.65).setOrigin(0.5).setDepth(5);
+                this._previewSprite = this.add.image(GAME_WIDTH - 220, 400, spriteKey)
+                    .setScale(0.45).setOrigin(0.5).setDepth(3);
             } else {
-                this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 370, spriteKey, 0)
-                    .setScale(0.75).setOrigin(0.5).setDepth(5);
+                this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 405, spriteKey, 0)
+                    .setScale(0.5).setOrigin(0.5).setDepth(3);
 
                 // Walk animation (frames 0-3 = south walk)
                 const animKey = `preview_walk_${char.id}`;

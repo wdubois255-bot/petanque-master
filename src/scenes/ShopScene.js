@@ -13,12 +13,12 @@ const TABS = [
 ];
 
 // Grid layout
-const GRID_COLS = 4;
+const GRID_COLS = 5;
 const GRID_ROWS = 3;
 const CARD_W = 140;
-const CARD_H = 100;
-const CARD_GAP_X = 14;
-const CARD_GAP_Y = 10;
+const CARD_H = 105;
+const CARD_GAP_X = 12;
+const CARD_GAP_Y = 8;
 const GRID_START_X = (GAME_WIDTH - (CARD_W * GRID_COLS + CARD_GAP_X * (GRID_COLS - 1))) / 2;
 const GRID_START_Y = 120;
 
@@ -166,12 +166,7 @@ export default class ShopScene extends Phaser.Scene {
         const category = this.shopData.categories.find(c => c.id === tabId);
         if (!category) return;
 
-        // Merge boules + boules_retro into one tab
         let items = [...category.items];
-        if (tabId === 'boules') {
-            const retro = this.shopData.categories.find(c => c.id === 'boules_retro');
-            if (retro) items = items.concat(retro.items);
-        }
         const save = loadSave();
 
         for (let i = 0; i < items.length; i++) {
@@ -211,55 +206,51 @@ export default class ShopScene extends Phaser.Scene {
         objects.push(cardGfx);
 
         // Item icon
-        const iconY = cardY + 28;
+        const iconY = cardY + 24;
         if (item.icon && this.textures.exists(item.icon)) {
-            const icon = this.add.image(cx, iconY, item.icon).setScale(1.5);
+            const icon = this.add.image(cx, iconY, item.icon).setScale(0.9);
             objects.push(icon);
         } else {
-            // Colored rectangle placeholder
             const placeholder = this.add.graphics();
             const placeholderColor = this._getPlaceholderColor(item.type);
             placeholder.fillStyle(placeholderColor, 0.8);
-            placeholder.fillRoundedRect(cx - 12, iconY - 12, 24, 24, 4);
-            placeholder.lineStyle(1, 0xFFFFFF, 0.3);
-            placeholder.strokeRoundedRect(cx - 12, iconY - 12, 24, 24, 4);
+            placeholder.fillRoundedRect(cx - 10, iconY - 10, 20, 20, 4);
             objects.push(placeholder);
         }
 
-        // Item name
-        const nameText = UIFactory.addText(this, cx, cardY + 55, item.name, '14px', '#F5E6D0', {
+        // Item name (compact)
+        const shortName = item.name.replace('Boule ', '').replace('Cochonnet ', '');
+        const nameText = UIFactory.addText(this, cx, cardY + 48, shortName, '11px', '#F5E6D0', {
             originX: 0.5, originY: 0.5
         });
         objects.push(nameText);
 
-        // Description
-        const descText = UIFactory.addText(this, cx, cardY + 72, item.description, '10px', '#9E9E8E', {
-            originX: 0.5, originY: 0.5, wrapWidth: CARD_W - 16
+        // Description (1 line max, truncated)
+        const desc = item.description.length > 22 ? item.description.substring(0, 20) + '..' : item.description;
+        const descText = UIFactory.addText(this, cx, cardY + 63, desc, '8px', '#9E9E8E', {
+            originX: 0.5, originY: 0.5
         });
         objects.push(descText);
 
-        // Price or POSSEDE badge
+        // Price or POSSEDE badge (clear spacing)
         if (owned) {
-            const badge = UIFactory.addText(this, cx, cardY + CARD_H - 20, '\u2713 POSSEDE', '12px', '#FFD700', {
+            const badge = UIFactory.addText(this, cx, cardY + CARD_H - 16, '\u2713 POSSEDE', '10px', '#FFD700', {
                 originX: 0.5, originY: 0.5
             });
             objects.push(badge);
         } else {
-            // Price display
             const priceColor = canAfford ? '#FFD700' : '#C44B3F';
-            const priceText = UIFactory.addText(this, cx - 20, cardY + CARD_H - 20, `${item.price} E`, '12px', priceColor, {
+            const priceText = UIFactory.addText(this, cx, cardY + CARD_H - 22, `${item.price} E`, '11px', priceColor, {
                 originX: 0.5, originY: 0.5
             });
             objects.push(priceText);
 
-            // Buy button
             if (canAfford) {
-                const buyBtn = this.add.text(cx + 38, cardY + CARD_H - 20, 'ACHETER', {
-                    fontFamily: 'monospace', fontSize: '11px', color: '#FFFFFF',
-                    backgroundColor: '#44CC44', padding: { x: 6, y: 3 },
+                const buyBtn = this.add.text(cx, cardY + CARD_H - 8, 'ACHETER', {
+                    fontFamily: 'monospace', fontSize: '9px', color: '#FFFFFF',
+                    backgroundColor: '#44CC44', padding: { x: 4, y: 2 },
                     shadow: SHADOW
                 }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
                 buyBtn.on('pointerdown', () => this._purchaseItem(item, index));
                 objects.push(buyBtn);
             }
