@@ -135,6 +135,16 @@ export default class ScorePanel {
 
         this.meneText.setText(`MENE ${e.mene}`);
 
+        // Match point indicator (score = 12)
+        if (newPlayerScore >= 12 && !this._playerMatchPoint) {
+            this._playerMatchPoint = true;
+            this._blinkMatchPoint(this.playerScore);
+        }
+        if (newOpponentScore >= 12 && !this._opponentMatchPoint) {
+            this._opponentMatchPoint = true;
+            this._blinkMatchPoint(this.opponentScore);
+        }
+
         // Projected score
         const proj = e.calculateProjectedScore();
         if (proj && proj.winner && proj.points > 0) {
@@ -180,6 +190,20 @@ export default class ScorePanel {
                 textObj.setText(String(Math.round(counter.val)));
             }
         });
+    }
+
+    _blinkMatchPoint(scoreTextObj) {
+        // Blink red/white to signal match point
+        this.scene.tweens.add({
+            targets: scoreTextObj,
+            duration: 400, repeat: 3, yoyo: true,
+            onYoyo: () => scoreTextObj.setColor('#C44B3F'),
+            onRepeat: () => scoreTextObj.setColor('#F5E6D0'),
+            onComplete: () => scoreTextObj.setColor('#F5E6D0')
+        });
+        // Flash "MATCH POINT!" text
+        UIFactory.showFloatingText(this.scene, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40,
+            'MATCH POINT !', '#FFD700', { fontSize: '24px', rise: 30, duration: 2000, depth: 95 });
     }
 
     _showFloatingPoints(scoreTextObj, points, color) {

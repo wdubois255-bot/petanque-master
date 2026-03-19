@@ -85,15 +85,17 @@ export default class CharSelectScene extends Phaser.Scene {
         this._createPreviewPanel();
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2190\u2191\u2192\u2193 Naviguer     Espace Confirmer     Echap Retour', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2190\u2191\u2192\u2193 Naviguer     Espace Confirmer', {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
+
+        // Back button (bottom-left, binds ESC)
+        UIFactory.addBackButton(this, 'TitleScene');
 
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.enterKey = this.input.keyboard.addKey('ENTER');
-        this.escKey = this.input.keyboard.addKey('ESC');
 
         this._updateSelection();
 
@@ -411,14 +413,8 @@ export default class CharSelectScene extends Phaser.Scene {
         const up = Phaser.Input.Keyboard.JustDown(this.cursors.up);
         const down = Phaser.Input.Keyboard.JustDown(this.cursors.down);
         const confirm = Phaser.Input.Keyboard.JustDown(this.spaceKey) || Phaser.Input.Keyboard.JustDown(this.enterKey);
-        const back = Phaser.Input.Keyboard.JustDown(this.escKey);
 
         const availableCount = this._cells.filter(c => !c.isLocked).length;
-
-        if (back) {
-            this.scene.start('TitleScene');
-            return;
-        }
 
         let changed = false;
         if (right) { this._selectedIndex = (this._selectedIndex + 1) % availableCount; changed = true; }

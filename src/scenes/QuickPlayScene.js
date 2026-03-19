@@ -176,9 +176,12 @@ export default class QuickPlayScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193 Naviguer   \u2190\u2192 Changer   Espace Confirmer   Echap Retour', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193 Naviguer   \u2190\u2192 Changer   Espace Confirmer', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
+
+        // Back button (bottom-left, binds ESC)
+        UIFactory.addBackButton(this, 'TitleScene');
 
         // Cursor
         this._cursor = this.add.text(0, 0, '\u25b6', {
@@ -195,7 +198,6 @@ export default class QuickPlayScene extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enterKey = this.input.keyboard.addKey('ENTER');
         this.spaceKey = this.input.keyboard.addKey('SPACE');
-        this.escKey = this.input.keyboard.addKey('ESC');
 
         this._updateDisplay();
         this._updateInfoPanel();
@@ -598,9 +600,6 @@ export default class QuickPlayScene extends Phaser.Scene {
         const left = Phaser.Input.Keyboard.JustDown(this.cursors.left);
         const right = Phaser.Input.Keyboard.JustDown(this.cursors.right);
         const confirm = Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
-        const back = Phaser.Input.Keyboard.JustDown(this.escKey);
-
-        if (back) { this.scene.start('TitleScene'); return; }
 
         if (up) {
             this._selectedRow = Math.max(0, this._selectedRow - 1);

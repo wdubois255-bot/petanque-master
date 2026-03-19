@@ -1,4 +1,6 @@
-import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
+import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY, GAME_WIDTH, GAME_HEIGHT, UI } from '../utils/Constants.js';
+import { loadSave } from '../utils/SaveManager.js';
+import { sfxUIClick } from '../utils/SoundManager.js';
 
 /**
  * UIFactory — centralized UI component creation for Petanque Master.
@@ -219,5 +221,146 @@ export default class UIFactory {
         });
 
         return floater;
+    }
+
+    // ================================================================
+    // ECUS DISPLAY (reusable currency indicator)
+    // ================================================================
+
+    static createEcusDisplay(scene, x, y, options = {}) {
+        const { depth = 50 } = options;
+        const save = loadSave();
+        const objects = [];
+
+        // Coin icon
+        const coinGfx = scene.add.graphics().setDepth(depth);
+        coinGfx.fillStyle(0xFFD700, 1);
+        coinGfx.fillCircle(x, y, 8);
+        coinGfx.lineStyle(1.5, 0xB8860B, 1);
+        coinGfx.strokeCircle(x, y, 8);
+        objects.push(coinGfx);
+
+        const coinLetter = scene.add.text(x, y, 'E', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28', fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(depth + 1);
+        objects.push(coinLetter);
+
+        const ecusText = UIFactory.addText(scene, x + 22, y, `${save.ecus}`, UI.MENU_SIZE, CSS.OR, {
+            originX: 0, originY: 0.5, heavyShadow: true, depth
+        });
+        objects.push(ecusText);
+
+        return { objects, ecusText, refresh: () => {
+            const s = loadSave();
+            ecusText.setText(`${s.ecus}`);
+        }};
+    }
+
+    // ================================================================
+    // TAB BAR (horizontal tabs with active underline)
+    // ================================================================
+
+    static createTabBar(scene, tabs, activeIndex, y, onChange, options = {}) {
+        const { depth = 10 } = options;
+        const tabWidth = 140;
+        const totalW = tabWidth * tabs.length;
+        const startX = (GAME_WIDTH - totalW) / 2;
+        const objects = [];
+
+        for (let i = 0; i < tabs.length; i++) {
+            const x = startX + i * tabWidth + tabWidth / 2;
+            const isActive = i === activeIndex;
+
+            const label = UIFactory.addText(scene, x, y,
+                tabs[i].label, UI.BODY_SIZE,
+                isActive ? CSS.OR : CSS.GRIS,
+                { depth }
+            );
+            label.setInteractive({ useHandCursor: true });
+            label.on('pointerdown', () => {
+                sfxUIClick();
+                onChange(i);
+            });
+            objects.push(label);
+
+            if (isActive) {
+                const underline = scene.add.graphics().setDepth(depth);
+                underline.lineStyle(3, COLORS.OR, 0.9);
+                underline.lineBetween(x - 40, y + 14, x + 40, y + 14);
+                objects.push(underline);
+            }
+        }
+        return { objects };
+    }
+
+    // ================================================================
+    // BACK BUTTON (bottom-left, binds ESC)
+    // ================================================================
+
+    static addBackButton(scene, targetScene, options = {}) {
+        const { x = UI.BACK_X, y = UI.BACK_Y, label = '< RETOUR', depth = 50 } = options;
+
+        const btn = UIFactory.addText(scene, x, y, label, UI.HINT_SIZE, CSS.OCRE, {
+            originX: 0, originY: 0.5, depth
+        });
+        btn.setInteractive({ useHandCursor: true });
+        btn.on('pointerover', () => btn.setColor(CSS.OR));
+        btn.on('pointerout', () => btn.setColor(CSS.OCRE));
+        btn.on('pointerdown', () => {
+            sfxUIClick();
+            scene.scene.start(targetScene);
+        });
+
+        // ESC keybinding (will be cleaned by removeAllListeners in _shutdown)
+        scene.input.keyboard.on('keydown-ESC', () => {
+            sfxUIClick();
+            scene.scene.start(targetScene);
+        });
+
+        return btn;
+    }
+
+    // ================================================================
+    // MODAL OVERLAY (centered panel on dark backdrop)
+    // ================================================================
+
+    static createModalOverlay(scene, w, h, onClose, options = {}) {
+        const { depth = 100, title = '' } = options;
+
+        // Dark backdrop
+        const backdrop = scene.add.graphics().setDepth(depth);
+        backdrop.fillStyle(0x000000, 0.6);
+        backdrop.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        backdrop.setInteractive(
+            new Phaser.Geom.Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT),
+            Phaser.Geom.Rectangle.Contains
+        );
+
+        // Panel
+        const px = (GAME_WIDTH - w) / 2;
+        const py = (GAME_HEIGHT - h) / 2;
+        const panel = scene.add.graphics().setDepth(depth + 1);
+        UIFactory.drawPanel(panel, px, py, w, h, {
+            fillColor: 0x2A2018, fillAlpha: 0.95,
+            strokeColor: COLORS.OR, strokeAlpha: 0.5, strokeWidth: 2
+        });
+
+        const objects = [backdrop, panel];
+
+        // Title
+        if (title) {
+            const titleText = UIFactory.addText(scene, GAME_WIDTH / 2, py + 24, title,
+                UI.MENU_SIZE, CSS.OR, { depth: depth + 2, heavyShadow: true });
+            objects.push(titleText);
+        }
+
+        // Close on ESC or backdrop click
+        const close = () => {
+            objects.forEach(o => o.destroy());
+            if (onClose) onClose();
+        };
+        backdrop.on('pointerdown', close);
+
+        return { objects, close, panelX: px, panelY: py, panelW: w, panelH: h, depth: depth + 2 };
     }
 }

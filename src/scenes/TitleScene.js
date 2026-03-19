@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
+import { UI } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -466,7 +467,14 @@ export default class TitleScene extends Phaser.Scene {
         // Show controls hint
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Boutique', 'Tuto', 'Parametres'];
+        const items = ['Mode Arcade', 'Partie Rapide', 'Boutique', 'Parametres'];
+
+        // Ecus display (bottom-right)
+        if (!this._ecusDisplay) {
+            this._ecusDisplay = UIFactory.createEcusDisplay(this, UI.ECUS_X, UI.ECUS_Y);
+        } else {
+            this._ecusDisplay.refresh();
+        }
 
         // Menu container
         this._menuContainer = this.add.container(0, 0);
@@ -764,21 +772,22 @@ export default class TitleScene extends Phaser.Scene {
 
         // Settings mode: left/right adjusts values
         if (this._mode === 'settings') {
-            const itemCount = Math.floor(this._menuItems.length / 2);
+            const settingsCount = this._settingsItemKeys?.length || 0;
+            if (settingsCount === 0) return;
             if (up) {
-                this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
+                this._selectedIndex = (this._selectedIndex - 1 + settingsCount) % settingsCount;
                 sfxUIClick();
                 this._updateSettingsSelection();
             }
             if (down) {
-                this._selectedIndex = (this._selectedIndex + 1) % itemCount;
+                this._selectedIndex = (this._selectedIndex + 1) % settingsCount;
                 sfxUIClick();
                 this._updateSettingsSelection();
             }
             if (left) this._onSettingsLeftRight(-1);
             if (right) this._onSettingsLeftRight(1);
             if (confirm) { sfxUIClick(); this._onSettingsConfirm(); }
-            if (back) this._showMainMenu();
+            if (back) { this._selectedIndex = this._settingsItemKeys.indexOf('back'); sfxUIClick(); this._onSettingsConfirm(); }
             return;
         }
 
@@ -822,8 +831,6 @@ export default class TitleScene extends Phaser.Scene {
         } else if (this._selectedIndex === 2) {
             this._transitionTo(() => this.scene.start('ShopScene'));
         } else if (this._selectedIndex === 3) {
-            this._transitionTo(() => this.scene.start('TutorialScene'));
-        } else if (this._selectedIndex === 4) {
             this._showSettingsMenu();
         }
     }
@@ -849,76 +856,59 @@ export default class TitleScene extends Phaser.Scene {
     // SETTINGS MENU
     // ================================================================
     _showSettingsMenu() {
-        this._clearMenu();
         this._mode = 'settings';
         this._selectedIndex = 0;
-
-        this._menuContainer = this.add.container(0, 0);
-
-        // Header
-        const header = this.add.text(GAME_WIDTH / 2, 210, 'PARAMETRES', {
-            fontFamily: 'monospace', fontSize: '22px', color: '#FFD700', shadow: SHADOW_HEAVY
-        }).setOrigin(0.5);
-        this._menuContainer.add(header);
-
         this._settingsValues = getAudioSettings();
+
+        // Create modal overlay
+        this._settingsModal = UIFactory.createModalOverlay(this, 420, 300, () => {
+            // On close: return to main menu mode
+            this._settingsModal = null;
+            this._mode = 'main';
+            this._inputEnabled = true;
+        }, { title: 'PARAMETRES' });
+
         this._rebuildSettingsItems();
     }
 
     _rebuildSettingsItems() {
-        // Clear old items (keep container + header)
-        this._menuItems.forEach(t => t.destroy());
-        this._menuItems = [];
+        // Clear old settings items
+        if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
+        this._settingsItems = [];
         if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
+
+        if (!this._settingsModal) return;
+        const { panelX: px, panelY: py, panelW: pw, depth } = this._settingsModal;
 
         const settings = this._settingsValues;
         const items = [
             { label: `Son : ${settings.muted ? 'OFF' : 'ON'}`, key: 'mute' },
             { label: `Musique : ${Math.round(settings.musicVolume * 100)}%`, key: 'music' },
             { label: `Effets : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
-            { label: '\u2190 Retour', key: 'back' }
+            { label: 'Tutoriel', key: 'tuto' },
+            { label: 'Fermer', key: 'back' }
         ];
 
-        const startY = 255;
-        const pillW = 300;
-        const pillH = 36;
+        const startY = py + 60;
+        const rowH = 40;
 
         items.forEach((item, i) => {
-            const pillY = startY + i * 44;
+            const iy = startY + i * rowH;
+            const txt = this.add.text(GAME_WIDTH / 2, iy, item.label, {
+                fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(depth);
+            this._settingsItems.push(txt);
 
-            const pill = this.add.graphics();
-            pill.fillStyle(0x3A2E28, 0.75);
-            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-            pill.lineStyle(1, 0xD4A574, 0.3);
-            pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-            this._menuContainer.add(pill);
-            this._menuItems.push(pill);
-
-            const txt = this.add.text(GAME_WIDTH / 2, pillY, item.label, {
-                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center', shadow: SHADOW
-            }).setOrigin(0.5);
-            this._menuContainer.add(txt);
-            this._menuItems.push(txt);
-
-            // Hint for sliders
             if (item.key === 'music' || item.key === 'sfx') {
-                const hint = this.add.text(GAME_WIDTH / 2 + pillW / 2 - 8, pillY, '\u2190 \u2192', {
-                    fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
-                }).setOrigin(1, 0.5);
-                this._menuContainer.add(hint);
+                const hint = this.add.text(GAME_WIDTH / 2 + 140, iy, '\u2190 \u2192', {
+                    fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW
+                }).setOrigin(1, 0.5).setDepth(depth);
+                this._settingsItems.push(hint);
             }
 
-            // Mouse
             txt.setInteractive({ useHandCursor: true });
-            pill.setInteractive(
-                new Phaser.Geom.Rectangle(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH),
-                Phaser.Geom.Rectangle.Contains
-            );
-            const hoverIn = () => { this._selectedIndex = i; this._updateSettingsSelection(); };
-            txt.on('pointerover', hoverIn);
-            pill.on('pointerover', hoverIn);
+            txt.on('pointerover', () => { this._selectedIndex = i; this._updateSettingsSelection(); });
             txt.on('pointerdown', () => { this._selectedIndex = i; this._onSettingsConfirm(); });
-            pill.on('pointerdown', () => { this._selectedIndex = i; this._onSettingsConfirm(); });
         });
 
         this._settingsItemKeys = items.map(it => it.key);
@@ -926,46 +916,28 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     _updateSettingsSelection() {
-        const itemCount = Math.floor(this._menuItems.length / 2);
+        if (!this._settingsItems) return;
         if (this._cursor) this._cursor.destroy();
 
-        for (let i = 0; i < itemCount; i++) {
-            const txtIdx = i * 2 + 1;
-            const pillIdx = i * 2;
-            const txt = this._menuItems[txtIdx];
-            const pill = this._menuItems[pillIdx];
-            if (!txt || !txt.style) continue;
+        // Filter only text items (skip hint items)
+        const textItems = this._settingsItems.filter(t => t.input);
+        const depth = this._settingsModal?.depth || 102;
 
-            const pillW = 300, pillH = 36, startY = 255;
-            const pillY = startY + i * 44;
-
+        for (let i = 0; i < textItems.length; i++) {
+            const txt = textItems[i];
             if (i === this._selectedIndex) {
                 txt.setColor('#FFD700').setScale(1.05);
-                if (pill && pill.clear) {
-                    pill.clear();
-                    pill.fillStyle(0x5A4030, 0.85);
-                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                    pill.lineStyle(2, 0xFFD700, 0.6);
-                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                }
                 this._cursor = this.add.text(
-                    txt.x - txt.width * 0.55 - 26, txt.y, '\u25b6',
-                    { fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW }
-                ).setOrigin(0.5);
+                    txt.x - txt.width * 0.55 - 20, txt.y, '\u25b6',
+                    { fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW }
+                ).setOrigin(0.5).setDepth(depth);
                 this.tweens.add({
                     targets: this._cursor, x: this._cursor.x + 4,
                     duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
-                if (this._menuContainer) this._menuContainer.add(this._cursor);
             } else {
-                txt.setColor(i === itemCount - 1 ? '#D4A574' : '#F5E6D0').setScale(1.0);
-                if (pill && pill.clear) {
-                    pill.clear();
-                    pill.fillStyle(0x3A2E28, 0.75);
-                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                    pill.lineStyle(1, 0xD4A574, 0.3);
-                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                }
+                const isLast = i === textItems.length - 1;
+                txt.setColor(isLast ? '#D4A574' : '#F5E6D0').setScale(1.0);
             }
         }
     }
@@ -973,13 +945,26 @@ export default class TitleScene extends Phaser.Scene {
     _onSettingsConfirm() {
         const key = this._settingsItemKeys[this._selectedIndex];
         if (key === 'back') {
-            this._showMainMenu();
+            if (this._settingsModal) {
+                this._settingsModal.close();
+                if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
+                this._settingsItems = null;
+                if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
+            }
             return;
         }
         if (key === 'mute') {
             toggleMute();
             this._settingsValues = getAudioSettings();
             this._rebuildSettingsItems();
+        }
+        if (key === 'tuto') {
+            if (this._settingsModal) {
+                this._settingsModal.close();
+                if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
+                this._settingsItems = null;
+            }
+            this.scene.start('TutorialScene');
         }
     }
 

@@ -212,6 +212,24 @@ export const CSS = {
 export const SHADOW_TEXT = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 export const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
 
+// UI typography hierarchy
+export const UI = {
+    TITLE_SIZE: '28px',
+    MENU_SIZE: '20px',
+    BODY_SIZE: '14px',
+    HINT_SIZE: '12px',
+    SMALL_SIZE: '10px',
+    HINT_Y: GAME_HEIGHT - 16,
+    HEADER_Y: 30,
+    PILL_W: 280,
+    PILL_H: 38,
+    PILL_SPACING: 43,
+    BACK_X: 60,
+    BACK_Y: GAME_HEIGHT - 20,
+    ECUS_X: GAME_WIDTH - 90,
+    ECUS_Y: 28,
+};
+
 // Terrain colors (for placeholder rendering)
 export const TERRAIN_COLORS = {
     terre: { bg: 0xC4854A, line: 0xFFFFFF },

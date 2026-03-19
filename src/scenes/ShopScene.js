@@ -6,8 +6,12 @@ import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
 
-const TABS = ['equipement', 'boules', 'cochonnets', 'capacites'];
-const TAB_LABELS = { equipement: 'Equipement', boules: 'Boules', cochonnets: 'Cochonnets', capacites: 'Capacites' };
+const TABS = [
+    { id: 'boules', label: 'Boules' },
+    { id: 'boules_retro', label: 'Retro' },
+    { id: 'cochonnets', label: 'Cochonnets' },
+    { id: 'capacites', label: 'Capacites' }
+];
 
 // Grid layout
 const GRID_COLS = 3;
@@ -115,7 +119,7 @@ export default class ShopScene extends Phaser.Scene {
             const x = startX + i * tabWidth + tabWidth / 2;
             const isActive = i === this.activeTab;
 
-            const label = UIFactory.addText(this, x, tabY, TAB_LABELS[TABS[i]], '16px',
+            const label = UIFactory.addText(this, x, tabY, TABS[i].label, '16px',
                 isActive ? '#FFD700' : '#9E9E8E', { originX: 0.5, originY: 0.5 }
             );
             label.setInteractive({ useHandCursor: true });
@@ -160,13 +164,7 @@ export default class ShopScene extends Phaser.Scene {
         this._clearCards();
 
         // Equipement tab: special rendering
-        if (TABS[this.activeTab] === 'equipement') {
-            this._drawEquipmentPanel();
-            return;
-        }
-
-        const tabId = TABS[this.activeTab];
-        // Map tab to shop category (boules_retro not a tab, boules includes both)
+        const tabId = TABS[this.activeTab].id;
         const category = this.shopData.categories.find(c => c.id === tabId);
         if (!category) return;
 
@@ -336,7 +334,7 @@ export default class ShopScene extends Phaser.Scene {
         saveSave(save);
 
         // Animate "Debloque !" feedback
-        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab].id);
         const col = index % GRID_COLS;
         const row = Math.floor(index / GRID_COLS);
         const cx = GRID_START_X + col * (CARD_W + CARD_GAP_X) + CARD_W / 2;
@@ -533,7 +531,7 @@ export default class ShopScene extends Phaser.Scene {
     // ================================================================
 
     _drawControlsHint() {
-        UIFactory.addControlsHint(this, '1/2/3/4 Onglets     Fleches Naviguer     Entree Acheter     Echap Retour');
+        UIFactory.addControlsHint(this, '1-4 Onglets     Fleches Naviguer     Entree Acheter     Echap Retour');
     }
 
     // ================================================================
@@ -563,7 +561,7 @@ export default class ShopScene extends Phaser.Scene {
     }
 
     _moveSelection(dx, dy) {
-        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab].id);
         if (!category) return;
 
         const count = Math.min(category.items.length, GRID_COLS * GRID_ROWS);
@@ -588,7 +586,7 @@ export default class ShopScene extends Phaser.Scene {
     }
 
     _buySelected() {
-        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab]);
+        const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab].id);
         if (!category) return;
 
         const item = category.items[this.selectedIndex];

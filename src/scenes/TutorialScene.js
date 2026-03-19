@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
@@ -67,15 +68,17 @@ export default class TutorialScene extends Phaser.Scene {
         this._doneBtn.on('pointerover', () => this._doneBtn.setStyle({ backgroundColor: '#FFE44D' }));
         this._doneBtn.on('pointerout', () => this._doneBtn.setStyle({ backgroundColor: '#FFD700' }));
 
-        // ESC hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 15, 'ESC pour quitter', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+        // Controls hint
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2190\u2192 Pages     Entree Terminer', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
+
+        // Back button (bottom-left, binds ESC)
+        UIFactory.addBackButton(this, 'TitleScene');
 
         // Keyboard
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enterKey = this.input.keyboard.addKey('ENTER');
-        this.escKey = this.input.keyboard.addKey('ESC');
 
         // Render first page
         this._renderPage(0);
@@ -573,9 +576,6 @@ export default class TutorialScene extends Phaser.Scene {
             this._goNext();
         }
         if (Phaser.Input.Keyboard.JustDown(this.enterKey) && this._page === PAGE_COUNT - 1) {
-            this._finish();
-        }
-        if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
             this._finish();
         }
     }
