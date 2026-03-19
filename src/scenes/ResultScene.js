@@ -240,7 +240,7 @@ export default class ResultScene extends Phaser.Scene {
     }
 
     _spawnConfetti() {
-        const colors = [0xFFD700, 0xC44B3F, 0x44CC44, 0x5B9BD5, 0x9B7BB8, 0xD4A574];
+        const colors = [0xFFD700, 0xC2703E, 0x9B7BB8, 0x6B8E4E, 0x87CEEB];
         for (let i = 0; i < 40; i++) {
             const x = Phaser.Math.Between(40, GAME_WIDTH - 40);
             const startY = Phaser.Math.Between(-60, -200);

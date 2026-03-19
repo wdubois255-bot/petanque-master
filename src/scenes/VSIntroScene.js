@@ -33,6 +33,13 @@ export default class VSIntroScene extends Phaser.Scene {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
 
+        // Skip after first view in this session (faster flow)
+        if (window.__vsIntroSeen) {
+            this._startMatch();
+            return;
+        }
+        window.__vsIntroSeen = true;
+
         setSoundScene(this);
         const player = this.playerCharacter;
         const opponent = this.opponentCharacter;
