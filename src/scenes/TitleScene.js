@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
-import { hasSaveData, getAllSlots, loadGame, formatPlaytime } from '../utils/SaveManager.js';
+import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import { UI } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -467,7 +467,7 @@ export default class TitleScene extends Phaser.Scene {
         // Show controls hint
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Mon Personnage', 'Boutique', 'Parametres'];
+        const items = ['Jouer', 'Mode Arcade', 'Partie Rapide', 'Mon Personnage', 'Boutique', 'Parametres'];
 
         // Galets display (bottom-right)
         if (!this._galetsDisplay) {
@@ -480,12 +480,12 @@ export default class TitleScene extends Phaser.Scene {
         this._menuContainer = this.add.container(0, 0);
         this._menuContainer.setAlpha(0);
 
-        const startY = 230;
+        const startY = 210;
         const pillW = 280;
-        const pillH = 38;
+        const pillH = 34;
 
         items.forEach((label, i) => {
-            const pillY = startY + i * 48;
+            const pillY = startY + i * 40;
 
             // Background pill
             const pill = this.add.graphics();
@@ -825,14 +825,34 @@ export default class TitleScene extends Phaser.Scene {
     // ================================================================
     _onMainSelect() {
         if (this._selectedIndex === 0) {
-            this._transitionTo(() => this.scene.start('CharSelectScene', { mode: 'arcade' }));
+            // Quick play: Rookie vs La Choupe, Village, facile
+            this._transitionTo(() => {
+                const chars = this.cache.json.get('characters');
+                const rookie = chars.roster.find(c => c.id === 'rookie');
+                const choupe = chars.roster.find(c => c.id === 'la_choupe');
+                const save = loadSave();
+                if (rookie && save.rookie) rookie.stats = { ...save.rookie.stats };
+                if (rookie) rookie.isRookie = true;
+                this.scene.start('PetanqueScene', {
+                    terrain: 'village', difficulty: 'easy',
+                    playerCharacter: rookie, opponentCharacter: choupe,
+                    playerCharId: 'rookie', opponentId: 'la_choupe',
+                    opponentName: choupe?.name || 'La Choupe',
+                    bouleType: save.selectedBoule || 'acier',
+                    cochonnetType: save.selectedCochonnet || 'classique',
+                    format: 'tete_a_tete',
+                    returnScene: 'TitleScene'
+                });
+            });
         } else if (this._selectedIndex === 1) {
-            this._transitionTo(() => this.scene.start('QuickPlayScene'));
+            this._transitionTo(() => this.scene.start('CharSelectScene', { mode: 'arcade' }));
         } else if (this._selectedIndex === 2) {
-            this._transitionTo(() => this.scene.start('PlayerScene'));
+            this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 3) {
-            this._transitionTo(() => this.scene.start('ShopScene'));
+            this._transitionTo(() => this.scene.start('PlayerScene'));
         } else if (this._selectedIndex === 4) {
+            this._transitionTo(() => this.scene.start('ShopScene'));
+        } else if (this._selectedIndex === 5) {
             this._showSettingsMenu();
         }
     }
