@@ -83,7 +83,7 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
         // Rookie static sprite
-        this.load.image('rookie_static', `${BASE}assets/sprites/rookie final.png`);
+        this.load.image('rookie_static', `${BASE}assets/sprites/rookie_final.png`);
 
         // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [

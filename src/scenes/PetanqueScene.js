@@ -472,6 +472,11 @@ export default class PetanqueScene extends Phaser.Scene {
     // === PLAYER SPRITES & ANIMATIONS ===
 
     _createPlayerSprites() {
+        // Track which characters are static (single-frame sprites)
+        this._playerIsStatic = CHAR_STATIC_SPRITES.includes(this.playerCharId);
+        const oppId = this.opponentId?.replace('char_', '')?.replace('quickplay_', '') || '';
+        this._opponentIsStatic = CHAR_STATIC_SPRITES.includes(oppId);
+
         // Character sprite scale: 0.4x (sprites are 128x128, displayed at ~51px — avoids overlap)
         const CHAR_SCALE = 0.4;
         this._charScale = CHAR_SCALE;
@@ -493,7 +498,8 @@ export default class PetanqueScene extends Phaser.Scene {
         this._circleY = circleY;
 
         // Player starts at the circle (first to throw)
-        this.playerSprite = this.add.sprite(circleX, circleY, 'petanque_player', 12)
+        const playerFrame = CHAR_STATIC_SPRITES.includes(this.playerCharId) ? 0 : 12;
+        this.playerSprite = this.add.sprite(circleX, circleY, 'petanque_player', playerFrame)
             .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
 
         // Opponent starts watching from the right
@@ -587,9 +593,11 @@ export default class PetanqueScene extends Phaser.Scene {
         this.opponentSprite.angle = 0;
 
         // IMMEDIATE: teleport watcher to sideline (no animation = no overlap possible)
+        const watcherIsStatic = team === 'player' ? this._opponentIsStatic : this._playerIsStatic;
+        const throwerIsStatic = team === 'player' ? this._playerIsStatic : this._opponentIsStatic;
         watcher.x = watchX;
         watcher.y = watchY;
-        watcher.setFrame(0); // face south
+        if (!watcherIsStatic) watcher.setFrame(0); // face south
 
         // Thrower walks to circle (smooth animation)
         this.tweens.add({
@@ -597,6 +605,7 @@ export default class PetanqueScene extends Phaser.Scene {
             x: this._circleX, y: this._circleY,
             duration: 400, ease: 'Sine.easeInOut',
             onUpdate: () => {
+                if (throwerIsStatic) return;
                 const t = Date.now();
                 const phase = Math.sin(t / 80 * Math.PI);
                 thrower.setFrame(Math.floor(t / 150) % 4);
@@ -604,7 +613,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 thrower.scaleX = s * (1 - phase * 0.015);
             },
             onComplete: () => {
-                thrower.setFrame(12); // face north
+                if (!throwerIsStatic) thrower.setFrame(12); // face north
                 thrower.scaleX = s;
                 thrower.scaleY = s;
             }
@@ -625,7 +634,8 @@ export default class PetanqueScene extends Phaser.Scene {
         const baseY = sprite.y;
         const baseX = sprite.x;
         const s = this._charScale || 1;
-        const idleFrame = team === 'player' ? 12 : 0;
+        const isStatic = team === 'player' ? this._playerIsStatic : this._opponentIsStatic;
+        const idleFrame = isStatic ? 0 : (team === 'player' ? 12 : 0);
 
         // Kill any existing animations
         this.tweens.getTweensOf(sprite).forEach(t => t.stop());
@@ -719,8 +729,33 @@ export default class PetanqueScene extends Phaser.Scene {
             };
 
             advanceFrame();
+        } else if (isStatic) {
+            // === STATIC SPRITE: squash/stretch only, no frame changes ===
+            this.tweens.chain({
+                targets: sprite,
+                tweens: [
+                    { scaleX: s * 0.85, scaleY: s * 1.15, y: baseY + 4,
+                      duration: 220, ease: 'Sine.easeOut' },
+                    { scaleX: s * 0.9, scaleY: s * 1.1,
+                      x: baseX - (team === 'player' ? 4 : -4),
+                      duration: 130, ease: 'Quad.easeIn' },
+                    { scaleX: s * 1.2, scaleY: s * 0.85, y: baseY - 14,
+                      x: baseX + (team === 'player' ? 6 : -6),
+                      duration: 80, ease: 'Quad.easeIn',
+                      onStart: () => {
+                          sprite.setTint(0xFFFFFF);
+                          this.time.delayedCall(50, () => sprite.clearTint());
+                      } },
+                    { scaleX: s, scaleY: s, y: baseY, x: baseX,
+                      duration: 280, ease: 'Bounce.easeOut' }
+                ],
+                onStop: () => {
+                    sprite.scaleX = s; sprite.scaleY = s;
+                    sprite.x = baseX; sprite.y = baseY; sprite.angle = 0;
+                }
+            });
         } else {
-            // === FALLBACK: squash/stretch only (no throw spritesheet) ===
+            // === FALLBACK: squash/stretch + frame animation (animated spritesheets) ===
             const profileFrames = team === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
             sprite.setFrame(profileFrames[0]);
             this.tweens.chain({
@@ -871,6 +906,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const throwerSprite = lastTeam === 'player' ? this.playerSprite : this.opponentSprite;
         const watcherSprite = lastTeam === 'player' ? this.opponentSprite : this.playerSprite;
         const s = this._charScale || 1;
+        const throwerStatic = lastTeam === 'player' ? this._playerIsStatic : this._opponentIsStatic;
         const throwerSouthFrames = lastTeam === 'player' ? [12, 13, 14, 15] : [0, 1, 2, 3];
 
         // Don't start reaction if a transition is about to happen
@@ -885,12 +921,12 @@ export default class PetanqueScene extends Phaser.Scene {
                     {
                         y: throwerSprite.y - 14, scaleX: (this._charScale || 1) * 1.1, scaleY: (this._charScale || 1) * 0.9,
                         duration: 200, ease: 'Quad.easeOut',
-                        onStart: () => throwerSprite.setFrame(throwerSouthFrames[2])
+                        onStart: () => { if (!throwerStatic) throwerSprite.setFrame(throwerSouthFrames[2]); }
                     },
                     {
                         y: throwerSprite.y, scaleX: this._charScale || 1, scaleY: this._charScale || 1,
                         duration: 250, ease: 'Bounce.easeOut',
-                        onStart: () => throwerSprite.setFrame(throwerSouthFrames[0])
+                        onStart: () => { if (!throwerStatic) throwerSprite.setFrame(throwerSouthFrames[0]); }
                     }
                 ]
             });
