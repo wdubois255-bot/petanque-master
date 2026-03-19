@@ -138,12 +138,7 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_bleue', `${BASE}assets/sprites/boule_bleue.png`);
         this.load.image('ball_cuivre', `${BASE}assets/sprites/boule_cuivre.png`);
         this.load.image('ball_titane', `${BASE}assets/sprites/boule_titane.png`);
-        // Boules sprites — retro pixel art (premium, achetables en boutique)
-        this.load.image('ball_acier_retro', `${BASE}assets/sprites/boule_acier_retro.png`);
-        this.load.image('ball_bronze_retro', `${BASE}assets/sprites/boule_bronze_retro.png`);
-        this.load.image('ball_chrome_retro', `${BASE}assets/sprites/boule_chrome_retro.png`);
-        this.load.image('ball_noire_retro', `${BASE}assets/sprites/boule_noire_retro.png`);
-        this.load.image('ball_rouge_retro', `${BASE}assets/sprites/boule_rouge_retro.png`);
+        // (Retro boules removed — same visuals as standard boules)
         // Cochonnets (pixel art only — classique + variantes)
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
         this.load.image('ball_cochonnet_bleu', `${BASE}assets/sprites/cochonnet_bleu.png`);

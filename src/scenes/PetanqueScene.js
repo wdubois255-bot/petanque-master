@@ -911,9 +911,6 @@ export default class PetanqueScene extends Phaser.Scene {
         const ballKeys = [
             'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
             'ball_doree', 'ball_rouille', 'ball_bleue', 'ball_cuivre', 'ball_titane',
-            // Retro pixel art variants
-            'ball_acier_retro', 'ball_bronze_retro', 'ball_chrome_retro',
-            'ball_noire_retro', 'ball_rouge_retro',
             'ball_opponent',
             'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert',
             'ball_cochonnet_rouge', 'ball_cochonnet_jungle', 'ball_cochonnet_multicolor'

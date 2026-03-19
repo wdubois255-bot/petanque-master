@@ -55,6 +55,49 @@
       "unlocked": true
     },
     {
+      "id": "la_choupe",
+      "name": "La Choupe",
+      "title": "Le Canon du Boulodrome",
+      "catchphrase": "ENVOIE !",
+      "description": "La Choupe tire comme un canon. Sa puissance est legendaire — quand il envoie, les boules volent et le terrain tremble. Il pointe correctement mais sans finesse. Son vrai plaisir, c'est d'envoyer du lourd. Il ne connait pas la demi-mesure.",
+      "archetype": "tireur",
+      "stats": {
+        "precision": 5,
+        "puissance": 10,
+        "effet": 3,
+        "sang_froid": 6
+      },
+      "ai": {
+        "personality": "tireur",
+        "angleDev": 7,
+        "powerDev": 0.06,
+        "shootProbability": 0.85,
+        "loftPref": "tir",
+        "targetsCocho": false
+      },
+      "barks": {
+        "good_shot": ["ALLEZ !", "Ca c'est envoye !", "BOUM !", "Dans le mille !"],
+        "bad_shot": ["Oups.", "C'etait pas prevu.", "La prochaine !", "Trop de jus."],
+        "opponent_good": ["Pas mal !", "Oh, joli !", "Tu geres."],
+        "opponent_bad": ["Haha !", "Fallait taper plus fort !", "Mou du bras ?"],
+        "carreau": ["CARREAU DE BOURRIN !", "DEGAGE !", "WOOOH !", "Ca, c'est La Choupe !"],
+        "opponent_carreau": ["... Costaud.", "OK, respect.", "T'as de la frappe."],
+        "taking_lead": ["On roule !", "La Choupe en tete !", "Qui c'est le patron ?"],
+        "losing_badly": ["J'me chauffe !", "Attends voir...", "Ca va peter !"],
+        "match_point": ["Allez, le dernier !", "ENVOIE !", "Un dernier coup de canon !"],
+        "victory": ["La Choupe gagne TOUJOURS !", "Facile !", "La puissance, y'a que ca !"],
+        "defeat": ["Bien joue... J'reviendrai !", "Pas grave, j'ai du muscle !", "T'as eu de la chance."],
+        "pre_match": ["ENVOIE !", "Pret ? Moi oui !", "Tu vas voir ce que tu vas voir !"],
+        "post_match_win": ["Trop fort ! Comme d'hab !", "La puissance, y'a que ca !", "Qui veut la suite ?"],
+        "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"]
+      },
+      "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
+      "sprite": "char_la_choupe",
+      "portrait": "portrait_la_choupe",
+      "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
+      "unlocked": false
+    },
+    {
       "id": "ley",
       "name": "Ley",
       "title": "Le Carreau Vivant",
@@ -138,49 +181,6 @@
       "sprite": "char_le_magicien",
       "portrait": "portrait_le_magicien",
       "palette": { "primary": "#8B4513", "secondary": "#F5E6D0", "accent": "#C44B3F" },
-      "unlocked": false
-    },
-    {
-      "id": "la_choupe",
-      "name": "La Choupe",
-      "title": "Le Canon du Boulodrome",
-      "catchphrase": "ENVOIE !",
-      "description": "La Choupe tire comme un canon. Sa puissance est legendaire — quand il envoie, les boules volent et le terrain tremble. Il pointe correctement mais sans finesse. Son vrai plaisir, c'est d'envoyer du lourd. Il ne connait pas la demi-mesure.",
-      "archetype": "tireur",
-      "stats": {
-        "precision": 5,
-        "puissance": 10,
-        "effet": 3,
-        "sang_froid": 6
-      },
-      "ai": {
-        "personality": "tireur",
-        "angleDev": 7,
-        "powerDev": 0.06,
-        "shootProbability": 0.85,
-        "loftPref": "tir",
-        "targetsCocho": false
-      },
-      "barks": {
-        "good_shot": ["ALLEZ !", "Ca c'est envoye !", "BOUM !", "Dans le mille !"],
-        "bad_shot": ["Oups.", "C'etait pas prevu.", "La prochaine !", "Trop de jus."],
-        "opponent_good": ["Pas mal !", "Oh, joli !", "Tu geres."],
-        "opponent_bad": ["Haha !", "Fallait taper plus fort !", "Mou du bras ?"],
-        "carreau": ["CARREAU DE BOURRIN !", "DEGAGE !", "WOOOH !", "Ca, c'est La Choupe !"],
-        "opponent_carreau": ["... Costaud.", "OK, respect.", "T'as de la frappe."],
-        "taking_lead": ["On roule !", "La Choupe en tete !", "Qui c'est le patron ?"],
-        "losing_badly": ["J'me chauffe !", "Attends voir...", "Ca va peter !"],
-        "match_point": ["Allez, le dernier !", "ENVOIE !", "Un dernier coup de canon !"],
-        "victory": ["La Choupe gagne TOUJOURS !", "Facile !", "La puissance, y'a que ca !"],
-        "defeat": ["Bien joue... J'reviendrai !", "Pas grave, j'ai du muscle !", "T'as eu de la chance."],
-        "pre_match": ["ENVOIE !", "Pret ? Moi oui !", "Tu vas voir ce que tu vas voir !"],
-        "post_match_win": ["Trop fort ! Comme d'hab !", "La puissance, y'a que ca !", "Qui veut la suite ?"],
-        "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"]
-      },
-      "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
-      "sprite": "char_la_choupe",
-      "portrait": "portrait_la_choupe",
-      "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
       "unlocked": false
     },
     {
