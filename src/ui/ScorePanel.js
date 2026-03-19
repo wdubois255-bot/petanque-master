@@ -39,7 +39,7 @@ export default class ScorePanel {
 
         // Player section — use character name if available
         const playerName = scene.playerCharacter?.name
-            ? scene.playerCharacter.name.toUpperCase().substring(0, 8)
+            ? scene.playerCharacter.name.toUpperCase().substring(0, 10)
             : 'VOUS';
         this.playerLabel = scene.add.text(cx - 24, this.panelY + 44, playerName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', align: 'center', shadow: SHADOW
@@ -62,7 +62,7 @@ export default class ScorePanel {
 
         // Opponent section — use character name if available
         const opponentName = scene.opponentCharacter?.name
-            ? scene.opponentCharacter.name.toUpperCase().substring(0, 8)
+            ? scene.opponentCharacter.name.toUpperCase().substring(0, 10)
             : 'ADV.';
         this.opponentLabel = scene.add.text(cx - 24, this.panelY + 102, opponentName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', align: 'center', shadow: SHADOW

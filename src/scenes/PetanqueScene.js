@@ -405,10 +405,6 @@ export default class PetanqueScene extends Phaser.Scene {
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
 
     _getCharSpriteKey(charId) {
-        // Rookie uses 64px combat sprite in PetanqueScene
-        if (charId === 'rookie' && this.textures.exists('rookie_combat')) {
-            return 'rookie_combat';
-        }
         return CHAR_SPRITE_MAP[charId] || 'marcel_animated';
     }
 

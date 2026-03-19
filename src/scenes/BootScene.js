@@ -82,9 +82,8 @@ export default class BootScene extends Phaser.Scene {
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
-        // Rookie static sprite (128px for selection/portraits, 64px for combat)
-        this.load.image('rookie_static', `${BASE}assets/sprites/rookie_static.png`);
-        this.load.image('rookie_combat', `${BASE}assets/sprites/rookie_combat_64.png`);
+        // Rookie static sprite
+        this.load.image('rookie_static', `${BASE}assets/sprites/rookie final.png`);
 
         // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
         const charSprites = [

@@ -250,32 +250,31 @@ export default class TitleScene extends Phaser.Scene {
     _createCharacters() {
         this._charSprites = [];
 
-        // Player side (left) - Ley
+        // Player side (far left) - Ley
         if (this.textures.exists('ley_animated')) {
-            const ley = this.add.sprite(190, 410, 'ley_animated', 0).setScale(0.75).setAlpha(0);
-            // Subtle idle bob
+            const ley = this.add.sprite(90, 400, 'ley_animated', 0).setScale(0.7).setAlpha(0);
             this.tweens.add({
-                targets: ley, y: 407, duration: 1800,
+                targets: ley, y: 397, duration: 1800,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
             });
             this._charSprites.push(ley);
         }
 
-        // Opponent side (right) - La Choupe
+        // Opponent side (far right) - La Choupe
         if (this.textures.exists('la_choupe_animated')) {
-            const choupe = this.add.sprite(640, 412, 'la_choupe_animated', 0).setScale(0.75).setAlpha(0).setFlipX(true);
+            const choupe = this.add.sprite(742, 402, 'la_choupe_animated', 0).setScale(0.7).setAlpha(0).setFlipX(true);
             this.tweens.add({
-                targets: choupe, y: 409, duration: 2000,
+                targets: choupe, y: 399, duration: 2000,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 400
             });
             this._charSprites.push(choupe);
         }
 
-        // Background character - Marcel watching
+        // Background character - Marcel watching (behind menu area)
         if (this.textures.exists('marcel_animated')) {
-            const marcel = this.add.sprite(415, 370, 'marcel_animated', 0).setScale(0.5).setAlpha(0);
+            const marcel = this.add.sprite(416, 380, 'marcel_animated', 0).setScale(0.45).setAlpha(0).setDepth(0);
             this.tweens.add({
-                targets: marcel, y: 368, duration: 2200,
+                targets: marcel, y: 378, duration: 2200,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600
             });
             this._charSprites.push(marcel);
@@ -467,7 +466,18 @@ export default class TitleScene extends Phaser.Scene {
         // Show controls hint
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
 
-        const items = ['Jouer', 'Mode Arcade', 'Partie Rapide', 'Mon Personnage', 'Boutique', 'Parametres'];
+        // Menu layout:
+        // Row 0: JOUER (hero button, big)
+        // Row 1-2: 2-column grid (Arcade | Partie Rapide, Perso | Boutique)
+        // Row 3: Parametres (centered, smaller)
+        const items = [
+            { label: 'JOUER', hero: true },
+            { label: 'Mode Arcade', col: 0, row: 0 },
+            { label: 'Partie Rapide', col: 1, row: 0 },
+            { label: 'Mon Personnage', col: 0, row: 1 },
+            { label: 'Boutique', col: 1, row: 1 },
+            { label: 'Parametres', col: -1, row: 2 }
+        ];
 
         // Galets display (bottom-right)
         if (!this._galetsDisplay) {
@@ -477,40 +487,75 @@ export default class TitleScene extends Phaser.Scene {
         }
 
         // Menu container
-        this._menuContainer = this.add.container(0, 0);
+        this._menuContainer = this.add.container(0, 0).setDepth(5);
         this._menuContainer.setAlpha(0);
 
-        const startY = 210;
-        const pillW = 280;
-        const pillH = 34;
+        const cx = GAME_WIDTH / 2;
+        // Layout positions for each item
+        this._menuPositions = [];
 
-        items.forEach((label, i) => {
-            const pillY = startY + i * 40;
+        items.forEach((item, i) => {
+            let pillX, pillY, pillW, pillH, fontSize;
+
+            if (item.hero) {
+                // Hero "JOUER" button
+                pillX = cx;
+                pillY = 222;
+                pillW = 240;
+                pillH = 44;
+                fontSize = '28px';
+            } else if (item.col === -1) {
+                // Parametres: centered, small
+                pillX = cx;
+                pillY = 340;
+                pillW = 160;
+                pillH = 28;
+                fontSize = '14px';
+            } else {
+                // Grid items: 2 columns
+                const colOffset = item.col === 0 ? -110 : 110;
+                pillX = cx + colOffset;
+                pillY = 278 + item.row * 40;
+                pillW = 200;
+                pillH = 32;
+                fontSize = '16px';
+            }
+
+            this._menuPositions.push({ x: pillX, y: pillY, w: pillW, h: pillH, hero: item.hero });
 
             // Background pill
-            const pill = this.add.graphics();
-            pill.fillStyle(0x3A2E28, 0.75);
-            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-            pill.lineStyle(1, 0xD4A574, 0.3);
-            pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+            const pill = this.add.graphics().setDepth(5);
+            if (item.hero) {
+                // Hero: gradient-like double fill
+                pill.fillStyle(0x5A4020, 0.9);
+                pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+                pill.lineStyle(2, 0xFFD700, 0.7);
+                pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+            } else {
+                pill.fillStyle(0x3A2E28, 0.8);
+                pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                pill.lineStyle(1, 0xD4A574, 0.3);
+                pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+            }
             this._menuContainer.add(pill);
             this._menuItems.push(pill);
 
             // Text
-            const txt = this.add.text(GAME_WIDTH / 2, pillY, label, {
+            const color = item.hero ? '#FFD700' : '#F5E6D0';
+            const txt = this.add.text(pillX, pillY, item.label, {
                 fontFamily: 'monospace',
-                fontSize: '22px',
-                color: '#F5E6D0',
+                fontSize,
+                color,
                 align: 'center',
-                shadow: SHADOW
-            }).setOrigin(0.5);
+                shadow: item.hero ? SHADOW_HEAVY : SHADOW
+            }).setOrigin(0.5).setDepth(6);
             this._menuContainer.add(txt);
             this._menuItems.push(txt);
 
             // Mouse interactivity
             txt.setInteractive({ useHandCursor: true });
             pill.setInteractive(
-                new Phaser.Geom.Rectangle(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH),
+                new Phaser.Geom.Rectangle(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH),
                 Phaser.Geom.Rectangle.Contains
             );
 
@@ -533,13 +578,11 @@ export default class TitleScene extends Phaser.Scene {
 
         // Animate menu items in with stagger
         this._menuContainer.setAlpha(1);
-        const allMenuChildren = this._menuContainer.list;
-        allMenuChildren.forEach(child => child.setAlpha(0));
-        // Stagger: each pill+text pair fades in 80ms apart
+        this._menuContainer.list.forEach(child => child.setAlpha(0));
         for (let i = 0; i < items.length; i++) {
             const pillIdx = i * 2;
             const txtIdx = i * 2 + 1;
-            const delay = i * 80;
+            const delay = i * 60;
             if (this._menuItems[pillIdx]) {
                 this._menuItems[pillIdx].setAlpha(0);
                 this.tweens.add({
@@ -548,10 +591,10 @@ export default class TitleScene extends Phaser.Scene {
                 });
             }
             if (this._menuItems[txtIdx]) {
-                this._menuItems[txtIdx].setAlpha(0).setY(this._menuItems[txtIdx].y + 10);
+                this._menuItems[txtIdx].setAlpha(0).setY(this._menuItems[txtIdx].y + 8);
                 this.tweens.add({
                     targets: this._menuItems[txtIdx], alpha: 1,
-                    y: this._menuItems[txtIdx].y - 10,
+                    y: this._menuItems[txtIdx].y - 8,
                     duration: 250, delay, ease: 'Back.easeOut'
                 });
             }
@@ -559,7 +602,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Delay input slightly to let stagger finish
         this._inputEnabled = false;
-        this.time.delayedCall(items.length * 80 + 250, () => {
+        this.time.delayedCall(items.length * 60 + 250, () => {
             this._inputEnabled = true;
         });
 
@@ -655,6 +698,7 @@ export default class TitleScene extends Phaser.Scene {
         if (this._selectionGlow) this._selectionGlow.destroy();
 
         const itemCount = Math.floor(this._menuItems.length / 2);
+        const positions = this._menuPositions;
 
         for (let i = 0; i < itemCount; i++) {
             const textIndex = i * 2 + 1;
@@ -664,63 +708,73 @@ export default class TitleScene extends Phaser.Scene {
 
             if (!txt || !txt.style) continue;
 
-            if (i === this._selectedIndex) {
-                // Selected: gold text, brighter pill
-                txt.setColor('#FFD700');
-                txt.setScale(1.05);
-
-                // Redraw pill with highlight
-                if (pill && pill.clear) {
-                    const pillW = this._mode === 'slots' ? 340 : 280;
-                    const pillH = this._mode === 'slots' ? 34 : 38;
-                    const spacing = this._mode === 'slots' ? 42 : 48;
-                    const startY = this._mode === 'slots' ? 245 : 230;
-                    const pillY = startY + i * spacing;
-                    pill.clear();
-                    pill.fillStyle(0x5A4030, 0.85);
-                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                    pill.lineStyle(2, 0xFFD700, 0.6);
-                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                }
-
-                // Arrow cursor
-                this._cursor = this.add.text(
-                    txt.x - txt.width * 0.55 - 26, txt.y,
-                    '\u25b6', {
-                        fontFamily: 'monospace',
-                        fontSize: '20px',
-                        color: '#FFD700',
-                        shadow: SHADOW
+            // Slots mode uses simple vertical layout
+            if (this._mode === 'slots') {
+                const pillW = 340, pillH = 34, startY = 245, spacing = 42;
+                const pillY = startY + i * spacing;
+                if (i === this._selectedIndex) {
+                    txt.setColor('#FFD700').setScale(1.05);
+                    if (pill?.clear) {
+                        pill.clear();
+                        pill.fillStyle(0x5A4030, 0.85);
+                        pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+                        pill.lineStyle(2, 0xFFD700, 0.6);
+                        pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
                     }
-                ).setOrigin(0.5);
+                    this._cursor = this.add.text(
+                        txt.x - txt.width * 0.55 - 26, txt.y, '\u25b6',
+                        { fontFamily: 'monospace', fontSize: '20px', color: '#FFD700', shadow: SHADOW }
+                    ).setOrigin(0.5);
+                    this.tweens.add({ targets: this._cursor, x: this._cursor.x + 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+                    if (this._menuContainer) this._menuContainer.add(this._cursor);
+                } else {
+                    txt.setColor(i === itemCount - 1 ? '#D4A574' : '#F5E6D0').setScale(1.0);
+                    if (pill?.clear) {
+                        pill.clear();
+                        pill.fillStyle(0x3A2E28, 0.75);
+                        pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+                        pill.lineStyle(1, 0xD4A574, 0.3);
+                        pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+                    }
+                }
+                continue;
+            }
 
-                // Cursor bob animation
-                this.tweens.add({
-                    targets: this._cursor,
-                    x: this._cursor.x + 4,
-                    duration: 500, yoyo: true, repeat: -1,
-                    ease: 'Sine.easeInOut'
-                });
+            // Main menu with positions
+            if (!positions || !positions[i]) continue;
+            const pos = positions[i];
 
-                if (this._menuContainer) this._menuContainer.add(this._cursor);
-
-            } else {
-                // Unselected: cream text, normal
-                txt.setColor(this._mode === 'slots' && i === itemCount - 1 ? '#D4A574' : '#F5E6D0');
-                txt.setScale(1.0);
-
-                // Reset pill
-                if (pill && pill.clear) {
-                    const pillW = this._mode === 'slots' ? 340 : 280;
-                    const pillH = this._mode === 'slots' ? 34 : 38;
-                    const spacing = this._mode === 'slots' ? 42 : 48;
-                    const startY = this._mode === 'slots' ? 245 : 230;
-                    const pillY = startY + i * spacing;
+            if (i === this._selectedIndex) {
+                txt.setColor('#FFD700').setScale(1.05);
+                if (pill?.clear) {
                     pill.clear();
-                    pill.fillStyle(0x3A2E28, 0.75);
-                    pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                    pill.lineStyle(1, 0xD4A574, 0.3);
-                    pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
+                    pill.fillStyle(pos.hero ? 0x6A5020 : 0x5A4030, 0.9);
+                    pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
+                    pill.lineStyle(2, 0xFFD700, 0.7);
+                    pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
+                }
+                // Arrow cursor
+                const cursorX = pos.x - pos.w / 2 - 16;
+                this._cursor = this.add.text(cursorX, pos.y, '\u25b6', {
+                    fontFamily: 'monospace', fontSize: pos.hero ? '22px' : '16px', color: '#FFD700', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(7);
+                this.tweens.add({ targets: this._cursor, x: cursorX + 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+                if (this._menuContainer) this._menuContainer.add(this._cursor);
+            } else {
+                txt.setColor(pos.hero ? '#FFD700' : '#F5E6D0').setScale(1.0);
+                if (pill?.clear) {
+                    pill.clear();
+                    if (pos.hero) {
+                        pill.fillStyle(0x5A4020, 0.9);
+                        pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 10);
+                        pill.lineStyle(2, 0xFFD700, 0.5);
+                        pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 10);
+                    } else {
+                        pill.fillStyle(0x3A2E28, 0.8);
+                        pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 6);
+                        pill.lineStyle(1, 0xD4A574, 0.3);
+                        pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 6);
+                    }
                 }
             }
         }
@@ -792,15 +846,39 @@ export default class TitleScene extends Phaser.Scene {
         }
 
         const itemCount = Math.floor(this._menuItems.length / 2);
-        if (up) {
-            this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
-            sfxUIClick();
-            this._updateSelection();
-        }
-        if (down) {
-            this._selectedIndex = (this._selectedIndex + 1) % itemCount;
-            sfxUIClick();
-            this._updateSelection();
+
+        if (this._mode === 'main' && this._menuPositions) {
+            // Grid-aware navigation for main menu
+            // Layout: 0=Jouer, 1=Arcade(L), 2=Rapide(R), 3=Perso(L), 4=Boutique(R), 5=Parametres
+            const navMap = {
+                up:    { 0: 5, 1: 0, 2: 0, 3: 1, 4: 2, 5: 3 },
+                down:  { 0: 1, 1: 3, 2: 4, 3: 5, 4: 5, 5: 0 },
+                left:  { 2: 1, 4: 3 },
+                right: { 1: 2, 3: 4 }
+            };
+            if (up && navMap.up[this._selectedIndex] !== undefined) {
+                this._selectedIndex = navMap.up[this._selectedIndex];
+                sfxUIClick(); this._updateSelection();
+            } else if (down && navMap.down[this._selectedIndex] !== undefined) {
+                this._selectedIndex = navMap.down[this._selectedIndex];
+                sfxUIClick(); this._updateSelection();
+            } else if (left && navMap.left[this._selectedIndex] !== undefined) {
+                this._selectedIndex = navMap.left[this._selectedIndex];
+                sfxUIClick(); this._updateSelection();
+            } else if (right && navMap.right[this._selectedIndex] !== undefined) {
+                this._selectedIndex = navMap.right[this._selectedIndex];
+                sfxUIClick(); this._updateSelection();
+            }
+        } else {
+            // Simple vertical nav for slots
+            if (up) {
+                this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
+                sfxUIClick(); this._updateSelection();
+            }
+            if (down) {
+                this._selectedIndex = (this._selectedIndex + 1) % itemCount;
+                sfxUIClick(); this._updateSelection();
+            }
         }
 
         if (back) {
