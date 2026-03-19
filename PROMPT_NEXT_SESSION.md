@@ -76,25 +76,48 @@ Le jeu est **jouable et stable** avec :
 
 ## Ce qui reste a faire
 
-### Priorite 1 — Game Feel & Polish
-- [ ] Animations entree de scene (stagger entrance pour les menus)
-- [ ] Confetti ResultScene en palette provencale
-- [ ] SFX feedback sur chaque interaction (hover, clic, achat)
-- [ ] Skip VSIntroScene apres premiere visualisation
-- [ ] Animations achat boutique (particules, counter decrement)
+### BLOC A — Gameplay critique (faire en PREMIER)
+Ces features changent l'experience de jeu. Tout est spec-ready dans SPRINT_FINAL.md.
 
-### Priorite 2 — Contenu
-- [ ] Spritesheets animees pour TOUS les personnages (idle 4 directions)
-- [ ] Sprite animee du Rookie (actuellement statique)
-- [ ] Portraits HD 128x128 pour le panel de selection
-- [ ] Terrains avec textures Tiled (actuellement procedurale)
-- [ ] Musiques par terrain (actuellement fallback music_match)
+- [ ] **Capacites Rookie fonctionnelles** — L'Instinct (slow-mo 2s, AimingSystem.slowMotionFactor), Determination (passif -50% wobble apres mene perdue), Le Naturel (wobble ~0, 1 charge)
+  - Fichiers: `src/petanque/AimingSystem.js`, `src/scenes/PetanqueScene.js`
+  - Research: `research/47_camera_slowmo_2d_sports.md`
+  - Spec: SPRINT_FINAL.md section 1.4
 
-### Priorite 3 — Gameplay
-- [ ] Capacites Rookie fonctionnelles (L'Instinct, Determination, Le Naturel)
-- [ ] Capacites uniques des adversaires actives en match
-- [ ] Tooltips contextuels premier match sur chaque terrain
-- [ ] Mode Versus en ligne (reserve)
+- [ ] **Capacites boutique actives** — Focus+1 et Charge+1 doivent modifier le gameplay
+  - Fichiers: `src/petanque/AimingSystem.js` (focusCharges), `src/utils/SaveManager.js`
+
+- [ ] **Bonus Arcade complete** — +100E run complete, +200E run parfaite
+  - Fichier: `src/scenes/ArcadeScene.js` (_showArcadeComplete)
+  - Spec: SPRINT_FINAL.md section 2.2
+
+- [ ] **Deblocages par nombre victoires** — 5V=cochonnet bleu, 10V=chrome, etc.
+  - Fichier: `src/scenes/ResultScene.js` ou `SaveManager.js`
+  - Spec: SPRINT_FINAL.md section 3.2
+
+### BLOC B — Game Feel & Polish (ensuite)
+Rend le jeu satisfaisant. Tout est couvert par la research.
+
+- [ ] Confetti provencal dans ResultScene (or, terracotta, lavande, olive, ciel)
+- [ ] Skip VSIntroScene apres 1ere vue (flag session)
+- [ ] SFX hover/clic menus (generer via `/sfx` ou jsfxr)
+- [ ] Animations achat boutique (particules or, counter decrement)
+- [ ] Stagger entrance dans les menus
+- [ ] Traces d'impact boules (RenderTexture, research/14)
+
+### BLOC C — Assets & Contenu (quand possible)
+Necessite generation IA (PixelLab/ElevenLabs).
+
+- [ ] Spritesheet animee Rookie (4 directions x 4 frames, via PixelLab)
+- [ ] Musiques par terrain (5 pistes via ElevenLabs ou Beepbox)
+- [ ] Portraits HD 128x128 (pour le panel CharSelect)
+- [ ] Terrains Tiled (actuellement procedural)
+
+### Reserve (pas pour maintenant)
+- Mode Versus en ligne (Colyseus, research/42)
+- Mode Overworld/Aventure (Phase D, STORY.md)
+- Capacites uniques adversaires en match (complexe)
+- Localisation i18n (research/44)
 
 ## Fichiers cles
 
