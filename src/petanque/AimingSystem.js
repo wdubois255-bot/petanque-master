@@ -56,6 +56,15 @@ export default class AimingSystem {
         this._abilityUI = [];
         this._abilityDef = null;          // set by setCharacterAbility()
 
+        // Secondary ability (Rookie with both Instinct + Naturel)
+        this._secondaryDef = null;
+        this._secondaryCharges = 0;
+        this._secondaryActive = false;
+        this._keyV = null;
+
+        // Determination passive (Rookie)
+        this._determinationActive = false;
+
         this.arrowGfx = scene.add.graphics().setDepth(50);
         this._predictionGfx = scene.add.graphics().setDepth(49);
 
@@ -95,6 +104,9 @@ export default class AimingSystem {
             // Reset per-throw abilities
             this._focusActive = false;
             this._abilityActive = false;
+            this._secondaryActive = false;
+            // Determination consumed after one throw
+            if (this._determinationActive) this._determinationActive = false;
             this._onTurnChange(team);
         };
     }
@@ -109,6 +121,11 @@ export default class AimingSystem {
     setCharacterAbility(def) {
         this._abilityDef = def;
         this._abilityCharges = def?.charges || 0;
+        // Secondary ability (Rookie dual abilities)
+        if (def?.secondary) {
+            this._secondaryDef = def.secondary;
+            this._secondaryCharges = def.secondary.charges || 0;
+        }
     }
 
     /** Reset Focus charges (call at match start) */
@@ -521,6 +538,47 @@ export default class AimingSystem {
 
         this._keyC = this.scene.input.keyboard.addKey('C');
         this._keyC.on('down', () => this._toggleAbility());
+
+        // Secondary ability (Rookie: V key)
+        if (this._secondaryDef && this._secondaryCharges > 0) {
+            const sDef = this._secondaryDef;
+            const sx = bx, sy = by + bh + 4;
+            const sbg = this.scene.add.graphics().setDepth(96);
+            sbg.fillStyle(this._secondaryActive ? 0x2A5A3A : 0x3A2E28, 0.85);
+            sbg.fillRoundedRect(sx, sy - bh / 2, bw, bh, 8);
+            sbg.lineStyle(1, this._secondaryActive ? 0x4ADE80 : 0xD4A574, 0.5);
+            sbg.strokeRoundedRect(sx, sy - bh / 2, bw, bh, 8);
+            this._abilityUI.push(sbg);
+            this._modeUI.push(sbg);
+
+            const sName = sDef.name.length > 14 ? sDef.name.slice(0, 13) + '.' : sDef.name;
+            const sLabel = this.scene.add.text(sx + 8, sy, this._secondaryActive ? `V ${sName} !` : `V ${sName}`, {
+                fontFamily: 'monospace', fontSize: '10px',
+                color: this._secondaryActive ? '#4ADE80' : '#D4A574', shadow: SHADOW
+            }).setOrigin(0, 0.5).setDepth(97);
+            this._abilityUI.push(sLabel);
+            this._modeUI.push(sLabel);
+
+            // Charge dots for secondary
+            const sDotsG = this.scene.add.graphics().setDepth(97);
+            const sMax = sDef.charges || 1;
+            for (let d = 0; d < sMax; d++) {
+                const filled = d < this._secondaryCharges;
+                sDotsG.fillStyle(filled ? 0x4ADE80 : 0x5A4A38, filled ? 0.9 : 0.4);
+                sDotsG.fillCircle(sx + bw - 12 - d * 10, sy, 3);
+            }
+            this._abilityUI.push(sDotsG);
+            this._modeUI.push(sDotsG);
+
+            const sHitZone = this.scene.add.zone(sx + bw / 2, sy, bw, bh)
+                .setDepth(98).setInteractive({ useHandCursor: true });
+            sHitZone.on('pointerdown', () => this._toggleSecondaryAbility());
+            this._abilityUI.push(sHitZone);
+            this._modeUI.push(sHitZone);
+
+            this._keyV = this.scene.input.keyboard.addKey('V');
+            this._keyV.on('down', () => this._toggleSecondaryAbility());
+        }
     }
 
     _toggleAbility() {
@@ -542,6 +600,11 @@ export default class AimingSystem {
                 onComplete: () => overlay.destroy()
             });
             this.engine._showMessage(`${def.name} active !`, 1000);
+
+            // L'Instinct: slow-motion effect
+            if (def.id === 'instinct') {
+                this._activateInstinct();
+            }
         } else {
             this._abilityCharges++;
         }
@@ -552,10 +615,61 @@ export default class AimingSystem {
         this._showAbilityUI(cx, baseY + 6);
     }
 
+    _toggleSecondaryAbility() {
+        const def = this._secondaryDef;
+        if (!def) return;
+        if (this._secondaryCharges <= 0 && !this._secondaryActive) return;
+
+        this._secondaryActive = !this._secondaryActive;
+        if (this._secondaryActive) {
+            this._secondaryCharges--;
+            const overlay = this.scene.add.rectangle(
+                this.scene.scale.width / 2, this.scene.scale.height / 2,
+                this.scene.scale.width, this.scene.scale.height,
+                0x4ADE80, 0.12
+            ).setDepth(200);
+            this.scene.tweens.add({
+                targets: overlay, alpha: 0, duration: 500,
+                onComplete: () => overlay.destroy()
+            });
+            this.engine._showMessage(`${def.name} active !`, 1000);
+        } else {
+            this._secondaryCharges++;
+        }
+        const cx = this.scene.scale.width / 2;
+        const baseY = this.scene.scale.height - 52 - 28 - 42;
+        this._clearAbilityUI();
+        this._showAbilityUI(cx, baseY + 6);
+    }
+
+    _activateInstinct() {
+        // Slow-motion: reduce time scale to 0.4 for 2 seconds
+        this.scene.time.timeScale = 0.4;
+        this.scene.tweens.timeScale = 0.4;
+
+        // Golden vignette overlay
+        const vignette = this.scene.add.rectangle(
+            this.scene.scale.width / 2, this.scene.scale.height / 2,
+            this.scene.scale.width, this.scene.scale.height,
+            0xFFD700, 0.08
+        ).setDepth(199);
+
+        // Restore after 2 real seconds (= 2000 / 0.4 = 5000 game ms)
+        this.scene.time.delayedCall(2000 / 0.4, () => {
+            this.scene.time.timeScale = 1;
+            this.scene.tweens.timeScale = 1;
+            this.scene.tweens.add({
+                targets: vignette, alpha: 0, duration: 300,
+                onComplete: () => vignette.destroy()
+            });
+        });
+    }
+
     _clearAbilityUI() {
         this._abilityUI.forEach(e => { if (e && e.destroy) e.destroy(); });
         this._abilityUI = [];
         if (this._keyC) { this._keyC.removeAllListeners(); this._keyC = null; }
+        if (this._keyV) { this._keyV.removeAllListeners(); this._keyV = null; }
     }
 
     /** Get the wobble multiplier for this throw (Focus reduces by 80%) */
@@ -565,7 +679,9 @@ export default class AimingSystem {
 
     /** Check if a specific ability effect is active for this throw */
     isAbilityActive(effectId) {
-        return this._abilityActive && this._abilityDef?.id === effectId;
+        if (this._abilityActive && this._abilityDef?.id === effectId) return true;
+        if (this._secondaryActive && this._secondaryDef?.id === effectId) return true;
+        return false;
     }
 
     _updateModeHighlight() {
@@ -834,6 +950,14 @@ export default class AimingSystem {
         let base = 2 + (10 - precision) * 1.8 + techniquePenalty * 2;
         // Coup de Canon: +20% wobble (precision penalty)
         if (this.isAbilityActive('coup_de_canon')) base *= 1.2;
+        // Le Naturel: nearly zero wobble for this throw
+        if (this.isAbilityActive('naturel') || this._secondaryActive && this._secondaryDef?.id === 'naturel') {
+            base *= 0.05;
+        }
+        // Determination passive: halve wobble after losing a mene
+        if (this._determinationActive) {
+            base *= 0.5;
+        }
         return base * this._getFocusMultiplier();
     }
 

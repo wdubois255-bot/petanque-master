@@ -13,6 +13,7 @@ import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
+import { loadSave } from '../utils/SaveManager.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -135,9 +136,13 @@ export default class PetanqueScene extends Phaser.Scene {
             TERRAIN_WIDTH, TERRAIN_HEIGHT
         ).setOrigin(0, 0).setDepth(8).setAlpha(0.5);
 
-        // Hook score events for barks
+        // Hook score events for barks + Determination passive
         this.engine.onScore = (scores, winner, points) => {
             this._triggerScoreBark(scores, winner, points);
+            // Determination: after losing a mene, boost next throw precision
+            if (winner === 'opponent' && ability?.hasDetermination) {
+                this.aimingSystem._determinationActive = true;
+            }
         };
 
         // Hook carreau for bark
@@ -351,6 +356,42 @@ export default class PetanqueScene extends Phaser.Scene {
                 // Effect: doubles collision radius of thrown ball
             }
         };
+
+        if (charId === 'rookie') {
+            const save = loadSave();
+            const unlocked = save.rookie?.abilitiesUnlocked || [];
+            const hasInstinct = unlocked.includes('instinct');
+            const hasNaturel = unlocked.includes('naturel');
+            const hasDetermination = unlocked.includes('determination');
+
+            // Determination is passive — handled separately via _determinationActive flag
+            // Return the highest-priority active ability
+            if (hasInstinct && hasNaturel) {
+                // Both unlocked: return instinct as primary, naturel as secondary
+                return {
+                    id: 'instinct',
+                    name: "L'Instinct",
+                    charges: 1,
+                    description: 'Ralentit le temps pendant 2s',
+                    secondary: {
+                        id: 'naturel',
+                        name: 'Le Naturel',
+                        charges: 1,
+                        description: 'Supprime le wobble pour ce lancer'
+                    },
+                    hasDetermination
+                };
+            } else if (hasInstinct) {
+                return { id: 'instinct', name: "L'Instinct", charges: 1, description: 'Ralentit le temps pendant 2s', hasDetermination };
+            } else if (hasNaturel) {
+                return { id: 'naturel', name: 'Le Naturel', charges: 1, description: 'Supprime le wobble pour ce lancer', hasDetermination };
+            } else if (hasDetermination) {
+                // Only determination (passive) — no active ability button, but flag it
+                return { id: 'determination_only', name: 'Determination', charges: 0, description: 'Passif: precision accrue apres mene perdue', hasDetermination: true };
+            }
+            return null;
+        }
+
         return ABILITIES[charId] || null;
     }
 
