@@ -14,6 +14,7 @@ import PetanqueScene from './scenes/PetanqueScene.js';
 import LevelUpScene from './scenes/LevelUpScene.js';
 import ShopScene from './scenes/ShopScene.js';
 import TutorialScene from './scenes/TutorialScene.js';
+import PlayerScene from './scenes/PlayerScene.js';
 
 
 const config = {
@@ -35,7 +36,7 @@ const config = {
             debug: false
         }
     },
-    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, IntroScene, OverworldScene, PetanqueScene, LevelUpScene, ShopScene, TutorialScene]
+    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, IntroScene, OverworldScene, PetanqueScene, LevelUpScene, ShopScene, TutorialScene, PlayerScene]
 };
 
 export default config;

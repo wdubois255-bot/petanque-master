@@ -8,18 +8,17 @@ const SHADOW = UIFactory.SHADOW;
 
 const TABS = [
     { id: 'boules', label: 'Boules' },
-    { id: 'boules_retro', label: 'Retro' },
     { id: 'cochonnets', label: 'Cochonnets' },
     { id: 'capacites', label: 'Capacites' }
 ];
 
 // Grid layout
-const GRID_COLS = 3;
-const GRID_ROWS = 2;
-const CARD_W = 170;
-const CARD_H = 130;
-const CARD_GAP_X = 20;
-const CARD_GAP_Y = 16;
+const GRID_COLS = 4;
+const GRID_ROWS = 3;
+const CARD_W = 140;
+const CARD_H = 100;
+const CARD_GAP_X = 14;
+const CARD_GAP_Y = 10;
 const GRID_START_X = (GAME_WIDTH - (CARD_W * GRID_COLS + CARD_GAP_X * (GRID_COLS - 1))) / 2;
 const GRID_START_Y = 120;
 
@@ -163,12 +162,16 @@ export default class ShopScene extends Phaser.Scene {
     _drawItems() {
         this._clearCards();
 
-        // Equipement tab: special rendering
         const tabId = TABS[this.activeTab].id;
         const category = this.shopData.categories.find(c => c.id === tabId);
         if (!category) return;
 
-        const items = category.items;
+        // Merge boules + boules_retro into one tab
+        let items = [...category.items];
+        if (tabId === 'boules') {
+            const retro = this.shopData.categories.find(c => c.id === 'boules_retro');
+            if (retro) items = items.concat(retro.items);
+        }
         const save = loadSave();
 
         for (let i = 0; i < items.length; i++) {
@@ -531,7 +534,7 @@ export default class ShopScene extends Phaser.Scene {
     // ================================================================
 
     _drawControlsHint() {
-        UIFactory.addControlsHint(this, '1-4 Onglets     Fleches Naviguer     Entree Acheter     Echap Retour');
+        UIFactory.addControlsHint(this, '1-3 Onglets     Fleches Naviguer     Entree Acheter     Echap Retour');
     }
 
     // ================================================================
@@ -548,7 +551,6 @@ export default class ShopScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-ONE', () => this._switchTab(0));
         this.input.keyboard.on('keydown-TWO', () => this._switchTab(1));
         this.input.keyboard.on('keydown-THREE', () => this._switchTab(2));
-        this.input.keyboard.on('keydown-FOUR', () => this._switchTab(3));
 
         // Arrow navigation
         this.input.keyboard.on('keydown-RIGHT', () => this._moveSelection(1, 0));

@@ -467,7 +467,7 @@ export default class TitleScene extends Phaser.Scene {
         // Show controls hint
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
 
-        const items = ['Mode Arcade', 'Partie Rapide', 'Boutique', 'Parametres'];
+        const items = ['Mode Arcade', 'Partie Rapide', 'Mon Personnage', 'Boutique', 'Parametres'];
 
         // Ecus display (bottom-right)
         if (!this._ecusDisplay) {
@@ -829,8 +829,10 @@ export default class TitleScene extends Phaser.Scene {
         } else if (this._selectedIndex === 1) {
             this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 2) {
-            this._transitionTo(() => this.scene.start('ShopScene'));
+            this._transitionTo(() => this.scene.start('PlayerScene'));
         } else if (this._selectedIndex === 3) {
+            this._transitionTo(() => this.scene.start('ShopScene'));
+        } else if (this._selectedIndex === 4) {
             this._showSettingsMenu();
         }
     }
