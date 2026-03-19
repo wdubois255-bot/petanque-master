@@ -169,6 +169,66 @@
       "bonus": "restitution_x1.2",
       "lore": "Prototype d'ingenieur. Elles rebondissent plus mais se placent au millimetre. Pas pour les bourrins.",
       "unlocked": true
+    },
+    {
+      "id": "acier_retro",
+      "name": "Acier Retro",
+      "description": "Edition pixel art vintage des classiques.",
+      "sprite": "boules_acier_retro",
+      "textureKey": "ball_acier_retro",
+      "color": "#A8B5C2",
+      "stats": { "precision": 3, "puissance": 3, "masse": 700, "rayon": 10 },
+      "bonus": null,
+      "lore": "Old school. Le pixel a du charme.",
+      "unlocked": false
+    },
+    {
+      "id": "bronze_retro",
+      "name": "Bronze Retro",
+      "description": "Bronze pixel art. Pour les nostalgiques du 8-bit.",
+      "sprite": "boules_bronze_retro",
+      "textureKey": "ball_bronze_retro",
+      "color": "#CD7F32",
+      "stats": { "precision": 2, "puissance": 4, "masse": 800, "rayon": 10 },
+      "bonus": "knockback_x1.2",
+      "lore": "Lourdes et retro. Double dose de caractere.",
+      "unlocked": false
+    },
+    {
+      "id": "chrome_retro",
+      "name": "Chrome Retro",
+      "description": "Chrome pixel art. Precision vintage.",
+      "sprite": "boules_chrome_retro",
+      "textureKey": "ball_chrome_retro",
+      "color": "#C8D4E0",
+      "stats": { "precision": 4, "puissance": 2, "masse": 650, "rayon": 10 },
+      "bonus": "friction_x0.9",
+      "lore": "Elles glissent comme dans les annees 80.",
+      "unlocked": false
+    },
+    {
+      "id": "noire_retro",
+      "name": "Noire Retro",
+      "description": "Sombre et vintage. Classe intemporelle.",
+      "sprite": "boules_noire_retro",
+      "textureKey": "ball_noire_retro",
+      "color": "#2A2A2A",
+      "stats": { "precision": 3, "puissance": 3, "masse": 720, "rayon": 10 },
+      "bonus": null,
+      "lore": "Intimidantes en 8 bits aussi.",
+      "unlocked": false
+    },
+    {
+      "id": "rouge_retro",
+      "name": "Rouge Retro",
+      "description": "Rouge pixel art. Flamboyante et retro.",
+      "sprite": "boules_rouge_retro",
+      "textureKey": "ball_rouge_retro",
+      "color": "#8B1A1A",
+      "stats": { "precision": 3, "puissance": 3, "masse": 710, "rayon": 10 },
+      "bonus": null,
+      "lore": "Le feu du sud en 64 pixels.",
+      "unlocked": false
     }
   ],
   "cochonnets": [
@@ -202,39 +262,23 @@
       "description": "Cochonnet peint en rouge vif. Impossible a perdre de vue.",
       "textureKey": "ball_cochonnet_rouge",
       "color": "#CC3333",
-      "unlocked": true
+      "unlocked": false
     },
     {
-      "id": "dore",
-      "name": "Cochonnet Dore",
-      "description": "Cochonnet plaque or. Le prestige du champion.",
-      "textureKey": "ball_cochonnet_dore",
-      "color": "#D4A040",
-      "unlocked": true
+      "id": "jungle",
+      "name": "Cochonnet Jungle",
+      "description": "Camouflage tropical. Se fond dans le decor du Parc.",
+      "textureKey": "ball_cochonnet_jungle",
+      "color": "#4A8A3A",
+      "unlocked": false
     },
     {
-      "id": "noir",
-      "name": "Cochonnet Noir",
-      "description": "Cochonnet noir mat. Discret, elegance sobre.",
-      "textureKey": "ball_cochonnet_noir",
-      "color": "#2A2A3A",
-      "unlocked": true
-    },
-    {
-      "id": "rose",
-      "name": "Cochonnet Rose",
-      "description": "Cochonnet rose pastel. Fun et visible sur terre battue.",
-      "textureKey": "ball_cochonnet_rose",
-      "color": "#E88AAA",
-      "unlocked": true
-    },
-    {
-      "id": "orange",
-      "name": "Cochonnet Orange",
-      "description": "Cochonnet orange fluo. Ideal pour les matchs en soiree.",
-      "textureKey": "ball_cochonnet_orange",
-      "color": "#E87830",
-      "unlocked": true
+      "id": "multicolor",
+      "name": "Cochonnet Multicolor",
+      "description": "Arc-en-ciel psychedelique. Le plus flashy du boulodrome.",
+      "textureKey": "ball_cochonnet_multicolor",
+      "color": "#FF69B4",
+      "unlocked": false
     }
   ],
   "cochonnet": {

@@ -19,11 +19,11 @@
       "id": "boules_retro",
       "label": "Retro (Pixel Art)",
       "items": [
-        { "id": "boule_acier_retro", "name": "Acier Retro", "price": 500, "type": "boule", "description": "Edition pixel art vintage. Old school.", "icon": "ball_acier_retro" },
-        { "id": "boule_bronze_retro", "name": "Bronze Retro", "price": 500, "type": "boule", "description": "Bronze pixel art. Collector.", "icon": "ball_bronze_retro" },
-        { "id": "boule_chrome_retro", "name": "Chrome Retro", "price": 500, "type": "boule", "description": "Chrome pixel art. Classique.", "icon": "ball_chrome_retro" },
-        { "id": "boule_noire_retro", "name": "Noire Retro", "price": 600, "type": "boule", "description": "Sombre et vintage.", "icon": "ball_noire_retro" },
-        { "id": "boule_rouge_retro", "name": "Rouge Retro", "price": 600, "type": "boule", "description": "Rouge pixel art. Flamboyante.", "icon": "ball_rouge_retro" }
+        { "id": "boule_acier_retro", "name": "Acier Retro", "price": 500, "type": "boule", "description": "Edition pixel art vintage", "icon": "ball_acier_retro" },
+        { "id": "boule_bronze_retro", "name": "Bronze Retro", "price": 500, "type": "boule", "description": "Bronze pixel art collector", "icon": "ball_bronze_retro" },
+        { "id": "boule_chrome_retro", "name": "Chrome Retro", "price": 500, "type": "boule", "description": "Chrome pixel art classique", "icon": "ball_chrome_retro" },
+        { "id": "boule_noire_retro", "name": "Noire Retro", "price": 600, "type": "boule", "description": "Sombre et vintage", "icon": "ball_noire_retro" },
+        { "id": "boule_rouge_retro", "name": "Rouge Retro", "price": 600, "type": "boule", "description": "Rouge pixel art flamboyante", "icon": "ball_rouge_retro" }
       ]
     },
     {

@@ -13,7 +13,7 @@ function defaultSaveData() {
         purchases: [],
         unlockedCharacters: ["rookie"],
         unlockedTerrains: ["village", "parc", "colline"],
-        unlockedBoules: ["acier", "chrome", "chrome_retro"],
+        unlockedBoules: ["acier", "chrome"],
         unlockedCochonnets: ["classique"],
         badges: [],
         titles: [],
