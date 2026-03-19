@@ -5,8 +5,8 @@ function defaultSaveData() {
     return {
         version: SAVE_VERSION,
         rookie: {
-            stats: { precision: 3, puissance: 3, effet: 2, sang_froid: 2 },
-            totalPoints: 10,
+            stats: { precision: 4, puissance: 4, effet: 3, sang_froid: 3 },
+            totalPoints: 14,
             abilitiesUnlocked: []
         },
         galets: 50,
@@ -137,8 +137,8 @@ export function addRookiePoints(points) {
     // Check ability unlocks
     for (const unlock of [
         { threshold: 18, id: 'instinct' },
-        { threshold: 26, id: 'determination' },
-        { threshold: 34, id: 'naturel' }
+        { threshold: 24, id: 'determination' },
+        { threshold: 32, id: 'naturel' }
     ]) {
         if (save.rookie.totalPoints >= unlock.threshold && !save.rookie.abilitiesUnlocked.includes(unlock.id)) {
             save.rookie.abilitiesUnlocked.push(unlock.id);

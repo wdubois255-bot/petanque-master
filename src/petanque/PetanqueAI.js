@@ -181,12 +181,12 @@ export default class PetanqueAI {
         // Equilibre (Marcel): Le Vieux Renard — bon partout, pas aussi specialise
         // Bonus moderé dans les deux modes (entre specialiste et generique)
         if (this.personality.personality === 'equilibre') {
-            if (shotMode === 'pointer') { angleDev *= 0.80; powerDev *= 0.80; }
+            if (shotMode === 'pointer') { angleDev *= 0.65; powerDev *= 0.65; }
             else { angleDev *= 0.85; powerDev *= 0.85; }
         }
 
         // === MOMENTUM EFFECT (all personalities) ===
-        const momentumMod = 1 - this._momentum * this._momentumSensitivity * 3;
+        const momentumMod = 1 + this._momentum * this._momentumSensitivity * 3;
         angleDev *= Math.max(0.3, momentumMod);
         powerDev *= Math.max(0.3, momentumMod);
 

@@ -120,7 +120,7 @@ function playNoise(duration, volume = 0.15, filterFreq = 2000, filterType = 'low
 // === SFX exports ===
 
 export function sfxBouleBoule() {
-    if (playFile('sfx_boule_clac')) return;
+    if (playFile('sfx_boule_clac', { rate: 0.9 + Math.random() * 0.2 })) return;
     playTone(800, 0.08, 'square', 0.25);
     playTone(1200, 0.05, 'square', 0.15);
     playTone(1600, 0.04, 'sine', 0.08);
@@ -135,7 +135,7 @@ export function sfxBouleCochonnet() {
 }
 
 export function sfxLanding(terrainType = 'terre') {
-    if (playFile('sfx_boule_atterrissage')) return;
+    if (playFile('sfx_boule_atterrissage', { rate: 0.9 + Math.random() * 0.2 })) return;
     const freqMap = { terre: 200, herbe: 300, sable: 150, dalles: 600 };
     const noiseMap = { terre: 1500, herbe: 1000, sable: 800, dalles: 3000 };
     const freq = freqMap[terrainType] || 200;

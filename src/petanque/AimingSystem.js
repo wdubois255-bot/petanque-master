@@ -954,9 +954,9 @@ export default class AimingSystem {
         if (this.isAbilityActive('naturel') || this._secondaryActive && this._secondaryDef?.id === 'naturel') {
             base *= 0.05;
         }
-        // Determination passive: halve wobble after losing a mene
+        // Determination passive: 80% wobble reduction after losing a mene
         if (this._determinationActive) {
-            base *= 0.5;
+            base *= 0.2;
         }
         return base * this._getFocusMultiplier();
     }

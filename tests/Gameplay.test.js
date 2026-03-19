@@ -510,7 +510,7 @@ describe('Retro (backspin) physics', () => {
 describe('Loft presets physics', () => {
     it('roulette: 15% fly, 85% roll, no retro', () => {
         expect(LOFT_ROULETTE.landingFactor).toBe(0.15);
-        expect(LOFT_ROULETTE.rollEfficiency).toBe(0.7);
+        expect(LOFT_ROULETTE.rollEfficiency).toBe(1.1);
         expect(LOFT_ROULETTE.retroAllowed).toBe(false);
     });
 
@@ -521,26 +521,26 @@ describe('Loft presets physics', () => {
 
     it('plombee: 80% fly, 20% roll, retro allowed, precision penalty', () => {
         expect(LOFT_PLOMBEE.landingFactor).toBe(0.80);
-        expect(LOFT_PLOMBEE.rollEfficiency).toBe(0.50);
+        expect(LOFT_PLOMBEE.rollEfficiency).toBe(0.85);
         expect(LOFT_PLOMBEE.retroAllowed).toBe(true);
         expect(LOFT_PLOMBEE.precisionPenalty).toBe(3.0);
     });
 
     it('tir: 98% fly, high roll efficiency for energy transfer', () => {
         expect(LOFT_TIR.landingFactor).toBe(0.98);
-        expect(LOFT_TIR.rollEfficiency).toBe(16.0);
+        expect(LOFT_TIR.rollEfficiency).toBe(24.0);
         expect(LOFT_TIR.retroAllowed).toBe(true);
     });
 
     it('roulette rolls MUCH further than plombee at same power', () => {
-        // Roulette: 85% roll dist, rollEff 0.7
-        // Plombee: 20% roll dist, rollEff 0.5
+        // Roulette: 85% roll dist, rollEff 1.1
+        // Plombee: 20% roll dist, rollEff 0.85
         const power = 0.5;
         const maxDist = TERRAIN_HEIGHT * 0.85;
         const totalDist = power * maxDist;
 
-        const rouletteRoll = totalDist * (1 - 0.15) * 0.7;
-        const plombeeRoll = totalDist * (1 - 0.80) * 0.5;
+        const rouletteRoll = totalDist * (1 - 0.15) * 1.1;
+        const plombeeRoll = totalDist * (1 - 0.80) * 0.85;
         expect(rouletteRoll).toBeGreaterThan(plombeeRoll * 4);
     });
 });

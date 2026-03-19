@@ -20,17 +20,17 @@
       "description": "Le Rookie vient d'arriver au boulodrome. Il n'a pas d'experience, mais il a du potentiel. Ses stats evoluent avec chaque victoire — a terme, il peut devenir le joueur le plus polyvalent du jeu.",
       "archetype": "adaptable",
       "stats": {
-        "precision": 3,
-        "puissance": 3,
-        "effet": 2,
-        "sang_froid": 2
+        "precision": 4,
+        "puissance": 4,
+        "effet": 3,
+        "sang_froid": 3
       },
       "isRookie": true,
       "maxStatPoints": 40,
       "abilities_unlock": [
         { "threshold": 18, "id": "instinct", "ability": { "name": "L'Instinct", "charges": 1, "type": "active", "description": "Slow-mo 2s pendant la visee" } },
-        { "threshold": 26, "id": "determination", "ability": { "name": "Determination", "charges": 0, "type": "passive", "description": "Apres mene perdue, -50% wobble" } },
-        { "threshold": 34, "id": "naturel", "ability": { "name": "Le Naturel", "charges": 1, "type": "active", "description": "Throw quasi-parfait, wobble ~0" } }
+        { "threshold": 24, "id": "determination", "ability": { "name": "Determination", "charges": 0, "type": "passive", "description": "Apres mene perdue, -80% wobble" } },
+        { "threshold": 32, "id": "naturel", "ability": { "name": "Le Naturel", "charges": 1, "type": "active", "description": "Throw quasi-parfait, wobble ~0" } }
       ],
       "barks": {
         "good_shot": ["Ouais !", "Ca passe !", "Pas mal, non ?", "J'apprends vite."],
@@ -71,7 +71,7 @@
         "personality": "tireur",
         "angleDev": 7,
         "powerDev": 0.06,
-        "shootProbability": 0.85,
+        "shootProbability": 0.60,
         "loftPref": "tir",
         "targetsCocho": false
       },

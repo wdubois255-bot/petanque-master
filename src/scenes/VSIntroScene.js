@@ -33,12 +33,13 @@ export default class VSIntroScene extends Phaser.Scene {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
 
-        // Skip after first view in this session (faster flow)
-        if (window.__vsIntroSeen) {
+        // Skip after 2nd view in this session (keep cinematic for first 2 matches)
+        if (!window.__vsIntroCount) window.__vsIntroCount = 0;
+        window.__vsIntroCount++;
+        if (window.__vsIntroCount > 2) {
             this._startMatch();
             return;
         }
-        window.__vsIntroSeen = true;
 
         setSoundScene(this);
         const player = this.playerCharacter;
@@ -148,8 +149,16 @@ export default class VSIntroScene extends Phaser.Scene {
         }
 
         // Terrain name at bottom
-        const terrainText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, this.terrainName, {
+        const terrainText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 65, this.terrainName, {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
+        }).setOrigin(0.5).setAlpha(0);
+
+        // Difficulty label
+        const diffMap = { easy: 'FACILE', medium: 'MOYEN', hard: 'DIFFICILE', expert: 'EXPERT' };
+        const diffColors = { easy: '#6B8E4E', medium: '#D4A574', hard: '#C44B3F', expert: '#9B7BB8' };
+        const diff = this.matchData.difficulty || 'medium';
+        const diffLabel = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 45, diffMap[diff] || diff.toUpperCase(), {
+            fontFamily: 'monospace', fontSize: '12px', color: diffColors[diff] || '#D4A574', shadow: SHADOW
         }).setOrigin(0.5).setAlpha(0);
 
         // Intro text (arcade hint)
@@ -165,7 +174,7 @@ export default class VSIntroScene extends Phaser.Scene {
         // Collect all animatable objects for final fade-out
         const allElements = [
             vsText, playerNameText, playerTitleText, opponentNameText, opponentTitleText,
-            terrainText, divider
+            terrainText, diffLabel, divider
         ];
         if (playerSprite) allElements.push(playerSprite);
         if (opponentSprite) allElements.push(opponentSprite);
@@ -249,6 +258,7 @@ export default class VSIntroScene extends Phaser.Scene {
         if (hintText) {
             this.tweens.add({ targets: hintText, alpha: 1, duration: 300, delay: 900 });
         }
+        this.tweens.add({ targets: diffLabel, alpha: 1, duration: 300, delay: 850 });
 
         // 6. Fade out everything before iris wipe (1700ms)
         this.time.delayedCall(1700, () => {

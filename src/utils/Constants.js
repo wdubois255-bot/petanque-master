@@ -41,23 +41,25 @@ export const THROW_SHAKE_INTENSITY = 4;
 export const THROW_SHAKE_DURATION = 150;
 
 // Petanque - loft presets (research/25_cahier_des_charges_realisme.md)
+// rollEfficiency = multiplicateur de distance reelle vs distance cible
+// 1.0 = la boule roule exactement la distance prevue, <1 = tombe court, >1 = depasse
 // - Roulette : 15% vol, 85% roulement, arc tres bas (~0.3-0.5m reel)
 // - Demi-portee : 50/50, arc moyen (1.5-2m reel)
 // - Plombee : 80% vol, 20% roulement (PAS une boule morte, roule ~20% de sa trajectoire)
 // - Tir au fer : 95% vol, arc haut (2-3m), impact violent
 export const LOFT_ROULETTE = {
     id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 0.7,
+    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 1.1,
     precisionPenalty: 0, retroAllowed: false
 };
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
-    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 0.6,
+    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 1.0,
     precisionPenalty: 0, retroAllowed: true
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.50,
+    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.85,
     precisionPenalty: 3.0, retroAllowed: true
 };
 // Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
@@ -70,14 +72,14 @@ export const LOFT_PLOMBEE = {
 // rollEfficiency élevé = la vitesse résiduelle est transférée en collision
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.98, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 16.0,
+    landingFactor: 0.98, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 24.0,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
 };
 // Tir devant : atterrit 8px avant la cible, rebondit dedans
 // Moins precis que tir au fer mais plus tolerant sur la distance
 export const LOFT_TIR_DEVANT = {
     id: 'tir_devant', label: 'TIR DEVANT',
-    landingFactor: 0.88, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 14.0,
+    landingFactor: 0.88, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 20.0,
     precisionPenalty: 0.7, retroAllowed: true, isTir: true
 };
 
@@ -88,7 +90,7 @@ export const RETRO_PHASE1_MULT = 5.0;
 export const RETRO_PHASE1_FRAMES = 30;
 export const RETRO_PHASE2_FRAMES = 18;
 export const RETRO_TERRAIN_EFF = {
-    terre: 1.0, herbe: 1.3, sable: 2.0, dalles: 0.4
+    terre: 1.0, herbe: 1.3, sable: 2.0, dalles: 0.6
 };
 export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
 
@@ -243,7 +245,7 @@ export const TERRAIN_FRICTION = {
     terre: 1.0,
     herbe: 1.8,
     sable: 3.5,
-    dalles: 0.4
+    dalles: 0.7
 };
 
 // Ball colors (used as fallback when sprites not loaded)

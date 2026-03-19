@@ -18,10 +18,13 @@ export default class TutorialScene extends Phaser.Scene {
         super('TutorialScene');
     }
 
-    create() {
+    init() {
         this._page = 0;
         this._inputEnabled = false;
         this._transitioning = false;
+    }
+
+    create() {
 
         setSoundScene(this);
 

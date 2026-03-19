@@ -105,6 +105,11 @@ export default class QuickPlayScene extends Phaser.Scene {
         super('QuickPlayScene');
     }
 
+    init() {
+        this._selections = null;
+        this._selectedRow = 0;
+    }
+
     create() {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();

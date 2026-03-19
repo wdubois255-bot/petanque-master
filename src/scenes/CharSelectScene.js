@@ -18,10 +18,11 @@ export default class CharSelectScene extends Phaser.Scene {
     init(data) {
         // Mode: 'arcade' or 'versus' or 'quickplay'
         this.mode = data.mode || 'arcade';
-        // For arcade: which round (to show opponent info)
         this.arcadeRound = data.arcadeRound || null;
-        // Return data for after selection
         this.returnData = data.returnData || {};
+        this._selectedIndex = 0;
+        this._confirmed = false;
+        this._uiElements = [];
     }
 
     create() {

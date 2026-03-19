@@ -58,7 +58,7 @@ export default class PetanqueEngine {
         this.ballsPerPlayer = this.format === 'une_boule' ? 1 : (this.format === 'triplette' ? 2 : 3);
 
         // Victory score (7 for une_boule, 13 normally)
-        this.victoryScore = this.format === 'une_boule' ? 7 : VICTORY_SCORE;
+        this.victoryScore = this.format === 'une_boule' ? 11 : VICTORY_SCORE;
 
         this.scores = { player: 0, opponent: 0 };
         this.mene = 1;
@@ -916,6 +916,10 @@ export default class PetanqueEngine {
                             const mx = (allBodies[i].x + allBodies[j].x) / 2;
                             const my = (allBodies[i].y + allBodies[j].y) / 2;
                             this._spawnCollisionSparks(mx, my);
+                            // Screen shake on boule-boule impact
+                            this.scene.cameras.main.shake(60, 0.003);
+                            // Dust at collision point
+                            if (this._spawnDust) this._spawnDust(mx, my, 3);
                         }
 
                         if (collided && this.lastThrownBall) {
@@ -1054,8 +1058,9 @@ export default class PetanqueEngine {
         // Hitstop
         this._hitstopUntil = Date.now() + HITSTOP_CARREAU_MS;
 
-        // SFX + visuals
+        // SFX + visuals + stronger shake for carreau
         sfxCarreau();
+        this.scene.cameras.main.shake(120, 0.006);
         this.renderer.celebrateCarreau(ball);
     }
 

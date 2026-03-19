@@ -230,7 +230,13 @@ export default class ResultScene extends Phaser.Scene {
             this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
         }
 
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESC', () => {
+            if (this.arcadeState) {
+                this._returnToArcade();
+            } else {
+                this.scene.start('TitleScene');
+            }
+        });
 
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW

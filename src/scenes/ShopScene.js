@@ -27,16 +27,20 @@ export default class ShopScene extends Phaser.Scene {
         super('ShopScene');
     }
 
+    init() {
+        this.activeTab = 0;
+        this.selectedIndex = 0;
+        this.cardObjects = [];
+        this.tabObjects = [];
+        this._purchasing = false;
+    }
+
     create() {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
         setSoundScene(this);
 
         this.shopData = this.cache.json.get('shop');
-        this.activeTab = 0;
-        this.selectedIndex = 0;
-        this.cardObjects = [];
-        this.tabObjects = [];
         this._purchasing = false;
 
         this._drawBackground();
