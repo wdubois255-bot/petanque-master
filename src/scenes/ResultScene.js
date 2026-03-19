@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
-import { addEcus, loadSave } from '../utils/SaveManager.js';
+import { addGalets, loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -20,7 +20,7 @@ export default class ResultScene extends Phaser.Scene {
         this.returnScene = data.returnScene || 'TitleScene';
         this.arcadeState = data.arcadeState || null;
         this.matchStats = data.matchStats || {};
-        this.ecuEarned = data.ecuEarned || 0;
+        this.galetsEarned = data.galetsEarned || 0;
     }
 
     create() {
@@ -152,16 +152,16 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5);
         }
 
-        // === ECUS EARNED ===
-        if (this.won && this.ecuEarned > 0) {
-            addEcus(this.ecuEarned);
-            const ecuText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${this.ecuEarned} Ecus`, {
+        // === GALETS EARNED ===
+        if (this.won && this.galetsEarned > 0) {
+            addGalets(this.galetsEarned);
+            const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${this.galetsEarned} Galets`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setAlpha(0).setScale(0.5);
 
             this.tweens.add({
-                targets: ecuText, alpha: 1, scale: 1,
+                targets: galetText, alpha: 1, scale: 1,
                 duration: 500, ease: 'Back.easeOut', delay: 800
             });
         }

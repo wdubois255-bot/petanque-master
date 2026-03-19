@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, ECU_WIN_ARCADE, ECU_ARCADE_COMPLETE, ECU_ARCADE_PERFECT } from '../utils/Constants.js';
-import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addEcus, recordWin } from '../utils/SaveManager.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT } from '../utils/Constants.js';
+import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin } from '../utils/SaveManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -82,7 +82,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 // Unlock rewards based on round won
                 this._processRoundUnlocks(completedRound);
 
-                // Save arcade progress, record win (Ecus are added in ResultScene)
+                // Save arcade progress, record win (Galets are added in ResultScene)
                 setArcadeProgress(completedRound);
                 recordWin();
             } else {
@@ -394,10 +394,10 @@ export default class ArcadeScene extends Phaser.Scene {
         const isPerfect = this.losses === 0;
         this._isPerfect = isPerfect;
 
-        // Award completion bonus Ecus
-        const bonusEcus = isPerfect ? ECU_ARCADE_PERFECT : ECU_ARCADE_COMPLETE;
-        addEcus(bonusEcus);
-        this._completionEcus = bonusEcus;
+        // Award completion bonus Galets
+        const bonusGalets = isPerfect ? GALET_ARCADE_PERFECT : GALET_ARCADE_COMPLETE;
+        addGalets(bonusGalets);
+        this._completionGalets = bonusGalets;
 
         // Mark arcade perfect in save if applicable
         if (isPerfect) {
@@ -471,9 +471,9 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Ecus bonus display
-        const ecuLabel = this._isPerfect ? 'Bonus parfait' : 'Bonus completion';
-        this.add.text(GAME_WIDTH / 2, 335, `+${this._completionEcus} Ecus (${ecuLabel})`, {
+        // Galets bonus display
+        const bonusLabel = this._isPerfect ? 'Bonus parfait' : 'Bonus completion';
+        this.add.text(GAME_WIDTH / 2, 335, `+${this._completionGalets} Galets (${bonusLabel})`, {
             fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 

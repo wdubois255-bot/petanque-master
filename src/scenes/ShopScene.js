@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
-import { loadSave, saveSave, spendEcus, getRookieStats, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
+import { loadSave, saveSave, spendGalets, getRookieStats, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -61,7 +61,7 @@ export default class ShopScene extends Phaser.Scene {
     }
 
     // ================================================================
-    // HEADER: Title + Ecus balance
+    // HEADER: Title + Galets balance
     // ================================================================
 
     _drawHeader() {
@@ -70,36 +70,36 @@ export default class ShopScene extends Phaser.Scene {
             originX: 0, originY: 0.5, heavyShadow: true
         });
 
-        // Ecus balance top-right
-        this._drawEcusDisplay();
+        // Galets balance top-right
+        this._drawGaletsDisplay();
     }
 
-    _drawEcusDisplay() {
-        if (this.ecusGroup) {
-            this.ecusGroup.forEach(o => o.destroy());
+    _drawGaletsDisplay() {
+        if (this.galetsGroup) {
+            this.galetsGroup.forEach(o => o.destroy());
         }
-        this.ecusGroup = [];
+        this.galetsGroup = [];
 
         const save = loadSave();
-        const ecus = save.ecus;
+        const galets = save.galets;
 
-        // Coin icon (small gold circle)
+        // Coin icon (small stone circle)
         const coinGfx = this.add.graphics();
-        coinGfx.fillStyle(0xFFD700, 1);
+        coinGfx.fillStyle(0xC4854A, 1);
         coinGfx.fillCircle(GAME_WIDTH - 110, 28, 8);
-        coinGfx.lineStyle(1.5, 0xB8860B, 1);
+        coinGfx.lineStyle(1.5, 0x8B6914, 1);
         coinGfx.strokeCircle(GAME_WIDTH - 110, 28, 8);
-        // "E" on coin
-        const coinLetter = this.add.text(GAME_WIDTH - 110, 28, 'E', {
+        // "G" on coin
+        const coinLetter = this.add.text(GAME_WIDTH - 110, 28, 'G', {
             fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28',
             fontStyle: 'bold'
         }).setOrigin(0.5);
 
-        const ecusText = UIFactory.addText(this, GAME_WIDTH - 88, 28, `${ecus}`, '20px', '#FFD700', {
+        const galetsText = UIFactory.addText(this, GAME_WIDTH - 88, 28, `${galets}`, '20px', '#FFD700', {
             originX: 0, originY: 0.5, heavyShadow: true
         });
 
-        this.ecusGroup = [coinGfx, coinLetter, ecusText];
+        this.galetsGroup = [coinGfx, coinLetter, galetsText];
     }
 
     // ================================================================
@@ -183,7 +183,7 @@ export default class ShopScene extends Phaser.Scene {
 
     _createCard(item, index, cx, cy, save) {
         const owned = save.purchases.includes(item.id);
-        const canAfford = save.ecus >= item.price;
+        const canAfford = save.galets >= item.price;
         const isSelected = index === this.selectedIndex;
         const objects = [];
 
@@ -300,7 +300,7 @@ export default class ShopScene extends Phaser.Scene {
 
         sfxUIClick();
 
-        const success = spendEcus(item.price);
+        const success = spendGalets(item.price);
         if (!success) {
             this._purchasing = false;
             return;
@@ -344,7 +344,7 @@ export default class ShopScene extends Phaser.Scene {
 
         // Refresh display after short delay
         this.time.delayedCall(300, () => {
-            this._drawEcusDisplay();
+            this._drawGaletsDisplay();
             this._drawItems();
             this._purchasing = false;
         });
@@ -449,7 +449,7 @@ export default class ShopScene extends Phaser.Scene {
                     setSelectedBoule(id);
                     sfxUIClick();
                     this._drawItems(); // refresh
-                    this._drawEcusDisplay();
+                    this._drawGaletsDisplay();
                 });
                 objects.push(img);
             }
@@ -494,7 +494,7 @@ export default class ShopScene extends Phaser.Scene {
                     setSelectedCochonnet(id);
                     sfxUIClick();
                     this._drawItems();
-                    this._drawEcusDisplay();
+                    this._drawGaletsDisplay();
                 });
                 objects.push(img);
             }
@@ -587,7 +587,7 @@ export default class ShopScene extends Phaser.Scene {
 
         const save = loadSave();
         const owned = save.purchases.includes(item.id);
-        const canAfford = save.ecus >= item.price;
+        const canAfford = save.galets >= item.price;
 
         if (!owned && canAfford) {
             this._purchaseItem(item, this.selectedIndex);

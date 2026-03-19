@@ -226,8 +226,8 @@ export const UI = {
     PILL_SPACING: 43,
     BACK_X: 60,
     BACK_Y: GAME_HEIGHT - 20,
-    ECUS_X: GAME_WIDTH - 90,
-    ECUS_Y: 28,
+    GALETS_X: GAME_WIDTH - 90,
+    GALETS_Y: 28,
 };
 
 // Terrain colors (for placeholder rendering)
@@ -293,13 +293,13 @@ export function getCharThrowKey(charId) {
     return CHAR_THROW_MAP[charId] || null;
 }
 
-// Ecus (currency)
-export const ECU_WIN_ARCADE = 50;
-export const ECU_WIN_QUICKPLAY = 20;
-export const ECU_CARREAU_BONUS = 10;
-export const ECU_ARCADE_COMPLETE = 100;
-export const ECU_ARCADE_PERFECT = 200;
-export const ECU_STARTING = 50;
+// Galets (monnaie in-game)
+export const GALET_WIN_ARCADE = 50;
+export const GALET_WIN_QUICKPLAY = 20;
+export const GALET_CARREAU_BONUS = 10;
+export const GALET_ARCADE_COMPLETE = 100;
+export const GALET_ARCADE_PERFECT = 200;
+export const GALET_STARTING = 50;
 
 // Rookie progression
 export const ROOKIE_XP_ARCADE = 4;

@@ -469,11 +469,11 @@ export default class TitleScene extends Phaser.Scene {
 
         const items = ['Mode Arcade', 'Partie Rapide', 'Mon Personnage', 'Boutique', 'Parametres'];
 
-        // Ecus display (bottom-right)
-        if (!this._ecusDisplay) {
-            this._ecusDisplay = UIFactory.createEcusDisplay(this, UI.ECUS_X, UI.ECUS_Y);
+        // Galets display (bottom-right)
+        if (!this._galetsDisplay) {
+            this._galetsDisplay = UIFactory.createGaletsDisplay(this, UI.GALETS_X, UI.GALETS_Y);
         } else {
-            this._ecusDisplay.refresh();
+            this._galetsDisplay.refresh();
         }
 
         // Menu container

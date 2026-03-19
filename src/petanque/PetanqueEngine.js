@@ -18,7 +18,7 @@ import {
     MAX_THROW_SPEED,
     SLOWMO_DISTANCE, SLOWMO_SPEED_THRESHOLD, SLOWMO_FACTOR, SLOWMO_LERP_SPEED,
     SPEED_THRESHOLD,
-    ECU_WIN_ARCADE, ECU_WIN_QUICKPLAY, ECU_CARREAU_BONUS,
+    GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
     PALET_THRESHOLD,
     CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED
 } from '../utils/Constants.js';
@@ -716,12 +716,12 @@ export default class PetanqueEngine {
 
         // If arcade/versus mode: redirect to ResultScene
         if (this.scene.arcadeState || this.scene.playerCharacter) {
-            // Calculate Ecus earned
+            // Calculate Galets earned
             const playerCarreaux = this.matchStats?.carreaux?.player || 0;
-            let ecuEarned = 0;
+            let galetsEarned = 0;
             if (isVictory) {
-                ecuEarned = this.scene.arcadeState ? ECU_WIN_ARCADE : ECU_WIN_QUICKPLAY;
-                ecuEarned += playerCarreaux * ECU_CARREAU_BONUS;
+                galetsEarned = this.scene.arcadeState ? GALET_WIN_ARCADE : GALET_WIN_QUICKPLAY;
+                galetsEarned += playerCarreaux * GALET_CARREAU_BONUS;
             }
 
             this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, () => {
@@ -733,7 +733,7 @@ export default class PetanqueEngine {
                     terrainName: this.terrainType,
                     returnScene: this.scene.returnScene || 'TitleScene',
                     arcadeState: this.scene.arcadeState,
-                    ecuEarned,
+                    galetsEarned,
                     matchStats: {
                         menes: this.matchStats?.menesPlayed || this.mene,
                         fanny: isFanny,

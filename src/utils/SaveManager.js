@@ -9,7 +9,7 @@ function defaultSaveData() {
             totalPoints: 10,
             abilitiesUnlocked: []
         },
-        ecus: 50,
+        galets: 50,
         purchases: [],
         unlockedCharacters: ["rookie"],
         unlockedTerrains: ["village", "parc", "colline"],
@@ -45,6 +45,11 @@ export function loadSave() {
         if (!raw) return defaultSaveData();
         const data = JSON.parse(raw);
         if (!data.version || data.version < 2) return migrateV1(data);
+        // Migrate ecus → galets (rename from old saves)
+        if (data.ecus !== undefined && data.galets === undefined) {
+            data.galets = data.ecus;
+            delete data.ecus;
+        }
         return { ...defaultSaveData(), ...data };
     } catch {
         return defaultSaveData();
@@ -67,17 +72,17 @@ export function resetSave() {
 }
 
 // Convenience helpers
-export function addEcus(amount) {
+export function addGalets(amount) {
     const save = loadSave();
-    save.ecus += amount;
+    save.galets += amount;
     saveSave(save);
-    return save.ecus;
+    return save.galets;
 }
 
-export function spendEcus(amount) {
+export function spendGalets(amount) {
     const save = loadSave();
-    if (save.ecus < amount) return false;
-    save.ecus -= amount;
+    if (save.galets < amount) return false;
+    save.galets -= amount;
     saveSave(save);
     return true;
 }
@@ -190,8 +195,8 @@ export function getRookieStats() {
     return save.rookie;
 }
 
-export function getEcus() {
-    return loadSave().ecus;
+export function getGalets() {
+    return loadSave().galets;
 }
 
 // Keep backward-compatible exports for old code that might use slots

@@ -224,35 +224,35 @@ export default class UIFactory {
     }
 
     // ================================================================
-    // ECUS DISPLAY (reusable currency indicator)
+    // GALETS DISPLAY (reusable currency indicator)
     // ================================================================
 
-    static createEcusDisplay(scene, x, y, options = {}) {
+    static createGaletsDisplay(scene, x, y, options = {}) {
         const { depth = 50 } = options;
         const save = loadSave();
         const objects = [];
 
-        // Coin icon
+        // Stone icon (galet = petit caillou rond)
         const coinGfx = scene.add.graphics().setDepth(depth);
-        coinGfx.fillStyle(0xFFD700, 1);
+        coinGfx.fillStyle(0xC4854A, 1);
         coinGfx.fillCircle(x, y, 8);
-        coinGfx.lineStyle(1.5, 0xB8860B, 1);
+        coinGfx.lineStyle(1.5, 0x8B6914, 1);
         coinGfx.strokeCircle(x, y, 8);
         objects.push(coinGfx);
 
-        const coinLetter = scene.add.text(x, y, 'E', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28', fontStyle: 'bold'
+        const coinLetter = scene.add.text(x, y, 'G', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(depth + 1);
         objects.push(coinLetter);
 
-        const ecusText = UIFactory.addText(scene, x + 22, y, `${save.ecus}`, UI.MENU_SIZE, CSS.OR, {
+        const galetsText = UIFactory.addText(scene, x + 22, y, `${save.galets}`, UI.MENU_SIZE, CSS.OR, {
             originX: 0, originY: 0.5, heavyShadow: true, depth
         });
-        objects.push(ecusText);
+        objects.push(galetsText);
 
-        return { objects, ecusText, refresh: () => {
+        return { objects, galetsText, refresh: () => {
             const s = loadSave();
-            ecusText.setText(`${s.ecus}`);
+            galetsText.setText(`${s.galets}`);
         }};
     }
 

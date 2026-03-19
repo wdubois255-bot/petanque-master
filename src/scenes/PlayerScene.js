@@ -24,8 +24,8 @@ export default class PlayerScene extends Phaser.Scene {
         // Title
         UIFactory.addTitle(this, GAME_WIDTH / 2, UI.HEADER_Y, 'MON PERSONNAGE');
 
-        // Ecus display
-        this._ecusDisplay = UIFactory.createEcusDisplay(this, UI.ECUS_X, UI.ECUS_Y);
+        // Galets display
+        this._galetsDisplay = UIFactory.createGaletsDisplay(this, UI.GALETS_X, UI.GALETS_Y);
 
         // Back button
         UIFactory.addBackButton(this, 'TitleScene');
