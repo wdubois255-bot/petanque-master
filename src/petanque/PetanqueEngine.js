@@ -1165,14 +1165,14 @@ export default class PetanqueEngine {
 
             // Casquette : cible a a peine bouge
             if (targetSpeed < CASQUETTE_MAX_SPEED) {
-                this._showShotLabel(ball, isTirDevant ? 'Devant... Casquette' : 'Casquette...', '#888888', 12);
+                this._showShotLabel(ball, isTirDevant ? 'Court... Casquette' : 'Casquette...', '#888888', 12);
                 this._shotCollisions = [];
                 return;
             }
 
             // Blessee : cible a un peu bouge mais pas assez
             if (targetSpeed < BLESSER_MAX_SPEED) {
-                this._showShotLabel(ball, isTirDevant ? 'Devant... Blessee' : 'Blessee...', '#AA8866', 12);
+                this._showShotLabel(ball, isTirDevant ? 'Court... Blessee' : 'Blessee...', '#AA8866', 12);
                 this._shotCollisions = [];
                 return;
             }
@@ -1209,9 +1209,9 @@ export default class PetanqueEngine {
                 }
             }
 
-            // Bon tir sans label special — afficher "Devant !" si tir devant, sinon rien
+            // Bon tir sans label special — afficher "Court !" si tir devant, sinon rien
             if (isTirDevant) {
-                this._showShotLabel(ball, 'Devant !', '#6B8E4E', 13);
+                this._showShotLabel(ball, 'Court !', '#6B8E4E', 13);
                 this._shotCollisions = [];
                 return;
             }
