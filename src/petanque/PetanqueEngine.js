@@ -727,29 +727,42 @@ export default class PetanqueEngine {
                 galetsEarned += playerCarreaux * GALET_CARREAU_BONUS;
             }
 
-            this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, () => {
-                this.scene.scene.start('ResultScene', {
-                    won: isVictory,
-                    scores: { ...this.scores },
-                    playerCharacter: this.scene.playerCharacter,
-                    opponentCharacter: this.scene.opponentCharacter,
-                    terrainName: this.terrainType,
-                    returnScene: this.scene.returnScene || 'TitleScene',
-                    arcadeState: this.scene.arcadeState,
-                    galetsEarned,
-                    matchStats: {
-                        menes: this.matchStats?.menesPlayed || this.mene,
-                        fanny: isFanny,
-                        bestMene: this.matchStats?.bestMeneScore || 0,
-                        carreaux: playerCarreaux,
-                        biberons: this.matchStats?.biberons?.player || 0,
-                        shots: this.matchStats?.shots?.player || 0,
-                        points_attempted: this.matchStats?.points?.player || 0,
-                        bestBallDist: this.matchStats?.bestBallDist || Infinity,
-                        opponentCarreaux: this.matchStats?.carreaux?.opponent || 0
-                    }
-                });
-            });
+            const resultData = {
+                won: isVictory,
+                scores: { ...this.scores },
+                playerCharacter: this.scene.playerCharacter,
+                opponentCharacter: this.scene.opponentCharacter,
+                terrainName: this.terrainType,
+                returnScene: this.scene.returnScene || 'TitleScene',
+                arcadeState: this.scene.arcadeState,
+                galetsEarned,
+                matchStats: {
+                    menes: this.matchStats?.menesPlayed || this.mene,
+                    fanny: isFanny,
+                    bestMene: this.matchStats?.bestMeneScore || 0,
+                    carreaux: playerCarreaux,
+                    biberons: this.matchStats?.biberons?.player || 0,
+                    shots: this.matchStats?.shots?.player || 0,
+                    points_attempted: this.matchStats?.points?.player || 0,
+                    bestBallDist: this.matchStats?.bestBallDist || Infinity,
+                    opponentCarreaux: this.matchStats?.carreaux?.opponent || 0
+                }
+            };
+
+            let redirected = false;
+            const doRedirect = () => {
+                if (redirected) return;
+                redirected = true;
+                this.scene.cameras.main.setZoom(1.0);
+                this.scene.scene.start('ResultScene', resultData);
+            };
+
+            this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, doRedirect);
+
+            // Allow skip with Space/Enter
+            this.scene.input.keyboard.once('keydown-SPACE', doRedirect);
+            this.scene.input.keyboard.once('keydown-ENTER', doRedirect);
+            this.scene.input.once('pointerdown', doRedirect);
             return;
         }
 
