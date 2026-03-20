@@ -414,6 +414,7 @@ export default class PetanqueEngine {
         this.lastTeamPlayed = team;
         this.lastThrownBall = ball;
         this.lastShotWasTir = shotMode === 'tirer';
+        this.lastShotLoft = loft;
         this._pendingCarreauChecks = [];
         this._shotCollisions = [];
         this._lastImpactPoint = null;
@@ -1156,6 +1157,7 @@ export default class PetanqueEngine {
         }
 
         // Analyse du tir contre une seule cible
+        const isTirDevant = this.lastShotLoft?.id === 'tir_devant';
         if (hitEnemy.length === 1) {
             const target = hitEnemy[0];
             const targetSpeed = Math.sqrt(target.vx ** 2 + target.vy ** 2);
@@ -1163,14 +1165,14 @@ export default class PetanqueEngine {
 
             // Casquette : cible a a peine bouge
             if (targetSpeed < CASQUETTE_MAX_SPEED) {
-                this._showShotLabel(ball, 'Casquette...', '#888888', 12);
+                this._showShotLabel(ball, isTirDevant ? 'Devant... Casquette' : 'Casquette...', '#888888', 12);
                 this._shotCollisions = [];
                 return;
             }
 
             // Blessee : cible a un peu bouge mais pas assez
             if (targetSpeed < BLESSER_MAX_SPEED) {
-                this._showShotLabel(ball, 'Blessee...', '#AA8866', 12);
+                this._showShotLabel(ball, isTirDevant ? 'Devant... Blessee' : 'Blessee...', '#AA8866', 12);
                 this._shotCollisions = [];
                 return;
             }
@@ -1205,6 +1207,13 @@ export default class PetanqueEngine {
                     this._shotCollisions = [];
                     return;
                 }
+            }
+
+            // Bon tir sans label special — afficher "Devant !" si tir devant, sinon rien
+            if (isTirDevant) {
+                this._showShotLabel(ball, 'Devant !', '#6B8E4E', 13);
+                this._shotCollisions = [];
+                return;
             }
         }
 
