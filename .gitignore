@@ -15,4 +15,4 @@ playwright-report/
 comparison/
 photo vrai joueur/
 *.pxo
-docs/
+# docs/ — inclus dans le repo (MASTER_PLAN, archives)

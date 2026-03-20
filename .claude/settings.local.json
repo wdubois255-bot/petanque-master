@@ -25,5 +25,31 @@
     "additionalDirectories": [
       "C:\\Users\\wdubo\\OneDrive\\Bureau\\Projets\\Projet jeux web petanque Pokémon\\assets"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-edit.sh",
+            "timeout": 30,
+            "statusMessage": "Running unit tests...",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo Claude a termine sa reponse"
+          }
+        ]
+      }
+    ]
   }
 }
