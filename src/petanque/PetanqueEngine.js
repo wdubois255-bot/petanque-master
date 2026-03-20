@@ -478,7 +478,7 @@ export default class PetanqueEngine {
         if (ball.textureKey && this.scene.textures.exists(ball.textureKey)) {
             const scale = ball.radius / 28;
             flySprite = this.scene.add.image(startX, startY, ball.textureKey).setScale(scale).setDepth(50);
-            flyShadow = this.scene.add.ellipse(startX, startY, ball.radius * 1.8, ball.radius * 0.8, 0x000000, 0.15).setDepth(49);
+            flyShadow = this.scene.add.ellipse(startX, startY, ball.radius * 1.8, ball.radius * 0.8, 0x3A2E28, 0.15).setDepth(49);
         } else {
             flyGfx = this.scene.add.graphics().setDepth(50);
             flyShadow = this.scene.add.graphics().setDepth(49);
@@ -525,7 +525,7 @@ export default class PetanqueEngine {
 
                     flyShadow.clear();
                     const shadowShrink = 1 - heightRatio * 0.6;
-                    flyShadow.fillStyle(0x000000, 0.12 * shadowShrink);
+                    flyShadow.fillStyle(0x3A2E28, 0.12 * shadowShrink);
                     flyShadow.fillCircle(cx, cy, ball.radius * shadowShrink);
                 }
             },
@@ -535,8 +535,15 @@ export default class PetanqueEngine {
 
                 ball.x = targetX;
                 ball.y = targetY;
-                if (ball.sprite) { ball.sprite.setVisible(true); ball.shadowSprite.setVisible(true); }
-                if (ball.gfx) { ball.gfx.setVisible(true); ball.shadow.setVisible(true); }
+                // Force ball visible after flight animation
+                if (ball.sprite) {
+                    ball.sprite.setVisible(true).setPosition(targetX, targetY).setAlpha(1);
+                    if (ball.shadowSprite) ball.shadowSprite.setVisible(true);
+                }
+                if (ball.gfx) {
+                    ball.gfx.setVisible(true);
+                    if (ball.shadow) ball.shadow.setVisible(true);
+                }
                 ball.draw();
 
                 // Check immediate collision at landing (ball may have landed ON another ball)

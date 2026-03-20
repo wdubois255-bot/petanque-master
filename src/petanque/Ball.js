@@ -52,7 +52,7 @@ export default class Ball {
             } else {
                 this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
             }
-            this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x000000, 0.2).setDepth(9);
+            this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x3A2E28, 0.2).setDepth(9);
             this.gfx = null;
             this.shadow = null;
         } else {
@@ -114,7 +114,7 @@ export default class Ball {
         // Graphics fallback
         this.shadow.clear();
         if (this.isAlive) {
-            this.shadow.fillStyle(0x000000, 0.2);
+            this.shadow.fillStyle(0x3A2E28, 0.2);
             this.shadow.fillCircle(this.x + 2, this.y + 2, this.radius);
         }
 

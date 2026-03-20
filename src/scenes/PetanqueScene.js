@@ -1034,40 +1034,40 @@ export default class PetanqueScene extends Phaser.Scene {
         for (const key of ballKeys) {
             if (!this.textures.exists(key)) continue;
 
-            // Skip if already converted to rolling spritesheet (match replay)
+            // Skip if already converted to rolling spritesheet (scene reuse)
             const existingTex = this.textures.get(key);
-            if (existingTex.frameTotal > 2) continue; // already a multi-frame spritesheet
+            if (existingTex.frameTotal > 2) continue;
 
-            // Get the original PNG image source
-            const srcImage = existingTex.getSourceImage();
+            try {
+                const srcImage = existingTex.getSourceImage();
+                if (!srcImage || !srcImage.width) continue; // safety: skip broken textures
 
-            // Create a spritesheet canvas: N frames of the same ball rotated
-            const canvas = document.createElement('canvas');
-            canvas.width = FRAME_SIZE * ROLL_FRAMES;
-            canvas.height = FRAME_SIZE;
-            const ctx = canvas.getContext('2d');
+                const canvas = document.createElement('canvas');
+                canvas.width = FRAME_SIZE * ROLL_FRAMES;
+                canvas.height = FRAME_SIZE;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
 
-            // Disable smoothing for pixel art
-            ctx.imageSmoothingEnabled = false;
+                for (let f = 0; f < ROLL_FRAMES; f++) {
+                    const cx = f * FRAME_SIZE + FRAME_SIZE / 2;
+                    const cy = FRAME_SIZE / 2;
+                    const angle = (f / ROLL_FRAMES) * Math.PI * 2;
 
-            for (let f = 0; f < ROLL_FRAMES; f++) {
-                const cx = f * FRAME_SIZE + FRAME_SIZE / 2;
-                const cy = FRAME_SIZE / 2;
-                const angle = (f / ROLL_FRAMES) * Math.PI * 2;
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(angle);
+                    ctx.drawImage(srcImage, -FRAME_SIZE / 2, -FRAME_SIZE / 2, FRAME_SIZE, FRAME_SIZE);
+                    ctx.restore();
+                }
 
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(angle);
-                ctx.drawImage(srcImage, -FRAME_SIZE / 2, -FRAME_SIZE / 2, FRAME_SIZE, FRAME_SIZE);
-                ctx.restore();
+                this.textures.remove(key);
+                this.textures.addSpriteSheet(key, canvas, {
+                    frameWidth: FRAME_SIZE,
+                    frameHeight: FRAME_SIZE
+                });
+            } catch (_) {
+                // Texture conversion failed — ball will use static image or graphics fallback
             }
-
-            // Replace the static texture with the rolling spritesheet
-            this.textures.remove(key);
-            this.textures.addSpriteSheet(key, canvas, {
-                frameWidth: FRAME_SIZE,
-                frameHeight: FRAME_SIZE
-            });
         }
     }
 
