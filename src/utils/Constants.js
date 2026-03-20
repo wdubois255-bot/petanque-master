@@ -70,14 +70,14 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 12.0,
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 16.0,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
 };
 // Tir devant : atterrit 20-30cm avant la cible, rebondit dedans
 // Moins precis que tir au fer mais plus tolerant sur la distance
 export const LOFT_TIR_DEVANT = {
     id: 'tir_devant', label: 'TIR DEVANT',
-    landingFactor: 0.85, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 8.0,
+    landingFactor: 0.85, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 10.0,
     precisionPenalty: 0.7, retroAllowed: true, isTir: true
 };
 
