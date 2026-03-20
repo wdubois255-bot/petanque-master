@@ -34,9 +34,9 @@ export default class VSIntroScene extends Phaser.Scene {
         this.cameras.main.resetFX();
 
         // Skip after 2nd view in this session (keep cinematic for first 2 matches)
-        if (!window.__vsIntroCount) window.__vsIntroCount = 0;
-        window.__vsIntroCount++;
-        if (window.__vsIntroCount > 2) {
+        if (!this.registry.get('vsIntroCount')) this.registry.set('vsIntroCount', 0);
+        this.registry.set('vsIntroCount', this.registry.get('vsIntroCount') + 1);
+        if (this.registry.get('vsIntroCount') > 2) {
             this._startMatch();
             return;
         }

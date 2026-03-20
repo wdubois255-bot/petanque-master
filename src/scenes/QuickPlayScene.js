@@ -79,6 +79,7 @@ const OPTIONS = [
         label: 'FORMAT',
         values: [
             { display: '3 Boules', key: 'tete_a_tete' },
+            { display: '2 Boules', key: 'deux_boules' },
             { display: '1 Boule', key: 'une_boule' }
         ]
     }

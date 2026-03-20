@@ -244,7 +244,7 @@ export const TERRAIN_COLORS = {
 export const TERRAIN_FRICTION = {
     terre: 1.0,
     herbe: 1.8,
-    sable: 3.5,
+    sable: 3.0,
     dalles: 0.7
 };
 
@@ -296,12 +296,14 @@ export function getCharThrowKey(charId) {
 }
 
 // Galets (monnaie in-game)
-export const GALET_WIN_ARCADE = 50;
-export const GALET_WIN_QUICKPLAY = 20;
-export const GALET_CARREAU_BONUS = 10;
-export const GALET_ARCADE_COMPLETE = 100;
-export const GALET_ARCADE_PERFECT = 200;
-export const GALET_STARTING = 50;
+export const GALET_WIN_ARCADE = 100;
+export const GALET_WIN_QUICKPLAY = 40;
+export const GALET_CARREAU_BONUS = 15;
+export const GALET_ARCADE_COMPLETE = 150;
+export const GALET_ARCADE_PERFECT = 300;
+export const GALET_STARTING = 100;
+export const GALET_LOSS = 15;
+export const ROOKIE_XP_LOSS = 1;
 
 // Rookie progression
 export const ROOKIE_XP_ARCADE = 4;

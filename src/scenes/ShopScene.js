@@ -244,7 +244,7 @@ export default class ShopScene extends Phaser.Scene {
             objects.push(badge);
         } else {
             const priceColor = canAfford ? '#FFD700' : '#C44B3F';
-            const priceText = UIFactory.addText(this, cx, cardY + CARD_H - 22, `${item.price} E`, '11px', priceColor, {
+            const priceText = UIFactory.addText(this, cx, cardY + CARD_H - 22, `${item.price} G`, '11px', priceColor, {
                 originX: 0.5, originY: 0.5
             });
             objects.push(priceText);

@@ -9,7 +9,7 @@ function defaultSaveData() {
             totalPoints: 14,
             abilitiesUnlocked: []
         },
-        galets: 50,
+        galets: 100,
         purchases: [],
         unlockedCharacters: ["rookie"],
         unlockedTerrains: ["village", "parc", "colline"],
@@ -25,6 +25,7 @@ function defaultSaveData() {
         selectedBoule: "acier",
         selectedCochonnet: "classique",
         tutorialSeen: false,
+        tutorialInGameSeen: false,
         playtime: 0,
         timestamp: Date.now()
     };

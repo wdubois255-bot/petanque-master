@@ -154,28 +154,70 @@ export function sfxCarreau() {
     if (playFile('sfx_carreau', { volume: 0.7 })) return;
     const c = getCtx();
     const now = c.currentTime;
-    [523, 659, 784, 1047].forEach((freq, i) => {
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, now + i * 0.08);
-        gain.gain.setValueAtTime(0.2, now + i * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.start(now + i * 0.08);
-        osc.stop(now + i * 0.08 + 0.3);
-        const osc2 = c.createOscillator();
-        const gain2 = c.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(freq, now + i * 0.08 + 0.1);
-        gain2.gain.setValueAtTime(0.06, now + i * 0.08 + 0.1);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
-        osc2.connect(gain2);
-        gain2.connect(c.destination);
-        osc2.start(now + i * 0.08 + 0.1);
-        osc2.stop(now + i * 0.08 + 0.4);
-    });
+    // ±7% pitch randomization per call to avoid repetitive feeling
+    const rnd = () => 1.0 + (Math.random() * 0.14 - 0.07);
+
+    // Layer 1 — Attack/Impact: metallic "CLAC" (0-50ms)
+    const attackFreq = 900 * rnd();
+    const oscAttack = c.createOscillator();
+    const gainAttack = c.createGain();
+    oscAttack.type = 'square';
+    oscAttack.frequency.setValueAtTime(attackFreq, now);
+    gainAttack.gain.setValueAtTime(_effectiveVol(0.25), now);
+    gainAttack.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    oscAttack.connect(gainAttack);
+    gainAttack.connect(c.destination);
+    oscAttack.start(now);
+    oscAttack.stop(now + 0.05);
+
+    // Layer 2 — Body/Resonance: deep metallic ring (5ms-400ms)
+    const bodyFreq = 400 * rnd();
+    const oscBody = c.createOscillator();
+    const gainBody = c.createGain();
+    oscBody.type = 'sine';
+    oscBody.frequency.setValueAtTime(bodyFreq, now + 0.005);
+    gainBody.gain.setValueAtTime(_effectiveVol(0.08), now + 0.005);
+    gainBody.gain.exponentialRampToValueAtTime(0.001, now + 0.405);
+    oscBody.connect(gainBody);
+    gainBody.connect(c.destination);
+    oscBody.start(now + 0.005);
+    oscBody.stop(now + 0.405);
+
+    // Layer 3 — Tail/Echo: 2 delayed sine bursts for spatial depth
+    const echoFreq = 300 * rnd();
+    const echoes = [
+        { delay: 0.05, vol: 0.04 },
+        { delay: 0.10, vol: 0.02 }
+    ];
+    for (const echo of echoes) {
+        const oscEcho = c.createOscillator();
+        const gainEcho = c.createGain();
+        oscEcho.type = 'sine';
+        oscEcho.frequency.setValueAtTime(echoFreq, now + echo.delay);
+        gainEcho.gain.setValueAtTime(_effectiveVol(echo.vol), now + echo.delay);
+        gainEcho.gain.exponentialRampToValueAtTime(0.001, now + echo.delay + 0.1);
+        oscEcho.connect(gainEcho);
+        gainEcho.connect(c.destination);
+        oscEcho.start(now + echo.delay);
+        oscEcho.stop(now + echo.delay + 0.1);
+    }
+
+    // Layer 4 — Brightness: short noise burst for "snap" sensation (0-20ms)
+    const noiseDuration = 0.02;
+    const bufferSize = Math.floor(c.sampleRate * noiseDuration);
+    const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    const noiseSource = c.createBufferSource();
+    noiseSource.buffer = buffer;
+    const gainNoise = c.createGain();
+    gainNoise.gain.setValueAtTime(_effectiveVol(0.03), now);
+    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + noiseDuration);
+    noiseSource.connect(gainNoise);
+    gainNoise.connect(c.destination);
+    noiseSource.start(now);
 }
 
 export function sfxThrow() {

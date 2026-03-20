@@ -62,14 +62,14 @@
       "description": "La Choupe tire comme un canon. Sa puissance est legendaire — quand il envoie, les boules volent et le terrain tremble. Il pointe correctement mais sans finesse. Son vrai plaisir, c'est d'envoyer du lourd. Il ne connait pas la demi-mesure.",
       "archetype": "tireur",
       "stats": {
-        "precision": 5,
+        "precision": 6,
         "puissance": 10,
         "effet": 3,
-        "sang_froid": 6
+        "sang_froid": 8
       },
       "ai": {
         "personality": "tireur",
-        "angleDev": 7,
+        "angleDev": 9,
         "powerDev": 0.06,
         "shootProbability": 0.60,
         "loftPref": "tir",
@@ -234,10 +234,10 @@
       "description": "Reyes est un colosse au sourire trompeur. Derriere son air jovial se cache un joueur complet qui maitrise aussi bien le tir que la pointe. Sa corpulence lui donne un avantage psychologique — on le sous-estime toujours. Erreur fatale. Son calme legendaire en fait un adversaire redoutable dans les moments de tension.",
       "archetype": "complet",
       "stats": {
-        "precision": 8,
-        "puissance": 8,
+        "precision": 7,
+        "puissance": 7,
         "effet": 7,
-        "sang_froid": 9
+        "sang_froid": 8
       },
       "ai": {
         "personality": "complet",

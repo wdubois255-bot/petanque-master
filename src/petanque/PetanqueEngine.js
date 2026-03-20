@@ -55,10 +55,10 @@ export default class PetanqueEngine {
         this.lastTeamPlayed = null;
 
         // Balls per player based on format
-        this.ballsPerPlayer = this.format === 'une_boule' ? 1 : (this.format === 'triplette' ? 2 : 3);
+        this.ballsPerPlayer = this.format === 'une_boule' ? 1 : (this.format === 'deux_boules' ? 2 : (this.format === 'triplette' ? 2 : 3));
 
-        // Victory score (7 for une_boule, 13 normally)
-        this.victoryScore = this.format === 'une_boule' ? 11 : VICTORY_SCORE;
+        // Victory score varies by format
+        this.victoryScore = this.format === 'une_boule' ? 11 : (this.format === 'deux_boules' ? 7 : VICTORY_SCORE);
 
         this.scores = { player: 0, opponent: 0 };
         this.mene = 1;

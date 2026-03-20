@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -153,9 +153,10 @@ export default class ResultScene extends Phaser.Scene {
         }
 
         // === GALETS EARNED ===
-        if (this.won && this.galetsEarned > 0) {
-            addGalets(this.galetsEarned);
-            const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${this.galetsEarned} Galets`, {
+        const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
+        if (galetsToGive > 0) {
+            addGalets(galetsToGive);
+            const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${galetsToGive} Galets`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setAlpha(0).setScale(0.5);
@@ -169,24 +170,31 @@ export default class ResultScene extends Phaser.Scene {
         // === ROOKIE XP ===
         const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
         let xpEarned = 0;
-        if (this.won && isRookie) {
-            if (this.arcadeState) {
-                // In Arcade: only give XP for NEW round progress (no farming)
-                const save = loadSave();
-                const currentRound = this.arcadeState.currentRound - 1; // round just completed
-                xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+        if (isRookie) {
+            if (this.won) {
+                if (this.arcadeState) {
+                    // In Arcade: only give XP for NEW round progress (no farming)
+                    const save = loadSave();
+                    const currentRound = this.arcadeState.currentRound - 1; // round just completed
+                    xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+                } else {
+                    xpEarned = ROOKIE_XP_QUICKPLAY;
+                }
             } else {
-                xpEarned = ROOKIE_XP_QUICKPLAY;
+                // Compensation: small XP even on defeat
+                xpEarned = ROOKIE_XP_LOSS;
             }
-            const xpText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 50, `+${xpEarned} pts`, {
-                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-            }).setOrigin(0.5).setAlpha(0);
+            if (xpEarned > 0) {
+                const xpText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 50, `+${xpEarned} pts`, {
+                    fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
+                    shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+                }).setOrigin(0.5).setAlpha(0);
 
-            this.tweens.add({
-                targets: xpText, alpha: 1,
-                duration: 400, ease: 'Sine.easeOut', delay: 1200
-            });
+                this.tweens.add({
+                    targets: xpText, alpha: 1,
+                    duration: 400, ease: 'Sine.easeOut', delay: 1200
+                });
+            }
         }
 
         // === ACTION BUTTONS ===
@@ -414,19 +422,23 @@ export default class ResultScene extends Phaser.Scene {
 
         const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
         let xpEarned = 0;
-        if (this.won && isRookie) {
-            if (this.arcadeState) {
-                const save = loadSave();
-                const currentRound = this.arcadeState.currentRound - 1;
-                xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+        if (isRookie) {
+            if (this.won) {
+                if (this.arcadeState) {
+                    const save = loadSave();
+                    const currentRound = this.arcadeState.currentRound - 1;
+                    xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+                } else {
+                    xpEarned = ROOKIE_XP_QUICKPLAY;
+                }
             } else {
-                xpEarned = ROOKIE_XP_QUICKPLAY;
+                xpEarned = ROOKIE_XP_LOSS;
             }
         }
 
         // === ARCADE MODE: return to ArcadeScene (with optional LevelUp) ===
         if (this.arcadeState) {
-            if (this.won && isRookie && xpEarned > 0) {
+            if (isRookie && xpEarned > 0) {
                 const save = loadSave();
                 this.scene.start('LevelUpScene', {
                     pointsToDistribute: xpEarned,
@@ -456,7 +468,7 @@ export default class ResultScene extends Phaser.Scene {
         }
 
         // === QUICK PLAY / OTHER: return to returnScene (with optional LevelUp) ===
-        if (this.won && isRookie && xpEarned > 0) {
+        if (isRookie && xpEarned > 0) {
             const save = loadSave();
             this.scene.start('LevelUpScene', {
                 pointsToDistribute: xpEarned,

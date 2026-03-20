@@ -14,6 +14,7 @@ import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
+import InGameTutorial from '../ui/InGameTutorial.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -179,8 +180,9 @@ export default class PetanqueScene extends Phaser.Scene {
         const musicKey = terrainMusicMap[this.terrainFullData?.id] || terrainMusicMap[surfaceType] || 'music_match';
         startMusic(musicKey, 0.2);
 
-        // === SLOW-MOTION vignette overlay ===
+        // === SLOW-MOTION vignette overlay + zoom-pulse ===
         this._vignetteGraphics = null;
+        this._zoomPulseActive = false;
         this.events.on('slowmo-start', () => {
             if (this._vignetteGraphics) return;
             const g = this.add.graphics().setDepth(150).setAlpha(0);
@@ -213,6 +215,22 @@ export default class PetanqueScene extends Phaser.Scene {
                 duration: 200,
                 ease: 'Sine.easeIn'
             });
+
+            // Zoom-pulse: brief 1.1x zoom centered on cochonnet (no camera pan)
+            if (this.engine?.cochonnet && !this._zoomPulseActive) {
+                this._zoomPulseActive = true;
+                const cam = this.cameras.main;
+                const cx = this.engine.cochonnet.x;
+                const cy = this.engine.cochonnet.y;
+                // Set scroll to center zoom on cochonnet area
+                cam.centerOn(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+                this.tweens.add({
+                    targets: cam,
+                    zoom: 1.1,
+                    duration: 200,
+                    ease: 'Sine.easeOut'
+                });
+            }
         });
 
         this.events.on('slowmo-end', () => {
@@ -226,6 +244,17 @@ export default class PetanqueScene extends Phaser.Scene {
                 ease: 'Sine.easeOut',
                 onComplete: () => g.destroy()
             });
+
+            // Zoom back to 1.0
+            if (this._zoomPulseActive) {
+                this._zoomPulseActive = false;
+                this.tweens.add({
+                    targets: this.cameras.main,
+                    zoom: 1.0,
+                    duration: 300,
+                    ease: 'Sine.easeOut'
+                });
+            }
         });
 
         // === DRAMATIC PAUSE: lower music volume temporarily ===
@@ -241,8 +270,11 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.engine.startGame();
 
-        // Tutorial overlay disabled — replaced by TutorialScene from main menu
-        // this._checkTutorial();
+        // In-game tutorial for first Arcade match
+        const tutSave = loadSave();
+        if (this.arcadeRound === 1 && this.returnScene === 'ArcadeScene' && !tutSave.tutorialInGameSeen) {
+            this._inGameTutorial = new InGameTutorial(this);
+        }
 
         this.events.on('shutdown', this._shutdown, this);
     }
@@ -254,9 +286,11 @@ export default class PetanqueScene extends Phaser.Scene {
         stopMusic();
         stopRollingSound();
         if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
+        this.cameras.main.setZoom(1.0); // Reset zoom-pulse
         if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
         if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
         if (this._activeThrowSprite) { this._activeThrowSprite.destroy(); this._activeThrowSprite = null; }
+        if (this._inGameTutorial) { this._inGameTutorial.destroy(); this._inGameTutorial = null; }
         if (this.aimingSystem) this.aimingSystem.destroy();
         if (this.scorePanel) this.scorePanel.destroy();
         if (this.engine?.renderer) this.engine.renderer.destroy();

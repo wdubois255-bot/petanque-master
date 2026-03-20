@@ -287,20 +287,5 @@
     "color": "#FFD700",
     "sprite": "cochonnet"
   },
-  "physics": {
-    "restitution_boule_boule": 0.85,
-    "restitution_boule_cochonnet": 0.7,
-    "friction_base": 0.15,
-    "speed_threshold": 0.3,
-    "max_throw_speed": 12,
-    "landing_factor_point": 0.65,
-    "landing_factor_tir": 0.3,
-    "rolling_efficiency": 0.7
-  },
-  "terrains": {
-    "terre": { "friction_mult": 1.0, "label": "Terre battue", "color_bg": "#C4854A", "particles": "dust_brown" },
-    "herbe": { "friction_mult": 1.8, "label": "Herbe", "color_bg": "#6B8E4E", "particles": "grass_blades" },
-    "sable": { "friction_mult": 3.0, "label": "Sable", "color_bg": "#E8D5B7", "particles": "sand_puff" },
-    "dalles": { "friction_mult": 0.7, "label": "Dalles de pierre", "color_bg": "#9E9E8E", "particles": "spark_stone" }
-  }
+  "note": "Les valeurs physiques sont dans src/utils/Constants.js (source unique de verite)"
 }

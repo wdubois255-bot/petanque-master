@@ -42,7 +42,7 @@
         "decor": "parasols_bateaux",
         "sfx_ambient": "vagues_mouettes"
       },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "parc",
@@ -119,14 +119,14 @@
         "decor": "oliviers_murets",
         "sfx_ambient": "vent_grillons"
       },
-      "unlocked": true
+      "unlocked": false
     },
     {
       "id": "docks",
       "name": "Les Docks",
       "description": "Beton lisse avec murs metalliques ! Les boules rebondissent sur les bords. Chaos garanti.",
       "surface": "dalles",
-      "friction": 0.4,
+      "friction": 0.7,
       "zones": [],
       "slope": null,
       "walls": true,
@@ -141,7 +141,7 @@
         "decor": "containers_grues",
         "sfx_ambient": "industriel_nocturne"
       },
-      "unlocked": true
+      "unlocked": false
     }
   ]
 }
