@@ -61,9 +61,9 @@
 | rookie | Le Rookie | adaptable | 3 | 3 | 2 | 2 | 10/40 | Evolutif (3 abilities debloquees a 18/26/34 pts) |
 | ley | Ley | tireur | 8 | 9 | 9 | 5 | 31 | Carreau Instinct (ejection +50%) |
 | magicien | Le Magicien | pointeur | 10 | 4 | 7 | 9 | 30 | Lecture du Terrain (trajectoire 3s) |
-| la_choupe | La Choupe | tireur | 5 | 10 | 3 | 6 | 24 | Coup de Canon (+30% puiss, -20% prec) |
+| la_choupe | La Choupe | tireur | 6 | 10 | 3 | 8 | 27 | Coup de Canon (+30% puiss, -20% prec) |
 | marcel | Marcel | equilibre | 8 | 5 | 5 | 8 | 26 | Vieux Renard (annule tremblement) |
-| reyes | Reyes | complet | 8 | 8 | 7 | 8 | 31 | Le Mur (boule 2x rayon) |
+| reyes | Reyes | complet | 7 | 7 | 7 | 8 | 29 | Le Mur (boule 2x rayon) |
 - Le Rookie est le seul personnage jouable en Arcade (stats evoluent avec les victoires)
 - Les 5 adversaires sont debloquables et jouables en Quick Play
 - **Donnees** : `public/data/characters.json`
@@ -83,7 +83,7 @@
 | plage | Plage | sable | 3.0 | Haute friction |
 | parc | Parc | herbe/gravier | 1.8/1.2 | Zones mixtes |
 | colline | Colline | terre | 1.0 | Pente (gravity) |
-| docks | Docks | dalles | 0.4 | Rebonds murs |
+| docks | Docks | dalles | 0.7 | Rebonds murs |
 - **Donnees** : `public/data/terrains.json`
 
 ### 2.7 Modes de jeu

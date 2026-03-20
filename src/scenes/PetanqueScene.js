@@ -13,7 +13,7 @@ import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
-import { loadSave } from '../utils/SaveManager.js';
+import { loadSave, saveSave } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 
 export default class PetanqueScene extends Phaser.Scene {
@@ -298,9 +298,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _checkTutorial() {
-        try {
-            if (localStorage.getItem('pm_tutorial_done')) return;
-        } catch { return; }
+        const save = loadSave();
+        if (save.tutorialSeen) return;
 
         this._showTutorialStep(0);
     }
@@ -326,7 +325,9 @@ export default class PetanqueScene extends Phaser.Scene {
         ];
 
         if (step >= steps.length) {
-            try { localStorage.setItem('pm_tutorial_done', '1'); } catch {}
+            const tutSave = loadSave();
+            tutSave.tutorialSeen = true;
+            saveSave(tutSave);
             return;
         }
 

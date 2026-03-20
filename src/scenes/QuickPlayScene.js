@@ -59,13 +59,23 @@ const OPTIONS = [
     },
     {
         label: 'TERRAIN',
-        values: [
-            { display: 'Terre battue', key: 'terre' },
-            { display: 'Herbe', key: 'herbe' },
-            { display: 'Sable', key: 'sable' },
-            { display: 'Dalles', key: 'dalles' },
-            { display: 'Colline', key: 'colline' }
-        ]
+        values: (() => {
+            const allTerrains = [
+                { display: 'Terre battue', key: 'terre' },
+                { display: 'Herbe', key: 'herbe' },
+                { display: 'Sable', key: 'sable' },
+                { display: 'Dalles', key: 'dalles' },
+                { display: 'Colline', key: 'colline' }
+            ];
+            try {
+                const save = loadSave();
+                if (save.unlockedTerrains && save.unlockedTerrains.length > 0) {
+                    const filtered = allTerrains.filter(t => save.unlockedTerrains.includes(t.key));
+                    return filtered.length > 0 ? filtered : allTerrains;
+                }
+            } catch { /* fallback to all */ }
+            return allTerrains;
+        })()
     },
     {
         label: 'DIFFICULTE',

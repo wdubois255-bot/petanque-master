@@ -121,9 +121,7 @@ export default class BootScene extends Phaser.Scene {
         }
         // Don't fail the whole boot if .tmj files are missing
         this.load.on('loaderror', (file) => {
-            if (file.key && file.key.endsWith('_tiled')) {
-                console.log(`[BootScene] No Tiled map for ${file.key}, will use procedural`);
-            }
+            // Silently ignore missing Tiled maps — procedural generation will be used
         });
 
         // Boules sprites — standard (3D style)

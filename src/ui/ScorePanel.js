@@ -228,7 +228,7 @@ export default class ScorePanel {
         for (let i = 0; i < e.ballsPerPlayer; i++) {
             const remaining = i < e.remaining.player;
             const x = baseX + i * spacing;
-            this.ballsGfx.fillStyle(0x000000, 0.15);
+            this.ballsGfx.fillStyle(0x3A2E28, 0.15);
             this.ballsGfx.fillEllipse(x + 1, baseY + 3, dotR * 1.6, dotR * 0.8);
             this.ballsGfx.fillStyle(BALL_COLORS.player, remaining ? 1 : 0.2);
             this.ballsGfx.fillCircle(x, baseY, dotR);
@@ -246,7 +246,7 @@ export default class ScorePanel {
         for (let i = 0; i < e.ballsPerPlayer; i++) {
             const remaining = i < e.remaining.opponent;
             const x = oBaseX + i * spacing;
-            this.ballsGfx.fillStyle(0x000000, 0.15);
+            this.ballsGfx.fillStyle(0x3A2E28, 0.15);
             this.ballsGfx.fillEllipse(x + 1, baseY + 3, dotR * 1.6, dotR * 0.8);
             this.ballsGfx.fillStyle(BALL_COLORS.opponent, remaining ? 1 : 0.2);
             this.ballsGfx.fillCircle(x, baseY, dotR);

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { loadSave, saveSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
@@ -121,7 +122,9 @@ export default class TutorialScene extends Phaser.Scene {
     _finish() {
         if (!this._inputEnabled || this._transitioning) return;
         sfxUIClick();
-        localStorage.setItem('pm_tutorial_done', '1');
+        const save = loadSave();
+        save.tutorialSeen = true;
+        saveSave(save);
         this._inputEnabled = false;
         this.cameras.main.fadeOut(400, 26, 21, 16);
         this.cameras.main.once('camerafadeoutcomplete', () => {

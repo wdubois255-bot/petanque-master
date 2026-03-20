@@ -243,7 +243,7 @@ export default class Ball {
             }
             const frictionDecel = FRICTION_BASE * effectiveFriction * retroMult * 60;
             const newSpeed = Math.max(0, speed - frictionDecel * cappedDt);
-            const ratio = newSpeed / speed;
+            const ratio = speed > 0 ? newSpeed / speed : 0;
             this.vx *= ratio;
             this.vy *= ratio;
 
@@ -347,7 +347,7 @@ export default class Ball {
 
             const frictionDecel = FRICTION_BASE * frictionMult * 60;
             const newSpeed = Math.max(0, speed - frictionDecel * dt);
-            const ratio = newSpeed / speed;
+            const ratio = speed > 0 ? newSpeed / speed : 0;
             cvx *= ratio;
             cvy *= ratio;
 

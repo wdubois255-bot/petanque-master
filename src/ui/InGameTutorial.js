@@ -26,6 +26,10 @@ export default class InGameTutorial {
         this._playerHasThrown = false;
         this._firstMeneScored = false;
 
+        // Safety: destroy on scene shutdown
+        this._onShutdown = () => this.destroy();
+        scene.events.once('shutdown', this._onShutdown);
+
         // Hook into engine callbacks (chain with existing ones)
         this._origOnStateChange = this.engine.onStateChange;
         this._origOnTurnChange = this.engine.onTurnChange;
@@ -168,6 +172,7 @@ export default class InGameTutorial {
             delay: 200,
             loop: true,
             callback: () => {
+                if (!this.scene || !this.engine) return;
                 if (this.engine.state === 'WAITING_STOP' && this.engine.currentTeam === 'player') {
                     this._playerHasThrown = true;
                     checkThrow.destroy();
@@ -278,6 +283,10 @@ export default class InGameTutorial {
     }
 
     destroy() {
+        if (this.scene && this._onShutdown) {
+            this.scene.events.off('shutdown', this._onShutdown);
+        }
+
         this._clearElements();
 
         // Restore original callbacks

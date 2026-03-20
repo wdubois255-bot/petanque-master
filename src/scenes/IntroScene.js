@@ -51,12 +51,15 @@ export default class IntroScene extends Phaser.Scene {
         super('IntroScene');
     }
 
-    create() {
-        this.cameras.main.fadeIn(300);
-        this._phase = 'dialogue'; // dialogue | choose | confirm
+    init() {
+        this._phase = 'dialogue';
         this._dialogueIndex = 0;
         this._selectedBoule = 0;
         this._uiElements = [];
+    }
+
+    create() {
+        this.cameras.main.fadeIn(300);
 
         // Background
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, COLORS.OMBRE);

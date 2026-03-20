@@ -329,77 +329,66 @@ export default class ResultScene extends Phaser.Scene {
 
     _saveStarRating(stars) {
         if (!this.opponentCharacter) return;
-        try {
-            const key = 'pm_star_ratings';
-            const existing = JSON.parse(localStorage.getItem(key) || '{}');
-            const oppId = this.opponentCharacter.id;
-            if (!existing[oppId] || stars > existing[oppId]) {
-                existing[oppId] = stars;
-            }
-            localStorage.setItem(key, JSON.stringify(existing));
-        } catch { /* ignore */ }
-
-        // Track cumulative stats for cosmetic unlocks
+        const save = loadSave();
+        if (!save.starRatings) save.starRatings = {};
+        const oppId = this.opponentCharacter.id;
+        if (!save.starRatings[oppId] || stars > save.starRatings[oppId]) {
+            save.starRatings[oppId] = stars;
+        }
+        saveSave(save);
         this._trackCumulativeStats();
     }
 
     _trackCumulativeStats() {
-        try {
-            const key = 'pm_cumulative_stats';
-            const stats = JSON.parse(localStorage.getItem(key) || '{"carreaux":0,"victories":0,"biberons":0,"matches":0}');
-            stats.carreaux += this.matchStats.carreaux || 0;
-            stats.biberons += this.matchStats.biberons || 0;
-            stats.victories += this.won ? 1 : 0;
-            stats.matches += 1;
-            localStorage.setItem(key, JSON.stringify(stats));
+        const save = loadSave();
+        if (!save.cumulativeStats) save.cumulativeStats = { carreaux: 0, victories: 0, biberons: 0, matches: 0 };
+        if (!save.cosmeticUnlocks) save.cosmeticUnlocks = [];
 
-            // Check for cosmetic unlocks
-            const unlocked = JSON.parse(localStorage.getItem('pm_cosmetic_unlocks') || '[]');
-            const newUnlocks = [];
+        save.cumulativeStats.carreaux += this.matchStats.carreaux || 0;
+        save.cumulativeStats.biberons += this.matchStats.biberons || 0;
+        save.cumulativeStats.victories += this.won ? 1 : 0;
+        save.cumulativeStats.matches += 1;
 
-            // Boules unlock milestones
-            const bouleUnlocks = [
-                { id: 'boule_bronze', cond: stats.matches >= 3, msg: 'Boules Bronze debloquees ! (3 matchs)' },
-                { id: 'boule_chrome', cond: stats.victories >= 5, msg: 'Boules Chrome debloquees ! (5 victoires)' },
-                { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
-                { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
-                { id: 'boule_chrome_prestige', cond: stats.victories >= 10, msg: 'Boule Chrome Prestige ! (10 victoires)' },
-            ];
-            // Cochonnet unlock milestones
-            const cochUnlocks = [
-                { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: 'Cochonnet Bleu debloque ! (5 victoires)' },
-                { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
-                { id: 'cochonnet_dore', cond: stats.victories >= 50, msg: 'Cochonnet Dore debloque ! (50 victoires)' },
-            ];
-            // Title/badge milestones
-            const titleUnlocks = [
-                { id: 'title_artilleur', cond: stats.victories >= 20, msg: 'Titre "L\'Artilleur" debloque ! (20 victoires)' },
-                { id: 'title_maitre', cond: stats.victories >= 50, msg: 'Titre "Maitre Bouliste" debloque ! (50 victoires)' },
-                { id: 'badge_tireur', cond: (this.matchStats.carreaux || 0) >= 3, msg: 'Badge "Le Tireur" ! (3 carreaux en 1 match)' },
-            ];
-            for (const u of [...bouleUnlocks, ...cochUnlocks, ...titleUnlocks]) {
-                if (u.cond && !unlocked.includes(u.id)) {
-                    unlocked.push(u.id);
-                    newUnlocks.push(u.msg);
-                    // Also unlock in SaveManager for boules/cochonnets
-                    if (u.id.startsWith('boule_')) unlockBoule(u.id);
-                    if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id);
-                    // Save badges/titles
-                    if (u.id.startsWith('title_') || u.id.startsWith('badge_')) {
-                        const save = loadSave();
-                        if (!save.badges.includes(u.id)) {
-                            save.badges.push(u.id);
-                            saveSave(save);
-                        }
+        const stats = save.cumulativeStats;
+        const unlocked = save.cosmeticUnlocks;
+        const newUnlocks = [];
+
+        const bouleUnlocks = [
+            { id: 'boule_bronze', cond: stats.matches >= 3, msg: 'Boules Bronze debloquees ! (3 matchs)' },
+            { id: 'boule_chrome', cond: stats.victories >= 5, msg: 'Boules Chrome debloquees ! (5 victoires)' },
+            { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
+            { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
+            { id: 'boule_chrome_prestige', cond: stats.victories >= 10, msg: 'Boule Chrome Prestige ! (10 victoires)' },
+        ];
+        const cochUnlocks = [
+            { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: 'Cochonnet Bleu debloque ! (5 victoires)' },
+            { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
+            { id: 'cochonnet_dore', cond: stats.victories >= 50, msg: 'Cochonnet Dore debloque ! (50 victoires)' },
+        ];
+        const titleUnlocks = [
+            { id: 'title_artilleur', cond: stats.victories >= 20, msg: "Titre \"L'Artilleur\" debloque ! (20 victoires)" },
+            { id: 'title_maitre', cond: stats.victories >= 50, msg: 'Titre "Maitre Bouliste" debloque ! (50 victoires)' },
+            { id: 'badge_tireur', cond: (this.matchStats.carreaux || 0) >= 3, msg: 'Badge "Le Tireur" ! (3 carreaux en 1 match)' },
+        ];
+        for (const u of [...bouleUnlocks, ...cochUnlocks, ...titleUnlocks]) {
+            if (u.cond && !unlocked.includes(u.id)) {
+                unlocked.push(u.id);
+                newUnlocks.push(u.msg);
+                if (u.id.startsWith('boule_')) unlockBoule(u.id);
+                if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id);
+                if (u.id.startsWith('title_') || u.id.startsWith('badge_')) {
+                    if (!save.badges.includes(u.id)) {
+                        save.badges.push(u.id);
                     }
                 }
             }
+        }
 
-            if (newUnlocks.length > 0) {
-                localStorage.setItem('pm_cosmetic_unlocks', JSON.stringify(unlocked));
-                this._showUnlockNotification(newUnlocks);
-            }
-        } catch { /* ignore */ }
+        saveSave(save);
+
+        if (newUnlocks.length > 0) {
+            this._showUnlockNotification(newUnlocks);
+        }
     }
 
     _showUnlockNotification(unlocks) {

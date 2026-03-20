@@ -152,7 +152,11 @@ export function sfxRoll() {
 
 export function sfxCarreau() {
     if (playFile('sfx_carreau', { volume: 0.7 })) return;
-    const c = getCtx();
+    let c;
+    try {
+        c = getCtx();
+        if (!c) return;
+    } catch { return; }
     const now = c.currentTime;
     // ±7% pitch randomization per call to avoid repetitive feeling
     const rnd = () => 1.0 + (Math.random() * 0.14 - 0.07);

@@ -13,15 +13,18 @@ export default class TitleScene extends Phaser.Scene {
         super('TitleScene');
     }
 
+    init() {
+        this._menuItems = [];
+        this._selectedIndex = 0;
+        this._mode = 'pressstart';
+        this._inputEnabled = false;
+        this._menuContainer = null;
+        this._pressStartTween = null;
+    }
+
     create() {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
-
-        this._menuItems = [];
-        this._selectedIndex = 0;
-        this._mode = 'pressstart'; // pressstart | main | slots
-        this._inputEnabled = false;
-        this._menuContainer = null;
 
         setSoundScene(this);
         startMusic('music_title', 0.3);
