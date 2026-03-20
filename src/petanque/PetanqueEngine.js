@@ -539,13 +539,15 @@ export default class PetanqueEngine {
                 ball.draw();
 
                 // Check immediate collision at landing (ball may have landed ON another ball)
+                // For tir: slightly larger contact zone (ball arrives at high speed from above)
+                const landingContactBonus = isTir ? 3 : 0;
                 const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive && b !== ball);
                 for (const other of allBodies) {
                     const cdx = ball.x - other.x;
                     const cdy = ball.y - other.y;
                     const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
-                    if (cdist < ball.radius + other.radius) {
-                        // Ball landed on top of another — give it velocity if it has none
+                    if (cdist < ball.radius + other.radius + landingContactBonus) {
+                        // Ball landed on/very near another — give it velocity if it has none
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
                             // Plombée/demi-portée with low roll: use landing direction as impulse
                             const landAngle = Math.atan2(targetY - startY, targetX - startX);
@@ -1108,9 +1110,21 @@ export default class PetanqueEngine {
 
         // === TIR : analyse complete ===
 
-        // Trou : tir rate, aucune collision
+        // Tir rate — distinguer "Sautee" (passe tres pres) de "Trou" (rate loin)
         if (hitBalls.length === 0) {
-            this._showShotLabel(ball, '...', '#888888', 11);
+            // Chercher la boule adverse la plus proche pour savoir si c'etait une "sautee"
+            const enemyBalls = this.balls.filter(b => b.isAlive && b.team !== ball.team && b.team !== 'cochonnet');
+            let minDist = Infinity;
+            for (const eb of enemyBalls) {
+                const d = ball.distanceTo(eb);
+                if (d < minDist) minDist = d;
+            }
+            // Sautee : la boule est passee a moins de 3 rayons d'une cible sans la toucher
+            if (minDist < ball.radius * 6) {
+                this._showShotLabel(ball, 'Sautee !', '#C4854A', 13);
+            } else {
+                this._showShotLabel(ball, 'Trou...', '#888888', 12);
+            }
             this._shotCollisions = [];
             return;
         }
@@ -1123,7 +1137,15 @@ export default class PetanqueEngine {
             return;
         }
 
+        // Envoi au cochonnet : tir qui touche le cochonnet (sans toucher d'adversaire)
+        const hitCochonnet = hitBalls.filter(b => b.team === 'cochonnet');
         const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
+
+        if (hitCochonnet.length > 0 && hitEnemy.length === 0 && hitAllied.length === 0) {
+            this._showShotLabel(ball, 'Au cochonnet !', '#FFD700', 12);
+            this._shotCollisions = [];
+            return;
+        }
 
         // Ciseau : touche 2+ boules adverses
         if (hitEnemy.length >= 2) {
