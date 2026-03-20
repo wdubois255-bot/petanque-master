@@ -1,0 +1,58 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  claude-review:
+    # Run on PR events, or on issue comments that mention @claude
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' &&
+       contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - run: npm ci
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6-20250514
+          # On PR open/sync: auto-review
+          # On @claude comment: respond to the request
+          trigger_phrase: "@claude"
+          direct_prompt: |
+            Tu es un reviewer expert pour Petanque Master, un jeu web Phaser 3 en pixel art.
+
+            Regles importantes:
+            - Pas de Matter.js (physique custom dans Ball.js)
+            - Pas de noir pur #000 (ombres #3A2E28 ou #1A1510)
+            - Pas de TypeScript
+            - Pas de valeurs hardcodees (tout dans Constants.js ou JSON)
+            - Pas de localStorage direct (utiliser SaveManager.js)
+            - Phaser reutilise les scenes: verifier init() avec reset des flags
+
+            Review le code modifie en verifiant:
+            1. Bugs potentiels et regressions
+            2. Respect des regles ci-dessus
+            3. Performance (60 FPS obligatoire)
+            4. Coherence avec le style existant
+
+            Sois concis et actionnable. Reponds en francais.

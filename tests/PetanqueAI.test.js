@@ -433,15 +433,15 @@ describe('Terrain friction impact', () => {
         expect(TERRAIN_FRICTION.terre).toBe(1.0);
         expect(TERRAIN_FRICTION.herbe).toBe(1.8);
         expect(TERRAIN_FRICTION.sable).toBe(3.5);
-        expect(TERRAIN_FRICTION.dalles).toBe(0.4);
+        expect(TERRAIN_FRICTION.dalles).toBe(0.7);
     });
 
     it('sable is 3.5x harder to roll on than terre', () => {
         expect(TERRAIN_FRICTION.sable / TERRAIN_FRICTION.terre).toBe(3.5);
     });
 
-    it('dalles is 2.5x easier to roll on than terre', () => {
-        expect(TERRAIN_FRICTION.terre / TERRAIN_FRICTION.dalles).toBe(2.5);
+    it('dalles is easier to roll on than terre', () => {
+        expect(TERRAIN_FRICTION.terre / TERRAIN_FRICTION.dalles).toBeCloseTo(1.4286, 3);
     });
 
     it('herbe is 1.8x harder than terre', () => {
