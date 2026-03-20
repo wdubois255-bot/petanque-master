@@ -282,7 +282,7 @@
     }
   ],
   "cochonnet": {
-    "masse": 30,
+    "masse": 16,
     "rayon": 4,
     "color": "#FFD700",
     "sprite": "cochonnet"

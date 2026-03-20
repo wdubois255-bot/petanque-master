@@ -59,27 +59,25 @@ export const LOFT_DEMI_PORTEE = {
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.80, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.85,
-    precisionPenalty: 3.0, retroAllowed: true
+    landingFactor: 0.88, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.85,
+    precisionPenalty: 2.0, retroAllowed: true
 };
-// Tir au fer : la boule vole 95% puis frappe a ~2.5x la vitesse du pointage
+// Tir au fer : la boule vole ~95% puis frappe a ~2.5x la vitesse du pointage
 // Avec RESTITUTION_BOULE=0.62 (acier reel), le carreau se fait NATURELLEMENT :
 // - Tireur perd ~81% de son energie au contact (retient 19%)
 // - Cible recoit ~81% de l'energie → ejectee loin
 // - Friction arrete le tireur en ~15cm = carreau naturel
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
-// Tir au fer : atterrit quasi SUR la cible (98% vol), puis roule à peine
-// rollEfficiency élevé = la vitesse résiduelle est transférée en collision
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.98, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 24.0,
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 12.0,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
 };
-// Tir devant : atterrit 8px avant la cible, rebondit dedans
+// Tir devant : atterrit 20-30cm avant la cible, rebondit dedans
 // Moins precis que tir au fer mais plus tolerant sur la distance
 export const LOFT_TIR_DEVANT = {
     id: 'tir_devant', label: 'TIR DEVANT',
-    landingFactor: 0.88, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 20.0,
+    landingFactor: 0.85, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 8.0,
     precisionPenalty: 0.7, retroAllowed: true, isTir: true
 };
 
@@ -140,7 +138,7 @@ export const DUST_COUNT_ROULETTE = 2;
 export const DUST_COUNT_DEMI = 6;
 export const DUST_COUNT_PLOMBEE = 10;
 export const DUST_COUNT_TIR = 8;
-export const WALL_RESTITUTION = 0.7;
+export const WALL_RESTITUTION = 0.35; // Bois/metal reel ~0.30-0.40
 export const COLLISION_SPARK_COUNT = 5;
 export const CARREAU_SPARK_COUNT = 8;
 export const CARREAU_SPARK_RADIUS = 36;
@@ -259,7 +257,7 @@ export const BALL_COLORS = {
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 8;
 export const BALL_MASS = 700;
-export const COCHONNET_MASS = 30;
+export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 
 // Circle de lancer - doubled
 export const THROW_CIRCLE_RADIUS = 16;

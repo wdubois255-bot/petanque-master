@@ -519,16 +519,16 @@ describe('Loft presets physics', () => {
         expect(LOFT_DEMI_PORTEE.retroAllowed).toBe(true);
     });
 
-    it('plombee: 80% fly, 20% roll, retro allowed, precision penalty', () => {
-        expect(LOFT_PLOMBEE.landingFactor).toBe(0.80);
+    it('plombee: 88% fly, 12% roll, retro allowed, precision penalty', () => {
+        expect(LOFT_PLOMBEE.landingFactor).toBe(0.88);
         expect(LOFT_PLOMBEE.rollEfficiency).toBe(0.85);
         expect(LOFT_PLOMBEE.retroAllowed).toBe(true);
-        expect(LOFT_PLOMBEE.precisionPenalty).toBe(3.0);
+        expect(LOFT_PLOMBEE.precisionPenalty).toBe(2.0);
     });
 
-    it('tir: 98% fly, high roll efficiency for energy transfer', () => {
-        expect(LOFT_TIR.landingFactor).toBe(0.98);
-        expect(LOFT_TIR.rollEfficiency).toBe(24.0);
+    it('tir: 95% fly, high roll efficiency for energy transfer', () => {
+        expect(LOFT_TIR.landingFactor).toBe(0.95);
+        expect(LOFT_TIR.rollEfficiency).toBe(12.0);
         expect(LOFT_TIR.retroAllowed).toBe(true);
     });
 
