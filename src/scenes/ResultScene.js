@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -78,8 +78,8 @@ export default class ResultScene extends Phaser.Scene {
             if (this.textures.exists(winKey)) {
                 const isStatic = CHAR_STATIC_SPRITES.includes(winner.id);
                 const winSprite = isStatic
-                    ? this.add.image(GAME_WIDTH / 2 - 200, 200, winKey).setScale(0.55).setOrigin(0.5)
-                    : this.add.sprite(GAME_WIDTH / 2 - 200, 200, winKey, 0).setScale(0.625).setOrigin(0.5);
+                    ? this.add.image(GAME_WIDTH / 2 - 200, 200, winKey).setScale(CHAR_SCALE_RESULT_STATIC).setOrigin(0.5)
+                    : this.add.sprite(GAME_WIDTH / 2 - 200, 200, winKey, 0).setScale(CHAR_SCALE_RESULT).setOrigin(0.5);
                 this.tweens.add({
                     targets: winSprite, y: 193, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });

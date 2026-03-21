@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE } from '../utils/Constants.js';
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin } from '../utils/SaveManager.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
@@ -263,7 +263,7 @@ export default class ArcadeScene extends Phaser.Scene {
             // Opponent info
             const spriteKey = this._getSpriteKey(nextOpponent);
             if (this.textures.exists(spriteKey)) {
-                this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(0.625).setOrigin(0.5);
+                this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(CHAR_SCALE_ARCADE).setOrigin(0.5);
             }
 
             this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, nextOpponent.name.toUpperCase(), {

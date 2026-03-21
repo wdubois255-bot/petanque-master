@@ -85,31 +85,48 @@ export default class BootScene extends Phaser.Scene {
         // Rookie static sprite
         this.load.image('rookie_static', `${BASE}assets/sprites/rookie_final.png`);
 
-        // Character spritesheets (Scale4x+Lanczos upscaled, 512x512: 4 cols x 4 rows of 128x128)
-        const charSprites = [
-            'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated', 'marcel_animated',
-            'reyes_animated'
+        // V2 characters — individual direction PNGs (composed into spritesheets in create())
+        const V2_CHARS = [
+            'fazzino', 'foyot', 'mamie_josette', 'papi_rene',
+            'rizzi', 'robineau', 'rocher', 'sofia', 'suchaud',
+            { name: 'la_choupe', folder: 'la_choupe_v2' },
+            { name: 'ley', folder: 'ley_v2_zip' }
         ];
-        for (const key of charSprites) {
-            this.load.spritesheet(key, `${BASE}assets/sprites/${key}.png`, {
-                frameWidth: 128, frameHeight: 128
-            });
+        const V2_DIRS = ['south', 'east', 'west', 'north'];
+        for (const entry of V2_CHARS) {
+            const charName = typeof entry === 'string' ? entry : entry.name;
+            const folder = typeof entry === 'string' ? entry : entry.folder;
+            for (const dir of V2_DIRS) {
+                this.load.image(
+                    `_v2_${charName}_${dir}`,
+                    `${BASE}assets/sprites/v2_new/characters/${folder}/${dir}.png`
+                );
+            }
         }
 
-        // Throw animation spritesheets (frame-by-frame lancer)
-        const throwSprites = [
-            { key: 'ley_throw', frames: 5 },
-            { key: 'le_magicien_throw', frames: 4 },
-            { key: 'la_choupe_throw', frames: 4 },
-            { key: 'marcel_throw', frames: 4 },
-            { key: 'reyes_throw', frames: 5 }
-        ];
-        for (const ts of throwSprites) {
-            this.load.spritesheet(ts.key, `${BASE}assets/sprites/${ts.key}.png`, {
-                frameWidth: 128, frameHeight: 128
-            });
-        }
+        // V2 UI assets
+        this.load.image('v2_logo', `${BASE}assets/sprites/v2_new/ui/logo.png`);
+        this.load.image('v2_panel_simple', `${BASE}assets/sprites/v2_new/ui/panel_simple.png`);
+        this.load.image('v2_panel_ornate', `${BASE}assets/sprites/v2_new/ui/panel_ornate.png`);
+        this.load.image('v2_panel_bolted', `${BASE}assets/sprites/v2_new/ui/panel_bolted.png`);
+        this.load.image('v2_panel_elegant', `${BASE}assets/sprites/v2_new/ui/panel_elegant.png`);
+        this.load.image('v2_button', `${BASE}assets/sprites/v2_new/ui/button_empty.png`);
+        this.load.image('v2_bar_power', `${BASE}assets/sprites/v2_new/ui/bar_power.png`);
+        this.load.image('v2_bar_decorative', `${BASE}assets/sprites/v2_new/ui/bar_decorative.png`);
+        this.load.image('v2_icon_galet', `${BASE}assets/sprites/v2_new/ui/icon_galet.png`);
+        this.load.image('v2_icon_star', `${BASE}assets/sprites/v2_new/ui/icon_star.png`);
+        this.load.image('v2_frame_portrait', `${BASE}assets/sprites/v2_new/ui/frame_portrait.png`);
+
+        // V2 UI assets — additional (renamed from PixelLab raw filenames)
+        this.load.image('v2_dialog_bg', `${BASE}assets/sprites/v2_new/ui/pixellab--pixelart-parchment-scroll-dia-1774131345495.png`);
+        this.load.image('v2_trophy', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-golden-trophy-cup--p-1774128480289.png`);
+        this.load.image('v2_padlock', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-padlock-icon--old-ru-1774127936948.png`);
+        this.load.image('v2_button_pressed', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-wooden-button-presse-1774131193265.png`);
+        this.load.image('v2_stat_icons', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-game-stat-icon-set---1774128154376.png`);
+        this.load.image('v2_terrain_terre', `${BASE}assets/sprites/v2_new/ui/pixellab-packed-brown-earth-petanque-te-1774130926511.png`);
+
+        // Throw animation spritesheets (v2 — will be in v2_new/throw_anims/ when generated)
+        // Currently empty — throw animations use squash/stretch fallback
 
         // Tiled maps (.tmj) - try to load for each map, will silently fail if not found
         const mapNames = [
@@ -181,15 +198,49 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
-        // Enable LINEAR filtering on HD character spritesheets (128px displayed at 0.5x)
-        const charSprites2 = [
-            'ley_animated', 'le_magicien_animated',
-            'la_choupe_animated', 'marcel_animated',
-            'reyes_animated'
+        // Compose V2 character spritesheets from individual direction PNGs
+        // Layout: 4x4 grid (128x128 each), rows = south/east/west/north, cols = walk frames (duplicated)
+        const V2_CHARS_CREATE = [
+            'fazzino', 'foyot', 'mamie_josette', 'papi_rene',
+            'rizzi', 'robineau', 'rocher', 'sofia', 'suchaud',
+            'la_choupe', 'ley'
         ];
-        for (const key of charSprites2) {
-            if (this.textures.exists(key)) {
-                this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+        const V2_DIRS = ['south', 'east', 'west', 'north'];
+
+        for (const charName of V2_CHARS_CREATE) {
+            const key = `${charName}_animated`;
+            const canvas = this.textures.createCanvas(key, 512, 512);
+            const ctx = canvas.context;
+
+            // Pixel art: no smoothing when scaling 124→128
+            ctx.imageSmoothingEnabled = false;
+
+            for (let row = 0; row < 4; row++) {
+                const dirKey = `_v2_${charName}_${V2_DIRS[row]}`;
+                if (this.textures.exists(dirKey)) {
+                    const img = this.textures.get(dirKey).getSourceImage();
+                    // Same image 4x across the row (no walk animation yet)
+                    for (let col = 0; col < 4; col++) {
+                        ctx.drawImage(img, 0, 0, img.width, img.height,
+                            col * 128, row * 128, 128, 128);
+                    }
+                }
+            }
+            canvas.refresh();
+
+            // Add spritesheet frame data (0-15)
+            const texture = this.textures.get(key);
+            for (let i = 0; i < 16; i++) {
+                texture.add(i, 0, (i % 4) * 128, Math.floor(i / 4) * 128, 128, 128);
+            }
+            texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+
+            // Cleanup temporary direction textures
+            for (const dir of V2_DIRS) {
+                const tempKey = `_v2_${charName}_${dir}`;
+                if (this.textures.exists(tempKey)) {
+                    this.textures.remove(tempKey);
+                }
             }
         }
 

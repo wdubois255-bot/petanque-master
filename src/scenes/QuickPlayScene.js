@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -10,9 +10,15 @@ const CHAR_VALUES = [
     { display: 'Le Rookie', key: 'rookie_static', sprite: 'rookie_static', charId: 'rookie', isStatic: true },
     { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
     { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
-    { display: 'Le Magicien', key: 'le_magicien_animated', sprite: 'le_magicien_animated', charId: 'magicien' },
-    { display: 'Marcel', key: 'marcel_animated', sprite: 'marcel_animated', charId: 'marcel' },
-    { display: 'Reyes', key: 'reyes_animated', sprite: 'reyes_animated', charId: 'reyes' }
+    { display: 'Foyot', key: 'foyot_animated', sprite: 'foyot_animated', charId: 'foyot' },
+    { display: 'Suchaud', key: 'suchaud_animated', sprite: 'suchaud_animated', charId: 'suchaud' },
+    { display: 'Fazzino', key: 'fazzino_animated', sprite: 'fazzino_animated', charId: 'fazzino' },
+    { display: 'Rocher', key: 'rocher_animated', sprite: 'rocher_animated', charId: 'rocher' },
+    { display: 'Robineau', key: 'robineau_animated', sprite: 'robineau_animated', charId: 'robineau' },
+    { display: 'Mamie Josette', key: 'mamie_josette_animated', sprite: 'mamie_josette_animated', charId: 'mamie_josette' },
+    { display: 'Sofia', key: 'sofia_animated', sprite: 'sofia_animated', charId: 'sofia' },
+    { display: 'Papi Rene', key: 'papi_rene_animated', sprite: 'papi_rene_animated', charId: 'papi_rene' },
+    { display: 'Rizzi', key: 'rizzi_animated', sprite: 'rizzi_animated', charId: 'rizzi' }
 ];
 
 const OPTIONS = [
@@ -59,23 +65,14 @@ const OPTIONS = [
     },
     {
         label: 'TERRAIN',
-        values: (() => {
-            const allTerrains = [
-                { display: 'Terre battue', key: 'terre' },
-                { display: 'Herbe', key: 'herbe' },
-                { display: 'Sable', key: 'sable' },
-                { display: 'Dalles', key: 'dalles' },
-                { display: 'Colline', key: 'colline' }
-            ];
-            try {
-                const save = loadSave();
-                if (save.unlockedTerrains && save.unlockedTerrains.length > 0) {
-                    const filtered = allTerrains.filter(t => save.unlockedTerrains.includes(t.key));
-                    return filtered.length > 0 ? filtered : allTerrains;
-                }
-            } catch { /* fallback to all */ }
-            return allTerrains;
-        })()
+        // Quick Play: all terrains available (Arcade keeps progression locks)
+        values: [
+            { display: 'Terre battue', key: 'terre' },
+            { display: 'Herbe', key: 'herbe' },
+            { display: 'Sable', key: 'sable' },
+            { display: 'Dalles', key: 'dalles' },
+            { display: 'Colline', key: 'colline' }
+        ]
     },
     {
         label: 'DIFFICULTE',
@@ -136,12 +133,18 @@ export default class QuickPlayScene extends Phaser.Scene {
         bg.fillStyle(0x3A2E28, 0.5);
         bg.fillRect(0, GAME_HEIGHT - 40, GAME_WIDTH, 40);
 
-        // Right panel background (permanent)
-        const panelBg = this.add.graphics();
-        panelBg.fillStyle(0x2A2018, 0.85);
-        panelBg.fillRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, 10);
-        panelBg.lineStyle(1, 0xD4A574, 0.25);
-        panelBg.strokeRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, 10);
+        // Right panel background (v2 asset or fallback)
+        const panelH = GAME_HEIGHT - PANEL_TOP - 50;
+        if (this.textures.exists('v2_panel_simple')) {
+            this.add.image(PANEL_X, PANEL_TOP - 6 + panelH / 2, 'v2_panel_simple')
+                .setDisplaySize(PANEL_W + 12, panelH).setAlpha(0.92);
+        } else {
+            const panelBg = this.add.graphics();
+            panelBg.fillStyle(0x2A2018, 0.85);
+            panelBg.fillRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, panelH, 10);
+            panelBg.lineStyle(1, 0xD4A574, 0.25);
+            panelBg.strokeRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, panelH, 10);
+        }
 
         // Title
         this.add.text(LEFT_W / 2, 32, 'PARTIE RAPIDE', {
@@ -520,7 +523,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const spriteKey = charOption.sprite;
         if (this.textures.exists(spriteKey)) {
             this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
-                .setScale(0.625).setOrigin(0.5).setDepth(5);
+                .setScale(CHAR_SCALE_QUICKPLAY).setOrigin(0.5).setDepth(5);
         }
 
         // Catchphrase

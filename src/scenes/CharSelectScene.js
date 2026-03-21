@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -118,11 +118,11 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _createCharacterGrid() {
-        const gridX = 60;
-        const gridY = 80;
-        const cellW = 100;
-        const cellH = 110;
-        const cols = 3;
+        const gridX = 40;
+        const gridY = 75;
+        const cellW = 90;
+        const cellH = 100;
+        const cols = 5;
 
         this._cells = [];
         this._gridCols = cols;
@@ -151,20 +151,25 @@ export default class CharSelectScene extends Phaser.Scene {
                 if (this.textures.exists(spriteKey)) {
                     if (charIsStatic) {
                         this.add.image(cx, cy - 12, spriteKey)
-                            .setScale(0.35).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                            .setScale(CHAR_SCALE_GRID_LOCKED).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
                     } else {
                         this.add.sprite(cx, cy - 12, spriteKey, 0)
-                            .setScale(0.5).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                            .setScale(CHAR_SCALE_GRID).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
                     }
                 } else {
                     this.add.text(cx, cy - 18, '?', {
                         fontFamily: 'monospace', fontSize: '36px', color: '#2A2420', shadow: SHADOW
                     }).setOrigin(0.5);
                 }
-                // Padlock icon over the slot
-                this.add.text(cx, cy + 8, '\uD83D\uDD12', {
-                    fontSize: '18px'
-                }).setOrigin(0.5).setAlpha(0.7);
+                // Padlock icon over the slot (v2 asset)
+                if (this.textures.exists('v2_padlock')) {
+                    this.add.image(cx, cy + 8, 'v2_padlock')
+                        .setScale(0.5).setOrigin(0.5).setAlpha(0.7);
+                } else {
+                    this.add.text(cx, cy + 8, '\uD83D\uDD12', {
+                        fontSize: '18px'
+                    }).setOrigin(0.5).setAlpha(0.7);
+                }
                 // Show ??? instead of name
                 this.add.text(cx, cy + 30, '???', {
                     fontFamily: 'monospace', fontSize: '12px', color: '#5A4A38', shadow: SHADOW
@@ -180,10 +185,10 @@ export default class CharSelectScene extends Phaser.Scene {
                 if (this.textures.exists(spriteKey)) {
                     if (charIsStatic2) {
                         this.add.image(cx, cy - 12, spriteKey)
-                            .setScale(0.35).setOrigin(0.5);
+                            .setScale(CHAR_SCALE_GRID_LOCKED).setOrigin(0.5);
                     } else {
                         this.add.sprite(cx, cy - 12, spriteKey, 0)
-                            .setScale(0.5).setOrigin(0.5);
+                            .setScale(CHAR_SCALE_GRID).setOrigin(0.5);
                     }
                 } else {
                     const portrait = this.add.graphics();
@@ -230,12 +235,17 @@ export default class CharSelectScene extends Phaser.Scene {
         const pw = 200;
         const ph = 340;
 
-        // Panel background
-        this._previewBg = this.add.graphics();
-        this._previewBg.fillStyle(0x3A2E28, 0.9);
-        this._previewBg.fillRoundedRect(px - pw / 2, py, pw, ph, 10);
-        this._previewBg.lineStyle(2, 0xD4A574, 0.5);
-        this._previewBg.strokeRoundedRect(px - pw / 2, py, pw, ph, 10);
+        // Panel background (v2 asset or fallback)
+        if (this.textures.exists('v2_panel_ornate')) {
+            this._previewBg = this.add.image(px, py + ph / 2, 'v2_panel_ornate')
+                .setDisplaySize(pw, ph).setAlpha(0.92);
+        } else {
+            this._previewBg = this.add.graphics();
+            this._previewBg.fillStyle(0x3A2E28, 0.9);
+            this._previewBg.fillRoundedRect(px - pw / 2, py, pw, ph, 10);
+            this._previewBg.lineStyle(2, 0xD4A574, 0.5);
+            this._previewBg.strokeRoundedRect(px - pw / 2, py, pw, ph, 10);
+        }
 
         // Preview elements (will be updated on selection change)
         this._previewName = this.add.text(px, py + 20, '', {
@@ -379,10 +389,10 @@ export default class CharSelectScene extends Phaser.Scene {
 
             if (isStatic) {
                 this._previewSprite = this.add.image(GAME_WIDTH - 220, 400, spriteKey)
-                    .setScale(0.45).setOrigin(0.5).setDepth(3);
+                    .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
             } else {
                 this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 405, spriteKey, 0)
-                    .setScale(0.5).setOrigin(0.5).setDepth(3);
+                    .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
 
                 // Walk animation (frames 0-3 = south walk)
                 const animKey = `preview_walk_${char.id}`;

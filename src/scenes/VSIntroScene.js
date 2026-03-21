@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_VS } from '../utils/Constants.js';
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -100,10 +100,10 @@ export default class VSIntroScene extends Phaser.Scene {
         if (this.textures.exists(playerSpriteKey)) {
             if (playerIsStatic) {
                 playerSprite = this.add.image(playerX, GAME_HEIGHT / 2 + 30, playerSpriteKey)
-                    .setScale(0.65).setOrigin(0.5).setX(-200);
+                    .setScale(CHAR_SCALE_VS).setOrigin(0.5).setX(-200);
             } else {
                 playerSprite = this.add.sprite(playerX, GAME_HEIGHT / 2 + 40, playerSpriteKey, 0)
-                    .setScale(0.75).setOrigin(0.5).setX(-200);
+                    .setScale(CHAR_SCALE_VS).setOrigin(0.5).setX(-200);
             }
         }
 
@@ -124,10 +124,10 @@ export default class VSIntroScene extends Phaser.Scene {
         if (this.textures.exists(opponentSpriteKey)) {
             if (opponentIsStatic) {
                 opponentSprite = this.add.image(opponentX, GAME_HEIGHT / 2 + 30, opponentSpriteKey)
-                    .setScale(0.65).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+                    .setScale(CHAR_SCALE_VS).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
             } else {
                 opponentSprite = this.add.sprite(opponentX, GAME_HEIGHT / 2 + 40, opponentSpriteKey, 0)
-                    .setScale(0.75).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
+                    .setScale(CHAR_SCALE_VS).setOrigin(0.5).setFlipX(true).setX(GAME_WIDTH + 200);
             }
         }
 

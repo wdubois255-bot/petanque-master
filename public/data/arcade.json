@@ -3,10 +3,10 @@
   "description": "Le Rookie debarque au boulodrome de La Ciotat. Cinq joueurs reguliers l'attendent. Pour gagner sa place, il devra tous les battre.",
   "intro_narrative": [
     "Boulodrome de La Ciotat.",
-    "Chaque dimanche, cinq joueurs se retrouvent ici.",
+    "Chaque dimanche, les legendes se retrouvent ici.",
     "",
-    "La Choupe, le bourrin. Marcel, le renard.",
-    "Le Magicien, le pointeur. Reyes, le mur.",
+    "La Choupe, le bourrin. Mamie Josette, la terreur.",
+    "Fazzino, le calculateur. Suchaud, le tireur supreme.",
     "Et Ley... le tireur que personne ne bat.",
     "",
     "Aujourd'hui, c'est le Tournoi annuel.",
@@ -18,7 +18,7 @@
     "Trois victoires. Pas mal pour un debutant.",
     "",
     "Mais les deux prochains ne sont pas du meme calibre.",
-    "Reyes joue sur les Docks. Son terrain.",
+    "Suchaud, 14 fois champion. Il ne rate jamais.",
     "Et Ley... il vous attend sur la plage.",
     "",
     "Plus le droit a l'erreur."
@@ -30,7 +30,7 @@
     "n'avait fait depuis des annees.",
     "",
     "Le boulodrome a un nouveau champion.",
-    "Les cinq autres applaudissent.",
+    "Les legendes applaudissent.",
     "Enfin... presque.",
     "",
     "A dimanche prochain !"
@@ -46,27 +46,27 @@
     },
     {
       "round": 2,
-      "opponent": "marcel",
+      "opponent": "mamie_josette",
       "terrain": "parc",
       "difficulty": "medium",
       "difficulty_label": "Moyen",
-      "intro_text": "Marcel pointe bien et sait quand tirer. Le parc et ses zones mixtes n'aident pas..."
+      "intro_text": "Mamie Josette, 72 ans et un calme olympien. Ne vous fiez pas aux apparences..."
     },
     {
       "round": 3,
-      "opponent": "magicien",
+      "opponent": "fazzino",
       "terrain": "colline",
       "difficulty": "hard",
       "difficulty_label": "Difficile",
-      "intro_text": "Le Magicien et sa precision diabolique. Sur la colline, chaque boule compte."
+      "intro_text": "Fazzino, joueur du siecle. Sur la colline, chaque boule est un calcul."
     },
     {
       "round": 4,
-      "opponent": "reyes",
+      "opponent": "suchaud",
       "terrain": "docks",
       "difficulty": "hard",
       "difficulty_label": "Tres difficile",
-      "intro_text": "Reyes, Le Mur. Sur les dalles glissantes des Docks, ses boules sont imprevisibles."
+      "intro_text": "Suchaud, 14 fois champion. Sur les dalles, ses tirs sont chirurgicaux."
     },
     {
       "round": 5,

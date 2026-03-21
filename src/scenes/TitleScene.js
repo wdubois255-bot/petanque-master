@@ -288,40 +288,61 @@ export default class TitleScene extends Phaser.Scene {
     // TITLE - Big, impactful, with outline effect
     // ================================================================
     _createTitle() {
-        // Title outline (drawn behind for stroke effect)
-        const outlineOffsets = [
-            [-3, 0], [3, 0], [0, -3], [0, 3],
-            [-2, -2], [2, -2], [-2, 2], [2, 2]
-        ];
+        // V2 logo image (if available) — replaces text-based title
+        if (this.textures.exists('v2_logo')) {
+            this._titleOutlines = [];
+            this._titleText = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
+                .setOrigin(0.5).setAlpha(0).setDepth(5);
+            this._titleGlow = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
+                .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0);
 
-        this._titleOutlines = outlineOffsets.map(([ox, oy]) => {
-            return this.add.text(GAME_WIDTH / 2 + ox, 90 + oy, 'PETANQUE\nMASTER', {
+            // Triple-click on logo → DevTestScene (dev only)
+            this._logoClickCount = 0;
+            this._logoClickTimer = null;
+            this._titleText.setInteractive({ useHandCursor: false });
+            this._titleText.on('pointerdown', () => {
+                this._logoClickCount++;
+                if (this._logoClickTimer) clearTimeout(this._logoClickTimer);
+                this._logoClickTimer = setTimeout(() => { this._logoClickCount = 0; }, 600);
+                if (this._logoClickCount >= 3) {
+                    this._logoClickCount = 0;
+                    this.scene.start('DevTestScene');
+                }
+            });
+        } else {
+            // Fallback: text-based title
+            const outlineOffsets = [
+                [-3, 0], [3, 0], [0, -3], [0, 3],
+                [-2, -2], [2, -2], [-2, 2], [2, 2]
+            ];
+
+            this._titleOutlines = outlineOffsets.map(([ox, oy]) => {
+                return this.add.text(GAME_WIDTH / 2 + ox, 90 + oy, 'PETANQUE\nMASTER', {
+                    fontFamily: 'monospace',
+                    fontSize: '56px',
+                    color: '#3A2E28',
+                    align: 'center',
+                    lineSpacing: 2,
+                }).setOrigin(0.5).setAlpha(0);
+            });
+
+            this._titleText = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
                 fontFamily: 'monospace',
                 fontSize: '56px',
-                color: '#3A2E28',
+                color: '#FFD700',
+                align: 'center',
+                lineSpacing: 2,
+                shadow: SHADOW_HEAVY
+            }).setOrigin(0.5).setAlpha(0);
+
+            this._titleGlow = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
+                fontFamily: 'monospace',
+                fontSize: '56px',
+                color: '#FFF4D0',
                 align: 'center',
                 lineSpacing: 2,
             }).setOrigin(0.5).setAlpha(0);
-        });
-
-        // Main title text
-        this._titleText = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
-            fontFamily: 'monospace',
-            fontSize: '56px',
-            color: '#FFD700',
-            align: 'center',
-            lineSpacing: 2,
-            shadow: SHADOW_HEAVY
-        }).setOrigin(0.5).setAlpha(0);
-
-        // Secondary glow on title
-        this._titleGlow = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
-            fontFamily: 'monospace',
-            fontSize: '56px',
-            color: '#FFF4D0',
-            align: 'center',
-            lineSpacing: 2,
-        }).setOrigin(0.5).setAlpha(0);
+        }
 
         // Subtitle
         this._subtitle = this.add.text(GAME_WIDTH / 2, 175, 'Le meilleur bouliste du canton, c\'est vous !', {

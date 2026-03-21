@@ -160,34 +160,49 @@ Frames : **8** (en 64x64 on peut aller jusqu'a 16).
 
 ### Prompts par archetype de lancer
 
+**REGLES FONDAMENTALES** :
+- Les pieds restent IMMOBILES dans le cercle. Les jambes ne bougent JAMAIS.
+- Seuls bougent : le bras lanceur, le poignet, une legere rotation du torse, et la tete.
+- Vue : le joueur est vu DE DOS (back view, facing away) car il lance vers le terrain devant lui.
+
 **Lancer standard (Marcel, Quintais, Lacroix, Reyes)** :
 ```
-The petanque player shifts weight to back foot, bends knees slightly, swings right arm backward holding a metallic boule at hip level, pauses briefly in concentration, then smoothly accelerates arm forward in an underhand throwing motion, releases the boule at the lowest point of the swing, follows through with arm extending upward and forward, body leaning into the throw with momentum
+Seen from behind, back view, pixel art petanque player facing away. Feet planted firmly in the circle, legs completely still throughout. Slight forward lean of the torso, right arm swings backward holding a metallic boule at hip level, brief pause, then smooth controlled underhand arm swing forward, wrist releases the boule at the lowest point of the arc, arm follows through extending upward and forward, torso tilts slightly with the momentum, feet never leave the ground
 ```
 
-**Lancer puissant (La Choupe, Molinas, Le Corse)** :
+**Lancer puissant / Tir au fer (La Choupe, Molinas, Le Corse, Robineau)** :
 ```
-The muscular player winds up aggressively for a powerful throw, wide stance power position, arm pulls far back with the heavy boule, explosive forward thrust of the arm, releasing with raw power and speed, body lunging forward with the throw, intense forceful follow-through with arm fully extended
+Seen from behind, back view, pixel art powerful petanque player facing away. Feet firmly planted in the circle, legs locked and immovable like pillars. Upper body coils with tension, arm pulls far back gripping the boule tightly, explosive forward thrust of the arm only, powerful shoulder rotation drives the release, boule launches fast and direct, intense forceful arm follow-through fully extended upward, torso snaps forward while feet stay completely still
 ```
 
-**Lancer precis (Le Magicien, Suchaud, Radnic, Sofia)** :
+**Lancer precis / Pointeur (Le Magicien, Suchaud, Radnic, Sofia)** :
 ```
-The precise player performs a careful measured throwing motion, minimal body movement, focused wrist control, arm swings in a gentle controlled arc, releasing the boule with surgical accuracy at exactly the right moment, subtle elegant follow-through, perfectly balanced finish
+Seen from behind, back view, pixel art precise petanque player facing away. Feet planted in the circle, legs motionless and balanced. Minimal upper body movement, focused wrist control guides the throw, arm swings in a gentle smooth controlled arc close to the body, fingers release the boule with surgical timing, subtle elegant arm follow-through, torso barely moves, perfect composure and balance throughout
 ```
 
 **Lancer theatral (Foyot, Le Marseillais, Le Pastaga)** :
 ```
-The showman player performs a dramatic theatrical throw, exaggerated wind-up with flair, body rotating with theatrical movement, arm sweeping in a wide showy arc, releasing the boule with dramatic gesture, elaborate follow-through with arms spread wide, performative entertaining motion
+Seen from behind, back view, pixel art flamboyant petanque player facing away. Feet planted in the circle, legs stay still. Upper body full of personality, torso rotates dramatically, exaggerated arm wind-up with theatrical flair, arm sweeps in a wide showy arc, wrist flicks the boule with dramatic gesture, elaborate arm follow-through with hand spread wide, upper body leans and sways expressively while feet remain completely planted
 ```
 
 **Lancer debutant (Rookie, Le Touriste, L'Enfant Prodige)** :
 ```
-The nervous beginner attempts an uncertain throw, slightly clumsy stance, hesitant arm swing backward, awkward forward motion, releasing the boule with hopeful expression, unstable follow-through nearly losing balance, eager but unpracticed motion
+Seen from behind, back view, pixel art nervous beginner petanque player facing away. Feet in the circle, legs stiff and uncertain but not moving. Hesitant arm swing backward with shaky grip on boule, jerky forward arm motion with poor timing, releases the boule slightly too early or too late, wobbly arm follow-through, upper body sways off-balance but feet stay planted
 ```
 
-**Lancer explosif (Rocher, Karim, Ley)** :
+**Lancer explosif / Tireur (Rocher, Karim, Ley)** :
 ```
-The athletic player performs a dynamic explosive throw, quick powerful motion, explosive arm acceleration from behind, fast release with athletic precision, body snapping forward with the momentum, sharp aggressive follow-through, confident energetic finish
+Seen from behind, back view, pixel art athletic petanque player facing away. Feet firmly planted in the circle, legs solid and grounded. Quick explosive arm acceleration from behind the body, fast sharp shoulder rotation adds power, rapid wrist snap releases the boule with athletic precision, arm whips through with aggressive follow-through, torso leans forward sharply while feet never move, dynamic upper body energy contrasting with perfectly still lower body
+```
+
+**Lancer veteran (Papi Rene, Mamie Josette)** :
+```
+Seen from behind, back view, pixel art elderly petanque veteran facing away. Feet planted in the circle, legs still and relaxed with years of practice. Slow deliberate arm wind-up, smooth unhurried pendulum swing perfected over decades, gentle controlled release with experienced fingertips, minimal arm follow-through with effortless economy of motion, barely any torso movement, the throw looks simple and easy
+```
+
+**Lancer elegant (Fazzino, Rizzi, La Nicoise)** :
+```
+Seen from behind, back view, pixel art elegant petanque player facing away. Feet placed precisely in the circle, legs poised and motionless. Fluid artistic arm motion like a dancer, smooth sweeping arc with the boule held delicately, wrist rolls the boule off the fingertips with refined technique, beautiful flowing arm follow-through that curves upward gracefully, slight graceful torso sway, every movement is aesthetically pleasing and effortless
 ```
 
 ### Technique de chaingage (videos 1+7)
@@ -250,7 +265,7 @@ Taille : 256x64 (ou 344x192)
 
 **Fond de dialogue** (parchemin) :
 ```
-pixel art parchment scroll dialog box background, aged cream paper texture, curled edges at top and bottom, warm brown border, provencal rustic style, wide horizontal rectangle, transparent corners
+ pixelart parchment scroll dialog box background, aged cream paper texture, curled edges at top and bottom, warm brown border, provencal rustic style, wide horizontal rectangle, transparent corners
 ```
 Taille : 344x192
 

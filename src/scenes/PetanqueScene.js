@@ -513,7 +513,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this._opponentIsStatic = CHAR_STATIC_SPRITES.includes(oppId);
 
         // Character sprite scale: 0.4x (sprites are 128x128, displayed at ~51px — avoids overlap)
-        const CHAR_SCALE = 0.4;
+        const CHAR_SCALE = 0.65;
         this._charScale = CHAR_SCALE;
 
         // Throw circle position (where the active thrower stands)

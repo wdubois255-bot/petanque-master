@@ -151,8 +151,17 @@ export const COCHONNET_SAFE_MARGIN = 15;
 export const COCHONNET_CLAMP_MARGIN = 35;
 export const BALL_CLAMP_MARGIN = 16;
 
-// Petanque - character sprite
+// Petanque - character sprite scales (v2 sprites: 128x128 frames)
 export const CHAR_SPRITE_SCALE = 0.5;
+export const CHAR_SCALE_GRID = 0.7;           // CharSelectScene grid cells
+export const CHAR_SCALE_GRID_LOCKED = 0.55;   // CharSelectScene locked cells
+export const CHAR_SCALE_PREVIEW = 1.0;         // CharSelectScene right panel preview
+export const CHAR_SCALE_QUICKPLAY = 1.0;       // QuickPlayScene info panel
+export const CHAR_SCALE_ARCADE = 1.0;          // ArcadeScene opponent preview
+export const CHAR_SCALE_VS = 1.2;              // VSIntroScene split screen
+export const CHAR_SCALE_PETANQUE = 0.65;       // PetanqueScene gameplay (unchanged — fits terrain)
+export const CHAR_SCALE_RESULT = 1.0;          // ResultScene winner display
+export const CHAR_SCALE_RESULT_STATIC = 0.85;  // ResultScene winner (static sprite)
 export const THROW_ANIM_CROUCH_DURATION = 250;
 export const THROW_ANIM_RELEASE_DURATION = 100;
 export const THROW_ANIM_RECOVERY_DURATION = 300;
@@ -266,11 +275,18 @@ export const THROW_CIRCLE_Y_OFFSET = 20;
 // Character ID → spritesheet key mapping (centralized, used by all scenes)
 export const CHAR_SPRITE_MAP = {
     'rookie': 'rookie_static',
-    'ley': 'ley_animated',
-    'magicien': 'le_magicien_animated',
+    // V2 characters (composed spritesheets from PixelLab 8-direction PNGs)
     'la_choupe': 'la_choupe_animated',
-    'marcel': 'marcel_animated',
-    'reyes': 'reyes_animated'
+    'ley': 'ley_animated',
+    'fazzino': 'fazzino_animated',
+    'foyot': 'foyot_animated',
+    'mamie_josette': 'mamie_josette_animated',
+    'papi_rene': 'papi_rene_animated',
+    'rizzi': 'rizzi_animated',
+    'robineau': 'robineau_animated',
+    'rocher': 'rocher_animated',
+    'sofia': 'sofia_animated',
+    'suchaud': 'suchaud_animated'
 };
 
 // Characters that use a single static image (not a spritesheet)
@@ -281,13 +297,8 @@ export function getCharSpriteKey(char) {
 }
 
 // Throw animation spritesheets (null = use squash/stretch fallback)
-export const CHAR_THROW_MAP = {
-    'ley': { key: 'ley_throw', frames: 5 },
-    'magicien': { key: 'le_magicien_throw', frames: 4 },
-    'la_choupe': { key: 'la_choupe_throw', frames: 4 },
-    'marcel': { key: 'marcel_throw', frames: 4 },
-    'reyes': { key: 'reyes_throw', frames: 5 }
-};
+// V2 throw animations not yet generated — all use fallback for now
+export const CHAR_THROW_MAP = {};
 
 export function getCharThrowKey(charId) {
     return CHAR_THROW_MAP[charId] || null;
