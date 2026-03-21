@@ -89,6 +89,7 @@ export default class BootScene extends Phaser.Scene {
         const V2_CHARS = [
             'fazzino', 'foyot', 'mamie_josette', 'papi_rene',
             'rizzi', 'robineau', 'rocher', 'sofia', 'suchaud',
+            'rookie',
             { name: 'la_choupe', folder: 'la_choupe_v2' },
             { name: 'ley', folder: 'ley_v2_zip' }
         ];
@@ -99,7 +100,7 @@ export default class BootScene extends Phaser.Scene {
             for (const dir of V2_DIRS) {
                 this.load.image(
                     `_v2_${charName}_${dir}`,
-                    `${BASE}assets/sprites/v2_new/characters/${folder}/${dir}.png`
+                    `${BASE}assets/sprites/v2_new/characters/${folder}/rotations/${dir}.png`
                 );
             }
         }
@@ -203,7 +204,7 @@ export default class BootScene extends Phaser.Scene {
         const V2_CHARS_CREATE = [
             'fazzino', 'foyot', 'mamie_josette', 'papi_rene',
             'rizzi', 'robineau', 'rocher', 'sofia', 'suchaud',
-            'la_choupe', 'ley'
+            'rookie', 'la_choupe', 'ley'
         ];
         const V2_DIRS = ['south', 'east', 'west', 'north'];
 

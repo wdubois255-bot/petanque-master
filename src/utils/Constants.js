@@ -274,7 +274,7 @@ export const THROW_CIRCLE_Y_OFFSET = 20;
 
 // Character ID → spritesheet key mapping (centralized, used by all scenes)
 export const CHAR_SPRITE_MAP = {
-    'rookie': 'rookie_static',
+    'rookie': 'rookie_animated',
     // V2 characters (composed spritesheets from PixelLab 8-direction PNGs)
     'la_choupe': 'la_choupe_animated',
     'ley': 'ley_animated',
@@ -290,7 +290,7 @@ export const CHAR_SPRITE_MAP = {
 };
 
 // Characters that use a single static image (not a spritesheet)
-export const CHAR_STATIC_SPRITES = ['rookie'];
+export const CHAR_STATIC_SPRITES = [];
 
 export function getCharSpriteKey(char) {
     return CHAR_SPRITE_MAP[char?.id] || char?.sprite || 'ley_animated';

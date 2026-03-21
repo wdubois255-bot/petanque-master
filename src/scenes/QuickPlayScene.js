@@ -7,7 +7,7 @@ import UIFactory from '../ui/UIFactory.js';
 const SHADOW = UIFactory.SHADOW;
 
 const CHAR_VALUES = [
-    { display: 'Le Rookie', key: 'rookie_static', sprite: 'rookie_static', charId: 'rookie', isStatic: true },
+    { display: 'Le Rookie', key: 'rookie_animated', sprite: 'rookie_animated', charId: 'rookie' },
     { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
     { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
     { display: 'Foyot', key: 'foyot_animated', sprite: 'foyot_animated', charId: 'foyot' },
