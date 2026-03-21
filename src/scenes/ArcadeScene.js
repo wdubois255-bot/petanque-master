@@ -121,6 +121,12 @@ export default class ArcadeScene extends Phaser.Scene {
         bg.fillStyle(0x1A1510, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
+        // Dialog parchment background
+        if (this.textures.exists('v2_dialog_bg')) {
+            this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
+                .setDisplaySize(500, 320).setAlpha(0.15);
+        }
+
         const lineObjects = [];
         const startY = GAME_HEIGHT / 2 - (lines.length * 24) / 2;
 
@@ -247,12 +253,17 @@ export default class ArcadeScene extends Phaser.Scene {
         const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
         if (nextOpponent) {
-            // Panel bg
-            const panel = this.add.graphics();
-            panel.fillStyle(0x3A2E28, 0.85);
-            panel.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
-            panel.lineStyle(2, 0xD4A574, 0.4);
-            panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+            // Panel bg (v2 asset or fallback)
+            if (this.textures.exists('v2_panel_bolted')) {
+                this.add.image(GAME_WIDTH / 2, panelY + 90, 'v2_panel_bolted')
+                    .setDisplaySize(560, 180).setAlpha(0.92);
+            } else {
+                const panel = this.add.graphics();
+                panel.fillStyle(0x3A2E28, 0.85);
+                panel.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+                panel.lineStyle(2, 0xD4A574, 0.4);
+                panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+            }
 
             // "PROCHAIN COMBAT" header
             this.add.text(GAME_WIDTH / 2, panelY + 18, 'PROCHAIN COMBAT', {

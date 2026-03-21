@@ -43,6 +43,16 @@ export default class ResultScene extends Phaser.Scene {
         const titleColor = this.won ? '#FFD700' : '#C44B3F';
         const titleText = this.won ? 'VICTOIRE !' : 'DEFAITE...';
 
+        // Trophy icon next to victory title
+        if (this.won && this.textures.exists('v2_trophy')) {
+            const trophy = this.add.image(GAME_WIDTH / 2 - 140, 40, 'v2_trophy')
+                .setScale(0.6).setOrigin(0.5).setAlpha(0);
+            this.tweens.add({ targets: trophy, alpha: 1, scale: 0.7, duration: 400, ease: 'Back.easeOut', delay: 400 });
+            const trophy2 = this.add.image(GAME_WIDTH / 2 + 140, 40, 'v2_trophy')
+                .setScale(0.6).setOrigin(0.5).setAlpha(0).setFlipX(true);
+            this.tweens.add({ targets: trophy2, alpha: 1, scale: 0.7, duration: 400, ease: 'Back.easeOut', delay: 400 });
+        }
+
         const title = this.add.text(GAME_WIDTH / 2, 40, titleText, {
             fontFamily: 'monospace', fontSize: '42px', color: titleColor,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
@@ -74,6 +84,11 @@ export default class ResultScene extends Phaser.Scene {
         // Character sprite + name
         const winner = this.won ? this.playerCharacter : this.opponentCharacter;
         if (winner) {
+            // Portrait frame behind character
+            if (this.textures.exists('v2_frame_portrait')) {
+                this.add.image(GAME_WIDTH / 2 - 200, 200, 'v2_frame_portrait')
+                    .setScale(0.8).setOrigin(0.5).setAlpha(0.7);
+            }
             const winKey = this._getSpriteKey(winner);
             if (this.textures.exists(winKey)) {
                 const isStatic = CHAR_STATIC_SPRITES.includes(winner.id);
@@ -111,9 +126,14 @@ export default class ResultScene extends Phaser.Scene {
         const panelW = 340;
         const panelH = 130;
 
-        const panel = UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
-            fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
-        });
+        if (this.textures.exists('v2_panel_elegant')) {
+            this.add.image(panelX, panelY + panelH / 2, 'v2_panel_elegant')
+                .setDisplaySize(panelW, panelH).setAlpha(0.9);
+        } else {
+            UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
+                fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
+            });
+        }
 
         const ms = this.matchStats;
         const bestDist = ms.bestBallDist && ms.bestBallDist < Infinity
@@ -156,6 +176,12 @@ export default class ResultScene extends Phaser.Scene {
         const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
         if (galetsToGive > 0) {
             addGalets(galetsToGive);
+            // Galet icon
+            if (this.textures.exists('v2_icon_galet')) {
+                const galetIcon = this.add.image(GAME_WIDTH / 2 - 70, panelY + panelH + 28, 'v2_icon_galet')
+                    .setScale(0.35).setOrigin(0.5).setAlpha(0);
+                this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 800 });
+            }
             const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${galetsToGive} Galets`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
@@ -301,6 +327,7 @@ export default class ResultScene extends Phaser.Scene {
     }
 
     _drawStars(cx, cy, count) {
+        const useV2Star = this.textures.exists('v2_icon_star');
         const starSize = 16;
         const spacing = 40;
         const startX = cx - spacing;
@@ -308,6 +335,19 @@ export default class ResultScene extends Phaser.Scene {
         for (let i = 0; i < 3; i++) {
             const sx = startX + i * spacing;
             const filled = i < count;
+
+            // Use v2_icon_star if available
+            if (useV2Star) {
+                const starImg = this.add.image(sx, cy, 'v2_icon_star')
+                    .setScale(0).setOrigin(0.5).setAlpha(filled ? 1 : 0.3);
+                if (!filled) starImg.setTint(0x5A4A38);
+                this.tweens.add({
+                    targets: starImg, scale: filled ? 0.4 : 0.3, duration: 300,
+                    ease: 'Back.easeOut', delay: 600 + i * 200
+                });
+                continue;
+            }
+
             const color = filled ? '#FFD700' : '#5A4A38';
             const star = this.add.text(sx, cy, '\u2605', {
                 fontFamily: 'monospace', fontSize: `${starSize}px`, color,

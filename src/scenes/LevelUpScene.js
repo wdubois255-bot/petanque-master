@@ -76,12 +76,17 @@ export default class LevelUpScene extends Phaser.Scene {
 
         const bannerY = GAME_HEIGHT / 2;
 
-        // Banner background
-        const banner = this.add.graphics().setDepth(51);
-        banner.fillStyle(COLORS.OMBRE, 0.95);
-        banner.fillRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
-        banner.lineStyle(2, COLORS.OR, 0.8);
-        banner.strokeRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
+        // Banner background (v2 asset or fallback)
+        if (this.textures.exists('v2_panel_ornate')) {
+            this.add.image(GAME_WIDTH / 2, bannerY, 'v2_panel_ornate')
+                .setDisplaySize(500, 80).setAlpha(0.95).setDepth(51);
+        } else {
+            const banner = this.add.graphics().setDepth(51);
+            banner.fillStyle(COLORS.OMBRE, 0.95);
+            banner.fillRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
+            banner.lineStyle(2, COLORS.OR, 0.8);
+            banner.strokeRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
+        }
 
         const label = this.add.text(GAME_WIDTH / 2, bannerY - 14, 'NOUVELLE CAPACITE !', {
             fontFamily: 'monospace', fontSize: '14px', color: CSS.OR,

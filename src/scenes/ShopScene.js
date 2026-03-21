@@ -87,17 +87,23 @@ export default class ShopScene extends Phaser.Scene {
         const save = loadSave();
         const galets = save.galets;
 
-        // Coin icon (small stone circle)
-        const coinGfx = this.add.graphics();
-        coinGfx.fillStyle(0xC4854A, 1);
-        coinGfx.fillCircle(GAME_WIDTH - 110, 28, 8);
-        coinGfx.lineStyle(1.5, 0x8B6914, 1);
-        coinGfx.strokeCircle(GAME_WIDTH - 110, 28, 8);
-        // "G" on coin
-        const coinLetter = this.add.text(GAME_WIDTH - 110, 28, 'G', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28',
-            fontStyle: 'bold'
-        }).setOrigin(0.5);
+        // Coin icon (v2 asset or fallback)
+        let coinGfx, coinLetter;
+        if (this.textures.exists('v2_icon_galet')) {
+            coinGfx = this.add.image(GAME_WIDTH - 110, 28, 'v2_icon_galet')
+                .setScale(0.25).setOrigin(0.5);
+            coinLetter = this.add.text(0, 0, '').setAlpha(0); // placeholder
+        } else {
+            coinGfx = this.add.graphics();
+            coinGfx.fillStyle(0xC4854A, 1);
+            coinGfx.fillCircle(GAME_WIDTH - 110, 28, 8);
+            coinGfx.lineStyle(1.5, 0x8B6914, 1);
+            coinGfx.strokeCircle(GAME_WIDTH - 110, 28, 8);
+            coinLetter = this.add.text(GAME_WIDTH - 110, 28, 'G', {
+                fontFamily: 'monospace', fontSize: '10px', color: '#3A2E28',
+                fontStyle: 'bold'
+            }).setOrigin(0.5);
+        }
 
         const galetsText = UIFactory.addText(this, GAME_WIDTH - 88, 28, `${galets}`, '20px', '#FFD700', {
             originX: 0, originY: 0.5, heavyShadow: true
