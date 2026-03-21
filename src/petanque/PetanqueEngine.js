@@ -414,7 +414,6 @@ export default class PetanqueEngine {
         this.lastTeamPlayed = team;
         this.lastThrownBall = ball;
         this.lastShotWasTir = shotMode === 'tirer';
-        this.lastShotLoft = loft;
         this._pendingCarreauChecks = [];
         this._shotCollisions = [];
         this._lastImpactPoint = null;
@@ -432,6 +431,7 @@ export default class PetanqueEngine {
         // Resolve loft preset
         const isTir = shotMode === 'tirer';
         const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
+        this.lastShotLoft = loft;
 
         // Get puissance stat from the team's character
         const puissance = team === 'player'
