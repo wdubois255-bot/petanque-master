@@ -297,8 +297,19 @@ export function getCharSpriteKey(char) {
 }
 
 // Throw animation spritesheets (null = use squash/stretch fallback)
-// V2 throw animations not yet generated — all use fallback for now
-export const CHAR_THROW_MAP = {};
+// Each entry: { key: texture key, frames: number of frames in the spritesheet }
+export const CHAR_THROW_MAP = {
+    'rookie': { key: 'throw_rookie', frames: 4 },
+    'la_choupe': { key: 'throw_la_choupe', frames: 4 },
+    'ley': { key: 'throw_ley', frames: 4 },
+    'foyot': { key: 'throw_foyot', frames: 4 },
+    'suchaud': { key: 'throw_suchaud', frames: 4 },
+    'mamie_josette': { key: 'throw_mamie_josette', frames: 4 },
+    'sofia': { key: 'throw_sofia', frames: 4 },
+    'robineau': { key: 'throw_robineau', frames: 4 },
+    'rocher': { key: 'throw_rocher', frames: 4 },
+    'rizzi': { key: 'throw_rizzi', frames: 4 }
+};
 
 export function getCharThrowKey(charId) {
     return CHAR_THROW_MAP[charId] || null;

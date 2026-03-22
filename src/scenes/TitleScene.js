@@ -550,13 +550,14 @@ export default class TitleScene extends Phaser.Scene {
             // Background: v2 assets or fallback graphics
             let pill;
             if (item.hero && this.textures.exists('v2_button')) {
-                // Hero JOUER: use v2_button wood+laurels banner
+                // Hero JOUER: v2_button (256x256 image, content ~256x100 horizontal banner)
+                // Scale uniformly to fit — button is naturally wider than tall
                 pill = this.add.image(pillX, pillY, 'v2_button')
-                    .setDisplaySize(pillW + 40, pillH + 12).setDepth(5).setAlpha(0.95);
+                    .setScale(0.95).setDepth(5).setAlpha(0.95);
             } else if (!item.hero && this.textures.exists('v2_panel_simple')) {
-                // Sub-items: NineSlice panel
-                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW, pillH, 12, 12, 12, 12)
-                    .setOrigin(0.5).setDepth(5).setAlpha(0.9);
+                // Sub-items: NineSlice panel with wood texture
+                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW, pillH + 4, 16, 16, 16, 16)
+                    .setOrigin(0.5).setDepth(5).setAlpha(0.85);
             } else {
                 // Fallback: graphics
                 pill = this.add.graphics().setDepth(5);

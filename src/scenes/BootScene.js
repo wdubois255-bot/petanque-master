@@ -125,8 +125,16 @@ export default class BootScene extends Phaser.Scene {
         });
         this.load.image('v2_terrain_terre', `${BASE}assets/sprites/v2_new/ui/pixellab-packed-brown-earth-petanque-te-1774130926511.png`);
 
-        // Throw animation spritesheets (v2 — will be in v2_new/throw_anims/ when generated)
-        // Currently empty — throw animations use squash/stretch fallback
+        // Throw animation spritesheets (v2 — 4 frames 128x128 each, horizontal strip 512x128)
+        const THROW_CHARS = [
+            'rookie', 'la_choupe', 'ley', 'foyot', 'suchaud',
+            'mamie_josette', 'sofia', 'robineau', 'rocher', 'rizzi'
+        ];
+        for (const charId of THROW_CHARS) {
+            this.load.spritesheet(`throw_${charId}`, `${BASE}assets/sprites/v2_new/throw_anims/sheets/throw_${charId}.png`, {
+                frameWidth: 128, frameHeight: 128
+            });
+        }
 
         // Tiled maps (.tmj) - try to load for each map, will silently fail if not found
         const mapNames = [

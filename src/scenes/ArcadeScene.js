@@ -124,7 +124,7 @@ export default class ArcadeScene extends Phaser.Scene {
         // Dialog parchment background
         if (this.textures.exists('v2_dialog_bg')) {
             this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
-                .setDisplaySize(500, 320).setAlpha(0.30);
+                .setDisplaySize(700, 400).setAlpha(0.45);
         }
 
         const lineObjects = [];
