@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, SHADOW_TEXT, UI } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = UIFactory.SHADOW;
+const SHADOW = SHADOW_TEXT;
 
 const CHAR_VALUES = [
     { display: 'Le Rookie', key: 'rookie_animated', sprite: 'rookie_animated', charId: 'rookie' },
@@ -22,91 +22,43 @@ const CHAR_VALUES = [
 ];
 
 const OPTIONS = [
-    {
-        label: 'MODE',
-        values: [
-            { display: 'VS IA', key: 'vs_ia' },
-            { display: 'Local 1v1', key: 'local' }
-        ]
-    },
-    {
-        label: '\u{1F535} JOUEUR 1',
-        values: CHAR_VALUES
-    },
-    {
-        label: '\u{1F534} JOUEUR 2',
-        values: CHAR_VALUES
-    },
-    {
-        label: 'BOULES',
-        values: [
-            { display: 'Acier', key: 'acier' },
-            { display: 'Bronze', key: 'bronze' },
-            { display: 'Chrome', key: 'chrome' },
-            { display: 'Noire', key: 'noire' },
-            { display: 'Rouge', key: 'rouge' },
-            { display: 'Doree', key: 'doree' },
-            { display: 'Rouillee', key: 'rouille' },
-            { display: 'Bleue', key: 'bleue' },
-            { display: 'Cuivre', key: 'cuivre' },
-            { display: 'Titane', key: 'titane' }
-        ]
-    },
-    {
-        label: 'COCHONNET',
-        values: [
-            { display: 'Classique', key: 'classique' },
-            { display: 'Bleu', key: 'bleu' },
-            { display: 'Vert', key: 'vert' },
-            { display: 'Rouge', key: 'rouge' },
-            { display: 'Jungle', key: 'jungle' },
-            { display: 'Multicolor', key: 'multicolor' }
-        ]
-    },
-    {
-        label: 'TERRAIN',
-        // Quick Play: all terrains available (Arcade keeps progression locks)
-        values: [
-            { display: 'Terre battue', key: 'terre' },
-            { display: 'Herbe', key: 'herbe' },
-            { display: 'Sable', key: 'sable' },
-            { display: 'Dalles', key: 'dalles' },
-            { display: 'Colline', key: 'colline' }
-        ]
-    },
-    {
-        label: 'DIFFICULTE',
-        values: [
-            { display: 'Facile', key: 'easy' },
-            { display: 'Moyen', key: 'medium' },
-            { display: 'Difficile', key: 'hard' }
-        ]
-    },
-    {
-        label: 'FORMAT',
-        values: [
-            { display: '3 Boules', key: 'tete_a_tete' },
-            { display: '2 Boules', key: 'deux_boules' },
-            { display: '1 Boule', key: 'une_boule' }
-        ]
-    }
+    { label: 'MODE', values: [{ display: 'VS IA', key: 'vs_ia' }, { display: 'Local 1v1', key: 'local' }] },
+    { label: 'JOUEUR 1', values: CHAR_VALUES },
+    { label: 'JOUEUR 2', values: CHAR_VALUES },
+    { label: 'BOULES', values: [
+        { display: 'Acier', key: 'acier' }, { display: 'Bronze', key: 'bronze' },
+        { display: 'Chrome', key: 'chrome' }, { display: 'Noire', key: 'noire' },
+        { display: 'Rouge', key: 'rouge' }, { display: 'Doree', key: 'doree' },
+        { display: 'Rouillee', key: 'rouille' }, { display: 'Bleue', key: 'bleue' },
+        { display: 'Cuivre', key: 'cuivre' }, { display: 'Titane', key: 'titane' }
+    ]},
+    { label: 'COCHONNET', values: [
+        { display: 'Classique', key: 'classique' }, { display: 'Bleu', key: 'bleu' },
+        { display: 'Vert', key: 'vert' }, { display: 'Rouge', key: 'rouge' },
+        { display: 'Jungle', key: 'jungle' }, { display: 'Multicolor', key: 'multicolor' }
+    ]},
+    { label: 'TERRAIN', values: [
+        { display: 'Terre battue', key: 'terre' }, { display: 'Herbe', key: 'herbe' },
+        { display: 'Sable', key: 'sable' }, { display: 'Dalles', key: 'dalles' },
+        { display: 'Colline', key: 'colline' }
+    ]},
+    { label: 'DIFFICULTE', values: [
+        { display: 'Facile', key: 'easy' }, { display: 'Moyen', key: 'medium' },
+        { display: 'Difficile', key: 'hard' }
+    ]},
+    { label: 'FORMAT', values: [
+        { display: '3 Boules', key: 'tete_a_tete' }, { display: '2 Boules', key: 'deux_boules' },
+        { display: '1 Boule', key: 'une_boule' }
+    ]}
 ];
 
-// Row indices
-const ROW_MODE = 0;
-const ROW_P1 = 1;
-const ROW_P2 = 2;
-const ROW_BOULES = 3;
-const ROW_COCHONNET = 4;
-const ROW_TERRAIN = 5;
-const ROW_DIFF = 6;
-const ROW_FORMAT = 7;
+const ROW_MODE = 0, ROW_P1 = 1, ROW_P2 = 2, ROW_BOULES = 3, ROW_COCHONNET = 4;
+const ROW_TERRAIN = 5, ROW_DIFF = 6, ROW_FORMAT = 7;
 
-// Layout constants
-const LEFT_W = 500;       // Options column width
-const PANEL_X = 670;      // Info panel center X
-const PANEL_W = 280;      // Info panel width
-const PANEL_TOP = 70;     // Info panel top Y
+const LEFT_W = 490;
+const PANEL_X = 670;
+const PANEL_W = 280;
+const PANEL_TOP = 65;
 
 export default class QuickPlayScene extends Phaser.Scene {
     constructor() {
@@ -116,45 +68,50 @@ export default class QuickPlayScene extends Phaser.Scene {
     init() {
         this._selections = null;
         this._selectedRow = 0;
+        this._transitioning = false;
     }
 
     create() {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
         setSoundScene(this);
+        UIFactory.fadeIn(this);
+
         this._selections = OPTIONS.map(() => 0);
         this._selectedRow = 0;
         this._totalRows = OPTIONS.length + 1;
 
-        // Background
+        // Background — warm dark gradient with subtle pattern
         const bg = this.add.graphics();
-        bg.fillGradientStyle(0x3A5A7A, 0x3A5A7A, 0x5A3A28, 0x5A3A28, 1);
+        bg.fillGradientStyle(0x2A1E15, 0x2A1E15, 0x4A3828, 0x4A3828, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        bg.fillStyle(0x3A2E28, 0.5);
-        bg.fillRect(0, GAME_HEIGHT - 40, GAME_WIDTH, 40);
 
-        // Right panel background (v2 asset or fallback)
-        const panelH = GAME_HEIGHT - PANEL_TOP - 50;
-        if (this.textures.exists('v2_panel_simple')) {
-            this.add.nineslice(PANEL_X, PANEL_TOP - 6 + panelH / 2, 'v2_panel_simple', 0, PANEL_W + 12, panelH, 16, 16, 16, 16)
-                .setOrigin(0.5).setAlpha(0.92);
-        } else {
-            const panelBg = this.add.graphics();
-            panelBg.fillStyle(0x2A2018, 0.85);
-            panelBg.fillRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, panelH, 10);
-            panelBg.lineStyle(1, 0xD4A574, 0.25);
-            panelBg.strokeRoundedRect(PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, panelH, 10);
+        // Subtle wood grain pattern
+        for (let y = 0; y < GAME_HEIGHT; y += 4) {
+            const alpha = 0.02 + Math.sin(y * 0.15) * 0.01;
+            bg.fillStyle(0x1A1008, alpha);
+            bg.fillRect(0, y, GAME_WIDTH, 2);
         }
 
-        // Title
-        this.add.text(LEFT_W / 2, 32, 'PARTIE RAPIDE', {
-            fontFamily: 'monospace', fontSize: '32px', color: '#FFD700',
-            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5);
+        // Left panel background (wood)
+        UIFactory.createWoodPanel(this, 16, 50, LEFT_W - 32, GAME_HEIGHT - 100, {
+            depth: 1, textureKey: 'ui_wood_dark'
+        });
 
-        // Options (left column)
-        const startY = 76;
-        const rowH = 46;
+        // Right panel background (parchment)
+        UIFactory.createParchmentPanel(this, PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, {
+            depth: 1
+        });
+
+        // Title
+        UIFactory.addTitle(this, LEFT_W / 2, 28, 'PARTIE RAPIDE', { depth: 5 });
+
+        // Decorative divider under title
+        UIFactory.addDivider(this, LEFT_W / 2, 46, 200, { depth: 5 });
+
+        // Options rows
+        const startY = 72;
+        const rowH = 44;
         this._optionTexts = [];
         this._valueTexts = [];
         this._arrowLeftTexts = [];
@@ -165,64 +122,67 @@ export default class QuickPlayScene extends Phaser.Scene {
             const y = startY + i * rowH;
             const opt = OPTIONS[i];
 
-            const pill = this.add.graphics();
-            pill.fillStyle(0x3A2E28, 0.7);
-            pill.fillRoundedRect(36, y - 14, LEFT_W - 56, 34, 6);
-            this._rowBgs.push(pill);
+            // Row background
+            const rowBg = this.add.graphics().setDepth(2);
+            this._rowBgs.push(rowBg);
 
-            const label = this.add.text(142, y, opt.label, {
-                fontFamily: 'monospace', fontSize: '15px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(1, 0.5);
+            // Label
+            const label = this.add.text(130, y, opt.label, {
+                fontFamily: 'monospace', fontSize: '14px', color: '#D4A574', shadow: SHADOW
+            }).setOrigin(1, 0.5).setDepth(3);
             this._optionTexts.push(label);
 
-            const arrowL = this.add.text(200, y, '<', {
-                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5);
+            // Arrows
+            const arrowL = this.add.text(180, y, '\u25C0', {
+                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(3).setInteractive({ useHandCursor: true });
+            arrowL.on('pointerdown', () => {
+                this._selectedRow = i;
+                this._changeValue(-1);
+            });
             this._arrowLeftTexts.push(arrowL);
 
-            const val = this.add.text(320, y, opt.values[0].display, {
+            const val = this.add.text(300, y, opt.values[0].display, {
                 fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center', shadow: SHADOW
-            }).setOrigin(0.5);
+            }).setOrigin(0.5).setDepth(3);
             this._valueTexts.push(val);
 
-            const arrowR = this.add.text(440, y, '>', {
-                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5);
+            const arrowR = this.add.text(420, y, '\u25B6', {
+                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(3).setInteractive({ useHandCursor: true });
+            arrowR.on('pointerdown', () => {
+                this._selectedRow = i;
+                this._changeValue(1);
+            });
             this._arrowRightTexts.push(arrowR);
         }
 
-        // JOUER button
-        const jouerY = startY + OPTIONS.length * rowH + 10;
-        // v2 button image behind the text (preserve aspect ratio ~2.5:1)
-        if (this.textures.exists('v2_button')) {
-            this._jouerBtnImg = this.add.image(LEFT_W / 2, jouerY, 'v2_button')
-                .setDisplaySize(240, 56).setAlpha(0.95);
-            this._jouerBg = this.add.graphics(); // empty, kept for compatibility
-        } else {
-            this._jouerBg = this.add.graphics();
-            this._jouerBg.fillStyle(0x3A2E28, 0.8);
-            this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
-        }
-
-        this._jouerText = this.add.text(LEFT_W / 2, jouerY, 'JOUER !', {
-            fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
-            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5);
+        // JOUER button (centered, big wood button)
+        const jouerY = startY + OPTIONS.length * rowH + 12;
+        this._jouerBtn = UIFactory.createWoodButton(this, LEFT_W / 2, jouerY, 220, 42, 'JOUER !', {
+            fontSize: '14px',
+            depth: 5,
+            selected: false,
+            onDown: () => {
+                if (this._selectedRow === OPTIONS.length) {
+                    this._launchGame();
+                } else {
+                    this._selectedRow = OPTIONS.length;
+                    sfxUIClick();
+                    this._updateDisplay();
+                    this._updateInfoPanel();
+                }
+            }
+        });
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193 Naviguer   \u2190\u2192 Changer   Espace Confirmer', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5);
+        UIFactory.addControlsHint(this,
+            'FLECHES Naviguer   ESPACE Confirmer', { depth: 5 });
 
-        // Back button (bottom-left, binds ESC)
-        UIFactory.addBackButton(this, 'TitleScene');
+        // Back button
+        UIFactory.addBackButton(this, 'TitleScene', { depth: 5 });
 
-        // Cursor
-        this._cursor = this.add.text(0, 0, '\u25b6', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
-        }).setOrigin(0.5);
-
-        // Info panel dynamic elements (right column)
+        // Info panel elements
         this._infoBarsGfx = this.add.graphics().setDepth(5);
         this._infoLabels = [];
         this._boulePreview = null;
@@ -248,6 +208,15 @@ export default class QuickPlayScene extends Phaser.Scene {
         this.tweens.killAll();
     }
 
+    _changeValue(dir) {
+        if (this._selectedRow >= OPTIONS.length) return;
+        const opt = OPTIONS[this._selectedRow];
+        this._selections[this._selectedRow] = (this._selections[this._selectedRow] + dir + opt.values.length) % opt.values.length;
+        sfxUIClick();
+        this._updateDisplay();
+        this._updateInfoPanel();
+    }
+
     _updateDisplay() {
         for (let i = 0; i < OPTIONS.length; i++) {
             const sel = this._selections[i];
@@ -260,36 +229,23 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._arrowLeftTexts[i].setAlpha(isSelected ? 1 : 0.3);
             this._arrowRightTexts[i].setAlpha(isSelected ? 1 : 0.3);
 
+            // Row background
             this._rowBgs[i].clear();
-            this._rowBgs[i].fillStyle(isSelected ? 0x5A4A38 : 0x3A2E28, 0.7);
-            const y = 76 + i * 46;
-            this._rowBgs[i].fillRoundedRect(36, y - 14, LEFT_W - 56, 34, 6);
+            if (isSelected) {
+                const y = 72 + i * 44;
+                this._rowBgs[i].fillStyle(0x8B6B3D, 0.25);
+                this._rowBgs[i].fillRoundedRect(28, y - 16, LEFT_W - 56, 32, 4);
+                this._rowBgs[i].lineStyle(1, 0xFFD700, 0.3);
+                this._rowBgs[i].strokeRoundedRect(28, y - 16, LEFT_W - 56, 32, 4);
+            }
         }
 
+        // JOUER button selected state
         const jouerSelected = (this._selectedRow === OPTIONS.length);
-        this._jouerBg.clear();
-        this._jouerBg.fillStyle(jouerSelected ? 0x8B6B20 : 0x3A2E28, 0.8);
-        const jouerY = 76 + OPTIONS.length * 46 + 10;
-        this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
-        this._jouerText.setColor(jouerSelected ? '#FFFFFF' : '#FFD700');
-
-        // Tint v2 button image for pressed state (avoids dimension mismatch with v2_button_pressed)
-        if (this._jouerBtnImg) {
-            this._jouerBtnImg.setTint(jouerSelected ? 0xFFD700 : 0xFFFFFF);
-            this._jouerBtnImg.setAlpha(jouerSelected ? 1.0 : 0.8);
-        }
-
-        if (this._selectedRow < OPTIONS.length) {
-            this._cursor.setPosition(42, 76 + this._selectedRow * 46);
-            this._cursor.setVisible(true);
-        } else {
-            this._cursor.setPosition(LEFT_W / 2 - 68, jouerY);
-            this._cursor.setVisible(true);
-        }
+        this._jouerBtn.setSelected(jouerSelected);
     }
 
     _updateInfoPanel() {
-        // Clear
         this._infoBarsGfx.clear();
         this._infoLabels.forEach(l => l.destroy());
         this._infoLabels = [];
@@ -299,122 +255,94 @@ export default class QuickPlayScene extends Phaser.Scene {
         const boulesData = this.cache.json.get('boules');
         const terrainsData = this.cache.json.get('terrains');
         const charsData = this.cache.json.get('characters');
-
         const cx = PANEL_X;
         const top = PANEL_TOP;
 
         if (this._selectedRow === ROW_MODE) {
             this._drawModePanel(cx, top);
         } else if ((this._selectedRow === ROW_P1 || this._selectedRow === ROW_P2) && charsData) {
-            const isP1 = this._selectedRow === ROW_P1;
-            this._drawCharPanel(cx, top, charsData, isP1);
+            this._drawCharPanel(cx, top, charsData, this._selectedRow === ROW_P1);
         } else if (this._selectedRow === ROW_BOULES && boulesData) {
             this._drawBoulePanel(cx, top, boulesData);
         } else if (this._selectedRow === ROW_COCHONNET && boulesData) {
             this._drawCochonnetPanel(cx, top, boulesData);
         } else if (this._selectedRow === ROW_TERRAIN && terrainsData) {
-            this._drawTerrainPanel(cx, top, terrainsData, boulesData);
+            this._drawTerrainPanel(cx, top, terrainsData);
         } else if (this._selectedRow === ROW_DIFF) {
             this._drawDifficultyPanel(cx, top);
         } else {
-            this._drawSummaryPanel(cx, top, boulesData, charsData, terrainsData);
+            this._drawSummaryPanel(cx, top, boulesData, charsData);
         }
     }
 
-    // === MODE PANEL ===
     _drawModePanel(cx, top) {
         const modeKey = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]].key;
         const isLocal = modeKey === 'local';
-
-        this._addLabel(cx, top + 6, isLocal ? 'LOCAL 1v1' : 'VS INTELLIGENCE ARTIFICIELLE', '14px', '#FFD700', 0.5);
-
+        this._addLabel(cx, top + 10, isLocal ? 'LOCAL 1v1' : 'VS INTELLIGENCE\nARTIFICIELLE', '16px', '#FFD700', 0.5);
         const desc = isLocal
-            ? 'Deux joueurs sur le meme ecran.\nChacun son tour, chacun son perso !'
-            : 'Affrontez l\'IA.\nChoisissez sa difficulte et son personnage.';
-        this._addLabel(cx, top + 40, desc, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
+            ? 'Deux joueurs sur le\nmeme ecran.'
+            : 'Affrontez l\'IA.\nChoisissez difficulte\net personnage.';
+        this._addLabel(cx, top + 50, desc, '14px', '#3A2E28', 0.5, PANEL_W - 30);
 
-        // Visual icon
-        const iconY = top + 110;
+        const iconY = top + 120;
         this._infoBarsGfx.fillStyle(0x5B9BD5, 0.8);
         this._infoBarsGfx.fillCircle(cx - 40, iconY, 16);
-        this._addLabel(cx - 40, iconY - 6, 'J1', '10px', '#FFFFFF', 0.5);
-
-        this._addLabel(cx, iconY - 6, 'VS', '14px', '#FFD700', 0.5);
-
+        this._addLabel(cx - 40, iconY - 4, 'J1', '13px', '#FFFFFF', 0.5);
+        this._addLabel(cx, iconY - 4, 'VS', '14px', '#8B6B3D', 0.5);
         this._infoBarsGfx.fillStyle(isLocal ? 0xC44B3F : 0x5A4A38, 0.8);
         this._infoBarsGfx.fillCircle(cx + 40, iconY, 16);
-        this._addLabel(cx + 40, iconY - 6, isLocal ? 'J2' : 'IA', '10px', '#FFFFFF', 0.5);
+        this._addLabel(cx + 40, iconY - 4, isLocal ? 'J2' : 'IA', '13px', '#FFFFFF', 0.5);
     }
 
-    // === BOULES PANEL ===
     _drawBoulePanel(cx, top, boulesData) {
         const bouleKey = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
         const boule = boulesData.sets.find(s => s.id === bouleKey);
         if (!boule) return;
 
-        // Title
-        this._addLabel(cx, top + 6, boule.name, '15px', '#FFD700', 0.5);
-
-        // Boule visual (real sprite)
+        this._addLabel(cx, top + 10, boule.name, '16px', '#8B6B3D', 0.5);
         const sphereY = top + 60;
         const spriteKey = `ball_${bouleKey}`;
         if (this.textures.exists(spriteKey)) {
             this._boulePreview = this.add.image(cx, sphereY, spriteKey)
                 .setScale(1.5).setOrigin(0.5).setDepth(5);
         } else {
-            // Fallback: colored circle
             const color = parseInt(boule.color.replace('#', ''), 16);
             this._boulePreview = this.add.graphics().setDepth(5);
             this._boulePreview.fillStyle(color, 1);
             this._boulePreview.fillCircle(cx, sphereY, 22);
         }
+        this._addLabel(cx, sphereY + 36, boule.description, '13px', '#3A2E28', 0.5, PANEL_W - 20);
 
-        // Description
-        this._addLabel(cx, sphereY + 36, boule.description, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
-
-        // Stats bars
+        // Stats
         const barsY = sphereY + 76;
-        // Compute glisse score from bonus
         const bonus = boule.bonus || '';
-        let glisseVal = 5, glisseDesc = 'Normal';
+        let glisseVal = 5;
         if (bonus.startsWith('friction_x')) {
             const f = parseFloat(bonus.split('x')[1]) || 1;
             glisseVal = f < 1 ? Math.round(5 + (1 - f) * 30) : Math.round(5 - (f - 1) * 10);
-            glisseDesc = f < 1 ? 'Roule longtemps' : 'Grip fort, s\'arrete vite';
         }
-        if (bonus.startsWith('knockback_x')) { glisseVal = 3; glisseDesc = 'Impact fort'; }
-        if (bonus.startsWith('retro_x')) { glisseVal = 6; glisseDesc = 'Retro amplifie'; }
+        if (bonus.startsWith('knockback_x')) glisseVal = 3;
+        if (bonus.startsWith('retro_x')) glisseVal = 6;
         if (bonus.startsWith('restitution_x')) {
             const r = parseFloat(bonus.split('x')[1]) || 1;
-            glisseVal = r > 1 ? 7 : 4; glisseDesc = r > 1 ? 'Rebondit plus' : 'Absorbe les chocs';
+            glisseVal = r > 1 ? 7 : 4;
         }
-        const bars = [
-            { label: 'Poids', value: boule.stats.masse, min: 550, max: 900, color: 0xC4854A,
-              desc: boule.stats.masse >= 750 ? 'Lourde, deplace plus' : boule.stats.masse <= 650 ? 'Legere, roule plus loin' : 'Equilibree' },
-            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x87CEEB,
-              desc: boule.stats.rayon >= 11 ? 'Grande, facile a toucher' : boule.stats.rayon <= 9 ? 'Petite, discrete' : 'Standard' },
-            { label: 'Special', value: glisseVal, min: 1, max: 10, color: 0x9B7BB8,
-              desc: glisseDesc }
-        ];
-        this._drawBars(cx, barsY, bars);
-
-        // Lore
+        this._drawBars(cx, barsY, [
+            { label: 'Poids', value: boule.stats.masse, min: 550, max: 900, color: 0xC4854A },
+            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x87CEEB },
+            { label: 'Special', value: glisseVal, min: 1, max: 10, color: 0x9B7BB8 }
+        ]);
         if (boule.lore) {
-            this._addLabel(cx, barsY + bars.length * 28 + 12, `"${boule.lore}"`, '9px', '#7A6A5A', 0.5, PANEL_W - 20);
+            this._addLabel(cx, barsY + 80, `"${boule.lore}"`, '14px', '#7A6A5A', 0.5, PANEL_W - 20);
         }
     }
 
-    // === COCHONNET PANEL ===
     _drawCochonnetPanel(cx, top, boulesData) {
         const cochKey = OPTIONS[ROW_COCHONNET].values[this._selections[ROW_COCHONNET]].key;
         const cochonnets = boulesData.cochonnets || [];
         const coch = cochonnets.find(c => c.id === cochKey);
         if (!coch) return;
-
-        // Title
-        this._addLabel(cx, top + 6, coch.name, '15px', '#FFD700', 0.5);
-
-        // Cochonnet visual (real sprite, scaled up for visibility)
+        this._addLabel(cx, top + 10, coch.name, '16px', '#8B6B3D', 0.5);
         const sphereY = top + 70;
         const texKey = coch.textureKey;
         if (texKey && this.textures.exists(texKey)) {
@@ -426,33 +354,22 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._boulePreview.fillStyle(color, 1);
             this._boulePreview.fillCircle(cx, sphereY, 18);
         }
-
-        // Description
-        this._addLabel(cx, sphereY + 40, coch.description, '11px', '#F5E6D0', 0.5, PANEL_W - 20);
-
-        // Tip
-        this._addLabel(cx, sphereY + 90, 'Le cochonnet est la cible.\nToutes les boules visent a\ns\'en approcher le plus possible.', '9px', '#9E9E8E', 0.5, PANEL_W - 20);
+        this._addLabel(cx, sphereY + 40, coch.description, '13px', '#3A2E28', 0.5, PANEL_W - 20);
     }
 
-    // === TERRAIN PANEL ===
-    _drawTerrainPanel(cx, top, terrainsData, _boulesData) {
+    _drawTerrainPanel(cx, top, terrainsData) {
         const terrainKey = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
-        // Match by id first, fallback to surface type
         const terrain = terrainsData.stages.find(t => t.id === terrainKey) ||
                         terrainsData.stages.find(t => t.surface === terrainKey);
         if (!terrain) return;
+        this._addLabel(cx, top + 10, terrain.name, '16px', '#8B6B3D', 0.5);
 
-        // Title
-        this._addLabel(cx, top + 6, terrain.name, '15px', '#FFD700', 0.5);
-
-        // Terrain color swatch
         const swatchY = top + 46;
         const bgColor = parseInt(terrain.colors.bg.replace('#', ''), 16);
         this._infoBarsGfx.fillStyle(bgColor, 1);
         this._infoBarsGfx.fillRoundedRect(cx - 50, swatchY, 100, 28, 4);
-        this._infoBarsGfx.lineStyle(1, 0xF5E6D0, 0.3);
+        this._infoBarsGfx.lineStyle(1, 0x8B6B3D, 0.4);
         this._infoBarsGfx.strokeRoundedRect(cx - 50, swatchY, 100, 28, 4);
-        // Gravel dots
         const gravel = terrain.colors.gravel;
         for (let i = 0; i < 15; i++) {
             const gx = cx - 45 + Math.random() * 90;
@@ -462,76 +379,51 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._infoBarsGfx.fillRect(gx, gy, 2, 2);
         }
 
-        // Short description (2 lines max)
         const shortDesc = terrain.description.length > 80
             ? terrain.description.substring(0, 77) + '...'
             : terrain.description;
-        this._addLabel(cx, swatchY + 38, shortDesc, '9px', '#F5E6D0', 0.5, PANEL_W - 20);
+        this._addLabel(cx, swatchY + 38, shortDesc, '14px', '#3A2E28', 0.5, PANEL_W - 20);
 
-        // Stats bars
         const barsY = swatchY + 80;
-        const frictionDesc = terrain.friction >= 2.5 ? 'Boules s\'arretent vite'
-            : terrain.friction >= 1.5 ? 'Roulement reduit'
-            : terrain.friction <= 0.5 ? 'Ca roule loin !'
-            : 'Bon equilibre';
-
-        const features = [terrain.slope ? 'Pente' : null, terrain.walls ? 'Rebonds' : null, terrain.zones.length > 0 ? 'Zones mixtes' : null].filter(Boolean);
-        const complexityVal = features.length * 3 + 2;
-        const complexityDesc = features.length > 0 ? features.join(', ') : 'Terrain plat';
-
-        const bars = [
+        const frictionDesc = terrain.friction >= 2.5 ? 'Arret rapide' : terrain.friction >= 1.5 ? 'Reduit' : terrain.friction <= 0.5 ? 'Ca roule !' : 'Equilibre';
+        const features = [terrain.slope ? 'Pente' : null, terrain.walls ? 'Rebonds' : null, terrain.zones.length > 0 ? 'Zones' : null].filter(Boolean);
+        this._drawBars(cx, barsY, [
             { label: 'Adherence', value: Math.min(terrain.friction / 3.5 * 10, 10), min: 0, max: 10, color: 0xD4A574, desc: frictionDesc },
-            { label: 'Complexite', value: complexityVal, min: 0, max: 10, color: 0xC44B3F, desc: complexityDesc }
-        ];
-        this._drawBars(cx, barsY, bars);
+            { label: 'Complexite', value: features.length * 3 + 2, min: 0, max: 10, color: 0xC44B3F, desc: features.join(', ') || 'Plat' }
+        ]);
     }
 
-    // === DIFFICULTY PANEL ===
     _drawDifficultyPanel(cx, top) {
         const diffKey = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
         const diffInfo = {
-            easy: { title: 'Facile', desc: 'L\'adversaire vise mal et ne tire pas. Parfait pour apprendre.', stars: 1 },
-            medium: { title: 'Moyen', desc: 'Adversaire correct, tire quand il le faut.', stars: 2 },
-            hard: { title: 'Difficile', desc: 'Adversaire precis et strategique. Bon courage !', stars: 3 }
+            easy: { title: 'Facile', desc: 'L\'adversaire vise mal\net ne tire pas.', stars: 1 },
+            medium: { title: 'Moyen', desc: 'Adversaire correct,\ntire quand il le faut.', stars: 2 },
+            hard: { title: 'Difficile', desc: 'Adversaire precis\net strategique.', stars: 3 }
         };
         const d = diffInfo[diffKey] || diffInfo.easy;
-
-        this._addLabel(cx, top + 6, d.title, '15px', '#FFD700', 0.5);
-
-        // Stars visual
-        const starsY = top + 46;
+        this._addLabel(cx, top + 10, d.title, '16px', '#8B6B3D', 0.5);
         const starStr = '\u2605'.repeat(d.stars) + '\u2606'.repeat(3 - d.stars);
-        this._addLabel(cx, starsY, starStr, '28px', '#FFD700', 0.5);
-
-        this._addLabel(cx, starsY + 40, d.desc, '10px', '#F5E6D0', 0.5, PANEL_W - 20);
+        this._addLabel(cx, top + 46, starStr, '24px', '#FFD700', 0.5);
+        this._addLabel(cx, top + 90, d.desc, '13px', '#3A2E28', 0.5, PANEL_W - 20);
     }
 
-    // === CHARACTER PANEL ===
     _drawCharPanel(cx, top, charsData, isP1 = true) {
         const rowIdx = isP1 ? ROW_P1 : ROW_P2;
         const charOption = OPTIONS[rowIdx].values[this._selections[rowIdx]];
         let char = charsData.roster.find(c => c.id === charOption.charId);
         if (!char) return;
 
-        // Use saved stats for Rookie
         if (char.isRookie || char.id === 'rookie') {
             const save = loadSave();
-            if (save.rookie) {
-                char = { ...char, stats: { ...save.rookie.stats } };
-            }
+            if (save.rookie) char = { ...char, stats: { ...save.rookie.stats } };
         }
 
         const teamColor = isP1 ? '#5B9BD5' : '#C44B3F';
         const teamLabel = isP1 ? 'JOUEUR 1' : 'JOUEUR 2';
+        this._addLabel(cx, top + 6, teamLabel, '12px', teamColor, 0.5);
+        this._addLabel(cx, top + 24, char.name, '16px', '#8B6B3D', 0.5);
+        this._addLabel(cx, top + 42, char.title, '11px', '#6A5A48', 0.5);
 
-        // Team badge
-        this._addLabel(cx, top + 4, teamLabel, '10px', teamColor, 0.5);
-
-        // Name + title
-        this._addLabel(cx, top + 20, char.name, '16px', '#FFD700', 0.5);
-        this._addLabel(cx, top + 40, char.title, '11px', '#D4A574', 0.5);
-
-        // Sprite preview
         const spriteY = top + 86;
         const spriteKey = charOption.sprite;
         if (this.textures.exists(spriteKey)) {
@@ -539,27 +431,20 @@ export default class QuickPlayScene extends Phaser.Scene {
                 .setScale(CHAR_SCALE_QUICKPLAY).setOrigin(0.5).setDepth(5);
         }
 
-        // Catchphrase
-        this._addLabel(cx, spriteY + 36, `"${char.catchphrase}"`, '9px', '#9E9E8E', 0.5, PANEL_W - 20);
+        this._addLabel(cx, spriteY + 38, `"${char.catchphrase}"`, '14px', '#7A6A5A', 0.5, PANEL_W - 20);
 
-        // Stats bars
-        const barsY = spriteY + 58;
-        const bars = [
-            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0xD4A574,
-              desc: char.stats.precision >= 8 ? 'Chirurgical' : char.stats.precision <= 4 ? 'Approximatif' : 'Correct' },
-            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xC4854A,
-              desc: char.stats.puissance >= 8 ? 'Devastateur' : char.stats.puissance <= 4 ? 'Frappe douce' : 'Normal' },
-            { label: 'Effet', value: char.stats.effet, min: 0, max: 10, color: 0x9B7BB8,
-              desc: char.stats.effet >= 8 ? 'Maitre courbes' : char.stats.effet <= 4 ? 'Tirs droits' : 'Quelques courbes' },
-            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x87CEEB,
-              desc: char.stats.sang_froid >= 8 ? 'Imperturbable' : char.stats.sang_froid <= 4 ? 'Craque vite' : 'Tient le coup' }
-        ];
-        this._drawBars(cx, barsY, bars);
+        const barsY = spriteY + 60;
+        this._drawBars(cx, barsY, [
+            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0xD4A574 },
+            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xC4854A },
+            { label: 'Effet', value: char.stats.effet, min: 0, max: 10, color: 0x9B7BB8 },
+            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x87CEEB }
+        ]);
     }
 
-    // === SUMMARY PANEL (jouer) ===
-    _drawSummaryPanel(cx, top, boulesData, _charsData, _terrainsData) {
-        this._addLabel(cx, top + 6, 'RESUME', '14px', '#FFD700', 0.5);
+    _drawSummaryPanel(cx, top, boulesData, charsData) {
+        this._addLabel(cx, top + 10, 'RESUME', '16px', '#8B6B3D', 0.5);
+        UIFactory.addDivider(this, cx, top + 28, 140, { depth: 5, color: 0x8B6B3D });
 
         const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]];
         const p1 = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
@@ -570,17 +455,17 @@ export default class QuickPlayScene extends Phaser.Scene {
         const diff = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]];
 
         const lines = [
-            `Mode : ${mode.display}`,
-            `Joueur 1 : ${p1.display}`,
-            `Joueur 2 : ${p2.display}`,
-            `Boules : ${boule?.name || bouleKey}`,
-            `Terrain : ${terrain.display}`,
+            `Mode: ${mode.display}`,
+            `J1: ${p1.display}`,
+            `J2: ${p2.display}`,
+            `Boules: ${boule?.name || bouleKey}`,
+            `Terrain: ${terrain.display}`,
         ];
-        if (mode.key === 'vs_ia') lines.push(`Difficulte : ${diff.display}`);
+        if (mode.key === 'vs_ia') lines.push(`Diff: ${diff.display}`);
 
-        let ly = top + 36;
+        let ly = top + 44;
         for (const line of lines) {
-            this._addLabel(cx - PANEL_W / 2 + 14, ly, line, '11px', '#F5E6D0', 0);
+            this._addLabel(cx - PANEL_W / 2 + 14, ly, line, '13px', '#3A2E28', 0);
             ly += 20;
         }
     }
@@ -613,23 +498,25 @@ export default class QuickPlayScene extends Phaser.Scene {
             const b = bars[i];
             const by = startY + i * rowH;
 
-            // Label
-            this._addLabel(cx - totalW / 2, by, b.label, '10px', '#D4A574', 0);
+            this._addLabel(cx - totalW / 2, by, b.label, '14px', '#6A5A48', 0);
 
-            // Bar bg
-            this._infoBarsGfx.fillStyle(0x1A1510, 0.7);
-            this._infoBarsGfx.fillRoundedRect(barX, by + 1, barW, barH, 3);
+            // Bar
+            this._infoBarsGfx.fillStyle(0x3A2E28, 0.4);
+            this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW, barH, 3);
 
-            // Bar fill
             const ratio = Phaser.Math.Clamp((b.value - (b.min || 0)) / ((b.max || 10) - (b.min || 0)), 0, 1);
             if (ratio > 0) {
                 this._infoBarsGfx.fillStyle(b.color, 0.85);
-                this._infoBarsGfx.fillRoundedRect(barX, by + 1, barW * ratio, barH, 3);
+                this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW * ratio, barH, 3);
+                this._infoBarsGfx.fillStyle(0xFFFFFF, 0.15);
+                this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW * ratio, barH / 2, 3);
             }
 
-            // Short description to the right of the label, below the bar
+            this._infoBarsGfx.lineStyle(1, 0x8B6B3D, 0.3);
+            this._infoBarsGfx.strokeRoundedRect(barX, by + 2, barW, barH, 3);
+
             if (b.desc) {
-                this._addLabel(barX, by + barH + 3, b.desc, '8px', '#7A6A5A', 0);
+                this._addLabel(barX, by + barH + 4, b.desc, '10px', '#7A6A5A', 0);
             }
         }
     }
@@ -655,19 +542,8 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         if (this._selectedRow < OPTIONS.length) {
-            const opt = OPTIONS[this._selectedRow];
-            if (left) {
-                this._selections[this._selectedRow] = (this._selections[this._selectedRow] - 1 + opt.values.length) % opt.values.length;
-                sfxUIClick();
-                this._updateDisplay();
-                this._updateInfoPanel();
-            }
-            if (right) {
-                this._selections[this._selectedRow] = (this._selections[this._selectedRow] + 1) % opt.values.length;
-                sfxUIClick();
-                this._updateDisplay();
-                this._updateInfoPanel();
-            }
+            if (left) this._changeValue(-1);
+            if (right) this._changeValue(1);
         }
 
         if (confirm && this._selectedRow === OPTIONS.length) {
@@ -693,7 +569,6 @@ export default class QuickPlayScene extends Phaser.Scene {
         let p1Char = charsData?.roster?.find(c => c.id === p1Option.charId) || null;
         const p2Char = charsData?.roster?.find(c => c.id === p2Option.charId) || null;
 
-        // Merge saved Rookie stats if Rookie is selected
         if (p1Char && (p1Char.isRookie || p1Char.id === 'rookie')) {
             const save = loadSave();
             if (save.rookie) {
@@ -701,23 +576,20 @@ export default class QuickPlayScene extends Phaser.Scene {
             }
         }
 
-        this.cameras.main.fadeOut(300);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start('PetanqueScene', {
-                terrain,
-                difficulty: isLocal ? 'medium' : difficulty,
-                format: OPTIONS[ROW_FORMAT].values[this._selections[ROW_FORMAT]].key,
-                opponentName: p2Option.display,
-                opponentId: 'quickplay_' + p2Option.key,
-                returnScene: 'QuickPlayScene',
-                personality: p2Char?.ai?.personality || null,
-                playerCharacter: p1Char,
-                opponentCharacter: p2Char,
-                localMultiplayer: isLocal,
-                quickPlay: true,
-                bouleType,
-                cochonnetType
-            });
+        UIFactory.transitionTo(this, 'PetanqueScene', {
+            terrain,
+            difficulty: isLocal ? 'medium' : difficulty,
+            format: OPTIONS[ROW_FORMAT].values[this._selections[ROW_FORMAT]].key,
+            opponentName: p2Option.display,
+            opponentId: 'quickplay_' + p2Option.key,
+            returnScene: 'QuickPlayScene',
+            personality: p2Char?.ai?.personality || null,
+            playerCharacter: p1Char,
+            opponentCharacter: p2Char,
+            localMultiplayer: isLocal,
+            quickPlay: true,
+            bouleType,
+            cochonnetType
         });
     }
 

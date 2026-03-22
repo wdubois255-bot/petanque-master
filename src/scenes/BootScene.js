@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
 import { generateAllPortraits } from '../utils/PortraitGenerator.js';
+import UIFactory from '../ui/UIFactory.js';
 
 const TIPS = [
     'Maintenez TAB pour voir le classement des boules.',
@@ -28,7 +29,7 @@ export default class BootScene extends Phaser.Scene {
 
         // Title
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, 'PETANQUE MASTER', {
-            fontFamily: 'monospace', fontSize: '28px', color: '#FFD700',
+            fontFamily: FONT_PIXEL, fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
@@ -51,9 +52,9 @@ export default class BootScene extends Phaser.Scene {
         // Tip text
         const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
         this.add.text(GAME_WIDTH / 2, barY + 40, tip, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
+            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true },
-            wordWrap: { width: 400 }, align: 'center'
+            wordWrap: { width: 500 }, align: 'center', lineSpacing: 4
         }).setOrigin(0.5);
 
         // Progress events
@@ -251,6 +252,9 @@ export default class BootScene extends Phaser.Scene {
                 }
             }
         }
+
+        // Generate procedural UI textures (wood panels, buttons, parchment)
+        UIFactory.generateUITextures(this);
 
         // Generate procedural portraits for all characters
         generateAllPortraits(this);

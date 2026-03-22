@@ -1,44 +1,37 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = UIFactory.SHADOW;
+const SHADOW = SHADOW_TEXT;
 
-/**
- * Character Selection Screen - Fighting game style
- * Displays a grid of character portraits with stats and preview
- */
 export default class CharSelectScene extends Phaser.Scene {
     constructor() {
         super('CharSelectScene');
     }
 
     init(data) {
-        // Mode: 'arcade' or 'versus' or 'quickplay'
         this.mode = data.mode || 'arcade';
         this.arcadeRound = data.arcadeRound || null;
         this.returnData = data.returnData || {};
         this._selectedIndex = 0;
         this._confirmed = false;
         this._uiElements = [];
+        this._transitioning = false;
     }
 
     create() {
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
+        UIFactory.fadeIn(this);
 
         setSoundScene(this);
         const chars = this.cache.json.get('characters');
         const save = loadSave();
 
-        // Filter out hidden characters (sprites not finished)
         const visibleRoster = chars.roster.filter(c => !c.hidden);
 
-        // Determine unlock status based on mode
-        // Arcade mode: ONLY the Rookie is selectable
-        // Quick Play / other: use save data for unlocks
         if (this.mode === 'arcade') {
             this.roster = visibleRoster.filter(c => c.isRookie);
         } else {
@@ -47,7 +40,6 @@ export default class CharSelectScene extends Phaser.Scene {
             );
         }
 
-        // Reorder so Rookie is always first
         const rookieIdx = visibleRoster.findIndex(c => c.isRookie);
         if (rookieIdx > 0) {
             const rookie = visibleRoster.splice(rookieIdx, 1)[0];
@@ -58,40 +50,34 @@ export default class CharSelectScene extends Phaser.Scene {
         this._save = save;
         this._selectedIndex = 0;
         this._confirmed = false;
-        this._uiElements = [];
 
-        // Background
+        // Background — dark with subtle diagonal stripes
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Diagonal stripe pattern (fighting game vibe)
+        // Gold diagonal stripes (fighting game vibe)
         const stripes = this.add.graphics();
-        stripes.fillStyle(0xFFD700, 0.03);
+        stripes.fillStyle(0xFFD700, 0.02);
         for (let i = -GAME_HEIGHT; i < GAME_WIDTH + GAME_HEIGHT; i += 40) {
             stripes.fillRect(i, 0, 12, GAME_HEIGHT);
-            stripes.setRotation(0); // stripes are vertical, we'll use a transform
         }
 
         // Title
-        this.add.text(GAME_WIDTH / 2, 30, 'CHOIX DU PERSONNAGE', {
-            fontFamily: 'monospace', fontSize: '28px', color: '#FFD700',
-            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5);
+        UIFactory.addTitle(this, GAME_WIDTH / 2, 26, 'CHOIX DU PERSONNAGE', { depth: 5, fontSize: '14px' });
+        UIFactory.addDivider(this, GAME_WIDTH / 2, 44, 280, { depth: 5 });
 
-        // Character grid (2 rows x 3 cols)
+        // Character grid
         this._createCharacterGrid();
 
-        // Right panel: character preview + stats
+        // Preview panel (right side — wood panel)
         this._createPreviewPanel();
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2190\u2191\u2192\u2193 Naviguer     Espace Confirmer', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5);
+        UIFactory.addControlsHint(this, 'FLECHES Naviguer   ESPACE Confirmer', { depth: 5 });
 
-        // Back button (bottom-left, binds ESC)
-        UIFactory.addBackButton(this, 'TitleScene');
+        // Back button
+        UIFactory.addBackButton(this, 'TitleScene', { depth: 5 });
 
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -109,17 +95,13 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _isUnlocked(charId) {
-        // In arcade mode, only the Rookie is unlocked
-        if (this.mode === 'arcade') {
-            return charId === 'rookie';
-        }
-        // Use save data for unlock status
+        if (this.mode === 'arcade') return charId === 'rookie';
         return this._save && this._save.unlockedCharacters.includes(charId);
     }
 
     _createCharacterGrid() {
         const gridX = 40;
-        const gridY = 75;
+        const gridY = 64;
         const cellW = 90;
         const cellH = 100;
         const cols = 5;
@@ -134,52 +116,55 @@ export default class CharSelectScene extends Phaser.Scene {
             const cx = gridX + col * cellW + cellW / 2;
             const cy = gridY + row * cellH + cellH / 2;
 
-            // A character is locked if it's NOT the Rookie AND not in save's unlockedCharacters
-            // In arcade mode, everything except Rookie is locked
             const isLocked = !char.isRookie && !this._isUnlocked(char.id);
             const isInRoster = this.roster.includes(char);
 
-            // Cell background
+            // Card-style cell background
             const cellBg = this.add.graphics();
-            cellBg.fillStyle(isLocked ? 0x2A2420 : 0x3A2E28, 0.8);
-            cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 8);
 
             if (isLocked) {
-                // Locked: show darkened silhouette with padlock
+                // Locked card — dark, muted
+                cellBg.fillStyle(0x1A1510, 0.8);
+                cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
+                cellBg.lineStyle(1, 0x3A2E28, 0.5);
+                cellBg.strokeRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
+
                 const spriteKey = this._getCharSpriteKey(char);
                 const charIsStatic = CHAR_STATIC_SPRITES.includes(char.id);
                 if (this.textures.exists(spriteKey)) {
                     if (charIsStatic) {
                         this.add.image(cx, cy - 12, spriteKey)
-                            .setScale(CHAR_SCALE_GRID_LOCKED).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                            .setScale(CHAR_SCALE_GRID_LOCKED).setOrigin(0.5).setTint(0x333333).setAlpha(0.4);
                     } else {
                         this.add.sprite(cx, cy - 12, spriteKey, 0)
-                            .setScale(CHAR_SCALE_GRID).setOrigin(0.5).setTint(0x333333).setAlpha(0.5);
+                            .setScale(CHAR_SCALE_GRID).setOrigin(0.5).setTint(0x333333).setAlpha(0.4);
                     }
                 } else {
                     this.add.text(cx, cy - 18, '?', {
-                        fontFamily: 'monospace', fontSize: '36px', color: '#2A2420', shadow: SHADOW
+                        fontFamily: 'monospace', fontSize: '24px', color: '#2A2420', shadow: SHADOW
                     }).setOrigin(0.5);
                 }
-                // Padlock icon over the slot (v2 asset)
+
                 if (this.textures.exists('v2_padlock')) {
                     this.add.sprite(cx, cy + 8, 'v2_padlock', 0)
                         .setScale(1.5).setOrigin(0.5).setAlpha(0.7);
                 } else {
-                    this.add.text(cx, cy + 8, '\uD83D\uDD12', {
-                        fontSize: '18px'
-                    }).setOrigin(0.5).setAlpha(0.7);
+                    this.add.text(cx, cy + 8, '\uD83D\uDD12', { fontSize: '18px' }).setOrigin(0.5).setAlpha(0.7);
                 }
-                // Show ??? instead of name
-                this.add.text(cx, cy + 30, '???', {
+
+                this.add.text(cx, cy + 32, '???', {
                     fontFamily: 'monospace', fontSize: '12px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
             } else {
-                // Character portrait: colored circle with sprite if available
-                const palette = char.palette || { primary: '#D4A574' };
-                const primaryColor = parseInt(palette.primary.replace('#', ''), 16);
+                // Unlocked card — wood background with character
+                cellBg.fillStyle(0x5A4030, 0.85);
+                cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
+                // Top bevel
+                cellBg.fillStyle(0x8B6B3D, 0.15);
+                cellBg.fillRoundedRect(cx - cellW / 2 + 6, cy - cellH / 2 + 6, cellW - 12, 12, { tl: 4, tr: 4, bl: 0, br: 0 });
+                cellBg.lineStyle(1, 0x8B6B3D, 0.4);
+                cellBg.strokeRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
 
-                // Try to use existing sprite, fallback to colored circle
                 const spriteKey = this._getCharSpriteKey(char);
                 const charIsStatic2 = CHAR_STATIC_SPRITES.includes(char.id);
                 if (this.textures.exists(spriteKey)) {
@@ -191,19 +176,18 @@ export default class CharSelectScene extends Phaser.Scene {
                             .setScale(CHAR_SCALE_GRID).setOrigin(0.5);
                     }
                 } else {
+                    const palette = char.palette || { primary: '#D4A574' };
+                    const primaryColor = parseInt(palette.primary.replace('#', ''), 16);
                     const portrait = this.add.graphics();
                     portrait.fillStyle(primaryColor, 1);
                     portrait.fillCircle(cx, cy - 12, 28);
-                    portrait.fillStyle(0xFFFFFF, 0.3);
-                    portrait.fillCircle(cx - 8, cy - 20, 10);
-
                     this.add.text(cx, cy - 12, char.name[0], {
-                        fontFamily: 'monospace', fontSize: '24px', color: '#FFFFFF', shadow: SHADOW
+                        fontFamily: 'monospace', fontSize: '18px', color: '#FFFFFF', shadow: SHADOW
                     }).setOrigin(0.5);
                 }
 
-                // Name
-                this.add.text(cx, cy + 30, char.name, {
+                // Name on card
+                this.add.text(cx, cy + 32, char.name, {
                     fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0', shadow: SHADOW
                 }).setOrigin(0.5);
             }
@@ -215,7 +199,7 @@ export default class CharSelectScene extends Phaser.Scene {
             });
         }
 
-        // Selection cursor (animated border)
+        // Selection cursor (animated golden border)
         this._selCursor = this.add.graphics().setDepth(10);
         this._selPulse = { t: 0 };
         this.tweens.add({
@@ -229,103 +213,71 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _createPreviewPanel() {
-        // Right side panel
         const px = GAME_WIDTH - 220;
-        const py = 80;
+        const py = 64;
         const pw = 200;
-        const ph = 340;
+        const ph = 360;
 
-        // Panel background (v2 asset with NineSlice or fallback)
-        if (this.textures.exists('v2_panel_ornate')) {
-            this._previewBg = this.add.nineslice(px, py + ph / 2, 'v2_panel_ornate', 0, pw, ph, 16, 16, 16, 16)
-                .setOrigin(0.5).setAlpha(0.92);
-        } else {
-            this._previewBg = this.add.graphics();
-            this._previewBg.fillStyle(0x3A2E28, 0.9);
-            this._previewBg.fillRoundedRect(px - pw / 2, py, pw, ph, 10);
-            this._previewBg.lineStyle(2, 0xD4A574, 0.5);
-            this._previewBg.strokeRoundedRect(px - pw / 2, py, pw, ph, 10);
-        }
+        // Wood panel background
+        UIFactory.createWoodPanel(this, px - pw / 2, py, pw, ph, { depth: 1 });
 
-        // Preview elements (will be updated on selection change)
+        // Preview elements
         this._previewName = this.add.text(px, py + 20, '', {
-            fontFamily: 'monospace', fontSize: '20px', color: '#FFD700', shadow: SHADOW
-        }).setOrigin(0.5);
+            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(2);
 
-        this._previewTitle = this.add.text(px, py + 42, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
-        }).setOrigin(0.5);
+        this._previewTitle = this.add.text(px, py + 38, '', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(2);
 
-        this._previewCatchphrase = this.add.text(px, py + 65, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E',
-            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center'
-        }).setOrigin(0.5, 0);
+        this._previewCatchphrase = this.add.text(px, py + 55, '', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#3A2E28',
+            shadow: { offsetX: 0, offsetY: 0, color: 'rgba(0,0,0,0)', blur: 0, fill: false },
+            wordWrap: { width: 180 }, align: 'center', lineSpacing: 3
+        }).setOrigin(0.5, 0).setDepth(2);
 
-        // Stat bars with inline descriptions
+        // Stat bars
         this._statBars = {};
         const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
         const statLabels = ['PREC', 'PUIS', 'EFFT', 'S-FR'];
-        const statHints = [
-            'Zone de dispersion du lancer',
-            'Portee et force d\'impact',
-            'Controle des courbes',
-            'Stabilite sous pression (10-10+)'
-        ];
-        const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB]; // ocre, terracotta, lavande, ciel
-        const barStartY = py + 110;
+        const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB];
+        const barStartY = py + 100;
 
-        // Decorative bar above stats section
-        if (this.textures.exists('v2_bar_decorative')) {
-            this.add.image(px, barStartY - 16, 'v2_bar_decorative')
-                .setDisplaySize(180, 10).setAlpha(0.65);
-        }
+        // Divider above stats
+        UIFactory.addDivider(this, px, barStartY - 12, 160, { depth: 2, color: 0x8B6B3D });
 
         for (let i = 0; i < statNames.length; i++) {
-            const by = barStartY + i * 38;
+            const by = barStartY + i * 36;
 
-            // Stat icon (v2_stat_icons spritesheet)
-            if (this.textures.exists('v2_stat_icons')) {
-                this.add.sprite(px - 95, by - 2, 'v2_stat_icons', i)
-                    .setScale(0.18).setOrigin(0.5).setAlpha(0.8);
-            }
-
-            this.add.text(px - 85, by - 4, statLabels[i], {
+            this.add.text(px - 85, by - 2, statLabels[i], {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(0, 0.5);
+            }).setOrigin(0, 0.5).setDepth(2);
 
-            // Hint text below label
-            this.add.text(px - 85, by + 10, statHints[i], {
-                fontFamily: 'monospace', fontSize: '8px', color: '#7A6A5A', shadow: SHADOW
-            }).setOrigin(0, 0.5);
+            const barBg = this.add.graphics().setDepth(2);
+            barBg.fillStyle(0x1A1510, 0.6);
+            barBg.fillRoundedRect(px - 40, by - 8, 120, 10, 3);
+            barBg.lineStyle(1, 0x5A4A38, 0.3);
+            barBg.strokeRoundedRect(px - 40, by - 8, 120, 10, 3);
 
-            const barBg = this.add.graphics();
-            barBg.fillStyle(0x1A1510, 0.8);
-            barBg.fillRoundedRect(px - 40, by - 10, 120, 12, 3);
+            const barFill = this.add.graphics().setDepth(2);
+            const numText = this.add.text(px + 88, by - 2, '', {
+                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(2);
 
-            const barFill = this.add.graphics();
-            const numText = this.add.text(px + 88, by - 4, '', {
-                fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0', shadow: SHADOW
-            }).setOrigin(0.5);
-
-            this._statBars[statNames[i]] = { fill: barFill, num: numText, color: statColors[i], y: by - 4 };
+            this._statBars[statNames[i]] = { fill: barFill, num: numText, color: statColors[i], y: by - 2 };
         }
 
-        // Description (after stat bars, before sprite zone)
-        this._previewDesc = this.add.text(px, barStartY + 158, '', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0',
-            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center', lineSpacing: 1
+        // Description
+        this._previewDesc = this.add.text(px, barStartY + 150, '', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0).setDepth(10);
 
-        // Large sprite preview
         this._previewSprite = null;
-
-        // Portrait image
         this._portraitImage = null;
     }
 
     _updateSelection() {
-        // Find the actual roster character at the selected grid index
-        // Skip locked characters
         const availableCells = this._cells.filter(c => !c.isLocked);
         if (availableCells.length === 0) return;
 
@@ -340,16 +292,16 @@ export default class CharSelectScene extends Phaser.Scene {
         this._selCursor.lineStyle(lineW, 0xFFD700, alpha);
         this._selCursor.strokeRoundedRect(
             cell.x - cell.w / 2 + 2, cell.y - cell.h / 2 + 2,
-            cell.w - 4, cell.h - 4, 8
+            cell.w - 4, cell.h - 4, 6
         );
 
-        // Update preview panel
+        // Update preview
         this._previewName.setText(char.name);
         this._previewTitle.setText(char.title);
         this._previewCatchphrase.setText(`"${char.catchphrase}"`);
         this._previewDesc.setText(char.description);
 
-        // Update stat bars with animated fill
+        // Stat bars
         const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
         for (const stat of statNames) {
             const bar = this._statBars[stat];
@@ -358,7 +310,6 @@ export default class CharSelectScene extends Phaser.Scene {
             const bx = GAME_WIDTH - 220 - 40;
             const by = bar.y - 6;
 
-            // Animate bar fill from 0 to target
             bar.fill.clear();
             const anim = { w: 0 };
             this.tweens.add({
@@ -369,28 +320,18 @@ export default class CharSelectScene extends Phaser.Scene {
                 onUpdate: () => {
                     bar.fill.clear();
                     bar.fill.fillStyle(bar.color, 0.8);
-                    bar.fill.fillRoundedRect(bx, by, anim.w, 12, 3);
-                    // Highlight on top half
+                    bar.fill.fillRoundedRect(bx, by, anim.w, 10, 3);
                     bar.fill.fillStyle(0xFFFFFF, 0.15);
-                    bar.fill.fillRoundedRect(bx, by, anim.w, 6, 3);
+                    bar.fill.fillRoundedRect(bx, by, anim.w, 5, 3);
                 }
             });
             bar.num.setText(value.toString());
         }
 
-        // Update preview sprite (animated character, no portrait overlay)
-        if (this._portraitImage) {
-            this._portraitImage.destroy();
-            this._portraitImage = null;
-        }
-        if (this._previewSprite) {
-            this._previewSprite.destroy();
-            this._previewSprite = null;
-        }
-        if (this._previewShadow) {
-            this._previewShadow.destroy();
-            this._previewShadow = null;
-        }
+        // Preview sprite
+        if (this._portraitImage) { this._portraitImage.destroy(); this._portraitImage = null; }
+        if (this._previewSprite) { this._previewSprite.destroy(); this._previewSprite = null; }
+        if (this._previewShadow) { this._previewShadow.destroy(); this._previewShadow = null; }
 
         const spriteKey = this._getCharSpriteKey(char);
         const isStatic = CHAR_STATIC_SPRITES.includes(char.id);
@@ -406,7 +347,6 @@ export default class CharSelectScene extends Phaser.Scene {
                 this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 405, spriteKey, 0)
                     .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
 
-                // Walk animation (frames 0-3 = south walk)
                 const animKey = `preview_walk_${char.id}`;
                 if (!this.anims.exists(animKey)) {
                     this.anims.create({
@@ -418,7 +358,7 @@ export default class CharSelectScene extends Phaser.Scene {
                 this._previewSprite.play(animKey);
             }
 
-            // Gentle idle bounce
+            // Idle bounce
             this.tweens.add({
                 targets: this._previewSprite,
                 y: this._previewSprite.y - 4, duration: 800, yoyo: true, repeat: -1,
@@ -469,7 +409,7 @@ export default class CharSelectScene extends Phaser.Scene {
             this._selCursor.lineStyle(2 + t, 0xFFD700, alpha);
             this._selCursor.strokeRoundedRect(
                 cell.x - cell.w / 2 + 2, cell.y - cell.h / 2 + 2,
-                cell.w - 4, cell.h - 4, 8
+                cell.w - 4, cell.h - 4, 6
             );
         }
     }
@@ -481,26 +421,21 @@ export default class CharSelectScene extends Phaser.Scene {
         const cell = availableCells[this._selectedIndex % availableCells.length];
         const selectedChar = cell.char;
 
-        // Flash effect
         this.cameras.main.flash(200, 255, 215, 0);
 
-        // Brief delay then proceed
         this.time.delayedCall(400, () => {
             if (this.mode === 'arcade') {
-                // Go to VS Intro then match
-                this.scene.start('ArcadeScene', {
+                UIFactory.transitionTo(this, 'ArcadeScene', {
                     playerCharacter: selectedChar,
                     ...(this.returnData)
                 });
             } else if (this.mode === 'versus') {
-                // For versus: pass to next scene
-                this.scene.start('VSIntroScene', {
+                UIFactory.transitionTo(this, 'VSIntroScene', {
                     playerCharacter: selectedChar,
                     ...(this.returnData)
                 });
             } else {
-                // Quick play: go directly to match
-                this.scene.start('PetanqueScene', {
+                UIFactory.transitionTo(this, 'PetanqueScene', {
                     playerCharacter: selectedChar,
                     ...(this.returnData)
                 });

@@ -1,109 +1,148 @@
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI } from '../utils/Constants.js';
 import UIFactory from './UIFactory.js';
 
-const SHADOW = UIFactory.SHADOW;
+const SHADOW = SHADOW_TEXT;
 
 export default class ScorePanel {
     constructor(scene, engine) {
         this.scene = scene;
         this.engine = engine;
-        this._showRanking = false; // Toggle: show ball rankings on terrain
+        this._showRanking = false;
 
-        this.panelX = GAME_WIDTH - 152;
-        this.panelY = 8;
-        const pw = 144;
-        const ph = 164;
+        this.panelX = GAME_WIDTH - 156;
+        this.panelY = 6;
+        const pw = 148;
+        const ph = 170;
 
-        // Background
+        // Wood panel background
         this.bg = scene.add.graphics().setDepth(90);
-        this.bg.fillStyle(0xD4A574, 0.12);
-        this.bg.fillRoundedRect(this.panelX - 2, this.panelY - 2, pw + 4, ph + 4, 10);
-        this.bg.fillStyle(COLORS.OMBRE, 0.9);
+
+        // Outer shadow
+        this.bg.fillStyle(0x1A1510, 0.4);
+        this.bg.fillRoundedRect(this.panelX + 2, this.panelY + 2, pw, ph, 8);
+
+        // Wood base
+        this.bg.fillStyle(0x6B4F2D, 0.95);
         this.bg.fillRoundedRect(this.panelX, this.panelY, pw, ph, 8);
-        this.bg.lineStyle(2, COLORS.OCRE, 0.6);
+
+        // Wood grain
+        for (let y = this.panelY + 4; y < this.panelY + ph - 4; y += 3) {
+            const alpha = 0.05 + Math.sin(y * 0.4) * 0.03;
+            this.bg.fillStyle(0x3A2818, alpha);
+            this.bg.fillRect(this.panelX + 4, y, pw - 8, 1);
+        }
+
+        // Top bevel
+        this.bg.fillStyle(0xA08050, 0.2);
+        this.bg.fillRoundedRect(this.panelX + 2, this.panelY + 2, pw - 4, 20, { tl: 6, tr: 6, bl: 0, br: 0 });
+
+        // Border
+        this.bg.lineStyle(2, 0x8B6B3D, 0.7);
         this.bg.strokeRoundedRect(this.panelX, this.panelY, pw, ph, 8);
+
+        // Corner nails
+        const nailColor = 0xA08050;
+        const nails = [
+            [this.panelX + 8, this.panelY + 8],
+            [this.panelX + pw - 10, this.panelY + 8],
+            [this.panelX + 8, this.panelY + ph - 10],
+            [this.panelX + pw - 10, this.panelY + ph - 10]
+        ];
+        for (const [nx, ny] of nails) {
+            this.bg.fillStyle(nailColor, 0.8);
+            this.bg.fillCircle(nx, ny, 2.5);
+            this.bg.fillStyle(0xFFFFFF, 0.3);
+            this.bg.fillRect(nx - 1, ny - 1, 1, 1);
+        }
 
         const cx = this.panelX + pw / 2;
 
         // Title
-        this.titleText = scene.add.text(cx, this.panelY + 14, 'SCORE', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center', shadow: SHADOW
+        this.titleText = scene.add.text(cx, this.panelY + 16, 'SCORE', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
         // Separator
-        this.bg.lineStyle(1, COLORS.OCRE, 0.4);
+        this.bg.lineStyle(1, 0x8B6B3D, 0.5);
         this.bg.beginPath();
-        this.bg.moveTo(this.panelX + 12, this.panelY + 36);
-        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 36);
+        this.bg.moveTo(this.panelX + 12, this.panelY + 34);
+        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 34);
         this.bg.strokePath();
 
-        // Player section — use character name if available
+        // Player section
         const playerName = scene.playerCharacter?.name
             ? scene.playerCharacter.name.toUpperCase().substring(0, 10)
             : 'VOUS';
-        this.playerLabel = scene.add.text(cx - 24, this.panelY + 44, playerName, {
+        this.playerLabel = scene.add.text(cx - 24, this.panelY + 40, playerName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
-        this.playerScore = scene.add.text(cx - 24, this.panelY + 60, '0', {
-            fontFamily: 'monospace', fontSize: '32px', color: '#F5E6D0', align: 'center', shadow: SHADOW
+        this.playerScore = scene.add.text(cx - 24, this.panelY + 56, '0', {
+            fontFamily: 'monospace', fontSize: '28px', color: '#F5E6D0', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
-        this.playerProjected = scene.add.text(cx + 16, this.panelY + 66, '', {
+        this.playerProjected = scene.add.text(cx + 20, this.panelY + 62, '', {
             fontFamily: 'monospace', fontSize: '14px', color: '#6B8E4E', shadow: SHADOW
         }).setOrigin(0, 0).setDepth(91);
 
         // VS divider
-        this.bg.lineStyle(1, COLORS.OCRE, 0.2);
+        this.bg.lineStyle(1, 0x8B6B3D, 0.3);
         this.bg.beginPath();
-        this.bg.moveTo(this.panelX + 12, this.panelY + 96);
-        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 96);
+        this.bg.moveTo(this.panelX + 12, this.panelY + 92);
+        this.bg.lineTo(this.panelX + pw - 12, this.panelY + 92);
         this.bg.strokePath();
 
-        // Opponent section — use character name if available
+        // Opponent section
         const opponentName = scene.opponentCharacter?.name
             ? scene.opponentCharacter.name.toUpperCase().substring(0, 10)
             : 'ADV.';
-        this.opponentLabel = scene.add.text(cx - 24, this.panelY + 102, opponentName, {
+        this.opponentLabel = scene.add.text(cx - 24, this.panelY + 98, opponentName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
-        this.opponentScore = scene.add.text(cx - 24, this.panelY + 118, '0', {
-            fontFamily: 'monospace', fontSize: '32px', color: '#F5E6D0', align: 'center', shadow: SHADOW
+        this.opponentScore = scene.add.text(cx - 24, this.panelY + 114, '0', {
+            fontFamily: 'monospace', fontSize: '28px', color: '#F5E6D0', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
 
-        this.opponentProjected = scene.add.text(cx + 16, this.panelY + 124, '', {
+        this.opponentProjected = scene.add.text(cx + 20, this.panelY + 120, '', {
             fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0, 0).setDepth(91);
 
-        // Mene
-        this.meneText = scene.add.text(8, 8, 'MENE 1', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW,
-            backgroundColor: '#3A2E28', padding: { x: 10, y: 5 }
-        }).setDepth(91);
+        // Mene indicator (wood medallion style)
+        const meneGfx = scene.add.graphics().setDepth(91);
+        // Medallion background
+        meneGfx.fillStyle(0x6B4F2D, 0.95);
+        meneGfx.fillRoundedRect(4, 4, 84, 28, 6);
+        meneGfx.lineStyle(1.5, 0x8B6B3D, 0.7);
+        meneGfx.strokeRoundedRect(4, 4, 84, 28, 6);
+        // Top bevel
+        meneGfx.fillStyle(0xA08050, 0.15);
+        meneGfx.fillRoundedRect(6, 6, 80, 10, { tl: 4, tr: 4, bl: 0, br: 0 });
+        this._meneGfx = meneGfx;
+
+        this.meneText = scene.add.text(46, 18, 'MENE 1', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(92);
 
         // Balls remaining
         this.ballsGfx = scene.add.graphics().setDepth(92);
         this.ballsBg = scene.add.graphics().setDepth(91);
 
-        // Ranking overlay (hidden by default, toggled with TAB)
+        // Ranking overlay
         this._rankGfx = scene.add.graphics().setDepth(50);
         this._rankLabels = [];
-        // Up to 6 labels (3 balls per player)
         for (let i = 0; i < 6; i++) {
             const label = scene.add.text(0, 0, '', {
-                fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
-                shadow: SHADOW, backgroundColor: '#3A2E28', padding: { x: 3, y: 1 }
+                fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0',
+                shadow: SHADOW, backgroundColor: '#3A2E28', padding: { x: 3, y: 2 }
             }).setOrigin(0.5).setDepth(51).setVisible(false);
             this._rankLabels.push(label);
         }
 
-        // Ranking hint (small text)
         this._rankHint = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 6, '[TAB] Classement', {
-            fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E', align: 'center'
+            fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', align: 'center'
         }).setOrigin(0.5, 1).setDepth(90).setAlpha(0.5);
 
-        // Toggle ranking with TAB key
         this._tabKey = scene.input.keyboard.addKey('TAB');
 
         this._prevPlayerRemaining = -1;
@@ -115,7 +154,6 @@ export default class ScorePanel {
     update() {
         const e = this.engine;
 
-        // Score with animated counting + floating "+N" on change
         const newPlayerScore = e.scores.player;
         const newOpponentScore = e.scores.opponent;
         if (newPlayerScore !== this._prevPlayerScore) {
@@ -135,7 +173,6 @@ export default class ScorePanel {
 
         this.meneText.setText(`MENE ${e.mene}`);
 
-        // Match point indicator (score = 12)
         if (newPlayerScore >= 12 && !this._playerMatchPoint) {
             this._playerMatchPoint = true;
             this._blinkMatchPoint(this.playerScore);
@@ -145,7 +182,6 @@ export default class ScorePanel {
             this._blinkMatchPoint(this.opponentScore);
         }
 
-        // Projected score
         const proj = e.calculateProjectedScore();
         if (proj && proj.winner && proj.points > 0) {
             if (proj.winner === 'player') {
@@ -162,7 +198,6 @@ export default class ScorePanel {
 
         this._drawBallDots(e);
 
-        // Toggle ranking display with TAB (hold or press)
         this._showRanking = this._tabKey.isDown;
         this._updateRanking(e);
     }
@@ -179,7 +214,6 @@ export default class ScorePanel {
     }
 
     _animateScoreCount(textObj, from, to) {
-        // Animate score counting up from old to new value
         const counter = { val: from };
         this.scene.tweens.add({
             targets: counter,
@@ -193,7 +227,6 @@ export default class ScorePanel {
     }
 
     _blinkMatchPoint(scoreTextObj) {
-        // Blink red/white to signal match point
         this.scene.tweens.add({
             targets: scoreTextObj,
             duration: 400, repeat: 3, yoyo: true,
@@ -201,9 +234,8 @@ export default class ScorePanel {
             onRepeat: () => scoreTextObj.setColor('#F5E6D0'),
             onComplete: () => scoreTextObj.setColor('#F5E6D0')
         });
-        // Flash "MATCH POINT!" text
         UIFactory.showFloatingText(this.scene, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40,
-            'MATCH POINT !', '#FFD700', { fontSize: '24px', rise: 30, duration: 2000, depth: 95 });
+            'MATCH POINT !', '#FFD700', { fontSize: '16px', rise: 30, duration: 2000, depth: 95 });
     }
 
     _showFloatingPoints(scoreTextObj, points, color) {
@@ -220,10 +252,15 @@ export default class ScorePanel {
         const spacing = 20;
 
         const totalWidth = (e.ballsPerPlayer * spacing * 2) + 52;
-        this.ballsBg.fillStyle(COLORS.OMBRE, 0.8);
-        this.ballsBg.fillRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 8);
-        this.ballsBg.lineStyle(1, COLORS.OCRE, 0.3);
-        this.ballsBg.strokeRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 8);
+
+        // Wood-style background for ball indicator
+        this.ballsBg.fillStyle(0x6B4F2D, 0.9);
+        this.ballsBg.fillRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 6);
+        this.ballsBg.lineStyle(1, 0x8B6B3D, 0.5);
+        this.ballsBg.strokeRoundedRect(baseX - 10, baseY - 18, totalWidth, 36, 6);
+        // Top bevel
+        this.ballsBg.fillStyle(0xA08050, 0.1);
+        this.ballsBg.fillRoundedRect(baseX - 8, baseY - 16, totalWidth - 4, 10, { tl: 4, tr: 4, bl: 0, br: 0 });
 
         for (let i = 0; i < e.ballsPerPlayer; i++) {
             const remaining = i < e.remaining.player;
@@ -239,7 +276,7 @@ export default class ScorePanel {
         }
 
         const sepX = baseX + e.ballsPerPlayer * spacing + 10;
-        this.ballsGfx.fillStyle(COLORS.OCRE, 0.4);
+        this.ballsGfx.fillStyle(0x8B6B3D, 0.5);
         this.ballsGfx.fillRect(sepX, baseY - 8, 2, 16);
 
         const oBaseX = sepX + 14;
@@ -255,16 +292,8 @@ export default class ScorePanel {
                 this.ballsGfx.fillCircle(x - 2, baseY - 2, 2.5);
             }
         }
-
-        this._prevPlayerRemaining = e.remaining.player;
-        this._prevOpponentRemaining = e.remaining.opponent;
     }
 
-    /**
-     * Ranking overlay — only shown when TAB is held.
-     * Ranks ALL alive balls by distance to cochonnet: 1st, 2nd, 3rd...
-     * Uses team color and a small badge next to each ball.
-     */
     _updateRanking(e) {
         this._rankGfx.clear();
 
@@ -290,14 +319,12 @@ export default class ScorePanel {
             .map(b => ({ ball: b, dist: b.distanceTo(e.cochonnet) }))
             .sort((a, b) => a.dist - b.dist);
 
-        // Draw ranking for ALL balls
         for (let i = 0; i < sorted.length && i < this._rankLabels.length; i++) {
             const { ball, dist } = sorted[i];
             const isPlayer = ball.team === 'player';
             const color = isPlayer ? 0x87CEEB : 0xC44B3F;
             const colorHex = isPlayer ? '#87CEEB' : '#C44B3F';
 
-            // Rank badge next to ball
             const label = this._rankLabels[i];
             label.setPosition(ball.x + ball.radius + 8, ball.y - 6);
             label.setText(`${i + 1}`);
@@ -305,21 +332,18 @@ export default class ScorePanel {
             label.setAlpha(0.9);
             label.setVisible(true);
 
-            // Dotted line from ball to cochonnet
             this._rankGfx.lineStyle(1, color, 0.2);
             this._rankGfx.beginPath();
             this._rankGfx.moveTo(ball.x, ball.y);
             this._rankGfx.lineTo(e.cochonnet.x, e.cochonnet.y);
             this._rankGfx.strokePath();
 
-            // Small circle around cochonnet showing scoring zone
             if (i === 0) {
                 this._rankGfx.lineStyle(1, color, 0.3);
                 this._rankGfx.strokeCircle(e.cochonnet.x, e.cochonnet.y, dist);
             }
         }
 
-        // Hide unused labels
         for (let i = sorted.length; i < this._rankLabels.length; i++) {
             this._rankLabels[i].setVisible(false);
         }
@@ -334,6 +358,7 @@ export default class ScorePanel {
         this.opponentLabel.destroy();
         this.opponentScore.destroy();
         this.opponentProjected.destroy();
+        this._meneGfx.destroy();
         this.meneText.destroy();
         this.ballsGfx.destroy();
         this.ballsBg.destroy();

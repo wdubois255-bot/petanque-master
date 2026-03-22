@@ -221,13 +221,17 @@ export const CSS = {
 export const SHADOW_TEXT = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 export const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
 
+// Font families
+export const FONT_PIXEL = "'PressStart2P', monospace";
+export const FONT_BODY = 'monospace';
+
 // UI typography hierarchy
 export const UI = {
-    TITLE_SIZE: '28px',
-    MENU_SIZE: '20px',
-    BODY_SIZE: '14px',
-    HINT_SIZE: '12px',
-    SMALL_SIZE: '10px',
+    TITLE_SIZE: '24px',
+    MENU_SIZE: '14px',
+    BODY_SIZE: '12px',
+    HINT_SIZE: '10px',
+    SMALL_SIZE: '8px',
     HINT_Y: GAME_HEIGHT - 16,
     HEADER_Y: 30,
     PILL_W: 280,
@@ -237,6 +241,16 @@ export const UI = {
     BACK_Y: GAME_HEIGHT - 20,
     GALETS_X: GAME_WIDTH - 90,
     GALETS_Y: 28,
+    // Depth layers (centralized)
+    DEPTH_BG: 0,
+    DEPTH_DECOR: 5,
+    DEPTH_PANEL: 10,
+    DEPTH_UI: 50,
+    DEPTH_OVERLAY: 90,
+    DEPTH_MODAL: 100,
+    // Transition defaults
+    TRANSITION_DURATION: 400,
+    TRANSITION_EASE: 'Cubic.easeInOut',
 };
 
 // Terrain colors (for placeholder rendering)

@@ -1,12 +1,11 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
-import { UI } from '../utils/Constants.js';
+import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
 
-const SHADOW = UIFactory.SHADOW;
-const SHADOW_HEAVY = UIFactory.SHADOW_HEAVY;
+const SHADOW = SHADOW_TEXT;
 
 export default class TitleScene extends Phaser.Scene {
     constructor() {
@@ -14,12 +13,13 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     init() {
-        this._menuItems = [];
+        this._menuButtons = [];
         this._selectedIndex = 0;
         this._mode = 'pressstart';
         this._inputEnabled = false;
         this._menuContainer = null;
         this._pressStartTween = null;
+        this._transitioning = false;
     }
 
     create() {
@@ -29,12 +29,13 @@ export default class TitleScene extends Phaser.Scene {
         setSoundScene(this);
         startMusic('music_title', 0.3);
 
+        // Fade in
+        UIFactory.fadeIn(this);
+
         this._createBackground();
         this._createAtmosphere();
-        this._createCharacters();
         this._createTitle();
         this._createPressStart();
-        this._createControlsHint();
         this._createVersionTag();
         this._playIntroSequence();
 
@@ -44,7 +45,6 @@ export default class TitleScene extends Phaser.Scene {
         this.spaceKey = this.input.keyboard.addKey('SPACE');
         this.escKey = this.input.keyboard.addKey('ESC');
 
-        // Cleanup on scene shutdown
         this.events.on('shutdown', this._shutdown, this);
     }
 
@@ -57,128 +57,67 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     // ================================================================
-    // BACKGROUND - Layered provençal landscape
+    // BACKGROUND - Warm, simple provençal gradient with soft hills
     // ================================================================
     _createBackground() {
         const bg = this.add.graphics();
 
-        // Sky gradient - deeper blue at top, warm golden at horizon
-        bg.fillGradientStyle(0x4A8AC4, 0x4A8AC4, 0xF0D090, 0xF0D090, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, 310);
+        // Main gradient: warm golden sky fading to deep ocre
+        bg.fillGradientStyle(0x5A94C8, 0x5A94C8, 0xE8B868, 0xE8B868, 1);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.7);
 
-        // Sun glow (behind hills)
-        const sunX = GAME_WIDTH * 0.72;
-        const sunY = 240;
-        for (let r = 120; r > 0; r -= 6) {
-            const alpha = 0.02 + (120 - r) * 0.001;
+        // Lower warm section
+        bg.fillGradientStyle(0xD4A060, 0xD4A060, 0x8B6030, 0x8B6030, 1);
+        bg.fillRect(0, GAME_HEIGHT * 0.7, GAME_WIDTH, GAME_HEIGHT * 0.3);
+
+        // Soft sun glow (centered upper area)
+        const sunX = GAME_WIDTH * 0.5;
+        const sunY = GAME_HEIGHT * 0.35;
+        for (let r = 200; r > 0; r -= 4) {
+            const alpha = 0.008 + (200 - r) * 0.0004;
             bg.fillStyle(0xFFE8A0, alpha);
             bg.fillCircle(sunX, sunY, r);
         }
-        // Sun disc
-        bg.fillStyle(0xFFF4D0, 0.9);
-        bg.fillCircle(sunX, sunY, 28);
-        bg.fillStyle(0xFFFFFF, 0.4);
-        bg.fillCircle(sunX, sunY, 20);
 
-        // Far mountains (bluish, distant)
-        bg.fillStyle(0x7BA0C0, 0.4);
-        for (let x = 0; x < GAME_WIDTH; x += 2) {
-            const h = Math.sin(x * 0.004) * 30 + Math.sin(x * 0.009) * 18 + 230;
-            bg.fillRect(x, h, 2, 310 - h);
-        }
+        // Distant hills (very soft silhouettes)
+        for (let layer = 0; layer < 3; layer++) {
+            const colors = [0x7BA0B8, 0x8BAA78, 0x9B9060];
+            const alphas = [0.25, 0.35, 0.5];
+            const baseY = [340, 360, 385];
+            const freqs = [0.003, 0.006, 0.008];
+            const amps = [25, 20, 15];
 
-        // Near hills (olive green)
-        bg.fillStyle(0x8BAA6E, 0.7);
-        for (let x = 0; x < GAME_WIDTH; x += 2) {
-            const h = Math.sin(x * 0.008) * 25 + Math.sin(x * 0.003 + 1) * 15 + 268;
-            bg.fillRect(x, h, 2, 310 - h);
-        }
-
-        // Cypress trees on hills (silhouettes)
-        const cypressPositions = [120, 210, 380, 520, 680, 770];
-        cypressPositions.forEach(cx => {
-            const cy = Math.sin(cx * 0.008) * 25 + Math.sin(cx * 0.003 + 1) * 15 + 268;
-            bg.fillStyle(0x4A6E3A, 0.6);
-            // Tall narrow tree shape
-            bg.fillRect(cx - 2, cy - 30, 4, 30);
-            bg.fillStyle(0x3A5E2A, 0.7);
-            for (let i = 0; i < 28; i += 2) {
-                const w = Math.max(1, 7 - Math.abs(i - 8) * 0.6);
-                bg.fillRect(cx - w, cy - 30 + i, w * 2, 2);
+            bg.fillStyle(colors[layer], alphas[layer]);
+            for (let x = 0; x < GAME_WIDTH; x += 2) {
+                const h = Math.sin(x * freqs[layer] + layer * 2) * amps[layer]
+                        + Math.sin(x * freqs[layer] * 2.3 + layer) * amps[layer] * 0.5
+                        + baseY[layer];
+                bg.fillRect(x, h, 2, GAME_HEIGHT - h);
             }
-        });
-
-        // Ground (terre battue)
-        bg.fillGradientStyle(0xC4854A, 0xC4854A, 0xB07040, 0xB07040, 1);
-        bg.fillRect(0, 310, GAME_WIDTH, 170);
-
-        // Ground texture - scattered gravel
-        for (let i = 0; i < 180; i++) {
-            const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(312, 478);
-            const shade = Phaser.Math.RND.pick([0xB0905A, 0xD4A574, 0xA07848, 0xC89860]);
-            bg.fillStyle(shade, Phaser.Math.FloatBetween(0.2, 0.5));
-            const size = Phaser.Math.Between(1, 3);
-            bg.fillRect(gx, gy, size, size);
         }
 
-        // Petanque terrain markings (subtle)
-        bg.fillStyle(0xD4955A, 0.25);
-        bg.fillRoundedRect(240, 350, 350, 110, 4);
-        bg.lineStyle(1, 0xFFFFFF, 0.2);
-        bg.strokeRoundedRect(240, 350, 350, 110, 4);
+        // Subtle texture dots on lower area
+        for (let i = 0; i < 100; i++) {
+            const gx = Phaser.Math.Between(0, GAME_WIDTH);
+            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.75, GAME_HEIGHT);
+            bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.02, 0.06));
+            bg.fillRect(gx, gy, 1, 1);
+        }
 
-        // Decorative boules on terrain
-        this._drawBoule(bg, 340, 400, 0xC8D4E0, 8); // Silver
-        this._drawBoule(bg, 375, 388, 0xC8D4E0, 8); // Silver
-        this._drawBoule(bg, 440, 395, 0xC44B3F, 8); // Red
-        this._drawBoule(bg, 465, 418, 0xC44B3F, 8); // Red
-        // Cochonnet
-        bg.fillStyle(0xB8960A, 1); bg.fillCircle(410, 393, 4);
-        bg.fillStyle(0xFFD700, 1); bg.fillCircle(410, 393, 3);
-        bg.fillStyle(0xFFFFFF, 0.5); bg.fillCircle(409, 392, 1);
-
-        // Foreground trees (larger, more detail)
-        this._drawProvencalTree(bg, 50, 310, 1.5);
-        this._drawProvencalTree(bg, 160, 316, 0.9);
-        this._drawProvencalTree(bg, 720, 308, 1.6);
-        this._drawProvencalTree(bg, 800, 318, 0.8);
-
-        // Clouds (static base - animated ones added separately)
-        this._drawCloud(bg, 100, 60, 1.0, 0.3);
-        this._drawCloud(bg, 350, 40, 0.7, 0.2);
-        this._drawCloud(bg, 600, 80, 1.2, 0.25);
-    }
-
-    _drawBoule(g, x, y, color, r) {
-        // Shadow
-        g.fillStyle(0x3A2E28, 0.3);
-        g.fillEllipse(x + 1, y + r - 2, r * 1.6, r * 0.6);
-        // Body
-        g.fillStyle(color, 1);
-        g.fillCircle(x, y, r);
-        // Highlight
-        g.fillStyle(0xFFFFFF, 0.4);
-        g.fillCircle(x - r * 0.25, y - r * 0.25, r * 0.4);
-    }
-
-    _drawProvencalTree(g, tx, ty, scale) {
-        // Shadow on ground
-        g.fillStyle(0x3A2E28, 0.15);
-        g.fillEllipse(tx + 8 * scale, ty + 2, 18 * scale, 5 * scale);
-        // Trunk
-        g.fillStyle(0x7B5B3A, 1);
-        g.fillRect(tx - 3 * scale, ty - 14 * scale, 6 * scale, 16 * scale);
-        // Canopy layers
-        g.fillStyle(0x5A8A4A, 1);
-        g.fillCircle(tx, ty - 20 * scale, 16 * scale);
-        g.fillStyle(0x4A7A3A, 1);
-        g.fillCircle(tx - 5 * scale, ty - 24 * scale, 11 * scale);
-        g.fillStyle(0x6A9A5A, 0.7);
-        g.fillCircle(tx + 6 * scale, ty - 26 * scale, 8 * scale);
-        // Highlight
-        g.fillStyle(0x8ABA6A, 0.3);
-        g.fillCircle(tx - 2 * scale, ty - 28 * scale, 5 * scale);
+        // Soft vignette effect (darker corners)
+        const vignette = this.add.graphics().setDepth(1);
+        // Top edge
+        vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.3, 0.3, 0, 0);
+        vignette.fillRect(0, 0, GAME_WIDTH, 60);
+        // Bottom edge
+        vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.4, 0.4);
+        vignette.fillRect(0, GAME_HEIGHT - 60, GAME_WIDTH, 60);
+        // Left edge
+        vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.2, 0, 0.2, 0);
+        vignette.fillRect(0, 0, 80, GAME_HEIGHT);
+        // Right edge
+        vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.2, 0, 0.2);
+        vignette.fillRect(GAME_WIDTH - 80, 0, 80, GAME_HEIGHT);
     }
 
     _drawCloud(g, x, y, scale, alpha) {
@@ -190,105 +129,40 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     // ================================================================
-    // ATMOSPHERE - Floating particles, animated clouds, sun rays
+    // ATMOSPHERE - Soft light rays and golden particles
     // ================================================================
     _createAtmosphere() {
-        // Animated clouds layer
         this._clouds = [];
-        const cloudConfigs = [
-            { y: 50, speed: 8, scale: 0.6, alpha: 0.15 },
-            { y: 90, speed: 12, scale: 0.9, alpha: 0.12 },
-            { y: 30, speed: 6, scale: 1.1, alpha: 0.18 },
-        ];
-        cloudConfigs.forEach(cfg => {
-            const cloud = this.add.graphics();
-            this._drawCloud(cloud, 0, 0, cfg.scale, cfg.alpha);
-            cloud.x = Phaser.Math.Between(-100, GAME_WIDTH + 100);
-            cloud.y = cfg.y;
-            cloud.setData('speed', cfg.speed);
-            this._clouds.push(cloud);
-        });
 
-        // Sun rays (diagonal light beams)
-        const rays = this.add.graphics();
-        const rayX = GAME_WIDTH * 0.72;
-        for (let i = 0; i < 6; i++) {
-            const angle = -0.3 + i * 0.18;
-            const length = 400;
-            rays.fillStyle(0xFFE8A0, 0.03);
+        // Soft diagonal light rays from center
+        const rays = this.add.graphics().setDepth(2);
+        const rayX = GAME_WIDTH * 0.5;
+        const rayY = GAME_HEIGHT * 0.3;
+        for (let i = 0; i < 8; i++) {
+            const angle = -0.6 + i * 0.2;
+            const length = 500;
+            rays.fillStyle(0xFFE8A0, 0.015);
             rays.beginPath();
-            rays.moveTo(rayX, 240);
-            rays.lineTo(rayX + Math.cos(angle) * length, 240 + Math.sin(angle) * length);
-            rays.lineTo(rayX + Math.cos(angle + 0.06) * length, 240 + Math.sin(angle + 0.06) * length);
+            rays.moveTo(rayX, rayY);
+            rays.lineTo(rayX + Math.cos(angle) * length, rayY + Math.sin(angle) * length);
+            rays.lineTo(rayX + Math.cos(angle + 0.04) * length, rayY + Math.sin(angle + 0.04) * length);
             rays.closePath();
             rays.fillPath();
         }
-        // Pulsing ray effect
         this.tweens.add({
-            targets: rays, alpha: 0.4, duration: 3000,
+            targets: rays, alpha: 0.5, duration: 4000,
             yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
 
-        // Floating dust/pollen particles
-        this._particles = [];
-        for (let i = 0; i < 30; i++) {
-            const p = this.add.graphics();
-            const size = Phaser.Math.FloatBetween(1, 2.5);
-            const color = Phaser.Math.RND.pick([0xFFE8A0, 0xFFD700, 0xF5E6D0, 0xFFFFFF]);
-            p.fillStyle(color, Phaser.Math.FloatBetween(0.2, 0.5));
-            p.fillCircle(0, 0, size);
-            p.x = Phaser.Math.Between(0, GAME_WIDTH);
-            p.y = Phaser.Math.Between(0, GAME_HEIGHT);
-            p.setData('speedX', Phaser.Math.FloatBetween(-0.3, 0.3));
-            p.setData('speedY', Phaser.Math.FloatBetween(-0.5, -0.1));
-            p.setData('drift', Phaser.Math.FloatBetween(0, Math.PI * 2));
-            p.setAlpha(0); // Fade in during intro
-            this._particles.push(p);
-        }
+        // Golden dust particles (more visible, warm)
+        this._particles = UIFactory.createDustParticles(this, 40, { depth: 3 });
+        this._particles.forEach(p => p.setAlpha(0));
     }
 
     // ================================================================
-    // CHARACTERS - Larger, VS-style positioning
-    // ================================================================
-    _createCharacters() {
-        this._charSprites = [];
-
-        // Player side (far left) - Ley
-        if (this.textures.exists('ley_animated')) {
-            const ley = this.add.sprite(90, 400, 'ley_animated', 0).setScale(0.7).setAlpha(0);
-            this.tweens.add({
-                targets: ley, y: 397, duration: 1800,
-                yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-            });
-            this._charSprites.push(ley);
-        }
-
-        // Opponent side (far right) - La Choupe
-        if (this.textures.exists('la_choupe_animated')) {
-            const choupe = this.add.sprite(742, 402, 'la_choupe_animated', 0).setScale(0.7).setAlpha(0).setFlipX(true);
-            this.tweens.add({
-                targets: choupe, y: 399, duration: 2000,
-                yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 400
-            });
-            this._charSprites.push(choupe);
-        }
-
-        // Background character - Papi Rene strolling on the terrain (center, small, behind menu)
-        if (this.textures.exists('papi_rene_animated')) {
-            const papi = this.add.sprite(416, 420, 'papi_rene_animated', 0).setScale(0.35).setAlpha(0).setDepth(0);
-            this.tweens.add({
-                targets: papi, x: 440, duration: 4000,
-                yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 800
-            });
-            this._charSprites.push(papi);
-        }
-    }
-
-    // ================================================================
-    // TITLE - Big, impactful, with outline effect
+    // TITLE
     // ================================================================
     _createTitle() {
-        // V2 logo image (if available) — replaces text-based title
         if (this.textures.exists('v2_logo')) {
             this._titleOutlines = [];
             this._titleText = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
@@ -296,7 +170,7 @@ export default class TitleScene extends Phaser.Scene {
             this._titleGlow = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
                 .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0);
 
-            // Triple-click on logo → DevTestScene (dev only)
+            // Triple-click → DevTestScene
             this._logoClickCount = 0;
             this._logoClickTimer = null;
             this._titleText.setInteractive({ useHandCursor: false });
@@ -310,42 +184,41 @@ export default class TitleScene extends Phaser.Scene {
                 }
             });
         } else {
-            // Fallback: text-based title
+            // Fallback: pixel font title
             const outlineOffsets = [
-                [-3, 0], [3, 0], [0, -3], [0, 3],
-                [-2, -2], [2, -2], [-2, 2], [2, 2]
+                [-2, 0], [2, 0], [0, -2], [0, 2],
+                [-1, -1], [1, -1], [-1, 1], [1, 1]
             ];
-
             this._titleOutlines = outlineOffsets.map(([ox, oy]) => {
-                return this.add.text(GAME_WIDTH / 2 + ox, 90 + oy, 'PETANQUE\nMASTER', {
-                    fontFamily: 'monospace',
-                    fontSize: '56px',
+                return this.add.text(GAME_WIDTH / 2 + ox, 80 + oy, 'PETANQUE\nMASTER', {
+                    fontFamily: FONT_PIXEL,
+                    fontSize: '32px',
                     color: '#3A2E28',
                     align: 'center',
-                    lineSpacing: 2,
+                    lineSpacing: 8,
                 }).setOrigin(0.5).setAlpha(0);
             });
 
-            this._titleText = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
-                fontFamily: 'monospace',
-                fontSize: '56px',
+            this._titleText = this.add.text(GAME_WIDTH / 2, 80, 'PETANQUE\nMASTER', {
+                fontFamily: FONT_PIXEL,
+                fontSize: '32px',
                 color: '#FFD700',
                 align: 'center',
-                lineSpacing: 2,
+                lineSpacing: 8,
                 shadow: SHADOW_HEAVY
             }).setOrigin(0.5).setAlpha(0);
 
-            this._titleGlow = this.add.text(GAME_WIDTH / 2, 90, 'PETANQUE\nMASTER', {
-                fontFamily: 'monospace',
-                fontSize: '56px',
+            this._titleGlow = this.add.text(GAME_WIDTH / 2, 80, 'PETANQUE\nMASTER', {
+                fontFamily: FONT_PIXEL,
+                fontSize: '32px',
                 color: '#FFF4D0',
                 align: 'center',
-                lineSpacing: 2,
+                lineSpacing: 8,
             }).setOrigin(0.5).setAlpha(0);
         }
 
         // Subtitle
-        this._subtitle = this.add.text(GAME_WIDTH / 2, 175, 'Le meilleur bouliste du canton, c\'est vous !', {
+        this._subtitle = this.add.text(GAME_WIDTH / 2, 172, 'Le meilleur bouliste du canton, c\'est vous !', {
             fontFamily: 'monospace',
             fontSize: '14px',
             color: '#F5E6D0',
@@ -353,37 +226,34 @@ export default class TitleScene extends Phaser.Scene {
             shadow: SHADOW
         }).setOrigin(0.5).setAlpha(0);
 
-        // Decorative line under title
-        this._titleLine = this.add.graphics();
-        this._titleLine.setAlpha(0);
+        // Decorative divider under subtitle
+        this._titleLine = this.add.graphics().setAlpha(0);
         const lineY = 192;
         this._titleLine.lineStyle(2, 0xFFD700, 0.6);
         this._titleLine.beginPath();
         this._titleLine.moveTo(GAME_WIDTH / 2 - 140, lineY);
-        this._titleLine.lineTo(GAME_WIDTH / 2 - 10, lineY);
+        this._titleLine.lineTo(GAME_WIDTH / 2 - 6, lineY);
         this._titleLine.strokePath();
         this._titleLine.beginPath();
-        this._titleLine.moveTo(GAME_WIDTH / 2 + 10, lineY);
+        this._titleLine.moveTo(GAME_WIDTH / 2 + 6, lineY);
         this._titleLine.lineTo(GAME_WIDTH / 2 + 140, lineY);
         this._titleLine.strokePath();
-        // Diamond in center
         this._titleLine.fillStyle(0xFFD700, 0.8);
         this._titleLine.fillRect(GAME_WIDTH / 2 - 3, lineY - 3, 6, 6);
     }
 
     // ================================================================
-    // PRESS START prompt
+    // PRESS START
     // ================================================================
     _createPressStart() {
-        this._pressStart = this.add.text(GAME_WIDTH / 2, 260, 'Appuyez sur ESPACE', {
-            fontFamily: 'monospace',
-            fontSize: '20px',
+        this._pressStart = this.add.text(GAME_WIDTH / 2, 280, 'APPUYEZ SUR ESPACE', {
+            fontFamily: FONT_PIXEL,
+            fontSize: '16px',
             color: '#FFD700',
             align: 'center',
             shadow: SHADOW
-        }).setOrigin(0.5).setAlpha(0);
+        }).setOrigin(0.5).setAlpha(0).setDepth(5);
 
-        // Blink animation
         this._pressStartTween = this.tweens.add({
             targets: this._pressStart,
             alpha: { from: 1, to: 0.2 },
@@ -395,46 +265,31 @@ export default class TitleScene extends Phaser.Scene {
         });
     }
 
-    // ================================================================
-    // CONTROLS HINT + VERSION
-    // ================================================================
-    _createControlsHint() {
-        this._controlsHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2191\u2193  Naviguer     Espace  Confirmer', {
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            color: '#D4A574',
-            align: 'center',
-            shadow: SHADOW
-        }).setOrigin(0.5).setAlpha(0);
-    }
-
     _createVersionTag() {
         this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v0.5', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E',
+            fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
             shadow: SHADOW
         }).setOrigin(1, 1).setAlpha(0.5);
     }
 
     // ================================================================
-    // INTRO SEQUENCE - Cinematic entrance
+    // INTRO SEQUENCE
     // ================================================================
     _playIntroSequence() {
         const t = this.tweens;
         const ease = 'Back.easeOut';
 
-        // 1. Title drops in (0 -> 400ms)
+        // 1. Title drops in
         this._titleOutlines.forEach(outline => {
             t.add({ targets: outline, alpha: 0.8, y: outline.y, duration: 500, delay: 100, ease });
         });
         t.add({ targets: this._titleText, alpha: 1, duration: 500, delay: 100, ease });
 
-        // Title glow pulse (starts after drop)
         this.time.delayedCall(600, () => {
             this.tweens.add({
                 targets: this._titleGlow, alpha: 0.15, duration: 2000,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
             });
-            // Title breathing
             const titleTargets = [this._titleText, this._titleGlow, ...this._titleOutlines];
             this.tweens.add({
                 targets: titleTargets,
@@ -443,30 +298,19 @@ export default class TitleScene extends Phaser.Scene {
             });
         });
 
-        // 2. Subtitle + decorative line (400ms)
-        t.add({ targets: this._subtitle, alpha: 1, y: this._subtitle.y, duration: 400, delay: 500, ease: 'Power2' });
+        // 2. Subtitle + line
+        t.add({ targets: this._subtitle, alpha: 1, duration: 400, delay: 500, ease: 'Power2' });
         t.add({ targets: this._titleLine, alpha: 1, duration: 400, delay: 500 });
 
-        // 3. Characters slide in (600ms)
-        this._charSprites.forEach((sprite, i) => {
-            const fromX = i === 0 ? sprite.x - 80 : (i === 1 ? sprite.x + 80 : sprite.x);
-            const targetX = sprite.x;
-            sprite.x = fromX;
-            t.add({
-                targets: sprite, alpha: i === 2 ? 0.6 : 1, x: targetX,
-                duration: 600, delay: 700 + i * 150, ease
-            });
-        });
-
-        // 4. Particles fade in (800ms)
-        this.time.delayedCall(800, () => {
+        // 3. Particles fade in
+        this.time.delayedCall(700, () => {
             this._particles.forEach((p, i) => {
                 t.add({ targets: p, alpha: Phaser.Math.FloatBetween(0.2, 0.6), duration: 600, delay: i * 30 });
             });
         });
 
-        // 5. Press Start appears (1200ms)
-        this.time.delayedCall(1200, () => {
+        // 4. Press Start appears
+        this.time.delayedCall(1100, () => {
             this._pressStart.setAlpha(1);
             this._pressStartTween.resume();
             this._inputEnabled = true;
@@ -474,7 +318,7 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     // ================================================================
-    // MENU SYSTEM
+    // MENU SYSTEM (wood buttons)
     // ================================================================
     _showMainMenu() {
         this._clearMenu();
@@ -487,158 +331,74 @@ export default class TitleScene extends Phaser.Scene {
             this._pressStart.setAlpha(0);
         }
 
-        // Show controls hint
-        this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 300 });
-
-        // Menu layout:
-        // Row 0: JOUER (hero button, big)
-        // Row 1-2: 2-column grid (Arcade | Partie Rapide, Perso | Boutique)
-        // Row 3: Parametres (centered, smaller)
-        const items = [
-            { label: 'JOUER', hero: true },
-            { label: 'Mode Arcade', col: 0, row: 0 },
-            { label: 'Partie Rapide', col: 1, row: 0 },
-            { label: 'Mon Personnage', col: 0, row: 1 },
-            { label: 'Boutique', col: 1, row: 1 },
-            { label: 'Parametres', col: -1, row: 2 }
-        ];
-
-        // Galets display (bottom-right)
+        // Galets display
         if (!this._galetsDisplay) {
-            this._galetsDisplay = UIFactory.createGaletsDisplay(this, UI.GALETS_X, UI.GALETS_Y);
+            this._galetsDisplay = UIFactory.createGaletsDisplay(this, UI.GALETS_X, UI.GALETS_Y, { depth: 50 });
         } else {
             this._galetsDisplay.refresh();
         }
 
-        // Menu container
         this._menuContainer = this.add.container(0, 0).setDepth(5);
-        this._menuContainer.setAlpha(0);
 
+        // Menu layout: hero button + 2x2 grid + settings
         const cx = GAME_WIDTH / 2;
-        // Layout positions for each item
-        this._menuPositions = [];
+        const menuDefs = [
+            { label: 'JOUER',           x: cx,       y: 230, w: 260, h: 46, hero: true },
+            { label: 'MODE ARCADE',     x: cx - 105, y: 286, w: 196, h: 36 },
+            { label: 'PARTIE RAPIDE',   x: cx + 105, y: 286, w: 196, h: 36 },
+            { label: 'MON PERSO',       x: cx - 105, y: 330, w: 196, h: 36 },
+            { label: 'BOUTIQUE',        x: cx + 105, y: 330, w: 196, h: 36 },
+            { label: 'PARAMETRES',      x: cx,       y: 378, w: 180, h: 30 }
+        ];
 
-        items.forEach((item, i) => {
-            let pillX, pillY, pillW, pillH, fontSize;
+        this._menuButtons = [];
+        this._menuPositions = menuDefs;
 
-            if (item.hero) {
-                // Hero "JOUER" button
-                pillX = cx;
-                pillY = 222;
-                pillW = 240;
-                pillH = 44;
-                fontSize = '28px';
-            } else if (item.col === -1) {
-                // Parametres: centered, small
-                pillX = cx;
-                pillY = 340;
-                pillW = 160;
-                pillH = 28;
-                fontSize = '14px';
-            } else {
-                // Grid items: 2 columns
-                const colOffset = item.col === 0 ? -110 : 110;
-                pillX = cx + colOffset;
-                pillY = 278 + item.row * 40;
-                pillW = 200;
-                pillH = 32;
-                fontSize = '16px';
-            }
-
-            this._menuPositions.push({ x: pillX, y: pillY, w: pillW, h: pillH, hero: item.hero });
-
-            // Background: v2 assets or fallback graphics
-            let pill;
-            if (item.hero && this.textures.exists('v2_button')) {
-                // Hero JOUER: v2_button is 256x256 with horizontal banner content (~256x110)
-                // Use displaySize to crop the transparent padding and show just the banner
-                pill = this.add.image(pillX, pillY, 'v2_button')
-                    .setDisplaySize(280, 110).setDepth(5).setAlpha(0.95);
-            } else if (!item.hero && this.textures.exists('v2_panel_simple')) {
-                // Sub-items: NineSlice panel with wood texture — wider and taller for readability
-                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW + 10, pillH + 8, 16, 16, 16, 16)
-                    .setOrigin(0.5).setDepth(5).setAlpha(0.88);
-            } else {
-                // Fallback: graphics
-                pill = this.add.graphics().setDepth(5);
-                if (item.hero) {
-                    pill.fillStyle(0x5A4020, 0.9);
-                    pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
-                    pill.lineStyle(2, 0xFFD700, 0.7);
-                    pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
-                } else {
-                    pill.fillStyle(0x3A2E28, 0.8);
-                    pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                    pill.lineStyle(1, 0xD4A574, 0.3);
-                    pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+        menuDefs.forEach((def, i) => {
+            const btn = UIFactory.createWoodButton(this, def.x, def.y, def.w, def.h, def.label, {
+                fontSize: def.hero ? '16px' : '10px',
+                depth: 6,
+                selected: i === 0,
+                onDown: () => {
+                    if (this._mode !== 'main' || !this._inputEnabled) return;
+                    this._selectedIndex = i;
+                    this._onMainSelect();
                 }
-            }
-            this._menuContainer.add(pill);
-            this._menuItems.push(pill);
+            });
 
-            // Text
-            const color = item.hero ? '#FFD700' : '#F5E6D0';
-            const txt = this.add.text(pillX, pillY, item.label, {
-                fontFamily: 'monospace',
-                fontSize,
-                color,
-                align: 'center',
-                shadow: item.hero ? SHADOW_HEAVY : SHADOW
-            }).setOrigin(0.5).setDepth(6);
-            this._menuContainer.add(txt);
-            this._menuItems.push(txt);
-
-            // Mouse interactivity
-            txt.setInteractive({ useHandCursor: true });
-            pill.setInteractive(
-                new Phaser.Geom.Rectangle(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH),
-                Phaser.Geom.Rectangle.Contains
-            );
-
-            const hoverIn = () => {
+            // Hover → select this index
+            btn.hitZone.on('pointerover', () => {
                 if (this._mode !== 'main') return;
                 this._selectedIndex = i;
                 this._updateSelection();
-            };
-            const clickHandler = () => {
-                if (this._mode !== 'main' || !this._inputEnabled) return;
-                this._selectedIndex = i;
-                this._onMainSelect();
-            };
+            });
 
-            txt.on('pointerover', hoverIn);
-            txt.on('pointerdown', clickHandler);
-            pill.on('pointerover', hoverIn);
-            pill.on('pointerdown', clickHandler);
+            // Start invisible for stagger animation
+            btn.container.setAlpha(0).setScale(0.8);
+            this._menuContainer.add(btn.container);
+            this._menuButtons.push(btn);
         });
 
-        // Animate menu items in with stagger
-        this._menuContainer.setAlpha(1);
-        this._menuContainer.list.forEach(child => child.setAlpha(0));
-        for (let i = 0; i < items.length; i++) {
-            const pillIdx = i * 2;
-            const txtIdx = i * 2 + 1;
-            const delay = i * 60;
-            if (this._menuItems[pillIdx]) {
-                this._menuItems[pillIdx].setAlpha(0);
-                this.tweens.add({
-                    targets: this._menuItems[pillIdx], alpha: 1,
-                    duration: 250, delay, ease: 'Power2'
-                });
-            }
-            if (this._menuItems[txtIdx]) {
-                this._menuItems[txtIdx].setAlpha(0).setY(this._menuItems[txtIdx].y + 8);
-                this.tweens.add({
-                    targets: this._menuItems[txtIdx], alpha: 1,
-                    y: this._menuItems[txtIdx].y - 8,
-                    duration: 250, delay, ease: 'Back.easeOut'
-                });
-            }
-        }
+        // Stagger animation for buttons
+        this._menuButtons.forEach((btn, i) => {
+            this.tweens.add({
+                targets: btn.container,
+                alpha: 1, scaleX: 1, scaleY: 1,
+                duration: 300,
+                delay: i * 70,
+                ease: 'Back.easeOut'
+            });
+        });
 
-        // Delay input slightly to let stagger finish
+        // Controls hint
+        this._controlsHint = UIFactory.addControlsHint(this,
+            'FLECHES Naviguer   ESPACE Confirmer', { depth: 5 });
+        this._controlsHint.setAlpha(0);
+        this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 400, delay: 500 });
+
+        // Enable input after animation
         this._inputEnabled = false;
-        this.time.delayedCall(items.length * 60 + 250, () => {
+        this.time.delayedCall(menuDefs.length * 70 + 300, () => {
             this._inputEnabled = true;
         });
 
@@ -650,18 +410,14 @@ export default class TitleScene extends Phaser.Scene {
         this._mode = 'slots';
         this._selectedIndex = 0;
 
-        this._menuContainer = this.add.container(0, 0);
+        this._menuContainer = this.add.container(0, 0).setDepth(5);
 
-        // Slots header
-        const header = this.add.text(GAME_WIDTH / 2, 200, 'SAUVEGARDES', {
-            fontFamily: 'monospace', fontSize: '20px', color: '#FFD700', shadow: SHADOW_HEAVY
-        }).setOrigin(0.5);
+        // Header
+        const header = UIFactory.addTitle(this, GAME_WIDTH / 2, 200, 'SAUVEGARDES', { depth: 6 });
         this._menuContainer.add(header);
 
         const slots = getAllSlots();
-        const startY = 245;
         const allItems = [];
-
         for (let i = 0; i < 3; i++) {
             const s = slots[i];
             let label;
@@ -672,158 +428,45 @@ export default class TitleScene extends Phaser.Scene {
             } else {
                 label = `Slot ${i + 1}: ---`;
             }
-            allItems.push({ label, color: s ? '#F5E6D0' : '#9E9E8E' });
+            allItems.push(label);
         }
-        allItems.push({ label: '\u2190 Retour', color: '#D4A574' });
+        allItems.push('< RETOUR');
 
-        const pillW = 340;
-        const pillH = 34;
-
-        allItems.forEach((item, i) => {
-            const pillY = startY + i * 42;
-            const pill = this.add.graphics();
-            pill.fillStyle(0x3A2E28, 0.75);
-            pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-            pill.lineStyle(1, 0xD4A574, 0.3);
-            pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-            this._menuContainer.add(pill);
-            this._menuItems.push(pill);
-
-            const txt = this.add.text(GAME_WIDTH / 2, pillY, item.label, {
-                fontFamily: 'monospace',
-                fontSize: '17px',
-                color: item.color,
-                align: 'center',
-                shadow: SHADOW
-            }).setOrigin(0.5);
-            this._menuContainer.add(txt);
-            this._menuItems.push(txt);
-
-            // Mouse
-            txt.setInteractive({ useHandCursor: true });
-            pill.setInteractive(
-                new Phaser.Geom.Rectangle(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH),
-                Phaser.Geom.Rectangle.Contains
-            );
-            const hoverIn = () => { this._selectedIndex = i; this._updateSelection(); };
-            const clickHandler = () => {
-                if (!this._inputEnabled) return;
-                this._selectedIndex = i;
-                this._onSlotSelect();
-            };
-            txt.on('pointerover', hoverIn);
-            txt.on('pointerdown', clickHandler);
-            pill.on('pointerover', hoverIn);
-            pill.on('pointerdown', clickHandler);
+        this._menuButtons = [];
+        allItems.forEach((label, i) => {
+            const btn = UIFactory.createWoodButton(this, GAME_WIDTH / 2, 250 + i * 46, 340, 36, label, {
+                fontSize: '10px',
+                depth: 6,
+                selected: i === 0,
+                onDown: () => {
+                    if (!this._inputEnabled) return;
+                    this._selectedIndex = i;
+                    this._onSlotSelect();
+                }
+            });
+            btn.hitZone.on('pointerover', () => { this._selectedIndex = i; this._updateSelection(); });
+            btn.container.setAlpha(0);
+            this.tweens.add({ targets: btn.container, alpha: 1, duration: 200, delay: i * 60, ease: 'Power2' });
+            this._menuContainer.add(btn.container);
+            this._menuButtons.push(btn);
         });
 
         this._updateSelection();
     }
 
     _clearMenu() {
-        this._menuItems.forEach(t => t.destroy());
-        this._menuItems = [];
-        if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
-        if (this._selectionGlow) { this._selectionGlow.destroy(); this._selectionGlow = null; }
+        this._menuButtons.forEach(btn => {
+            if (btn.container) btn.container.destroy();
+        });
+        this._menuButtons = [];
         if (this._menuContainer) { this._menuContainer.destroy(); this._menuContainer = null; }
+        if (this._controlsHint) { this._controlsHint.destroy(); this._controlsHint = null; }
     }
 
     _updateSelection() {
-        // Remove old cursor/glow
-        if (this._cursor) this._cursor.destroy();
-        if (this._selectionGlow) this._selectionGlow.destroy();
-
-        const itemCount = Math.floor(this._menuItems.length / 2);
-        const positions = this._menuPositions;
-
-        for (let i = 0; i < itemCount; i++) {
-            const textIndex = i * 2 + 1;
-            const pillIndex = i * 2;
-            const txt = this._menuItems[textIndex];
-            const pill = this._menuItems[pillIndex];
-
-            if (!txt || !txt.style) continue;
-
-            // Slots mode uses simple vertical layout
-            if (this._mode === 'slots') {
-                const pillW = 340, pillH = 34, startY = 245, spacing = 42;
-                const pillY = startY + i * spacing;
-                if (i === this._selectedIndex) {
-                    txt.setColor('#FFD700').setScale(1.05);
-                    if (pill?.clear) {
-                        pill.clear();
-                        pill.fillStyle(0x5A4030, 0.85);
-                        pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                        pill.lineStyle(2, 0xFFD700, 0.6);
-                        pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                    }
-                    this._cursor = this.add.text(
-                        txt.x - txt.width * 0.55 - 26, txt.y, '\u25b6',
-                        { fontFamily: 'monospace', fontSize: '20px', color: '#FFD700', shadow: SHADOW }
-                    ).setOrigin(0.5);
-                    this.tweens.add({ targets: this._cursor, x: this._cursor.x + 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-                    if (this._menuContainer) this._menuContainer.add(this._cursor);
-                } else {
-                    txt.setColor(i === itemCount - 1 ? '#D4A574' : '#F5E6D0').setScale(1.0);
-                    if (pill?.clear) {
-                        pill.clear();
-                        pill.fillStyle(0x3A2E28, 0.75);
-                        pill.fillRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                        pill.lineStyle(1, 0xD4A574, 0.3);
-                        pill.strokeRoundedRect(GAME_WIDTH / 2 - pillW / 2, pillY - pillH / 2, pillW, pillH, 8);
-                    }
-                }
-                continue;
-            }
-
-            // Main menu with positions
-            if (!positions || !positions[i]) continue;
-            const pos = positions[i];
-
-            if (i === this._selectedIndex) {
-                txt.setColor('#FFD700').setScale(1.05);
-                if (pill?.clear) {
-                    // Graphics fallback
-                    pill.clear();
-                    pill.fillStyle(pos.hero ? 0x6A5020 : 0x5A4030, 0.9);
-                    pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
-                    pill.lineStyle(2, 0xFFD700, 0.7);
-                    pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
-                } else if (pill?.setTint) {
-                    // v2 image/NineSlice: highlight with tint
-                    pill.setTint(0xFFE8A0);
-                    pill.setAlpha(1.0);
-                }
-                // Arrow cursor
-                const cursorX = pos.x - pos.w / 2 - 16;
-                this._cursor = this.add.text(cursorX, pos.y, '\u25b6', {
-                    fontFamily: 'monospace', fontSize: pos.hero ? '22px' : '16px', color: '#FFD700', shadow: SHADOW
-                }).setOrigin(0.5).setDepth(7);
-                this.tweens.add({ targets: this._cursor, x: cursorX + 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-                if (this._menuContainer) this._menuContainer.add(this._cursor);
-            } else {
-                txt.setColor(pos.hero ? '#FFD700' : '#F5E6D0').setScale(1.0);
-                if (pill?.clear) {
-                    // Graphics fallback
-                    pill.clear();
-                    if (pos.hero) {
-                        pill.fillStyle(0x5A4020, 0.9);
-                        pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 10);
-                        pill.lineStyle(2, 0xFFD700, 0.5);
-                        pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 10);
-                    } else {
-                        pill.fillStyle(0x3A2E28, 0.8);
-                        pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 6);
-                        pill.lineStyle(1, 0xD4A574, 0.3);
-                        pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 6);
-                    }
-                } else if (pill?.clearTint) {
-                    // v2 image/NineSlice: reset tint
-                    pill.clearTint();
-                    pill.setAlpha(pos.hero ? 0.95 : 0.9);
-                }
-            }
-        }
+        this._menuButtons.forEach((btn, i) => {
+            btn.setSelected(i === this._selectedIndex);
+        });
     }
 
     // ================================================================
@@ -832,29 +475,10 @@ export default class TitleScene extends Phaser.Scene {
     update(time, delta) {
         if (!this._inputEnabled) return;
 
-        // Animate clouds
-        if (this._clouds) {
-            this._clouds.forEach(cloud => {
-                cloud.x += cloud.getData('speed') * delta * 0.001;
-                if (cloud.x > GAME_WIDTH + 150) cloud.x = -150;
-            });
-        }
-
         // Animate particles
-        if (this._particles) {
-            this._particles.forEach(p => {
-                const drift = p.getData('drift') + delta * 0.001;
-                p.setData('drift', drift);
-                p.x += p.getData('speedX') + Math.sin(drift) * 0.3;
-                p.y += p.getData('speedY');
-                // Wrap around
-                if (p.y < -10) { p.y = GAME_HEIGHT + 10; p.x = Phaser.Math.Between(0, GAME_WIDTH); }
-                if (p.x < -10) p.x = GAME_WIDTH + 10;
-                if (p.x > GAME_WIDTH + 10) p.x = -10;
-            });
-        }
+        UIFactory.updateParticles(this._particles, delta);
 
-        // Input handling
+        // Input
         const up = Phaser.Input.Keyboard.JustDown(this.cursors.up);
         const down = Phaser.Input.Keyboard.JustDown(this.cursors.down);
         const confirm = Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
@@ -870,7 +494,7 @@ export default class TitleScene extends Phaser.Scene {
         const left = Phaser.Input.Keyboard.JustDown(this.cursors.left);
         const right = Phaser.Input.Keyboard.JustDown(this.cursors.right);
 
-        // Settings mode: left/right adjusts values
+        // Settings mode
         if (this._mode === 'settings') {
             const settingsCount = this._settingsItemKeys?.length || 0;
             if (settingsCount === 0) return;
@@ -891,11 +515,10 @@ export default class TitleScene extends Phaser.Scene {
             return;
         }
 
-        const itemCount = Math.floor(this._menuItems.length / 2);
+        const itemCount = this._menuButtons.length;
 
-        if (this._mode === 'main' && this._menuPositions) {
-            // Grid-aware navigation for main menu
-            // Layout: 0=Jouer, 1=Arcade(L), 2=Rapide(R), 3=Perso(L), 4=Boutique(R), 5=Parametres
+        if (this._mode === 'main') {
+            // Grid-aware nav: 0=Jouer, 1=Arcade(L), 2=Rapide(R), 3=Perso(L), 4=Boutique(R), 5=Parametres
             const navMap = {
                 up:    { 0: 5, 1: 0, 2: 0, 3: 1, 4: 2, 5: 3 },
                 down:  { 0: 1, 1: 3, 2: 4, 3: 5, 4: 5, 5: 0 },
@@ -916,7 +539,7 @@ export default class TitleScene extends Phaser.Scene {
                 sfxUIClick(); this._updateSelection();
             }
         } else {
-            // Simple vertical nav for slots
+            // Slots: simple vertical
             if (up) {
                 this._selectedIndex = (this._selectedIndex - 1 + itemCount) % itemCount;
                 sfxUIClick(); this._updateSelection();
@@ -949,7 +572,6 @@ export default class TitleScene extends Phaser.Scene {
     // ================================================================
     _onMainSelect() {
         if (this._selectedIndex === 0) {
-            // Quick play: Rookie vs La Choupe, Village, facile
             this._transitionTo(() => {
                 const chars = this.cache.json.get('characters');
                 const rookie = chars.roster.find(c => c.id === 'rookie');
@@ -986,7 +608,6 @@ export default class TitleScene extends Phaser.Scene {
             this._showMainMenu();
             return;
         }
-
         const slot = this._selectedIndex;
         if (this._newGame) {
             this._startNewGame(slot);
@@ -1006,9 +627,7 @@ export default class TitleScene extends Phaser.Scene {
         this._selectedIndex = 0;
         this._settingsValues = getAudioSettings();
 
-        // Create modal overlay
         this._settingsModal = UIFactory.createModalOverlay(this, 420, 300, () => {
-            // On close: return to main menu mode
             this._settingsModal = null;
             this._mode = 'main';
             this._inputEnabled = true;
@@ -1018,13 +637,12 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     _rebuildSettingsItems() {
-        // Clear old settings items
         if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
         this._settingsItems = [];
-        if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
+        if (this._settingsCursor) { this._settingsCursor.destroy(); this._settingsCursor = null; }
 
         if (!this._settingsModal) return;
-        const { panelX: px, panelY: py, panelW: pw, depth } = this._settingsModal;
+        const { panelY: py, depth } = this._settingsModal;
 
         const settings = this._settingsValues;
         const items = [
@@ -1046,8 +664,8 @@ export default class TitleScene extends Phaser.Scene {
             this._settingsItems.push(txt);
 
             if (item.key === 'music' || item.key === 'sfx') {
-                const hint = this.add.text(GAME_WIDTH / 2 + 140, iy, '\u2190 \u2192', {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW
+                const hint = this.add.text(GAME_WIDTH / 2 + 140, iy, '< >', {
+                    fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E', shadow: SHADOW
                 }).setOrigin(1, 0.5).setDepth(depth);
                 this._settingsItems.push(hint);
             }
@@ -1063,9 +681,8 @@ export default class TitleScene extends Phaser.Scene {
 
     _updateSettingsSelection() {
         if (!this._settingsItems) return;
-        if (this._cursor) this._cursor.destroy();
+        if (this._settingsCursor) this._settingsCursor.destroy();
 
-        // Filter only text items (skip hint items)
         const textItems = this._settingsItems.filter(t => t.input);
         const depth = this._settingsModal?.depth || 102;
 
@@ -1073,12 +690,12 @@ export default class TitleScene extends Phaser.Scene {
             const txt = textItems[i];
             if (i === this._selectedIndex) {
                 txt.setColor('#FFD700').setScale(1.05);
-                this._cursor = this.add.text(
+                this._settingsCursor = this.add.text(
                     txt.x - txt.width * 0.55 - 20, txt.y, '\u25b6',
-                    { fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW }
+                    { fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW }
                 ).setOrigin(0.5).setDepth(depth);
                 this.tweens.add({
-                    targets: this._cursor, x: this._cursor.x + 4,
+                    targets: this._settingsCursor, x: this._settingsCursor.x + 4,
                     duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
             } else {
@@ -1095,7 +712,7 @@ export default class TitleScene extends Phaser.Scene {
                 this._settingsModal.close();
                 if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
                 this._settingsItems = null;
-                if (this._cursor) { this._cursor.destroy(); this._cursor = null; }
+                if (this._settingsCursor) { this._settingsCursor.destroy(); this._settingsCursor = null; }
             }
             return;
         }
@@ -1125,7 +742,7 @@ export default class TitleScene extends Phaser.Scene {
         } else if (key === 'sfx') {
             const newVal = Math.max(0, Math.min(1, this._settingsValues.sfxVolume + step));
             setSfxVolume(newVal);
-            sfxUIClick(); // preview
+            sfxUIClick();
         } else if (key === 'mute') {
             toggleMute();
         } else {
@@ -1143,7 +760,6 @@ export default class TitleScene extends Phaser.Scene {
 
     _startNewGame(slot) {
         if (this.sound.locked) this.sound.unlock();
-
         this.registry.set('currentSlot', slot);
         this.registry.set('gameState', {
             player: { name: 'Joueur', map: 'village_depart', x: 14, y: 20, facing: 'down' },
@@ -1154,13 +770,11 @@ export default class TitleScene extends Phaser.Scene {
             scoreTotal: 0,
             playtime: 0
         });
-
         this._transitionTo(() => this.scene.start('IntroScene'));
     }
 
     _continueGame(slot, data) {
         if (this.sound.locked) this.sound.unlock();
-
         this.registry.set('currentSlot', slot);
         this.registry.set('gameState', {
             player: data.player,
@@ -1171,7 +785,6 @@ export default class TitleScene extends Phaser.Scene {
             scoreTotal: data.scoreTotal || 0,
             playtime: data.playtime || 0
         });
-
         this._transitionTo(() => {
             this.scene.start('OverworldScene', {
                 map: data.player.map,
