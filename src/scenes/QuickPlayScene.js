@@ -271,6 +271,14 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
         this._jouerText.setColor(jouerSelected ? '#FFFFFF' : '#FFD700');
 
+        // Swap v2 button image: normal vs pressed
+        if (this._jouerBtnImg) {
+            const pressedKey = jouerSelected && this.textures.exists('v2_button_pressed') ? 'v2_button_pressed' : 'v2_button';
+            if (this.textures.exists(pressedKey)) {
+                this._jouerBtnImg.setTexture(pressedKey);
+            }
+        }
+
         if (this._selectedRow < OPTIONS.length) {
             this._cursor.setPosition(42, 76 + this._selectedRow * 46);
             this._cursor.setVisible(true);

@@ -274,8 +274,20 @@ export default class CharSelectScene extends Phaser.Scene {
         const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB]; // ocre, terracotta, lavande, ciel
         const barStartY = py + 110;
 
+        // Decorative bar above stats section
+        if (this.textures.exists('v2_bar_decorative')) {
+            this.add.image(px, barStartY - 16, 'v2_bar_decorative')
+                .setDisplaySize(180, 10).setAlpha(0.5);
+        }
+
         for (let i = 0; i < statNames.length; i++) {
             const by = barStartY + i * 38;
+
+            // Stat icon (v2_stat_icons spritesheet)
+            if (this.textures.exists('v2_stat_icons')) {
+                this.add.sprite(px - 95, by - 2, 'v2_stat_icons', i)
+                    .setScale(0.18).setOrigin(0.5).setAlpha(0.8);
+            }
 
             this.add.text(px - 85, by - 4, statLabels[i], {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW

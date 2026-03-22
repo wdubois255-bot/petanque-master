@@ -1218,10 +1218,35 @@ export default class AimingSystem {
 
         // Power text — show raw % (what the player feels) not the quadratic value
         if (this._powerText) this._powerText.destroy();
+        if (this._powerBarImg) this._powerBarImg.destroy();
+        if (this._powerBarFill) this._powerBarFill.destroy();
         const modeLabel = isCochonnetThrow ? 'COCHONNET'
             : this.shotMode === 'tirer' ? 'TIR'
             : this.loftPreset?.label || 'DEMI-PORTEE';
         const retroSuffix = this.retroActive ? ' +R' : '';
+
+        // v2_bar_power visual gauge behind text
+        const barW = 120;
+        const barH = 14;
+        const barX = originX;
+        const barY = originY + 46;
+        if (this.scene.textures.exists('v2_bar_power')) {
+            this._powerBarImg = this.scene.add.image(barX, barY, 'v2_bar_power')
+                .setDisplaySize(barW + 8, barH + 6).setOrigin(0.5).setDepth(50).setAlpha(0.85);
+            // Fill overlay (colored rectangle clipped to bar width)
+            this._powerBarFill = this.scene.add.graphics().setDepth(50);
+            const fillColor = this.retroActive ? 0x9B7BB8
+                : this.shotMode === 'tirer' ? 0xFF8844 : 0xD4A574;
+            const fillW = rawPower * (barW - 4);
+            this._powerBarFill.fillStyle(fillColor, 0.8);
+            this._powerBarFill.fillRoundedRect(barX - barW / 2 + 2, barY - barH / 2 + 1, fillW, barH - 2, 2);
+            this._powerBarFill.fillStyle(0xFFFFFF, 0.15);
+            this._powerBarFill.fillRoundedRect(barX - barW / 2 + 2, barY - barH / 2 + 1, fillW, (barH - 2) / 2, 2);
+        } else {
+            this._powerBarImg = null;
+            this._powerBarFill = null;
+        }
+
         this._powerText = this.scene.add.text(
             originX, originY + 28,
             `${modeLabel} ${Math.round(rawPower * 100)}%${retroSuffix}`,
@@ -1245,5 +1270,7 @@ export default class AimingSystem {
         this._clearTargetHighlights();
         this._clearRetroUI();
         if (this._powerText) this._powerText.destroy();
+        if (this._powerBarImg) this._powerBarImg.destroy();
+        if (this._powerBarFill) this._powerBarFill.destroy();
     }
 }
