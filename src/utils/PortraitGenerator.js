@@ -7,20 +7,9 @@
 const PORTRAIT_SIZE = 128;
 
 // Character visual definitions
+// Procedural portrait fallback visuals (used only when v2 spritesheet is missing)
 const CHAR_VISUALS = {
-    pointeur: {
-        // Marcel - Vieux, casquette, cheveux blancs, polo rouge
-        skinTone: 0xDEBE9E,
-        hairColor: 0xD0D0D0,
-        hairStyle: 'bald_sides',
-        shirtColor: 0xC44B3F,
-        shirtStyle: 'polo',
-        eyeColor: 0x4A5A6A,
-        expression: 'stern',
-        accessories: ['casquette'],
-    },
     brute: {
-        // Ley - Colosse débonnaire, costaud, cheveux courts foncés, polo bleu
         skinTone: 0xC8A078,
         hairColor: 0x3A3020,
         hairStyle: 'short',
@@ -30,19 +19,7 @@ const CHAR_VISUALS = {
         expression: 'smile',
         accessories: [],
     },
-    magicien: {
-        // Le Magicien - Mystérieux, chapeau, barbe courte, chemise sombre
-        skinTone: 0xE0C098,
-        hairColor: 0x5A3A20,
-        hairStyle: 'slick',
-        shirtColor: 0x8B4513,
-        shirtStyle: 'chemise',
-        eyeColor: 0x3A5A2A,
-        expression: 'cool',
-        accessories: ['chapeau'],
-    },
     la_choupe: {
-        // La Choupe - Bourrin du village, costaud, cheveux courts foncés, débardeur marron
         skinTone: 0xC8A078,
         hairColor: 0x4A3020,
         hairStyle: 'short',
@@ -50,17 +27,6 @@ const CHAR_VISUALS = {
         shirtStyle: 'tank',
         eyeColor: 0x4A3A2A,
         expression: 'fierce',
-        accessories: [],
-    },
-    reyes: {
-        // Reyes - Costaud jovial, peau foncée, polo rayé blanc/jaune/rouge
-        skinTone: 0x8B6B4A,
-        hairColor: 0x2A2018,
-        hairStyle: 'short',
-        shirtColor: 0xF0E8D8,
-        shirtStyle: 'polo',
-        eyeColor: 0x3A2A1A,
-        expression: 'smile',
         accessories: [],
     }
 };
@@ -371,20 +337,9 @@ export function generatePortrait(scene, textureKey, archetype) {
  * @param {Phaser.Scene} scene
  */
 export function generateAllPortraits(scene) {
-    // Rookie: use loaded static sprite as portrait
-    if (scene.textures.exists('rookie_static')) {
-        const src = scene.textures.get('rookie_static').getSourceImage();
-        const canvas = document.createElement('canvas');
-        canvas.width = 128; canvas.height = 128;
-        const ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
-        scene.textures.addCanvas('portrait_rookie', canvas);
-    }
-
-    // V2 characters: extract south-facing frame (0,0) from composed spritesheet as portrait
+    // V2 characters (including rookie): extract south-facing frame (0,0) from composed spritesheet as portrait
     const v2Chars = [
-        'la_choupe', 'ley',
+        'rookie', 'la_choupe', 'ley',
         'foyot', 'suchaud', 'fazzino', 'rocher', 'robineau',
         'mamie_josette', 'sofia', 'papi_rene', 'rizzi'
     ];

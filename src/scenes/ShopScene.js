@@ -90,8 +90,8 @@ export default class ShopScene extends Phaser.Scene {
         // Coin icon (v2 asset or fallback)
         let coinGfx, coinLetter;
         if (this.textures.exists('v2_icon_galet')) {
-            coinGfx = this.add.image(GAME_WIDTH - 110, 28, 'v2_icon_galet')
-                .setScale(0.25).setOrigin(0.5);
+            coinGfx = this.add.sprite(GAME_WIDTH - 110, 28, 'v2_icon_galet', 0)
+                .setScale(0.8).setOrigin(0.5);
             coinLetter = this.add.text(0, 0, '').setAlpha(0); // placeholder
         } else {
             coinGfx = this.add.graphics();
@@ -380,8 +380,8 @@ export default class ShopScene extends Phaser.Scene {
         const topY = GRID_START_Y - 5;
 
         // Sprite + name
-        if (this.textures.exists('rookie_static')) {
-            const spr = this.add.image(leftX + 55, topY + 50, 'rookie_static').setScale(0.45).setOrigin(0.5);
+        if (this.textures.exists('rookie_animated')) {
+            const spr = this.add.sprite(leftX + 55, topY + 50, 'rookie_animated', 0).setScale(0.45).setOrigin(0.5);
             objects.push(spr);
         }
         objects.push(UIFactory.addText(this, leftX + 55, topY + 95, 'LE ROOKIE', '14px', '#FFD700', { originX: 0.5 }));

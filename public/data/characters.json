@@ -49,7 +49,7 @@
         "post_match_lose": ["GG. J'ai encore a apprendre.", "La prochaine sera differente.", "Pas grave, je progresse."]
       },
       "ability": null,
-      "sprite": "rookie_static",
+      "sprite": "rookie_animated",
       "portrait": "portrait_rookie",
       "palette": { "primary": "#5B9BD5", "secondary": "#F5E6D0", "accent": "#FFD700" },
       "unlocked": true
@@ -92,7 +92,7 @@
         "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"]
       },
       "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
-      "sprite": "char_la_choupe",
+      "sprite": "la_choupe_animated",
       "portrait": "portrait_la_choupe",
       "palette": { "primary": "#8B4513", "secondary": "#C44B3F", "accent": "#FFD700" },
       "unlocked": false
@@ -135,7 +135,7 @@
         "post_match_lose": ["Bien joue. T'as gere.", "Faudra que j'ajuste mon tir.", "La prochaine, tu verras."]
       },
       "ability": { "name": "Carreau Instinct", "charges": 1, "description": "Tir: ejection 50% plus puissante" },
-      "sprite": "char_ley",
+      "sprite": "ley_animated",
       "portrait": "portrait_ley",
       "palette": { "primary": "#4A6FA5", "secondary": "#3A2E28", "accent": "#D4A574" },
       "unlocked": false
@@ -173,7 +173,7 @@
         "post_match_lose": ["Bien joue. Vraiment.", "Le show reprendra.", "T'as du merite."]
       },
       "ability": { "name": "Le Show", "charges": 2, "description": "Intimide: +15% wobble adverse" },
-      "sprite": "char_foyot",
+      "sprite": "foyot_animated",
       "portrait": "portrait_foyot",
       "palette": { "primary": "#F5F5F0", "secondary": "#D4A574", "accent": "#FFD700" },
       "unlocked": false
@@ -211,7 +211,7 @@
         "post_match_lose": ["T'es fort. Respect.", "Bon match.", "Je reviendrai."]
       },
       "ability": { "name": "Tir Chirurgical", "charges": 2, "description": "Tir parfait: dispersion quasi-nulle" },
-      "sprite": "char_suchaud",
+      "sprite": "suchaud_animated",
       "portrait": "portrait_suchaud",
       "palette": { "primary": "#8B1A1A", "secondary": "#F5E6D0", "accent": "#C0C0C0" },
       "unlocked": false
@@ -249,7 +249,7 @@
         "post_match_lose": ["Tu as trouve la faille. Bravo.", "Je corrigerai.", "Bien joue."]
       },
       "ability": { "name": "Calcul Mental", "charges": 2, "description": "Affiche la distance exacte au cochonnet" },
-      "sprite": "char_fazzino",
+      "sprite": "fazzino_animated",
       "portrait": "portrait_fazzino",
       "palette": { "primary": "#2E5E2E", "secondary": "#D4A574", "accent": "#FFD700" },
       "unlocked": false
@@ -287,7 +287,7 @@
         "post_match_lose": ["T'es costaud.", "Bien joue.", "On se reverra."]
       },
       "ability": { "name": "Prodige", "charges": 2, "description": "Boost: +1 a toutes les stats pendant 1 tour" },
-      "sprite": "char_rocher",
+      "sprite": "rocher_animated",
       "portrait": "portrait_rocher",
       "palette": { "primary": "#1A1A1A", "secondary": "#FFD700", "accent": "#C0C0C0" },
       "unlocked": false
@@ -325,7 +325,7 @@
         "post_match_lose": ["Respect.", "Bien joue.", "Je reviendrai."]
       },
       "ability": { "name": "Tir Instinctif", "charges": 2, "description": "Tir auto-ajuste: -50% dispersion" },
-      "sprite": "char_robineau",
+      "sprite": "robineau_animated",
       "portrait": "portrait_robineau",
       "palette": { "primary": "#808080", "secondary": "#2A2A5A", "accent": "#F5F5F5" },
       "unlocked": false
@@ -363,7 +363,7 @@
         "post_match_lose": ["Bien joue. Viens gouter.", "T'es fort, mon petit.", "A la prochaine !"]
       },
       "ability": { "name": "Tricot Zen", "charges": 3, "description": "Calme absolu: aucun wobble pendant 1 tour" },
-      "sprite": "char_mamie_josette",
+      "sprite": "mamie_josette_animated",
       "portrait": "portrait_mamie_josette",
       "palette": { "primary": "#9B7BB8", "secondary": "#F5E6D0", "accent": "#FFB6C1" },
       "unlocked": false
@@ -401,7 +401,7 @@
         "post_match_lose": ["Tu m'as surprise. Respect.", "Belle lecture de jeu.", "La revanche sera calculee."]
       },
       "ability": { "name": "Strategie", "charges": 2, "description": "Voit la trajectoire complete 3s" },
-      "sprite": "char_sofia",
+      "sprite": "sofia_animated",
       "portrait": "portrait_sofia",
       "palette": { "primary": "#F5F5F5", "secondary": "#2A3A5A", "accent": "#D4A574" },
       "unlocked": false
@@ -439,7 +439,7 @@
         "post_match_lose": ["T'es bon, fiston.", "J'ai perdu avec le sourire.", "A la prochaine, si Dieu veut."]
       },
       "ability": { "name": "Sagesse", "charges": 3, "description": "Annule totalement le tremblement de pression" },
-      "sprite": "char_papi_rene",
+      "sprite": "papi_rene_animated",
       "portrait": "portrait_papi_rene",
       "palette": { "primary": "#D4A574", "secondary": "#6B5B4B", "accent": "#8B7355" },
       "unlocked": false
@@ -477,7 +477,7 @@
         "post_match_lose": ["Bel match.", "Bravo.", "Arrivederci."]
       },
       "ability": { "name": "Eleganza", "charges": 2, "description": "Effet x2: courbe amplifiee" },
-      "sprite": "char_rizzi",
+      "sprite": "rizzi_animated",
       "portrait": "portrait_rizzi",
       "palette": { "primary": "#1E90FF", "secondary": "#F5F5F5", "accent": "#FF4500" },
       "unlocked": false

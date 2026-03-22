@@ -163,8 +163,8 @@ export default class CharSelectScene extends Phaser.Scene {
                 }
                 // Padlock icon over the slot (v2 asset)
                 if (this.textures.exists('v2_padlock')) {
-                    this.add.image(cx, cy + 8, 'v2_padlock')
-                        .setScale(0.5).setOrigin(0.5).setAlpha(0.7);
+                    this.add.sprite(cx, cy + 8, 'v2_padlock', 0)
+                        .setScale(1.5).setOrigin(0.5).setAlpha(0.7);
                 } else {
                     this.add.text(cx, cy + 8, '\uD83D\uDD12', {
                         fontSize: '18px'
@@ -235,10 +235,10 @@ export default class CharSelectScene extends Phaser.Scene {
         const pw = 200;
         const ph = 340;
 
-        // Panel background (v2 asset or fallback)
+        // Panel background (v2 asset with NineSlice or fallback)
         if (this.textures.exists('v2_panel_ornate')) {
-            this._previewBg = this.add.image(px, py + ph / 2, 'v2_panel_ornate')
-                .setDisplaySize(pw, ph).setAlpha(0.92);
+            this._previewBg = this.add.nineslice(px, py + ph / 2, 'v2_panel_ornate', 0, pw, ph, 16, 16, 16, 16)
+                .setOrigin(0.5).setAlpha(0.92);
         } else {
             this._previewBg = this.add.graphics();
             this._previewBg.fillStyle(0x3A2E28, 0.9);
@@ -277,7 +277,7 @@ export default class CharSelectScene extends Phaser.Scene {
         // Decorative bar above stats section
         if (this.textures.exists('v2_bar_decorative')) {
             this.add.image(px, barStartY - 16, 'v2_bar_decorative')
-                .setDisplaySize(180, 10).setAlpha(0.5);
+                .setDisplaySize(180, 10).setAlpha(0.65);
         }
 
         for (let i = 0; i < statNames.length; i++) {

@@ -124,7 +124,7 @@ export default class ArcadeScene extends Phaser.Scene {
         // Dialog parchment background
         if (this.textures.exists('v2_dialog_bg')) {
             this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
-                .setDisplaySize(500, 320).setAlpha(0.15);
+                .setDisplaySize(500, 320).setAlpha(0.30);
         }
 
         const lineObjects = [];
@@ -255,8 +255,8 @@ export default class ArcadeScene extends Phaser.Scene {
         if (nextOpponent) {
             // Panel bg (v2 asset or fallback)
             if (this.textures.exists('v2_panel_bolted')) {
-                this.add.image(GAME_WIDTH / 2, panelY + 90, 'v2_panel_bolted')
-                    .setDisplaySize(560, 180).setAlpha(0.92);
+                this.add.nineslice(GAME_WIDTH / 2, panelY + 90, 'v2_panel_bolted', 0, 560, 180, 16, 16, 16, 16)
+                    .setOrigin(0.5).setAlpha(0.92);
             } else {
                 const panel = this.add.graphics();
                 panel.fillStyle(0x3A2E28, 0.85);
@@ -353,9 +353,9 @@ export default class ArcadeScene extends Phaser.Scene {
     _processRoundUnlocks(round) {
         switch (round) {
             case 1: unlockCharacter('la_choupe'); break;
-            case 2: unlockCharacter('marcel'); break;
-            case 3: unlockCharacter('magicien'); unlockTerrain('docks'); break;
-            case 4: unlockCharacter('reyes'); break;
+            case 2: unlockCharacter('mamie_josette'); break;
+            case 3: unlockCharacter('fazzino'); unlockTerrain('docks'); break;
+            case 4: unlockCharacter('suchaud'); break;
             case 5: unlockCharacter('ley'); unlockTerrain('plage'); break;
         }
     }

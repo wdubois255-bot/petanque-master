@@ -488,7 +488,7 @@ export default class TerrainRenderer {
         for (let i = 0; i < 3; i++) {
             d.fillStyle(containerColors[i], 0.6);
             d.fillRect(tx - 100, cy, 60, 28);
-            d.fillStyle(0x000000, 0.2);
+            d.fillStyle(0x1A1510, 0.25);
             d.fillRect(tx - 100, cy + 26, 60, 2);
             // Container ridges
             d.fillStyle(containerColors[i], 0.4);
@@ -541,9 +541,9 @@ export default class TerrainRenderer {
     // ============================================================
     _drawTerrainShadow() {
         const g = this.scene.add.graphics().setDepth(1);
-        g.fillStyle(0x000000, 0.20);
+        g.fillStyle(0x1A1510, 0.25);
         g.fillRect(this.tx + 5, this.ty + 5, TERRAIN_WIDTH, TERRAIN_HEIGHT);
-        g.fillStyle(0x000000, 0.08);
+        g.fillStyle(0x1A1510, 0.10);
         g.fillRect(this.tx + 3, this.ty + 3, TERRAIN_WIDTH + 2, TERRAIN_HEIGHT + 2);
     }
 
@@ -583,7 +583,7 @@ export default class TerrainRenderer {
                     this.tx + TERRAIN_WIDTH / 2,
                     this.ty + TERRAIN_HEIGHT / 2,
                     'v2_terrain_terre'
-                ).setDisplaySize(TERRAIN_WIDTH, TERRAIN_HEIGHT).setDepth(2).setAlpha(0.12);
+                ).setDisplaySize(TERRAIN_WIDTH, TERRAIN_HEIGHT).setDepth(2).setAlpha(0.25);
             }
 
             // Transparent canvas overlay for zones, slope, vignette
@@ -1540,7 +1540,7 @@ export default class TerrainRenderer {
         const text = this.scene.add.text(px, py - 20, 'HORS JEU !', {
             fontFamily: 'monospace', fontSize: '16px', color: '#FF4444',
             stroke: '#1A1510', strokeThickness: 3,
-            shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 2, fill: true }
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 2, fill: true }
         }).setOrigin(0.5).setDepth(50);
 
         // X mark

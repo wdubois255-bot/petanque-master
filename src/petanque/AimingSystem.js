@@ -1232,7 +1232,7 @@ export default class AimingSystem {
         const barY = originY + 46;
         if (this.scene.textures.exists('v2_bar_power')) {
             this._powerBarImg = this.scene.add.image(barX, barY, 'v2_bar_power')
-                .setDisplaySize(barW + 8, barH + 6).setOrigin(0.5).setDepth(50).setAlpha(0.85);
+                .setDisplaySize(140, 40).setOrigin(0.5).setDepth(50).setAlpha(0.85);
             // Fill overlay (colored rectangle clipped to bar width)
             this._powerBarFill = this.scene.add.graphics().setDepth(50);
             const fillColor = this.retroActive ? 0x9B7BB8

@@ -329,7 +329,7 @@ export default class UIFactory {
 
         // Dark backdrop
         const backdrop = scene.add.graphics().setDepth(depth);
-        backdrop.fillStyle(0x000000, 0.6);
+        backdrop.fillStyle(0x1A1510, 0.65);
         backdrop.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         backdrop.setInteractive(
             new Phaser.Geom.Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT),

@@ -150,7 +150,7 @@ export default class EngineRenderer {
     drawImpactTrace(x, y, radius, bounds) {
         if (!this.scene.impactLayer) return;
         const crater = this.scene.add.graphics();
-        crater.fillStyle(0x000000, 0.15);
+        crater.fillStyle(0x3A2E28, 0.18);
         crater.fillCircle(0, 0, radius + 2);
         this.scene.impactLayer.draw(crater, x - bounds.x, y - bounds.y);
         crater.destroy();

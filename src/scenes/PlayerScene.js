@@ -58,8 +58,8 @@ export default class PlayerScene extends Phaser.Scene {
         const topY = 58;
 
         // Sprite
-        if (this.textures.exists('rookie_static')) {
-            this.add.image(leftX + 65, topY + 55, 'rookie_static').setScale(0.5).setOrigin(0.5);
+        if (this.textures.exists('rookie_animated')) {
+            this.add.sprite(leftX + 65, topY + 55, 'rookie_animated', 0).setScale(0.5).setOrigin(0.5);
         }
 
         // Name + archetype
@@ -237,7 +237,7 @@ export default class PlayerScene extends Phaser.Scene {
         // Unlocked characters (bottom-right)
         const charsY = topY + 24 + Math.ceil(allCochIds.length / cochCols) * (itemSize + 22) + 20;
         UIFactory.addText(this, rightX, charsY, 'Personnages debloques:', '9px', CSS.OR, { originX: 0 });
-        const charNames = { rookie: 'Le Rookie', la_choupe: 'La Choupe', marcel: 'Marcel', magicien: 'Le Magicien', reyes: 'Reyes', ley: 'Ley' };
+        const charNames = { rookie: 'Le Rookie', la_choupe: 'La Choupe', ley: 'Ley', foyot: 'Foyot', suchaud: 'Suchaud', fazzino: 'Fazzino', rocher: 'Rocher', robineau: 'Robineau', mamie_josette: 'Mamie Josette', sofia: 'Sofia', papi_rene: 'Papi Rene', rizzi: 'Rizzi' };
         (save.unlockedCharacters || []).forEach((id, i) => {
             UIFactory.addText(this, rightX + 8, charsY + 14 + i * 12, `\u2713 ${charNames[id] || id}`, '8px', CSS.CREME, { originX: 0 });
         });

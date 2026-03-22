@@ -369,13 +369,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 description: 'Tir: ejection 50% plus puissante'
                 // Effect: applied in PetanqueEngine when a ball-ball collision happens
             },
-            'magicien': {
-                id: 'lecture_terrain',
-                name: 'Lecture du Terrain',
-                charges: 2,
-                description: 'Affiche la trajectoire complete pendant 3s'
-                // Effect: shows full predicted trajectory line
-            },
             'la_choupe': {
                 id: 'coup_de_canon',
                 name: 'Coup de Canon',
@@ -383,19 +376,23 @@ export default class PetanqueScene extends Phaser.Scene {
                 description: 'Puissance +30%, precision -20%'
                 // Effect: modifies power and wobble for this throw
             },
-            'marcel': {
+            'foyot': {
+                id: 'lecture_terrain',
+                name: 'Lecture du Terrain',
+                charges: 2,
+                description: 'Affiche la trajectoire complete pendant 3s'
+            },
+            'mamie_josette': {
                 id: 'vieux_renard',
                 name: 'Vieux Renard',
                 charges: 3,
                 description: 'Annule le tremblement de pression'
-                // Effect: zeroes pressure tremble
             },
-            'reyes': {
+            'rocher': {
                 id: 'le_mur',
                 name: 'Le Mur',
                 charges: 2,
                 description: 'Boule 2x plus large pour bloquer'
-                // Effect: doubles collision radius of thrown ball
             }
         };
 
@@ -440,18 +437,12 @@ export default class PetanqueScene extends Phaser.Scene {
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===
 
     _getCharSpriteKey(charId) {
-        return CHAR_SPRITE_MAP[charId] || 'marcel_animated';
+        return CHAR_SPRITE_MAP[charId] || 'ley_animated';
     }
 
     _getCharPalette(charId) {
-        const mapping = {
-            'ley': PALETTES.player,
-            'magicien': PALETTES.player,
-            'la_choupe': PALETTES.player,
-            'marcel': PALETTES.npc_marcel,
-            'reyes': PALETTES.player
-        };
-        return mapping[charId] || PALETTES.player;
+        // All v2 characters use the same player palette for procedural fallback
+        return PALETTES.player;
     }
 
     _ensureSprites() {
@@ -483,7 +474,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.textures.exists('petanque_opponent')) {
             this.textures.remove('petanque_opponent');
         }
-        const opponentId = this.opponentId || 'marcel';
+        const opponentId = this.opponentId || 'ley';
         const opponentKey = this._getCharSpriteKey(opponentId);
         const opponentIsStatic = CHAR_STATIC_SPRITES.includes(opponentId);
         if (this.textures.exists(opponentKey)) {

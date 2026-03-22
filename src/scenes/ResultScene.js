@@ -45,12 +45,12 @@ export default class ResultScene extends Phaser.Scene {
 
         // Trophy icon next to victory title
         if (this.won && this.textures.exists('v2_trophy')) {
-            const trophy = this.add.image(GAME_WIDTH / 2 - 140, 40, 'v2_trophy')
-                .setScale(0.6).setOrigin(0.5).setAlpha(0);
-            this.tweens.add({ targets: trophy, alpha: 1, scale: 0.7, duration: 400, ease: 'Back.easeOut', delay: 400 });
-            const trophy2 = this.add.image(GAME_WIDTH / 2 + 140, 40, 'v2_trophy')
-                .setScale(0.6).setOrigin(0.5).setAlpha(0).setFlipX(true);
-            this.tweens.add({ targets: trophy2, alpha: 1, scale: 0.7, duration: 400, ease: 'Back.easeOut', delay: 400 });
+            const trophy = this.add.sprite(GAME_WIDTH / 2 - 140, 40, 'v2_trophy', 0)
+                .setScale(1.0).setOrigin(0.5).setAlpha(0);
+            this.tweens.add({ targets: trophy, alpha: 1, scale: 1.1, duration: 400, ease: 'Back.easeOut', delay: 400 });
+            const trophy2 = this.add.sprite(GAME_WIDTH / 2 + 140, 40, 'v2_trophy', 0)
+                .setScale(1.0).setOrigin(0.5).setAlpha(0).setFlipX(true);
+            this.tweens.add({ targets: trophy2, alpha: 1, scale: 1.1, duration: 400, ease: 'Back.easeOut', delay: 400 });
         }
 
         const title = this.add.text(GAME_WIDTH / 2, 40, titleText, {
@@ -127,8 +127,8 @@ export default class ResultScene extends Phaser.Scene {
         const panelH = 130;
 
         if (this.textures.exists('v2_panel_elegant')) {
-            this.add.image(panelX, panelY + panelH / 2, 'v2_panel_elegant')
-                .setDisplaySize(panelW, panelH).setAlpha(0.9);
+            this.add.nineslice(panelX, panelY + panelH / 2, 'v2_panel_elegant', 0, panelW, panelH, 16, 16, 16, 16)
+                .setOrigin(0.5).setAlpha(0.9);
         } else {
             UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
                 fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
@@ -178,8 +178,8 @@ export default class ResultScene extends Phaser.Scene {
             addGalets(galetsToGive);
             // Galet icon
             if (this.textures.exists('v2_icon_galet')) {
-                const galetIcon = this.add.image(GAME_WIDTH / 2 - 70, panelY + panelH + 28, 'v2_icon_galet')
-                    .setScale(0.35).setOrigin(0.5).setAlpha(0);
+                const galetIcon = this.add.sprite(GAME_WIDTH / 2 - 70, panelY + panelH + 28, 'v2_icon_galet', 0)
+                    .setScale(0.8).setOrigin(0.5).setAlpha(0);
                 this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 800 });
             }
             const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${galetsToGive} Galets`, {
@@ -338,11 +338,11 @@ export default class ResultScene extends Phaser.Scene {
 
             // Use v2_icon_star if available
             if (useV2Star) {
-                const starImg = this.add.image(sx, cy, 'v2_icon_star')
+                const starImg = this.add.sprite(sx, cy, 'v2_icon_star', 0)
                     .setScale(0).setOrigin(0.5).setAlpha(filled ? 1 : 0.3);
                 if (!filled) starImg.setTint(0x5A4A38);
                 this.tweens.add({
-                    targets: starImg, scale: filled ? 0.4 : 0.3, duration: 300,
+                    targets: starImg, scale: filled ? 1.2 : 0.8, duration: 300,
                     ease: 'Back.easeOut', delay: 600 + i * 200
                 });
                 continue;

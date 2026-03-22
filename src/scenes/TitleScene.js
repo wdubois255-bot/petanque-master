@@ -273,14 +273,14 @@ export default class TitleScene extends Phaser.Scene {
             this._charSprites.push(choupe);
         }
 
-        // Background character - Marcel watching (behind menu area)
-        if (this.textures.exists('marcel_animated')) {
-            const marcel = this.add.sprite(416, 380, 'marcel_animated', 0).setScale(0.45).setAlpha(0).setDepth(0);
+        // Background character - Foyot watching (behind menu area)
+        if (this.textures.exists('foyot_animated')) {
+            const foyot = this.add.sprite(416, 380, 'foyot_animated', 0).setScale(0.45).setAlpha(0).setDepth(0);
             this.tweens.add({
-                targets: marcel, y: 378, duration: 2200,
+                targets: foyot, y: 378, duration: 2200,
                 yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600
             });
-            this._charSprites.push(marcel);
+            this._charSprites.push(foyot);
         }
     }
 

@@ -68,7 +68,7 @@ export default class LevelUpScene extends Phaser.Scene {
 
     _showAbilityBanner(onComplete) {
         const overlay = this.add.graphics().setDepth(50);
-        overlay.fillStyle(0x000000, 0.7);
+        overlay.fillStyle(0x1A1510, 0.75);
         overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
         // Golden flash
@@ -78,8 +78,8 @@ export default class LevelUpScene extends Phaser.Scene {
 
         // Banner background (v2 asset or fallback)
         if (this.textures.exists('v2_panel_ornate')) {
-            this.add.image(GAME_WIDTH / 2, bannerY, 'v2_panel_ornate')
-                .setDisplaySize(500, 80).setAlpha(0.95).setDepth(51);
+            this.add.nineslice(GAME_WIDTH / 2, bannerY, 'v2_panel_ornate', 0, 500, 80, 16, 16, 16, 16)
+                .setOrigin(0.5).setAlpha(0.95).setDepth(51);
         } else {
             const banner = this.add.graphics().setDepth(51);
             banner.fillStyle(COLORS.OMBRE, 0.95);

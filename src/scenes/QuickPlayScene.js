@@ -136,8 +136,8 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Right panel background (v2 asset or fallback)
         const panelH = GAME_HEIGHT - PANEL_TOP - 50;
         if (this.textures.exists('v2_panel_simple')) {
-            this.add.image(PANEL_X, PANEL_TOP - 6 + panelH / 2, 'v2_panel_simple')
-                .setDisplaySize(PANEL_W + 12, panelH).setAlpha(0.92);
+            this.add.nineslice(PANEL_X, PANEL_TOP - 6 + panelH / 2, 'v2_panel_simple', 0, PANEL_W + 12, panelH, 16, 16, 16, 16)
+                .setOrigin(0.5).setAlpha(0.92);
         } else {
             const panelBg = this.add.graphics();
             panelBg.fillStyle(0x2A2018, 0.85);
@@ -271,12 +271,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
         this._jouerText.setColor(jouerSelected ? '#FFFFFF' : '#FFD700');
 
-        // Swap v2 button image: normal vs pressed
+        // Tint v2 button image for pressed state (avoids dimension mismatch with v2_button_pressed)
         if (this._jouerBtnImg) {
-            const pressedKey = jouerSelected && this.textures.exists('v2_button_pressed') ? 'v2_button_pressed' : 'v2_button';
-            if (this.textures.exists(pressedKey)) {
-                this._jouerBtnImg.setTexture(pressedKey);
-            }
+            this._jouerBtnImg.setTint(jouerSelected ? 0xFFD700 : 0xFFFFFF);
+            this._jouerBtnImg.setAlpha(jouerSelected ? 1.0 : 0.8);
         }
 
         if (this._selectedRow < OPTIONS.length) {
