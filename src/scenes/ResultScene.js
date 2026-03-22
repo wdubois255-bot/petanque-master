@@ -86,8 +86,8 @@ export default class ResultScene extends Phaser.Scene {
         if (winner) {
             // Portrait frame behind character
             if (this.textures.exists('v2_frame_portrait')) {
-                this.add.image(GAME_WIDTH / 2 - 200, 200, 'v2_frame_portrait')
-                    .setScale(0.8).setOrigin(0.5).setAlpha(0.7);
+                this.add.sprite(GAME_WIDTH / 2 - 200, 200, 'v2_frame_portrait', 0)
+                    .setScale(2.0).setOrigin(0.5).setAlpha(0.7);
             }
             const winKey = this._getSpriteKey(winner);
             if (this.textures.exists(winKey)) {

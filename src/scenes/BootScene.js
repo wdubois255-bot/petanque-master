@@ -113,12 +113,12 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('v2_bar_decorative', `${BASE}assets/sprites/v2_new/ui/bar_decorative.png`);
         this.load.spritesheet('v2_icon_galet', `${BASE}assets/sprites/v2_new/ui/icon_galet.png`, { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('v2_icon_star', `${BASE}assets/sprites/v2_new/ui/icon_star.png`, { frameWidth: 32, frameHeight: 32 });
-        this.load.image('v2_frame_portrait', `${BASE}assets/sprites/v2_new/ui/frame_portrait.png`);
+        this.load.spritesheet('v2_frame_portrait', `${BASE}assets/sprites/v2_new/ui/frame_portrait.png`, { frameWidth: 64, frameHeight: 64 });
 
         // V2 UI assets — additional (renamed from PixelLab raw filenames)
         this.load.image('v2_dialog_bg', `${BASE}assets/sprites/v2_new/ui/pixellab--pixelart-parchment-scroll-dia-1774131345495.png`);
         this.load.spritesheet('v2_trophy', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-golden-trophy-cup--p-1774128480289.png`, { frameWidth: 64, frameHeight: 64 });
-        this.load.spritesheet('v2_padlock', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-padlock-icon--old-ru-1774127936948.png`, { frameWidth: 42, frameHeight: 32 });
+        this.load.spritesheet('v2_padlock', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-padlock-icon--old-ru-1774127936948.png`, { frameWidth: 32, frameHeight: 32 });
         this.load.image('v2_button_pressed', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-wooden-button-presse-1774131193265.png`);
         this.load.spritesheet('v2_stat_icons', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-game-stat-icon-set---1774128154376.png`, {
             frameWidth: 64, frameHeight: 64

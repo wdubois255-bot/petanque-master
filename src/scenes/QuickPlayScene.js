@@ -193,14 +193,16 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // JOUER button
         const jouerY = startY + OPTIONS.length * rowH + 10;
-        // v2 button image behind the text
+        // v2 button image behind the text (preserve aspect ratio ~2.5:1)
         if (this.textures.exists('v2_button')) {
             this._jouerBtnImg = this.add.image(LEFT_W / 2, jouerY, 'v2_button')
-                .setDisplaySize(200, 40).setAlpha(0.9);
+                .setDisplaySize(240, 56).setAlpha(0.95);
+            this._jouerBg = this.add.graphics(); // empty, kept for compatibility
+        } else {
+            this._jouerBg = this.add.graphics();
+            this._jouerBg.fillStyle(0x3A2E28, 0.8);
+            this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
         }
-        this._jouerBg = this.add.graphics();
-        this._jouerBg.fillStyle(0x3A2E28, 0.8);
-        this._jouerBg.fillRoundedRect(LEFT_W / 2 - 100, jouerY - 18, 200, 40, 8);
 
         this._jouerText = this.add.text(LEFT_W / 2, jouerY, 'JOUER !', {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',

@@ -547,19 +547,30 @@ export default class TitleScene extends Phaser.Scene {
 
             this._menuPositions.push({ x: pillX, y: pillY, w: pillW, h: pillH, hero: item.hero });
 
-            // Background pill
-            const pill = this.add.graphics().setDepth(5);
-            if (item.hero) {
-                // Hero: gradient-like double fill
-                pill.fillStyle(0x5A4020, 0.9);
-                pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
-                pill.lineStyle(2, 0xFFD700, 0.7);
-                pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+            // Background: v2 assets or fallback graphics
+            let pill;
+            if (item.hero && this.textures.exists('v2_button')) {
+                // Hero JOUER: use v2_button wood+laurels banner
+                pill = this.add.image(pillX, pillY, 'v2_button')
+                    .setDisplaySize(pillW + 40, pillH + 12).setDepth(5).setAlpha(0.95);
+            } else if (!item.hero && this.textures.exists('v2_panel_simple')) {
+                // Sub-items: NineSlice panel
+                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW, pillH, 12, 12, 12, 12)
+                    .setOrigin(0.5).setDepth(5).setAlpha(0.9);
             } else {
-                pill.fillStyle(0x3A2E28, 0.8);
-                pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
-                pill.lineStyle(1, 0xD4A574, 0.3);
-                pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                // Fallback: graphics
+                pill = this.add.graphics().setDepth(5);
+                if (item.hero) {
+                    pill.fillStyle(0x5A4020, 0.9);
+                    pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+                    pill.lineStyle(2, 0xFFD700, 0.7);
+                    pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 10);
+                } else {
+                    pill.fillStyle(0x3A2E28, 0.8);
+                    pill.fillRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                    pill.lineStyle(1, 0xD4A574, 0.3);
+                    pill.strokeRoundedRect(pillX - pillW / 2, pillY - pillH / 2, pillW, pillH, 6);
+                }
             }
             this._menuContainer.add(pill);
             this._menuItems.push(pill);
@@ -771,11 +782,16 @@ export default class TitleScene extends Phaser.Scene {
             if (i === this._selectedIndex) {
                 txt.setColor('#FFD700').setScale(1.05);
                 if (pill?.clear) {
+                    // Graphics fallback
                     pill.clear();
                     pill.fillStyle(pos.hero ? 0x6A5020 : 0x5A4030, 0.9);
                     pill.fillRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
                     pill.lineStyle(2, 0xFFD700, 0.7);
                     pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, pos.hero ? 10 : 6);
+                } else if (pill?.setTint) {
+                    // v2 image/NineSlice: highlight with tint
+                    pill.setTint(0xFFE8A0);
+                    pill.setAlpha(1.0);
                 }
                 // Arrow cursor
                 const cursorX = pos.x - pos.w / 2 - 16;
@@ -787,6 +803,7 @@ export default class TitleScene extends Phaser.Scene {
             } else {
                 txt.setColor(pos.hero ? '#FFD700' : '#F5E6D0').setScale(1.0);
                 if (pill?.clear) {
+                    // Graphics fallback
                     pill.clear();
                     if (pos.hero) {
                         pill.fillStyle(0x5A4020, 0.9);
@@ -799,6 +816,10 @@ export default class TitleScene extends Phaser.Scene {
                         pill.lineStyle(1, 0xD4A574, 0.3);
                         pill.strokeRoundedRect(pos.x - pos.w / 2, pos.y - pos.h / 2, pos.w, pos.h, 6);
                     }
+                } else if (pill?.clearTint) {
+                    // v2 image/NineSlice: reset tint
+                    pill.clearTint();
+                    pill.setAlpha(pos.hero ? 0.95 : 0.9);
                 }
             }
         }
