@@ -115,49 +115,96 @@ export default class ArcadeScene extends Phaser.Scene {
         this._showProgressScreen();
     }
 
-    // === NARRATIVE SCREENS (intro/ending text crawl) ===
+    // === NARRATIVE SCREENS (parchment + typewriter effect) ===
     _showNarrative(lines, onComplete) {
         const bg = this.add.graphics();
         bg.fillStyle(0x1A1510, 1);
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Dialog parchment background
+        // Parchment background — nearly full screen
         if (this.textures.exists('v2_dialog_bg')) {
-            this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
-                .setDisplaySize(700, 400).setAlpha(0.45);
+            const parch = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
+                .setDisplaySize(GAME_WIDTH - 40, GAME_HEIGHT - 60).setAlpha(0);
+            this.tweens.add({ targets: parch, alpha: 0.55, duration: 800, ease: 'Sine.easeOut' });
         }
 
         const lineObjects = [];
-        const startY = GAME_HEIGHT / 2 - (lines.length * 24) / 2;
+        const lineSpacing = 28;
+        const startY = GAME_HEIGHT / 2 - (lines.length * lineSpacing) / 2;
+
+        // Typewriter: reveal each line character by character
+        let charIndex = 0;
+        const typeSpeed = 30; // ms per character
+        const lineDelay = 200; // pause between lines
 
         for (let i = 0; i < lines.length; i++) {
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * 24, lines[i], {
-                fontFamily: 'monospace', fontSize: '16px', color: '#D4A574',
-                shadow: SHADOW, align: 'center'
-            }).setOrigin(0.5).setAlpha(0);
-
+            const txt = this.add.text(GAME_WIDTH / 2, startY + i * lineSpacing, '', {
+                fontFamily: 'Georgia, serif', fontSize: '15px', color: '#C8A06A',
+                shadow: { offsetX: 1, offsetY: 1, color: '#3A2E18', blur: 1, fill: true },
+                align: 'center'
+            }).setOrigin(0.5).setAlpha(1);
             lineObjects.push(txt);
-
-            this.tweens.add({
-                targets: txt, alpha: 1, duration: 600,
-                delay: 300 + i * 400, ease: 'Sine.easeIn'
-            });
         }
 
-        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 30, 'Espace pour continuer', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
+        // Typewriter timer — reveal characters one by one across all lines
+        let currentLine = 0;
+        let currentChar = 0;
+        const allChars = lines.map(l => l.length);
+
+        const typeTimer = this.time.addEvent({
+            delay: typeSpeed,
+            repeat: -1,
+            callback: () => {
+                if (currentLine >= lines.length) {
+                    typeTimer.remove();
+                    return;
+                }
+                const line = lines[currentLine];
+                if (currentChar <= line.length) {
+                    lineObjects[currentLine].setText(line.substring(0, currentChar));
+                    currentChar++;
+                } else {
+                    // Line complete, move to next
+                    currentLine++;
+                    currentChar = 0;
+                    // Add small pause between lines
+                    typeTimer.delay = lineDelay;
+                    this.time.delayedCall(lineDelay, () => {
+                        if (typeTimer.repeatCount > 0) typeTimer.delay = typeSpeed;
+                    });
+                }
+            }
+        });
+
+        // Skip hint (appears after 2s)
+        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 24, '~ Espace ~', {
+            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#8A7A5A',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setAlpha(0);
 
-        const totalDelay = 300 + lines.length * 400 + 500;
         this.tweens.add({
-            targets: skipHint, alpha: 1, duration: 400, delay: totalDelay
+            targets: skipHint, alpha: 0.7, duration: 600, delay: 2500,
+            yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
 
         let canSkip = false;
-        this.time.delayedCall(1000, () => { canSkip = true; });
+        this.time.delayedCall(1200, () => { canSkip = true; });
 
         const proceed = () => {
             if (!canSkip) return;
+
+            // If typewriter still running, finish it instantly
+            if (currentLine < lines.length) {
+                typeTimer.remove();
+                for (let i = 0; i < lines.length; i++) {
+                    lineObjects[i].setText(lines[i]);
+                }
+                currentLine = lines.length;
+                canSkip = false;
+                this.time.delayedCall(500, () => { canSkip = true; });
+                return;
+            }
+
             canSkip = false;
             this.cameras.main.fadeOut(400);
             this.cameras.main.once('camerafadeoutcomplete', () => {

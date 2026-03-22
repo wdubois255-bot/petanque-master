@@ -688,10 +688,16 @@ export default class PetanqueScene extends Phaser.Scene {
             this._activeThrowSprite = throwSprite;
             const nFrames = throwInfo.frames;
 
-            // Timing per frame: idle, wind-up, release, follow-through, (recovery)
+            // Hide the last thrown ball during wind-up frames (reveal at release frame)
+            // This creates the illusion the character is holding the ball
+            const lastBall = this.engine.lastThrownBall;
+            const lastBallSprite = lastBall?._sprite;
+            if (lastBallSprite) lastBallSprite.setAlpha(0);
+
+            // Timing per frame: idle, wind-up, release, follow-through
             const frameDurations = nFrames === 5
-                ? [180, 150, 80, 120, 250]   // 5 frames: idle, wind-up, arm-back, release, follow
-                : [200, 160, 90, 280];         // 4 frames: idle, wind-up, release, follow
+                ? [250, 200, 100, 150, 280]   // 5 frames: idle, wind-up, arm-back, release, follow
+                : [280, 220, 120, 300];         // 4 frames: longer wind-up for anticipation
 
             let currentFrame = 0;
             const advanceFrame = () => {
@@ -715,7 +721,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 const isRecovery = currentFrame === nFrames - 1;
 
                 if (isRelease) {
-                    // Release: explosive stretch + white flash
+                    // Release: explosive stretch + white flash + reveal ball
                     this.tweens.add({
                         targets: throwSprite,
                         scaleX: s * 1.15, scaleY: s * 0.88, y: baseY - 10,
@@ -723,6 +729,13 @@ export default class PetanqueScene extends Phaser.Scene {
                         onStart: () => {
                             throwSprite.setTint(0xFFFFFF);
                             this.time.delayedCall(40, () => throwSprite.clearTint());
+                            // Reveal the ball at release moment
+                            if (lastBallSprite) {
+                                this.tweens.add({
+                                    targets: lastBallSprite, alpha: 1,
+                                    duration: 80, ease: 'Quad.easeOut'
+                                });
+                            }
                         },
                         onComplete: () => { currentFrame++; advanceFrame(); }
                     });

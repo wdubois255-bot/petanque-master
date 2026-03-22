@@ -273,14 +273,14 @@ export default class TitleScene extends Phaser.Scene {
             this._charSprites.push(choupe);
         }
 
-        // Background character - Foyot watching (behind menu area)
-        if (this.textures.exists('foyot_animated')) {
-            const foyot = this.add.sprite(416, 380, 'foyot_animated', 0).setScale(0.45).setAlpha(0).setDepth(0);
+        // Background character - Papi Rene strolling on the terrain (center, small, behind menu)
+        if (this.textures.exists('papi_rene_animated')) {
+            const papi = this.add.sprite(416, 420, 'papi_rene_animated', 0).setScale(0.35).setAlpha(0).setDepth(0);
             this.tweens.add({
-                targets: foyot, y: 378, duration: 2200,
-                yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 600
+                targets: papi, x: 440, duration: 4000,
+                yoyo: true, repeat: -1, ease: 'Sine.easeInOut', delay: 800
             });
-            this._charSprites.push(foyot);
+            this._charSprites.push(papi);
         }
     }
 
@@ -550,14 +550,14 @@ export default class TitleScene extends Phaser.Scene {
             // Background: v2 assets or fallback graphics
             let pill;
             if (item.hero && this.textures.exists('v2_button')) {
-                // Hero JOUER: v2_button (256x256 image, content ~256x100 horizontal banner)
-                // Scale uniformly to fit — button is naturally wider than tall
+                // Hero JOUER: v2_button is 256x256 with horizontal banner content (~256x110)
+                // Use displaySize to crop the transparent padding and show just the banner
                 pill = this.add.image(pillX, pillY, 'v2_button')
-                    .setScale(0.95).setDepth(5).setAlpha(0.95);
+                    .setDisplaySize(280, 110).setDepth(5).setAlpha(0.95);
             } else if (!item.hero && this.textures.exists('v2_panel_simple')) {
-                // Sub-items: NineSlice panel with wood texture
-                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW, pillH + 4, 16, 16, 16, 16)
-                    .setOrigin(0.5).setDepth(5).setAlpha(0.85);
+                // Sub-items: NineSlice panel with wood texture — wider and taller for readability
+                pill = this.add.nineslice(pillX, pillY, 'v2_panel_simple', 0, pillW + 10, pillH + 8, 16, 16, 16, 16)
+                    .setOrigin(0.5).setDepth(5).setAlpha(0.88);
             } else {
                 // Fallback: graphics
                 pill = this.add.graphics().setDepth(5);
