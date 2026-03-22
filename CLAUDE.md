@@ -1,6 +1,6 @@
 # CLAUDE.md - Petanque Master
 
-Tu dois toujours challenger, questionner, essayer d'aller plus loin afin d'aider et d'avancer le projet.
+Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin afin d'aider et d'avancer le projet.
 
 ## Sources de verite (NE JAMAIS DUPLIQUER ces valeurs ailleurs)
 
@@ -38,7 +38,7 @@ Tu dois toujours challenger, questionner, essayer d'aller plus loin afin d'aider
 
 ## Stack
 
-- Phaser 3.90.0 "Tsugumi", JavaScript ES6+, Vite 6.3+
+- Phaser 4.0.0-rc.6, JavaScript ES6+, Vite 6.3+
 - Physique petanque custom (~380 lignes Ball.js, PAS de Matter.js)
 - MCP : PixelLab (sprites/tilesets) + ElevenLabs (audio)
 - Tests : Vitest (unit) + Playwright (E2E)

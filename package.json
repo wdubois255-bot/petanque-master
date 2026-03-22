@@ -25,8 +25,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "phaser": "^3.90.0",
-    "phaser3-rex-plugins": "^1.80.19"
+    "phaser": "^4.0.0-rc.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
