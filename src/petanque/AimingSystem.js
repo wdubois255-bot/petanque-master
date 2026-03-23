@@ -3,7 +3,7 @@ import {
     DEAD_ZONE_PX,
     LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
-    FOCUS_CHARGES_PER_MATCH
+    FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
@@ -154,7 +154,7 @@ export default class AimingSystem {
         this.retroActive = false;
 
         const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 52;
+        const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
 
         // Slim background panel
         const panelW = 520, panelH = 56;
@@ -478,7 +478,7 @@ export default class AimingSystem {
         }
         // Refresh UI
         const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 52 - 28 - 22;
+        const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET - FOCUS_UI_STACK_OFFSET;
         this._clearFocusUI();
         this._showFocusUI(cx, baseY + 6);
     }

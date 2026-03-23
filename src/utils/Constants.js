@@ -406,3 +406,7 @@ export const FOCUS_CHARGES_PER_MATCH = 5;
 export const HIT_PROB_SCALE = 500;
 export const POINTEUR_DESPERATION_CHANCE = 0.3;
 export const DIALOG_BOX_HEIGHT = 110;
+
+// AimingSystem UI positioning
+export const AIMING_UI_BOTTOM_OFFSET = 52;
+export const FOCUS_UI_STACK_OFFSET = 50; // 28 + 22 = espace au-dessus du mode UI
