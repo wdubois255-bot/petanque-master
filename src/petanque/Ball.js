@@ -150,6 +150,7 @@ export default class Ball {
         this.vx = vx;
         this.vy = vy;
         this.isMoving = true;
+        this._lowSpeedFrames = 0; // reset slope roll counter
     }
 
     activateRetro(intensity, terrainType) {
@@ -258,6 +259,7 @@ export default class Ball {
             this._rollDist += speed * cappedDt * 60;
         } else {
             // On slopes, don't stop if gravity is still pushing the ball
+            // BUT cap at ~5 seconds (300 frames) to prevent infinite roll
             let activeSlopeForce = 0;
             if (terrain?.slope_zones?.length && this._bounds) {
                 const b = this._bounds;
@@ -275,12 +277,15 @@ export default class Ball {
                 activeSlopeForce = terrain.slope.gravity_component * 60;
             }
             if (activeSlopeForce > 0) {
+                this._lowSpeedFrames = (this._lowSpeedFrames || 0) + 1;
                 const frictionForce = FRICTION_BASE * effectiveFriction * 60;
-                if (activeSlopeForce > frictionForce * 0.5) return;
+                // Allow slope roll for up to ~5 seconds, then force stop
+                if (activeSlopeForce > frictionForce * 0.5 && this._lowSpeedFrames < 300) return;
             }
             this.vx = 0;
             this.vy = 0;
             this.isMoving = false;
+            this._lowSpeedFrames = 0;
         }
 
         this.x += this.vx * cappedDt * 60;

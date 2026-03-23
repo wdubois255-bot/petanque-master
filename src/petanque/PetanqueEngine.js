@@ -105,6 +105,10 @@ export default class PetanqueEngine {
         // Rolling sound state
         this._rollingSoundActive = false;
 
+        // Safety watchdog: detect stuck states
+        this._stateEnteredAt = 0;
+        this._gameOverTriggered = false;
+
         // Renderer: handles ALL visual effects (SRP separation)
         this.renderer = new EngineRenderer(scene, this);
 
@@ -152,8 +156,13 @@ export default class PetanqueEngine {
     setState(state) {
         this.state = state;
         this.aimingEnabled = false;
+        this._stateEnteredAt = Date.now();
 
-        if (this.onStateChange) this.onStateChange(state);
+        try {
+            if (this.onStateChange) this.onStateChange(state);
+        } catch (e) {
+            // Prevent onStateChange errors from blocking state machine
+        }
 
         switch (state) {
             case STATES.COCHONNET_THROW:
@@ -683,18 +692,27 @@ export default class PetanqueEngine {
         // Dramatic pause: 1.5s of suspense before showing score
         this.scene.events.emit('dramatic-pause');
         this.scene.time.delayedCall(1500, () => {
-            sfxScore();
-            if (this.onScore) this.onScore(this.scores, winner, points);
+            try { sfxScore(); } catch (e) { /* audio failure safe */ }
+            try {
+                if (this.onScore) this.onScore(this.scores, winner, points);
+            } catch (e) { /* onScore failure safe */ }
 
             this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
-                if (this.scores.player >= this.victoryScore || this.scores.opponent >= this.victoryScore) {
-                    this.setState(STATES.GAME_OVER);
-                } else {
-                    this.mene++;
-                    this.startMene();
-                }
+                this._advanceAfterScore();
             });
         });
+    }
+
+    /** Advance to next mene or game over — extracted for safety fallback */
+    _advanceAfterScore() {
+        if (this._gameOverTriggered) return;
+        if (this.scores.player >= this.victoryScore || this.scores.opponent >= this.victoryScore) {
+            this._gameOverTriggered = true;
+            this.setState(STATES.GAME_OVER);
+        } else {
+            this.mene++;
+            this.startMene();
+        }
     }
 
     _handleMeneDead() {
@@ -716,15 +734,12 @@ export default class PetanqueEngine {
             this._showMessage('Mene morte ! 0 points.');
         }
 
-        if (this.onScore) this.onScore(this.scores, this.meneWinner, 0);
+        try {
+            if (this.onScore) this.onScore(this.scores, this.meneWinner, 0);
+        } catch (e) { /* onScore failure safe */ }
 
         this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
-            if (this.scores.player >= this.victoryScore || this.scores.opponent >= this.victoryScore) {
-                this.setState(STATES.GAME_OVER);
-            } else {
-                this.mene++;
-                this.startMene();
-            }
+            this._advanceAfterScore();
         });
     }
 
@@ -735,54 +750,64 @@ export default class PetanqueEngine {
         const isFanny = this.scores[loser] === 0;
 
         // SFX victory/defeat
-        if (isVictory) sfxVictory(); else sfxDefeat();
+        try { if (isVictory) sfxVictory(); else sfxDefeat(); } catch (e) { /* audio safe */ }
 
-        // If arcade/versus mode: redirect to ResultScene
-        if (this.scene.arcadeState || this.scene.playerCharacter) {
-            // Calculate Galets earned
-            const playerCarreaux = this.matchStats?.carreaux?.player || 0;
-            let galetsEarned = 0;
-            if (isVictory) {
-                galetsEarned = this.scene.arcadeState ? GALET_WIN_ARCADE : GALET_WIN_QUICKPLAY;
-                galetsEarned += playerCarreaux * GALET_CARREAU_BONUS;
+        // Build result data (used by both redirect and fallback paths)
+        const playerCarreaux = this.matchStats?.carreaux?.player || 0;
+        let galetsEarned = 0;
+        if (isVictory) {
+            galetsEarned = this.scene.arcadeState ? GALET_WIN_ARCADE : GALET_WIN_QUICKPLAY;
+            galetsEarned += playerCarreaux * GALET_CARREAU_BONUS;
+        }
+
+        const resultData = {
+            won: isVictory,
+            scores: { ...this.scores },
+            playerCharacter: this.scene.playerCharacter,
+            opponentCharacter: this.scene.opponentCharacter,
+            terrainName: this.terrainType,
+            returnScene: this.scene.returnScene || 'TitleScene',
+            arcadeState: this.scene.arcadeState,
+            galetsEarned,
+            matchStats: {
+                menes: this.matchStats?.menesPlayed || this.mene,
+                fanny: isFanny,
+                bestMene: this.matchStats?.bestMeneScore || 0,
+                carreaux: playerCarreaux,
+                biberons: this.matchStats?.biberons?.player || 0,
+                shots: this.matchStats?.shots?.player || 0,
+                points_attempted: this.matchStats?.points?.player || 0,
+                bestBallDist: this.matchStats?.bestBallDist || Infinity,
+                opponentCarreaux: this.matchStats?.carreaux?.opponent || 0
             }
+        };
 
-            const resultData = {
-                won: isVictory,
-                scores: { ...this.scores },
-                playerCharacter: this.scene.playerCharacter,
-                opponentCharacter: this.scene.opponentCharacter,
-                terrainName: this.terrainType,
-                returnScene: this.scene.returnScene || 'TitleScene',
-                arcadeState: this.scene.arcadeState,
-                galetsEarned,
-                matchStats: {
-                    menes: this.matchStats?.menesPlayed || this.mene,
-                    fanny: isFanny,
-                    bestMene: this.matchStats?.bestMeneScore || 0,
-                    carreaux: playerCarreaux,
-                    biberons: this.matchStats?.biberons?.player || 0,
-                    shots: this.matchStats?.shots?.player || 0,
-                    points_attempted: this.matchStats?.points?.player || 0,
-                    bestBallDist: this.matchStats?.bestBallDist || Infinity,
-                    opponentCarreaux: this.matchStats?.carreaux?.opponent || 0
-                }
-            };
-
-            let redirected = false;
-            const doRedirect = () => {
-                if (redirected) return;
-                redirected = true;
-                this.scene.cameras.main.setZoom(1.0);
+        let redirected = false;
+        const doRedirect = () => {
+            if (redirected) return;
+            redirected = true;
+            try { this.scene.cameras.main.setZoom(1.0); } catch (e) { /* safe */ }
+            try {
                 this.scene.scene.start('ResultScene', resultData);
-            };
+            } catch (e) {
+                // Ultimate fallback: go back to title
+                try { this.scene.scene.start('TitleScene'); } catch (e2) { /* give up */ }
+            }
+        };
 
+        // Always redirect to ResultScene (arcade, quickplay, or any mode)
+        if (this.scene.arcadeState || this.scene.playerCharacter) {
             this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, doRedirect);
 
-            // Allow skip with Space/Enter
-            this.scene.input.keyboard.once('keydown-SPACE', doRedirect);
-            this.scene.input.keyboard.once('keydown-ENTER', doRedirect);
-            this.scene.input.once('pointerdown', doRedirect);
+            // Allow skip with Space/Enter/click
+            try {
+                this.scene.input.keyboard.once('keydown-SPACE', doRedirect);
+                this.scene.input.keyboard.once('keydown-ENTER', doRedirect);
+                this.scene.input.once('pointerdown', doRedirect);
+            } catch (e) { /* input binding safe */ }
+
+            // Safety fallback: if redirect hasn't happened after 5s, force it
+            this.scene.time.delayedCall(5000, doRedirect);
             return;
         }
 
@@ -1053,12 +1078,38 @@ export default class PetanqueEngine {
             }
 
             // Trigger reaction animations
-            if (this.onAfterStop) this.onAfterStop(this.lastTeamPlayed);
+            try {
+                if (this.onAfterStop) this.onAfterStop(this.lastTeamPlayed);
+            } catch (e) { /* onAfterStop failure safe */ }
 
             if (this._afterStopCallback) {
                 const cb = this._afterStopCallback;
                 this._afterStopCallback = null;
-                cb();
+                try { cb(); } catch (e) { /* afterStopCallback failure safe */ }
+            }
+        }
+
+        // === SAFETY WATCHDOG: detect stuck WAITING_STOP ===
+        // If balls have been "settling" for >12 seconds, force them all to stop
+        if (this.state === STATES.WAITING_STOP && anyMoving) {
+            const elapsed = Date.now() - this._stateEnteredAt;
+            if (elapsed > 12000) {
+                for (const b of allBodies) {
+                    if (b.isMoving) {
+                        b.vx = 0;
+                        b.vy = 0;
+                        b.isMoving = false;
+                    }
+                }
+            }
+        }
+
+        // === SAFETY WATCHDOG: detect stuck SCORE_MENE ===
+        // If stuck in SCORE_MENE for >8 seconds, force advance
+        if (this.state === STATES.SCORE_MENE) {
+            const elapsed = Date.now() - this._stateEnteredAt;
+            if (elapsed > 8000) {
+                this._advanceAfterScore();
             }
         }
     }

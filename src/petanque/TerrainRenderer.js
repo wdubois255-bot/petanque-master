@@ -69,6 +69,13 @@ const DECOR_FRAMES = {
     pin_v2:   { key: 'grid_pin_v2',  pool: [0, 1, 4, 5],     fallback: 'decor_pin' },
     banc_v1:  { key: 'grid_banc_v1', pool: [0, 1, 4, 8],     fallback: 'decor_banc' },
     banc_v2:  { key: 'grid_banc_v2', pool: [0, 1, 4, 5],     fallback: 'decor_banc' },
+    // New PixelLab sprites (4x4 grids, 64x64 frames)
+    tree:     { key: 'grid_tree',     pool: [0, 1, 4, 5, 8, 9], fallback: null },
+    herbe:    { key: 'grid_herbe',    pool: [0, 1, 2, 4, 5, 8], fallback: null },
+    stones:   { key: 'grid_stones',   pool: [1, 2, 5, 6, 9],    fallback: null },
+    table:    { key: 'grid_table',    pool: [0, 1, 4, 5],       fallback: null },
+    banc_td:  { key: 'grid_banc_td',  pool: [0, 1, 4, 5, 8, 9], fallback: null },
+    sac:      { key: 'grid_sac',      pool: [0, 2, 4, 5],       fallback: null },
 };
 
 // Decor placement blueprints per terrain (x relative to terrainX, 'R+N' = right of terrain)
@@ -76,18 +83,29 @@ const TERRAIN_DECOR = {
     village: [
         { type: 'olive',    x: -70,   y: 100, scale: 2.0, depth: 0.4 },
         { type: 'olive',    x: -40,   y: 250, scale: 1.6, depth: 0.55 },
-        { type: 'banc_v1',  x: -46,   y: 310, scale: 1.5, depth: 0.7 },
+        { type: 'banc_td',  x: -46,   y: 310, scale: 1.5, depth: 0.7 },
         { type: 'fontaine', x: 'R+40',  y: 215, scale: 1.5, depth: 0.6 },
         { type: 'olive',    x: 'R+75',  y: 130, scale: 1.8, depth: 0.45, flipX: true },
-        { type: 'olive',    x: 'R+55',  y: 310, scale: 1.4, depth: 0.65, flipX: true },
+        { type: 'table',    x: 'R+55',  y: 310, scale: 1.4, depth: 0.65, flipX: true },
+        // New: ball bag near throwing circle
+        { type: 'sac',      x: -30,   y: 410, scale: 1.2, depth: 0.75 },
+        // New: scattered stones on ground sides
+        { type: 'stones',   x: -55,   y: 370, scale: 1.0, depth: 0.3, alpha: 0.6 },
+        { type: 'stones',   x: 'R+60',  y: 380, scale: 0.9, depth: 0.3, alpha: 0.5, flipX: true },
     ],
     parc: [
-        { type: 'pin_v1',   x: -65,   y: 110, scale: 2.2, depth: 0.4 },
-        { type: 'pin_v2',   x: -30,   y: 210, scale: 1.6, depth: 0.55 },
-        { type: 'banc_v1',  x: -45,   y: 300, scale: 1.4, depth: 0.7 },
-        { type: 'pin_v1',   x: 'R+70',  y: 130, scale: 2.0, depth: 0.4, flipX: true },
-        { type: 'pin_v2',   x: 'R+45',  y: 260, scale: 1.5, depth: 0.55, flipX: true },
-        { type: 'banc_v2',  x: 'R+35',  y: 350, scale: 1.3, depth: 0.7 },
+        { type: 'tree',     x: -65,   y: 110, scale: 2.2, depth: 0.4 },
+        { type: 'tree',     x: -30,   y: 210, scale: 1.6, depth: 0.55 },
+        { type: 'banc_td',  x: -45,   y: 300, scale: 1.4, depth: 0.7 },
+        { type: 'tree',     x: 'R+70',  y: 130, scale: 2.0, depth: 0.4, flipX: true },
+        { type: 'tree',     x: 'R+45',  y: 260, scale: 1.5, depth: 0.55, flipX: true },
+        { type: 'banc_td',  x: 'R+35',  y: 350, scale: 1.3, depth: 0.7, flipX: true },
+        // New: grass tufts scattered around park
+        { type: 'herbe',    x: -80,   y: 170, scale: 1.0, depth: 0.35, alpha: 0.7 },
+        { type: 'herbe',    x: 'R+85',  y: 200, scale: 0.9, depth: 0.35, alpha: 0.6, flipX: true },
+        { type: 'herbe',    x: -60,   y: 380, scale: 0.8, depth: 0.65, alpha: 0.5 },
+        // New: ball bag
+        { type: 'sac',      x: 'R+30',  y: 420, scale: 1.1, depth: 0.75 },
     ],
     colline: [
         { type: 'olive', x: -70,   y: 100, scale: 2.2, depth: 0.4 },
@@ -96,12 +114,21 @@ const TERRAIN_DECOR = {
         { type: 'olive', x: 'R+80',  y: 280, scale: 1.7, depth: 0.58, flipX: true },
         { type: 'olive', x: -90,   y: 60,  scale: 1.0, depth: 0.3, alpha: 0.5 },
         { type: 'olive', x: 'R+100', y: 70, scale: 1.0, depth: 0.3, alpha: 0.5, flipX: true },
+        // New: scattered stones on dry hillside
+        { type: 'stones',   x: -50,   y: 340, scale: 1.1, depth: 0.5, alpha: 0.7 },
+        { type: 'stones',   x: 'R+65',  y: 360, scale: 1.0, depth: 0.5, alpha: 0.6, flipX: true },
+        { type: 'stones',   x: -75,   y: 180, scale: 0.7, depth: 0.3, alpha: 0.4 },
     ],
     plage: [
-        { type: 'pin_v1', x: -280,  y: 85,  scale: 1.2, depth: 0.4, alpha: 0.4 },
-        { type: 'pin_v2', x: 'R+110', y: 75, scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
+        { type: 'tree',  x: -280,  y: 85,  scale: 1.2, depth: 0.4, alpha: 0.4 },
+        { type: 'tree',  x: 'R+110', y: 75, scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
+        // New: stones near beach edge
+        { type: 'stones',   x: -40,   y: 400, scale: 0.8, depth: 0.3, alpha: 0.4 },
     ],
-    docks: [],
+    docks: [
+        // New: ball bag in industrial setting
+        { type: 'sac',      x: -35,   y: 400, scale: 1.1, depth: 0.7 },
+    ],
 };
 
 export default class TerrainRenderer {

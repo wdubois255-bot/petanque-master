@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Petanque Master — Terrain Preview TOP-DOWN</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1A1510; font-family: monospace; color: #F5E6D0; padding: 20px; }
+  h1 { text-align: center; color: #FFD700; font-size: 18px; margin-bottom: 16px; text-shadow: 2px 2px #1A1510; }
+  .terrain-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 20px; }
+  .terrain-card { border: 2px solid #3A2E28; border-radius: 8px; overflow: hidden; }
+  .terrain-card h2 { text-align: center; padding: 6px; background: #3A2E28; color: #D4A574; font-size: 12px; }
+  canvas { display: block; image-rendering: pixelated; }
+  .info { text-align: center; color: #9E9E8E; font-size: 11px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>PETANQUE MASTER — Vue top-down complete (5 terrains)</h1>
+<div class="terrain-row" id="terrains"></div>
+<p class="info">Vue aerienne : sol, chemins, arbres (canopee), toits, mobilier — tout vu du dessus.</p>
+
+<script>
+const W = 832, H = 480;
+const TW = 180, TH = 420;
+const TX = Math.floor((W - TW) / 2);
+const TY = Math.floor((H - TH) / 2) - 10;
+
+// ============================================================
+// TOP-DOWN terrain configs — tout vu du dessus
+// ============================================================
+const TERRAINS = {
+  village: {
+    name: 'Village de La Ciotat',
+    // Ground = place du village, dalles beige/ocre
+    groundBase: '#B8A080', groundAlt: '#C4B090',
+    pathColor: '#D4C0A0', pathAlt: '#C4B498',
+    surfaceBase: '#C4854A', surfaceLight: '#D4A060', surfaceDark: '#A87040',
+    borderColor: '#8B6B3A',
+  },
+  parc: {
+    name: 'Parc Municipal',
+    groundBase: '#5A8A3A', groundAlt: '#4A7A2A',
+    pathColor: '#8B7D5A', pathAlt: '#9B8D6A',
+    surfaceBase: '#6B8E4E', surfaceLight: '#7BA65E', surfaceDark: '#4A7A3A',
+    borderColor: '#3A6A2A',
+  },
+  colline: {
+    name: 'Colline Provencale',
+    groundBase: '#9A8A5A', groundAlt: '#8B7D4A',
+    pathColor: '#B8A878', pathAlt: '#A89868',
+    surfaceBase: '#C4954A', surfaceLight: '#D4A560', surfaceDark: '#A88040',
+    borderColor: '#A09878',
+  },
+  plage: {
+    name: 'Plage de Cassis',
+    groundBase: '#D4C0A0', groundAlt: '#E0D0B0',
+    pathColor: '#C4B090', pathAlt: '#B8A480',
+    surfaceBase: '#E8D5B7', surfaceLight: '#F0E0C8', surfaceDark: '#D4C0A0',
+    borderColor: '#A08050',
+    waterColor: '#4A9ED5', waterAlt: '#3A8AC0',
+  },
+  docks: {
+    name: 'Docks de Marseille',
+    groundBase: '#4A4A40', groundAlt: '#3A3A30',
+    pathColor: '#5A5A50', pathAlt: '#4A4A44',
+    surfaceBase: '#7A7A70', surfaceLight: '#8E8E7E', surfaceDark: '#6A6A60',
+    borderColor: '#5A5A50',
+  }
+};
+
+// Sprite grids
+const GRIDS = {
+  olive:    { src: 'assets/sprites/decor/grid_olive.png',    pool: [0, 1, 4, 5, 8] },
+  fontaine: { src: 'assets/sprites/decor/grid_fontaine.png', pool: [0, 4, 8, 12] },
+  pin_v1:   { src: 'assets/sprites/decor/grid_pin_v1.png',  pool: [1, 2, 5, 9] },
+  pin_v2:   { src: 'assets/sprites/decor/grid_pin_v2.png',  pool: [0, 1, 4, 5] },
+  banc_v1:  { src: 'assets/sprites/decor/grid_banc_v1.png', pool: [0, 1, 4, 8] },
+  banc_v2:  { src: 'assets/sprites/decor/grid_banc_v2.png', pool: [0, 1, 4, 5] },
+};
+
+// TOP-DOWN decor placements — positions around the court
+const DECOR = {
+  village: [
+    // Oliviers autour de la place
+    { type: 'olive', x: -75,  y: 80,  scale: 2.2 },
+    { type: 'olive', x: -50,  y: 220, scale: 1.8 },
+    { type: 'olive', x: -80,  y: 360, scale: 2.0 },
+    { type: 'olive', rx: 60,  y: 100, scale: 2.0 },
+    { type: 'olive', rx: 80,  y: 270, scale: 1.7 },
+    { type: 'olive', rx: 50,  y: 400, scale: 1.9 },
+    // Fontaine (centre droit)
+    { type: 'fontaine', rx: 65, y: 190, scale: 1.6 },
+    // Bancs
+    { type: 'banc_v1', x: -40, y: 300, scale: 1.3 },
+    { type: 'banc_v1', rx: 40, y: 340, scale: 1.3 },
+  ],
+  parc: [
+    // Pins parasol (canopee vue du dessus)
+    { type: 'pin_v1', x: -70,  y: 70,  scale: 2.4 },
+    { type: 'pin_v2', x: -45,  y: 200, scale: 1.8 },
+    { type: 'pin_v1', x: -80,  y: 340, scale: 2.1 },
+    { type: 'pin_v1', rx: 65,  y: 90,  scale: 2.2 },
+    { type: 'pin_v2', rx: 50,  y: 250, scale: 1.9 },
+    { type: 'pin_v1', rx: 75,  y: 380, scale: 2.0 },
+    // Bancs de parc
+    { type: 'banc_v1', x: -35, y: 130, scale: 1.2 },
+    { type: 'banc_v2', rx: 35, y: 170, scale: 1.2 },
+    // Petit arbre distant
+    { type: 'pin_v2', x: -130, y: 150, scale: 1.2, alpha: 0.6 },
+    { type: 'pin_v2', rx: 140, y: 200, scale: 1.1, alpha: 0.6 },
+  ],
+  colline: [
+    // Oliveraie dense
+    { type: 'olive', x: -70,  y: 60,  scale: 2.2 },
+    { type: 'olive', x: -40,  y: 170, scale: 1.8 },
+    { type: 'olive', x: -85,  y: 280, scale: 2.0 },
+    { type: 'olive', x: -55,  y: 400, scale: 1.6 },
+    { type: 'olive', rx: 55,  y: 80,  scale: 2.0 },
+    { type: 'olive', rx: 80,  y: 200, scale: 1.7 },
+    { type: 'olive', rx: 50,  y: 330, scale: 1.9 },
+    { type: 'olive', rx: 75,  y: 430, scale: 1.5 },
+    // Oliviers lointains (plus petits, fades)
+    { type: 'olive', x: -140, y: 120, scale: 1.0, alpha: 0.45 },
+    { type: 'olive', x: -150, y: 350, scale: 0.9, alpha: 0.4 },
+    { type: 'olive', rx: 150, y: 150, scale: 1.0, alpha: 0.45 },
+    { type: 'olive', rx: 160, y: 380, scale: 0.9, alpha: 0.4 },
+  ],
+  plage: [
+    // Quelques pins lointains (bord de plage)
+    { type: 'pin_v1', x: -120, y: 50,  scale: 1.3, alpha: 0.5 },
+    { type: 'pin_v2', x: -140, y: 160, scale: 1.0, alpha: 0.4 },
+    { type: 'pin_v1', rx: 130, y: 70,  scale: 1.2, alpha: 0.5 },
+  ],
+  docks: [
+    // Pas de nature — industriel
+  ],
+};
+
+// Seeded RNG
+function makeRng(seed) {
+  let idx = 0;
+  return () => {
+    const x = Math.sin(seed + idx++ * 9301 + 49297) * 233280;
+    return x - Math.floor(x);
+  };
+}
+
+// Load images
+async function loadImages() {
+  const imgs = {};
+  const promises = [];
+  for (const [key, cfg] of Object.entries(GRIDS)) {
+    const img = new Image();
+    const p = new Promise(r => { img.onload = () => { imgs[key] = img; r(); }; img.onerror = r; });
+    img.src = cfg.src;
+    promises.push(p);
+  }
+  await Promise.all(promises);
+  return imgs;
+}
+
+function drawSpriteFrame(ctx, img, frame, dx, dy, scale, flipX, alpha) {
+  if (!img) return;
+  const cols = 4, fw = 64, fh = 64;
+  const sx = (frame % cols) * fw;
+  const sy = Math.floor(frame / cols) * fh;
+  ctx.save();
+  if (alpha !== undefined) ctx.globalAlpha = alpha;
+  ctx.translate(dx, dy);
+  if (flipX) ctx.scale(-1, 1);
+  ctx.imageSmoothingEnabled = false;
+  const dw = fw * scale, dh = fh * scale;
+  ctx.drawImage(img, sx, sy, fw, fh, -dw/2, -dh/2, dw, dh);
+  ctx.restore();
+}
+
+// Draw a top-down tree (procedural fallback)
+function drawTreeTopDown(ctx, x, y, r, color1, color2, rng) {
+  // Shadow
+  ctx.fillStyle = 'rgba(26,21,16,0.2)';
+  ctx.beginPath(); ctx.ellipse(x+3, y+3, r*1.1, r*0.9, 0, 0, Math.PI*2); ctx.fill();
+  // Canopy
+  ctx.fillStyle = color1;
+  ctx.beginPath(); ctx.ellipse(x, y, r, r*0.85, rng()*0.5, 0, Math.PI*2); ctx.fill();
+  // Lighter inner
+  ctx.fillStyle = color2;
+  ctx.beginPath(); ctx.ellipse(x-r*0.2, y-r*0.15, r*0.55, r*0.45, 0, 0, Math.PI*2); ctx.fill();
+  // Trunk hole
+  ctx.fillStyle = 'rgba(90,70,40,0.4)';
+  ctx.beginPath(); ctx.arc(x, y+r*0.1, r*0.15, 0, Math.PI*2); ctx.fill();
+}
+
+function drawTerrain(canvas, terrainId, cfg, imgs) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const rng = makeRng(terrainId.charCodeAt(0) * 137 + 42);
+
+  // ============================================================
+  // GROUND — Vue top-down : le sol entier vu du dessus
+  // ============================================================
+
+  // Base ground fill
+  ctx.fillStyle = cfg.groundBase;
+  ctx.fillRect(0, 0, W, H);
+
+  // Ground texture noise
+  for (let i = 0; i < 2000; i++) {
+    const nx = rng() * W, ny = rng() * H;
+    ctx.fillStyle = cfg.groundAlt;
+    ctx.globalAlpha = 0.15 + rng() * 0.2;
+    ctx.fillRect(nx, ny, 1 + rng() * 3, 1 + rng() * 3);
+  }
+  ctx.globalAlpha = 1;
+
+  // ============================================================
+  // TERRAIN-SPECIFIC TOP-DOWN ENVIRONMENT
+  // ============================================================
+
+  if (terrainId === 'village') {
+    // Place du village : dalles au sol, toits de maisons vus du dessus
+    // Chemin dalle autour du terrain
+    ctx.fillStyle = cfg.pathColor;
+    ctx.fillRect(TX - 30, TY - 20, TW + 60, TH + 40);
+    // Dalle pattern
+    ctx.strokeStyle = 'rgba(160,140,110,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let dx = TX - 30; dx < TX + TW + 30; dx += 24) {
+      for (let dy = TY - 20; dy < TY + TH + 20; dy += 24) {
+        ctx.strokeRect(dx, dy, 24, 24);
+      }
+    }
+
+    // Toits de maisons (rectangles ocre/terracotta vus du dessus)
+    const roofs = [
+      { x: 40, y: 60, w: 80, h: 55, color: '#C4854A', ridge: true },
+      { x: 140, y: 40, w: 60, h: 45, color: '#B87040', ridge: true },
+      { x: 20, y: 280, w: 70, h: 50, color: '#D49560', ridge: true },
+      { x: 700, y: 50, w: 90, h: 60, color: '#C4854A', ridge: true },
+      { x: 680, y: 130, w: 55, h: 50, color: '#B87040', ridge: true },
+      { x: 720, y: 300, w: 75, h: 55, color: '#D49560', ridge: true },
+      { x: 650, y: 380, w: 60, h: 45, color: '#C4854A', ridge: true },
+      // Clocher (carre + croix)
+      { x: 100, y: 150, w: 25, h: 25, color: '#D4C4A0', ridge: false, tower: true },
+    ];
+    for (const r of roofs) {
+      // Shadow
+      ctx.fillStyle = 'rgba(26,21,16,0.2)';
+      ctx.fillRect(r.x + 4, r.y + 4, r.w, r.h);
+      // Roof
+      ctx.fillStyle = r.color;
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      // Ridge line
+      if (r.ridge) {
+        ctx.strokeStyle = 'rgba(160,100,50,0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(r.x + r.w/2, r.y + 2);
+        ctx.lineTo(r.x + r.w/2, r.y + r.h - 2);
+        ctx.stroke();
+      }
+      // Eaves shadow
+      ctx.fillStyle = 'rgba(26,21,16,0.15)';
+      ctx.fillRect(r.x, r.y + r.h - 4, r.w, 4);
+      if (r.tower) {
+        ctx.fillStyle = 'rgba(58,46,40,0.7)';
+        ctx.fillRect(r.x + r.w/2 - 2, r.y + r.h/2 - 6, 4, 12);
+        ctx.fillRect(r.x + r.w/2 - 5, r.y + r.h/2 - 2, 10, 3);
+      }
+    }
+
+    // Muret de pierre (vue du dessus = bande etroite)
+    ctx.fillStyle = '#C4B898';
+    ctx.fillRect(TX + TW + 18, 200, 10, 200);
+    ctx.fillStyle = 'rgba(26,21,16,0.15)';
+    ctx.fillRect(TX + TW + 28, 200, 3, 200);
+
+    // Pot de fleurs (cercle vu du dessus)
+    ctx.fillStyle = '#A05A2A';
+    ctx.beginPath(); ctx.arc(TX + TW + 26, 410, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#CC4444';
+    ctx.beginPath(); ctx.arc(TX + TW + 26, 410, 5, 0, Math.PI*2); ctx.fill();
+  }
+
+  else if (terrainId === 'parc') {
+    // Pelouse + chemin de gravier
+    // Chemins de gravier sinueux
+    ctx.fillStyle = cfg.pathColor;
+    ctx.lineWidth = 0;
+    // Chemin horizontal haut
+    ctx.fillRect(0, TY + 40, W, 20);
+    // Chemin horizontal bas
+    ctx.fillRect(0, TY + TH - 40, W, 20);
+    // Chemin vertical gauche
+    ctx.fillRect(TX - 40, 0, 18, H);
+    // Chemin vertical droit
+    ctx.fillRect(TX + TW + 22, 0, 18, H);
+    // Gravier texture
+    for (let i = 0; i < 300; i++) {
+      ctx.fillStyle = cfg.pathAlt;
+      ctx.globalAlpha = 0.3;
+      const gx = rng() * W, gy = rng() * H;
+      ctx.fillRect(gx, gy, 1 + rng(), 1);
+    }
+    ctx.globalAlpha = 1;
+
+    // Bassin (cercle d'eau vu du dessus)
+    const pondX = TX + TW + 80, pondY = 280;
+    ctx.fillStyle = 'rgba(26,21,16,0.15)';
+    ctx.beginPath(); ctx.arc(pondX+2, pondY+2, 32, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#5A9AC0';
+    ctx.beginPath(); ctx.arc(pondX, pondY, 32, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#6AAAD0';
+    ctx.beginPath(); ctx.arc(pondX - 5, pondY - 5, 22, 0, Math.PI*2); ctx.fill();
+    // Reflet
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath(); ctx.arc(pondX - 10, pondY - 10, 10, 0, Math.PI*2); ctx.fill();
+    // Canard (petit ovale blanc)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.ellipse(pondX - 15, pondY - 5, 4, 3, 0.3, 0, Math.PI*2); ctx.fill();
+
+    // Massifs de fleurs (cercles colores)
+    const flowerBeds = [
+      { x: TX - 90, y: 360, w: 50, h: 18 },
+      { x: TX + TW + 50, y: 400, w: 45, h: 16 },
+    ];
+    for (const fb of flowerBeds) {
+      ctx.fillStyle = 'rgba(80,50,30,0.4)';
+      ctx.fillRect(fb.x, fb.y, fb.w, fb.h);
+      const fc = ['#CC4444','#FFAA44','#CC44CC','#FFFF44','#FF6688','#9B7BB8'];
+      for (let i = 0; i < 12; i++) {
+        ctx.fillStyle = fc[i % fc.length];
+        ctx.globalAlpha = 0.7;
+        ctx.beginPath();
+        ctx.arc(fb.x + 5 + rng() * (fb.w - 10), fb.y + 3 + rng() * (fb.h - 6), 2 + rng() * 2, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Kiosque (octogone vu du dessus — toit rouge)
+    const kx = TX + TW + 85, ky = 140;
+    ctx.fillStyle = 'rgba(26,21,16,0.2)';
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI/4; ctx.lineTo(kx + 3 + Math.cos(a)*22, ky + 3 + Math.sin(a)*22); }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#C44B3F';
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI/4; ctx.lineTo(kx + Math.cos(a)*20, ky + Math.sin(a)*20); }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#D4654A';
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI/4; ctx.lineTo(kx + Math.cos(a)*12, ky + Math.sin(a)*12); }
+    ctx.closePath(); ctx.fill();
+  }
+
+  else if (terrainId === 'colline') {
+    // Terrain vallonne — nuances de vert/ocre
+    // Bandes de couleur ondulees pour le relief
+    for (let y = 0; y < H; y += 3) {
+      const wave = Math.sin(y * 0.015) * 15 + Math.sin(y * 0.04) * 5;
+      const hue = 0.5 + Math.sin(y * 0.008 + wave * 0.01) * 0.15;
+      ctx.fillStyle = `rgba(${130 + hue*40}, ${120 + hue*30}, ${70 + hue*20}, 0.15)`;
+      ctx.fillRect(0, y, W, 3);
+    }
+
+    // Chemin de terre
+    ctx.fillStyle = cfg.pathColor;
+    ctx.fillRect(TX - 25, TY - 15, TW + 50, TH + 30);
+    // Texture terre
+    for (let i = 0; i < 200; i++) {
+      ctx.fillStyle = cfg.pathAlt;
+      ctx.globalAlpha = 0.2;
+      ctx.fillRect(TX - 25 + rng() * (TW + 50), TY - 15 + rng() * (TH + 30), 2, 1);
+    }
+    ctx.globalAlpha = 1;
+
+    // Muret pierre seche (vu du dessus — bande etroite)
+    ctx.fillStyle = '#B0A888';
+    ctx.fillRect(50, 180, 180, 8);
+    ctx.fillRect(600, 260, 160, 8);
+    ctx.fillStyle = 'rgba(26,21,16,0.15)';
+    ctx.fillRect(50, 188, 180, 3);
+    ctx.fillRect(600, 268, 160, 3);
+    // Pierres
+    ctx.fillStyle = 'rgba(154,144,112,0.4)';
+    for (let sx = 50; sx < 230; sx += 10) ctx.fillRect(sx, 180, 1, 8);
+    for (let sx = 600; sx < 760; sx += 10) ctx.fillRect(sx, 260, 1, 8);
+
+    // Champ de lavande (lignes violettes paralleles)
+    ctx.fillStyle = '#9B7BB8';
+    for (let row = 0; row < 6; row++) {
+      for (let i = 0; i < 20; i++) {
+        ctx.globalAlpha = 0.3 + rng() * 0.2;
+        ctx.fillRect(TX + TW + 60 + i * 5, 350 + row * 8, 3, 5);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  else if (terrainId === 'plage') {
+    // Sable + bord de mer en haut
+    // Mer (haut de l'ecran)
+    ctx.fillStyle = cfg.waterColor;
+    ctx.fillRect(0, 0, W, 50);
+    ctx.fillStyle = cfg.waterAlt;
+    ctx.fillRect(0, 0, W, 30);
+    // Vagues (lignes blanches)
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      const wy = 35 + i * 8;
+      for (let x = 0; x < W; x += 5) {
+        ctx.lineTo(x, wy + Math.sin(x * 0.05 + i) * 2);
+      }
+      ctx.stroke();
+    }
+    // Ecume
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(0, 45, W, 8);
+
+    // Parasols (cercles colores vus du dessus)
+    const parasols = [
+      { x: TX - 60, y: 180, r: 25, color: '#CC4444', stripe: '#FFFFFF' },
+      { x: TX - 90, y: 320, r: 22, color: '#4488CC', stripe: '#FFFFFF' },
+      { x: TX + TW + 60, y: 200, r: 24, color: '#44AA44', stripe: '#FFFFFF' },
+      { x: TX + TW + 90, y: 350, r: 20, color: '#DDAA33', stripe: '#FFFFFF' },
+    ];
+    for (const p of parasols) {
+      ctx.fillStyle = 'rgba(26,21,16,0.15)';
+      ctx.beginPath(); ctx.arc(p.x+3, p.y+3, p.r, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      // Rayures
+      ctx.fillStyle = p.stripe;
+      ctx.globalAlpha = 0.25;
+      for (let a = 0; a < 8; a += 2) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.arc(p.x, p.y, p.r, a * Math.PI/4, (a+1) * Math.PI/4);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // Pointe centrale
+      ctx.fillStyle = '#8B6B4A';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Serviettes de plage (rectangles colores)
+    ctx.save();
+    ctx.translate(TX + TW + 50, 280); ctx.rotate(0.3);
+    ctx.fillStyle = '#E07040'; ctx.fillRect(-10, -18, 20, 36);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-10, -8, 20, 3); ctx.fillRect(-10, 4, 20, 3);
+    ctx.restore();
+
+    // Chateau de sable
+    ctx.fillStyle = '#D4B88A';
+    ctx.beginPath(); ctx.arc(TX - 50, 400, 12, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#C4A878';
+    ctx.beginPath(); ctx.arc(TX - 50, 400, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#D4C498';
+    ctx.fillRect(TX - 53, 394, 6, 6);
+  }
+
+  else if (terrainId === 'docks') {
+    // Beton + containers + rails
+    // Ligne jaune au sol
+    ctx.fillStyle = '#CCAA22';
+    ctx.fillRect(0, H/2, W, 3);
+    ctx.fillRect(TX - 50, 0, 3, H);
+    ctx.fillRect(TX + TW + 47, 0, 3, H);
+
+    // Containers (rectangles vus du dessus)
+    const containers = [
+      { x: 30, y: 80, w: 55, h: 22, color: '#CC4444' },
+      { x: 30, y: 108, w: 55, h: 22, color: '#4488CC' },
+      { x: 30, y: 136, w: 55, h: 22, color: '#44AA44' },
+      { x: 95, y: 90, w: 55, h: 22, color: '#CCAA22' },
+      { x: 700, y: 100, w: 55, h: 22, color: '#CC4444' },
+      { x: 700, y: 128, w: 55, h: 22, color: '#4488CC' },
+      { x: 690, y: 320, w: 55, h: 22, color: '#888888' },
+      { x: 750, y: 310, w: 55, h: 22, color: '#44AA44' },
+    ];
+    for (const c of containers) {
+      ctx.fillStyle = 'rgba(26,21,16,0.2)';
+      ctx.fillRect(c.x + 3, c.y + 3, c.w, c.h);
+      ctx.fillStyle = c.color;
+      ctx.globalAlpha = 0.75;
+      ctx.fillRect(c.x, c.y, c.w, c.h);
+      // Ridges
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = 0.5;
+      for (let rx = c.x + 5; rx < c.x + c.w; rx += 6) ctx.strokeRect(rx, c.y, 0, c.h);
+      ctx.globalAlpha = 1;
+    }
+
+    // Grue (base carree + fleche)
+    ctx.fillStyle = '#3A3A38';
+    ctx.fillRect(TX + TW + 90, 20, 16, 16);
+    ctx.fillStyle = '#4A4A48';
+    ctx.fillRect(TX + TW + 95, 10, 6, 40);
+    ctx.strokeStyle = '#3A3A38';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(TX + TW + 98, 15);
+    ctx.lineTo(TX + TW + 60, 15);
+    ctx.stroke();
+
+    // Bollards (cercles metalliques)
+    for (const bx of [TX - 25, TX + TW + 25, TX + TW/2 - 60, TX + TW/2 + 60]) {
+      ctx.fillStyle = '#5A5A50';
+      ctx.beginPath(); ctx.arc(bx, H - 30, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFAA44';
+      ctx.beginPath(); ctx.arc(bx, H - 30, 2, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Lampadaires (cercles + halo)
+    for (const lp of [{x: TX - 35, y: 250}, {x: TX + TW + 35, y: 250}]) {
+      ctx.fillStyle = 'rgba(255,170,68,0.08)';
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, 40, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,170,68,0.15)';
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, 20, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#FFAA44';
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#3A3A38';
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, 2, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ============================================================
+  // TERRAIN COURT — Surface de jeu
+  // ============================================================
+
+  // Shadow
+  ctx.fillStyle = 'rgba(26,21,16,0.25)';
+  ctx.fillRect(TX + 5, TY + 5, TW, TH);
+
+  // Surface gradient
+  const surfGrad = ctx.createLinearGradient(0, TY, 0, TY + TH);
+  surfGrad.addColorStop(0, cfg.surfaceLight);
+  surfGrad.addColorStop(0.5, cfg.surfaceBase);
+  surfGrad.addColorStop(1, cfg.surfaceDark);
+  ctx.fillStyle = surfGrad;
+  ctx.fillRect(TX, TY, TW, TH);
+
+  // Gravel noise
+  for (let i = 0; i < 500; i++) {
+    const nx = TX + rng() * TW, ny = TY + rng() * TH;
+    ctx.fillStyle = rng() > 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    ctx.fillRect(nx, ny, 1 + rng() * 2, 1 + rng());
+  }
+
+  // Dead lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+  ctx.setLineDash([4, 6]);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(TX + 8, TY + 8, TW - 16, TH - 16);
+  ctx.setLineDash([]);
+
+  // Borders
+  ctx.strokeStyle = cfg.borderColor;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(TX - 3, TY - 3, TW + 6, TH + 6);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(TX, TY, TW, TH);
+
+  // ============================================================
+  // PIXEL ART SPRITE DECOR (oliviers, pins, fontaines, bancs)
+  // ============================================================
+  const placements = DECOR[terrainId] || [];
+  for (const p of placements) {
+    const grid = GRIDS[p.type];
+    if (!grid) continue;
+    let px = (p.rx !== undefined) ? TX + TW + p.rx : TX + p.x;
+    const frame = grid.pool[Math.floor(rng() * grid.pool.length)];
+
+    if (imgs[p.type]) {
+      drawSpriteFrame(ctx, imgs[p.type], frame, px, p.y, p.scale || 1, p.flipX, p.alpha);
+    } else {
+      // Fallback procedural tree
+      const colors = p.type.includes('pin') ? ['#4A8A3A', '#6BA65E'] : ['#8AAA6A', '#A0BA80'];
+      drawTreeTopDown(ctx, px, p.y, (p.scale || 1) * 20, colors[0], colors[1], rng);
+    }
+  }
+
+  // ============================================================
+  // BOULES DEMO (cochonnet + 4 boules)
+  // ============================================================
+  const cx = TX + TW/2, cy = TY + 130;
+
+  // Cochonnet
+  ctx.fillStyle = 'rgba(26,21,16,0.2)';
+  ctx.beginPath(); ctx.arc(cx+1, cy+1, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#FFD700';
+  ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.beginPath(); ctx.arc(cx-1.5, cy-1.5, 2, 0, Math.PI*2); ctx.fill();
+
+  // Player boules (bronze)
+  const playerBalls = [{x: cx-15, y: cy+18}, {x: cx+12, y: cy+30}, {x: cx-8, y: cy+55}];
+  for (const b of playerBalls) {
+    ctx.fillStyle = 'rgba(26,21,16,0.2)';
+    ctx.beginPath(); ctx.arc(b.x+1, b.y+1, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#CD7F32';
+    ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.beginPath(); ctx.arc(b.x-2, b.y-2, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Opponent boules (chrome)
+  const oppBalls = [{x: cx+22, y: cy+12}, {x: cx-25, y: cy+40}, {x: cx+5, y: cy+70}];
+  for (const b of oppBalls) {
+    ctx.fillStyle = 'rgba(26,21,16,0.2)';
+    ctx.beginPath(); ctx.arc(b.x+1, b.y+1, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#DCDCDC';
+    ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath(); ctx.arc(b.x-2, b.y-2, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Best ball indicator
+  ctx.strokeStyle = 'rgba(68,204,68,0.6)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(playerBalls[0].x, playerBalls[0].y, 12, 0, Math.PI*2); ctx.stroke();
+
+  // Cercle de lancer (bas du terrain)
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(cx, TY + TH - 30, 12, 0, Math.PI*2); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.beginPath(); ctx.arc(cx, TY + TH - 30, 12, 0, Math.PI*2); ctx.fill();
+}
+
+// ============================================================
+// MAIN
+// ============================================================
+(async function() {
+  const imgs = await loadImages();
+  const container = document.getElementById('terrains');
+
+  for (const [id, cfg] of Object.entries(TERRAINS)) {
+    const card = document.createElement('div');
+    card.className = 'terrain-card';
+    const title = document.createElement('h2');
+    title.textContent = cfg.name;
+    card.appendChild(title);
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = (W * 0.85) + 'px';
+    canvas.style.height = (H * 0.85) + 'px';
+    card.appendChild(canvas);
+    container.appendChild(card);
+    drawTerrain(canvas, id, cfg, imgs);
+  }
+})();
+</script>
+</body>
+</html>
