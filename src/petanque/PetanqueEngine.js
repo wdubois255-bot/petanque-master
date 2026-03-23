@@ -110,6 +110,9 @@ export default class PetanqueEngine {
         this._stateEnteredAt = 0;
         this._gameOverTriggered = false;
 
+        // TAB hint — shown once after first mène
+        this._tabHintShown = false;
+
         // Renderer: handles ALL visual effects (SRP separation)
         this.renderer = new EngineRenderer(scene, this);
 
@@ -697,6 +700,12 @@ export default class PetanqueEngine {
             try {
                 if (this.onScore) this.onScore(this.scores, winner, points);
             } catch (e) { /* onScore failure safe */ }
+
+            // Hint TAB après la première mène (une seule fois)
+            if (!this._tabHintShown) {
+                this._tabHintShown = true;
+                this.renderer.showMessage('TAB = voir le classement', false);
+            }
 
             this.scene.time.delayedCall(SCORE_MENE_DELAY, () => {
                 this._advanceAfterScore();
