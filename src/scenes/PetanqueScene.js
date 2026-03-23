@@ -276,6 +276,23 @@ export default class PetanqueScene extends Phaser.Scene {
             this._inGameTutorial = new InGameTutorial(this);
         }
 
+        // Contextual terrain tooltips (post-tutorial, one-time hints)
+        if (tutSave.tutorialInGameSeen) {
+            const terrainId = this.terrainFullData?.id || 'village';
+            const terrainHints = {
+                plage: { id: 'hint_sand', msg: 'Le sable ralentit les boules. Tirez plus fort !' },
+                parc: { id: 'hint_mixed', msg: 'Attention aux zones ! Herbe = lent, gravier = rapide.' },
+                colline: { id: 'hint_slope', msg: 'Terrain en pente ! Compensez en visant plus haut.' },
+                docks: { id: 'hint_walls', msg: 'Les boules rebondissent sur les murs ici !' }
+            };
+            const hint = terrainHints[terrainId];
+            if (hint) {
+                this.time.delayedCall(2000, () => {
+                    InGameTutorial.showContextualHint(this, hint.id, hint.msg);
+                });
+            }
+        }
+
         this.events.on('shutdown', this._shutdown, this);
     }
 

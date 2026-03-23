@@ -1,8 +1,28 @@
 {
   "badges": [
-    { "id": "badge_choupe", "name": "Badge Village", "master": "la_choupe", "icon": "badge_terre", "order": 1 },
-    { "id": "badge_marcel", "name": "Badge Parc", "master": "marcel", "icon": "badge_herbe", "order": 2 },
-    { "id": "badge_magicien", "name": "Badge Colline", "master": "magicien", "icon": "badge_maitre", "order": 3 }
+    { "id": "badge_choupe", "name": "Badge Village", "master": "la_choupe", "terrain": "village", "icon": "badge_terre", "order": 1 },
+    { "id": "badge_josette", "name": "Badge Parc", "master": "mamie_josette", "terrain": "parc", "icon": "badge_herbe", "order": 2 },
+    { "id": "badge_fazzino", "name": "Badge Colline", "master": "fazzino", "terrain": "colline", "icon": "badge_maitre", "order": 3 },
+    { "id": "badge_suchaud", "name": "Badge Docks", "master": "suchaud", "terrain": "docks", "icon": "badge_dalles", "order": 4 },
+    { "id": "badge_ley", "name": "Badge Plage", "master": "ley", "terrain": "plage", "icon": "badge_sable", "order": 5 }
+  ],
+  "arcade_unlocks": [
+    { "round": 1, "opponent": "la_choupe", "unlock_type": "character", "unlock_id": "la_choupe", "message": "La Choupe rejoint votre equipe !" },
+    { "round": 2, "opponent": "mamie_josette", "unlock_type": "character", "unlock_id": "mamie_josette", "message": "Mamie Josette rejoint votre equipe !" },
+    { "round": 3, "opponent": "fazzino", "unlock_type": "terrain", "unlock_id": "docks", "message": "Terrain Docks debloque !" },
+    { "round": 3, "opponent": "fazzino", "unlock_type": "character", "unlock_id": "fazzino", "message": "Fazzino rejoint votre equipe !" },
+    { "round": 4, "opponent": "suchaud", "unlock_type": "terrain", "unlock_id": "plage", "message": "Terrain Plage debloque !" },
+    { "round": 4, "opponent": "suchaud", "unlock_type": "character", "unlock_id": "suchaud", "message": "Suchaud rejoint votre equipe !" },
+    { "round": 5, "opponent": "ley", "unlock_type": "character", "unlock_id": "ley", "message": "Ley rejoint votre equipe !" },
+    { "round": 5, "opponent": "ley", "unlock_type": "milestone", "unlock_id": "champion", "message": "Vous etes le Champion du Boulodrome !" }
+  ],
+  "milestones": [
+    { "id": "first_win", "name": "Premiere Victoire", "condition": "win_1_match", "reward_galets": 50 },
+    { "id": "first_carreau", "name": "Premier Carreau", "condition": "score_carreau", "reward_galets": 25 },
+    { "id": "arcade_half", "name": "Mi-Tournoi", "condition": "arcade_round_3", "reward_galets": 75 },
+    { "id": "champion", "name": "Champion du Boulodrome", "condition": "arcade_complete", "reward_galets": 200 },
+    { "id": "perfect_run", "name": "Run Parfaite", "condition": "arcade_no_loss", "reward_galets": 300 },
+    { "id": "fanny", "name": "La Fanny", "condition": "win_13_0", "reward_galets": 100 }
   ],
   "gates": [],
   "partners": [],

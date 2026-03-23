@@ -540,6 +540,28 @@ export default class TerrainRenderer {
     // TERRAIN SHADOW
     // ============================================================
     _drawTerrainShadow() {
+        // Try Phaser 4 shadow filter on a rectangle (cleaner than manual shadow)
+        const hasWebGL = !!(this.scene.renderer && this.scene.renderer.gl);
+        if (hasWebGL) {
+            try {
+                const shadowRect = this.scene.add.rectangle(
+                    this.tx + TERRAIN_WIDTH / 2,
+                    this.ty + TERRAIN_HEIGHT / 2,
+                    TERRAIN_WIDTH, TERRAIN_HEIGHT,
+                    0x3A2E28, 0.4
+                ).setDepth(1);
+                if (typeof shadowRect.enableFilters === 'function') {
+                    shadowRect.enableFilters();
+                    // Shadow: x, y, decay, power, color, samples, intensity
+                    shadowRect.filters.external.addShadow(3, 4, 0.12, 1, 0x1A1510, 4, 0.7);
+                    return; // Phaser 4 shadow used, skip fallback
+                }
+            } catch (_) {
+                // Filter not supported, fall through to manual shadow
+            }
+        }
+
+        // Fallback: manual shadow rectangles
         const g = this.scene.add.graphics().setDepth(1);
         g.fillStyle(0x1A1510, 0.25);
         g.fillRect(this.tx + 5, this.ty + 5, TERRAIN_WIDTH, TERRAIN_HEIGHT);

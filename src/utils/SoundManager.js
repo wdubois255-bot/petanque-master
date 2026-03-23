@@ -162,52 +162,90 @@ export function sfxCarreau() {
     const rnd = () => 1.0 + (Math.random() * 0.14 - 0.07);
 
     // Layer 1 — Attack/Impact: metallic "CLAC" (0-50ms)
+    // Square wave + bandpass filter for authentic metal hit character
     const attackFreq = 900 * rnd();
     const oscAttack = c.createOscillator();
     const gainAttack = c.createGain();
+    const attackFilter = c.createBiquadFilter();
     oscAttack.type = 'square';
     oscAttack.frequency.setValueAtTime(attackFreq, now);
-    gainAttack.gain.setValueAtTime(_effectiveVol(0.25), now);
+    attackFilter.type = 'bandpass';
+    attackFilter.frequency.setValueAtTime(1800, now);
+    attackFilter.Q.setValueAtTime(3, now);
+    gainAttack.gain.setValueAtTime(_effectiveVol(0.28), now);
     gainAttack.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-    oscAttack.connect(gainAttack);
+    oscAttack.connect(attackFilter);
+    attackFilter.connect(gainAttack);
     gainAttack.connect(c.destination);
     oscAttack.start(now);
     oscAttack.stop(now + 0.05);
 
-    // Layer 2 — Body/Resonance: deep metallic ring (5ms-400ms)
+    // Layer 2 — Body/Resonance: deep metallic ring with LFO modulation (5ms-500ms)
+    // LFO creates subtle vibrato effect like real metal resonance
     const bodyFreq = 400 * rnd();
     const oscBody = c.createOscillator();
     const gainBody = c.createGain();
+    const lfo = c.createOscillator();
+    const lfoGain = c.createGain();
     oscBody.type = 'sine';
     oscBody.frequency.setValueAtTime(bodyFreq, now + 0.005);
-    gainBody.gain.setValueAtTime(_effectiveVol(0.08), now + 0.005);
-    gainBody.gain.exponentialRampToValueAtTime(0.001, now + 0.405);
+    // Frequency sweep: slight downward pitch for natural ring decay
+    oscBody.frequency.exponentialRampToValueAtTime(bodyFreq * 0.85, now + 0.5);
+    gainBody.gain.setValueAtTime(_effectiveVol(0.10), now + 0.005);
+    gainBody.gain.exponentialRampToValueAtTime(0.001, now + 0.505);
+    // LFO: tremolo at ~12 Hz (metal vibration speed)
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(12, now);
+    lfoGain.gain.setValueAtTime(0.015, now);
+    lfo.connect(lfoGain);
+    lfoGain.connect(gainBody.gain);
     oscBody.connect(gainBody);
     gainBody.connect(c.destination);
     oscBody.start(now + 0.005);
-    oscBody.stop(now + 0.405);
+    oscBody.stop(now + 0.505);
+    lfo.start(now + 0.005);
+    lfo.stop(now + 0.505);
 
-    // Layer 3 — Tail/Echo: 2 delayed sine bursts for spatial depth
+    // Layer 2b — Harmonic overtone: adds richness (second harmonic)
+    const oscHarm = c.createOscillator();
+    const gainHarm = c.createGain();
+    oscHarm.type = 'sine';
+    oscHarm.frequency.setValueAtTime(bodyFreq * 2.4, now + 0.003);
+    oscHarm.frequency.exponentialRampToValueAtTime(bodyFreq * 2, now + 0.4);
+    gainHarm.gain.setValueAtTime(_effectiveVol(0.03), now + 0.003);
+    gainHarm.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    oscHarm.connect(gainHarm);
+    gainHarm.connect(c.destination);
+    oscHarm.start(now + 0.003);
+    oscHarm.stop(now + 0.35);
+
+    // Layer 3 — Tail/Echo: 3 delayed reflections with lowpass decay (spatial depth)
     const echoFreq = 300 * rnd();
     const echoes = [
-        { delay: 0.05, vol: 0.04 },
-        { delay: 0.10, vol: 0.02 }
+        { delay: 0.06, vol: 0.045, filterFreq: 2500 },
+        { delay: 0.12, vol: 0.025, filterFreq: 1800 },
+        { delay: 0.20, vol: 0.012, filterFreq: 1200 }
     ];
     for (const echo of echoes) {
         const oscEcho = c.createOscillator();
         const gainEcho = c.createGain();
+        const echoFilter = c.createBiquadFilter();
         oscEcho.type = 'sine';
         oscEcho.frequency.setValueAtTime(echoFreq, now + echo.delay);
+        echoFilter.type = 'lowpass';
+        echoFilter.frequency.setValueAtTime(echo.filterFreq, now + echo.delay);
         gainEcho.gain.setValueAtTime(_effectiveVol(echo.vol), now + echo.delay);
-        gainEcho.gain.exponentialRampToValueAtTime(0.001, now + echo.delay + 0.1);
-        oscEcho.connect(gainEcho);
+        gainEcho.gain.exponentialRampToValueAtTime(0.001, now + echo.delay + 0.12);
+        oscEcho.connect(echoFilter);
+        echoFilter.connect(gainEcho);
         gainEcho.connect(c.destination);
         oscEcho.start(now + echo.delay);
-        oscEcho.stop(now + echo.delay + 0.1);
+        oscEcho.stop(now + echo.delay + 0.12);
     }
 
-    // Layer 4 — Brightness: short noise burst for "snap" sensation (0-20ms)
-    const noiseDuration = 0.02;
+    // Layer 4 — Brightness: shaped noise burst for "snap" (0-25ms)
+    // Bandpass filtered for more metallic character
+    const noiseDuration = 0.025;
     const bufferSize = Math.floor(c.sampleRate * noiseDuration);
     const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
     const data = buffer.getChannelData(0);
@@ -216,12 +254,31 @@ export function sfxCarreau() {
     }
     const noiseSource = c.createBufferSource();
     noiseSource.buffer = buffer;
+    const noiseFilter = c.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(3500, now);
+    noiseFilter.Q.setValueAtTime(2, now);
     const gainNoise = c.createGain();
-    gainNoise.gain.setValueAtTime(_effectiveVol(0.03), now);
+    gainNoise.gain.setValueAtTime(_effectiveVol(0.04), now);
     gainNoise.gain.exponentialRampToValueAtTime(0.001, now + noiseDuration);
-    noiseSource.connect(gainNoise);
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(gainNoise);
     gainNoise.connect(c.destination);
     noiseSource.start(now);
+
+    // Layer 5 — Sub-bass thump: ground impact sensation (0-80ms)
+    // Low frequency gives physical "weight" to the hit
+    const oscSub = c.createOscillator();
+    const gainSub = c.createGain();
+    oscSub.type = 'sine';
+    oscSub.frequency.setValueAtTime(80, now);
+    oscSub.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+    gainSub.gain.setValueAtTime(_effectiveVol(0.06), now);
+    gainSub.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    oscSub.connect(gainSub);
+    gainSub.connect(c.destination);
+    oscSub.start(now);
+    oscSub.stop(now + 0.08);
 }
 
 export function sfxThrow() {

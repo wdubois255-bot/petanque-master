@@ -7,6 +7,8 @@ import { SHADOW_TEXT } from '../utils/Constants.js';
  * Extracted to enforce Single Responsibility Principle:
  * - Engine = logic (testable headless)
  * - Renderer = visuals (Phaser-dependent)
+ *
+ * Phaser 4 filters: glow on best ball, flash glow on collisions.
  */
 export default class EngineRenderer {
     constructor(scene, engine) {
@@ -17,6 +19,10 @@ export default class EngineRenderer {
         this._bestGfx = null;
         this._bestPulse = { t: 0 };
         this._lastBestBallId = null;
+        this._bestGlowSprite = null; // Phaser 4 glow filter target
+
+        // WebGL check for filters
+        this._hasWebGL = !!(scene.renderer && scene.renderer.gl);
 
         // Message text
         this._msgText = null;
@@ -108,6 +114,11 @@ export default class EngineRenderer {
     }
 
     spawnCollisionSparks(x, y) {
+        // Phaser 4 glow flash on impact point
+        if (this._hasWebGL) {
+            this._flashGlowAt(x, y);
+        }
+
         for (let i = 0; i < 5; i++) {
             const angle = Math.random() * Math.PI * 2;
             const dist = 6 + Math.random() * 12;
@@ -123,6 +134,28 @@ export default class EngineRenderer {
                 alpha: 0, duration: 200,
                 onComplete: () => spark.destroy()
             });
+        }
+    }
+
+    /**
+     * Phaser 4 glow flash effect at impact point.
+     * Creates a small white circle with glow filter that fades out.
+     */
+    _flashGlowAt(x, y) {
+        try {
+            const flash = this.scene.add.circle(x, y, 6, 0xFFFFFF, 0.9).setDepth(56);
+            if (typeof flash.enableFilters === 'function') {
+                flash.enableFilters();
+                flash.filters.internal.addGlow(0xFFFFFF, 6, 0, 1, false, 4, 4);
+            }
+            this.scene.tweens.add({
+                targets: flash,
+                alpha: 0, scaleX: 2, scaleY: 2,
+                duration: 250, ease: 'Cubic.easeOut',
+                onComplete: () => flash.destroy()
+            });
+        } catch (_) {
+            // Filter not supported, sparks alone are fine
         }
     }
 
@@ -164,6 +197,11 @@ export default class EngineRenderer {
             targets: flash, alpha: 0, duration: 200,
             onComplete: () => flash.destroy()
         });
+
+        // Phaser 4: additional glow flash
+        if (this._hasWebGL) {
+            this._flashGlowAt(x, y);
+        }
     }
 
     // ================================================================
@@ -189,11 +227,21 @@ export default class EngineRenderer {
     // ================================================================
 
     celebrateCarreau(ball) {
-        // "CARREAU !" text
+        // "CARREAU !" text with Phaser 4 glow filter
         const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(65);
+
+        // Phaser 4 glow on text
+        if (this._hasWebGL) {
+            try {
+                if (typeof txt.enableFilters === 'function') {
+                    txt.enableFilters();
+                    txt.filters.internal.addGlow(0xFFD700, 4, 0, 1, false, 4, 4);
+                }
+            } catch (_) { /* filter not supported */ }
+        }
 
         this.scene.tweens.add({
             targets: txt,
@@ -201,6 +249,24 @@ export default class EngineRenderer {
             duration: 1500, ease: 'Cubic.easeOut',
             onComplete: () => txt.destroy()
         });
+
+        // Glow ring expanding from ball (Phaser 4)
+        if (this._hasWebGL) {
+            try {
+                const ring = this.scene.add.circle(ball.x, ball.y, ball.radius + 2, 0xFFD700, 0.6)
+                    .setDepth(63);
+                if (typeof ring.enableFilters === 'function') {
+                    ring.enableFilters();
+                    ring.filters.internal.addGlow(0xFFD700, 8, 0, 1, false, 4, 6);
+                }
+                this.scene.tweens.add({
+                    targets: ring,
+                    scaleX: 4, scaleY: 4, alpha: 0,
+                    duration: 800, ease: 'Cubic.easeOut',
+                    onComplete: () => ring.destroy()
+                });
+            } catch (_) { /* filter not supported */ }
+        }
 
         // Radial gold sparks
         for (let i = 0; i < 8; i++) {
