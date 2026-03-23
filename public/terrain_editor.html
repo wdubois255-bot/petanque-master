@@ -246,6 +246,7 @@ const GAME_W = 832, GAME_H = 480;
 const TERRAIN_W = 180, TERRAIN_H = 420;
 const TX = (GAME_W - TERRAIN_W) / 2;  // 326
 const TY = (GAME_H - TERRAIN_H) / 2;  // 30
+const BORDER_W = 16; // Même valeur que TerrainRenderer.js BORDER_WIDTH
 
 const VIS = {
     village: { sky:['#6BB8E0','#A8D8EA','#D4E8D0','#C4B090'], ground:'#9B8D6A', surface:'#C4854A', border:'#8B6B3A' },
@@ -447,10 +448,6 @@ function drawTerrain(v) {
     for (let y = TY+10; y < TY+TERRAIN_H; y += 18)
         for (let x = TX+6; x < TX+TERRAIN_W; x += 14)
             ctx.fillRect(x + (y%36===0?5:0), y, 2, 2);
-    // Border
-    ctx.strokeStyle = v.border;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(TX, TY, TERRAIN_W, TERRAIN_H);
     // Dead lines
     ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.lineWidth = 1;
@@ -458,6 +455,40 @@ function drawTerrain(v) {
     ctx.beginPath(); ctx.moveTo(TX, TY+30);          ctx.lineTo(TX+TERRAIN_W, TY+30);          ctx.stroke();
     ctx.beginPath(); ctx.moveTo(TX, TY+TERRAIN_H-30);ctx.lineTo(TX+TERRAIN_W, TY+TERRAIN_H-30);ctx.stroke();
     ctx.setLineDash([]);
+    // Rondins de bois (16px, identique au jeu)
+    drawBorders(v);
+}
+
+function drawBorders(v) {
+    const bw = BORDER_W;
+    ctx.save();
+
+    // Remplissage principal
+    ctx.fillStyle = v.border;
+    ctx.fillRect(TX - bw, TY - bw, TERRAIN_W + bw*2, bw); // haut
+    ctx.fillRect(TX - bw, TY + TERRAIN_H, TERRAIN_W + bw*2, bw); // bas
+    ctx.fillRect(TX - bw, TY, bw, TERRAIN_H); // gauche
+    ctx.fillRect(TX + TERRAIN_W, TY, bw, TERRAIN_H); // droite
+
+    // Grain de bois (traits sombres parallèles)
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctx.lineWidth = 0.8;
+    for (let g = 3; g < bw; g += 4) {
+        // Haut & bas
+        ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw+g); ctx.lineTo(TX+TERRAIN_W+bw, TY-bw+g); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(TX-bw, TY+TERRAIN_H+g); ctx.lineTo(TX+TERRAIN_W+bw, TY+TERRAIN_H+g); ctx.stroke();
+        // Gauche & droite
+        ctx.beginPath(); ctx.moveTo(TX-bw+g, TY); ctx.lineTo(TX-bw+g, TY+TERRAIN_H); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(TX+TERRAIN_W+g, TY); ctx.lineTo(TX+TERRAIN_W+g, TY+TERRAIN_H); ctx.stroke();
+    }
+
+    // Reflet clair sur le bord extérieur
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw); ctx.lineTo(TX+TERRAIN_W+bw, TY-bw); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw); ctx.lineTo(TX-bw, TY); ctx.stroke();
+
+    ctx.restore();
 }
 function drawOverlayGuides() {
     if (!showOverlay) return;
