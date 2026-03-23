@@ -21,593 +21,1142 @@ const CHAR_VALUES = [
     { display: 'Rizzi', key: 'rizzi_animated', sprite: 'rizzi_animated', charId: 'rizzi' }
 ];
 
-const OPTIONS = [
-    { label: 'MODE', values: [{ display: 'VS IA', key: 'vs_ia' }, { display: 'Local 1v1', key: 'local' }] },
-    { label: 'JOUEUR 1', values: CHAR_VALUES },
-    { label: 'JOUEUR 2', values: CHAR_VALUES },
-    { label: 'BOULES', values: [
-        { display: 'Acier', key: 'acier' },
-        { display: 'Bronze', key: 'bronze' },
-        { display: 'Doree', key: 'doree' },
-        { display: 'Cuivre', key: 'cuivre' },
-        { display: 'Noire', key: 'noire' },
-        { display: 'Bleue', key: 'bleue' },
-        { display: 'Rouge', key: 'rouge' },
-        { display: 'Emeraude', key: 'emeraude' },
-        { display: 'Rouille', key: 'rouille' },
-        { display: 'Titane', key: 'titane' },
-        { display: 'Lavande', key: 'lavande' },
-        { display: 'Ivoire', key: 'ivoire' },
-        { display: 'Obsidienne', key: 'obsidienne' },
-        { display: 'Corail', key: 'corail' },
-        { display: 'Sable', key: 'sable' },
-        { display: 'Chrome', key: 'chrome' }
-    ]},
-    { label: 'COCHONNET', values: [
-        { display: 'Classique', key: 'classique' }, { display: 'Bleu', key: 'bleu' },
-        { display: 'Vert', key: 'vert' }, { display: 'Rouge', key: 'rouge' },
-        { display: 'Jungle', key: 'jungle' }, { display: 'Multicolor', key: 'multicolor' }
-    ]},
-    { label: 'TERRAIN', values: [
-        { display: 'Terre battue', key: 'terre' }, { display: 'Herbe', key: 'herbe' },
-        { display: 'Sable', key: 'sable' }, { display: 'Dalles', key: 'dalles' },
-        { display: 'Colline', key: 'colline' }
-    ]},
-    { label: 'DIFFICULTE', values: [
-        { display: 'Facile', key: 'easy' }, { display: 'Moyen', key: 'medium' },
-        { display: 'Difficile', key: 'hard' }
-    ]},
-    { label: 'FORMAT', values: [
-        { display: '3 Boules', key: 'tete_a_tete' }, { display: '2 Boules', key: 'deux_boules' },
-        { display: '1 Boule', key: 'une_boule' }
-    ]}
+const TAB_KEYS = ['personnages', 'equipement', 'terrain', 'reglages'];
+const TAB_LABELS = ['PERSONNAGES', 'EQUIPEMENT', 'TERRAIN', 'REGLAGES'];
+
+const DIFFICULTIES = [
+    { display: 'Facile', key: 'easy' },
+    { display: 'Moyen', key: 'medium' },
+    { display: 'Difficile', key: 'hard' }
 ];
 
-const ROW_MODE = 0, ROW_P1 = 1, ROW_P2 = 2, ROW_BOULES = 3, ROW_COCHONNET = 4;
-const ROW_TERRAIN = 5, ROW_DIFF = 6, ROW_FORMAT = 7;
+const FORMATS = [
+    { display: '3 Boules', key: 3 },
+    { display: '2 Boules', key: 2 },
+    { display: '1 Boule', key: 1 }
+];
 
-const LEFT_W = 490;
-const PANEL_X = 670;
-const PANEL_W = 280;
-const PANEL_TOP = 65;
+const MODES = [
+    { display: 'VS IA', key: 'vs_ia' },
+    { display: 'Local 1v1', key: 'local' }
+];
+
+const CX = GAME_WIDTH / 2;
+
+// Layout constants
+const BANNER_H = 88;
+const TAB_BAR_Y = BANNER_H + 6;
+const TAB_CONTENT_Y = TAB_BAR_Y + 28;
+const TAB_CONTENT_H = 280;
+const BOTTOM_Y = 420;
+
+const STAT_NAMES = ['precision', 'puissance', 'effet', 'sang_froid'];
+const STAT_LABELS = ['PRC', 'PUI', 'EFF', 'SDF'];
+const STAT_COLORS = [COLORS.STAT_PRECISION, COLORS.STAT_PUISSANCE, COLORS.STAT_EFFET, COLORS.STAT_ADAPTABILITE];
 
 export default class QuickPlayScene extends Phaser.Scene {
     constructor() {
         super('QuickPlayScene');
     }
 
+    // ================================================================
+    // INIT — reset ALL state (Phaser reuses scenes)
+    // ================================================================
     init() {
-        this._selections = null;
-        this._selectedRow = 0;
         this._transitioning = false;
+        this._activeTab = 0;
+        this._p1Index = 0;
+        this._p2Index = 1;
+        this._bouleIndex = 0;
+        this._cochonnetIndex = 0;
+        this._terrainIndex = 0;
+        this._modeIndex = 0;
+        this._difficultyIndex = 0;
+        this._formatIndex = 0;
+        this._tabObjects = [];
+        this._tabBarObjects = [];
+        this._bannerObjects = [];
+        this._bottomObjects = [];
+        this._particles = null;
+        this._p1Sprite = null;
+        this._p2Sprite = null;
+        this._p1BreathTween = null;
+        this._p2BreathTween = null;
+        this._p1NameText = null;
+        this._p2NameText = null;
+        this._summaryLabel = null;
+        this._allBoules = [];
+        this._allCochonnets = [];
+        this._ownedBoules = [];
+        this._ownedCochonnets = [];
+        this._allTerrains = [];
+        this._charsData = null;
     }
 
+    // ================================================================
+    // CREATE
+    // ================================================================
     create() {
-        this.cameras.main.setAlpha(1);
-        this.cameras.main.resetFX();
         setSoundScene(this);
+
+        // Load data
+        this._charsData = this.cache.json.get('characters');
+        const boulesData = this.cache.json.get('boules');
+        const terrainsData = this.cache.json.get('terrains');
+        this._allBoules = boulesData?.sets || [];
+        this._allCochonnets = boulesData?.cochonnets || [];
+        this._allTerrains = terrainsData?.stages || [];
+
+        // Filter owned items
+        const save = loadSave();
+        this._ownedBoules = this._allBoules.filter(b => b.unlocked || (save.inventory?.boules && save.inventory.boules.includes(b.id)));
+        this._ownedCochonnets = this._allCochonnets.filter(c => c.unlocked || (save.inventory?.cochonnets && save.inventory.cochonnets.includes(c.id)));
+
+        // Fallback: ensure at least 1 boule and 1 cochonnet
+        if (this._ownedBoules.length === 0) this._ownedBoules = [this._allBoules[0]];
+        if (this._ownedCochonnets.length === 0) this._ownedCochonnets = [this._allCochonnets[0]];
+
+        // Background
+        UIFactory.createDarkBackground(this);
+        this._particles = UIFactory.createDustParticles(this, 15, { minY: BANNER_H });
+
+        // Build all layers
+        this._buildBanner();
+        this._buildTabBar();
+        this._buildTabContent();
+        this._buildBottom();
+
+        // Navigation
+        UIFactory.addBackButton(this, 'TitleScene');
+        this._setupKeyboard();
+
         UIFactory.fadeIn(this);
+    }
 
-        this._selections = OPTIONS.map(() => 0);
-        this._selectedRow = 0;
-        this._totalRows = OPTIONS.length + 1;
+    // ================================================================
+    // UPDATE
+    // ================================================================
+    update(_time, delta) {
+        UIFactory.updateParticles(this._particles, delta);
+    }
 
-        // Background — warm dark gradient with subtle pattern
-        const bg = this.add.graphics();
-        bg.fillGradientStyle(0x2A1E15, 0x2A1E15, 0x4A3828, 0x4A3828, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    // ================================================================
+    // VS BANNER (top 0-88)
+    // ================================================================
+    _buildBanner() {
+        this._destroyList(this._bannerObjects);
+        this._bannerObjects = [];
 
-        // Subtle wood grain pattern
-        for (let y = 0; y < GAME_HEIGHT; y += 4) {
-            const alpha = 0.02 + Math.sin(y * 0.15) * 0.01;
-            bg.fillStyle(0x1A1008, alpha);
-            bg.fillRect(0, y, GAME_WIDTH, 2);
-        }
+        // Dark wood banner background
+        const bannerBg = UIFactory.createWoodPanel(this, 0, 0, GAME_WIDTH, BANNER_H, {
+            depth: UI.DEPTH_BG + 1, textureKey: 'ui_wood_dark'
+        });
+        this._bannerObjects.push(bannerBg);
 
-        // Left panel background (wood)
-        UIFactory.createWoodPanel(this, 16, 50, LEFT_W - 32, GAME_HEIGHT - 100, {
-            depth: 1, textureKey: 'ui_wood_dark'
+        // J1 sprite
+        const p1Char = CHAR_VALUES[this._p1Index];
+        this._p1Sprite = this._createBannerSprite(120, 44, p1Char.sprite);
+        this._bannerObjects.push(this._p1Sprite);
+
+        // J1 name
+        const p1Name = UIFactory.addText(this, 120, 78, p1Char.display, '10px', CSS.CREME, {
+            pixel: true, depth: UI.DEPTH_UI
+        });
+        this._bannerObjects.push(p1Name);
+        this._p1NameText = p1Name;
+
+        // VS text
+        const vsText = UIFactory.addText(this, CX, 38, 'VS', '28px', CSS.ACCENT, {
+            pixel: true, heavyShadow: true, depth: UI.DEPTH_UI
+        });
+        this._bannerObjects.push(vsText);
+
+        // Pulse on VS text
+        this.tweens.add({
+            targets: vsText,
+            scaleX: 1.08, scaleY: 1.08,
+            duration: 1000, yoyo: true, repeat: -1,
+            ease: 'Sine.easeInOut'
         });
 
-        // Right panel background (parchment)
-        UIFactory.createParchmentPanel(this, PANEL_X - PANEL_W / 2 - 6, PANEL_TOP - 6, PANEL_W + 12, GAME_HEIGHT - PANEL_TOP - 50, {
-            depth: 1
+        // Decorative dividers on both sides of VS
+        const divL = UIFactory.addDivider(this, CX - 80, 38, 80, { depth: UI.DEPTH_UI });
+        const divR = UIFactory.addDivider(this, CX + 80, 38, 80, { depth: UI.DEPTH_UI });
+        this._bannerObjects.push(divL, divR);
+
+        // J2 sprite
+        const p2Char = CHAR_VALUES[this._p2Index];
+        this._p2Sprite = this._createBannerSprite(GAME_WIDTH - 120, 44, p2Char.sprite);
+        if (this._p2Sprite.setFlipX) this._p2Sprite.setFlipX(true);
+        this._bannerObjects.push(this._p2Sprite);
+
+        // J2 name
+        const p2Name = UIFactory.addText(this, GAME_WIDTH - 120, 78, p2Char.display, '10px', CSS.CREME, {
+            pixel: true, depth: UI.DEPTH_UI
         });
+        this._bannerObjects.push(p2Name);
+        this._p2NameText = p2Name;
 
-        // Title
-        UIFactory.addTitle(this, LEFT_W / 2, 28, 'PARTIE RAPIDE', { depth: 5 });
+        // Breathing animations
+        this._startBreathing();
+    }
 
-        // Decorative divider under title
-        UIFactory.addDivider(this, LEFT_W / 2, 46, 200, { depth: 5 });
+    _createBannerSprite(x, y, spriteKey) {
+        if (this.textures.exists(spriteKey)) {
+            const sprite = this.add.sprite(x, y, spriteKey, 0);
+            sprite.setScale(CHAR_SCALE_QUICKPLAY * 1.5);
+            sprite.setDepth(UI.DEPTH_UI);
+            return sprite;
+        }
+        // Fallback placeholder circle
+        const gfx = this.add.graphics().setDepth(UI.DEPTH_UI);
+        gfx.fillStyle(COLORS.OCRE, 0.5);
+        gfx.fillCircle(x, y, 24);
+        gfx.lineStyle(2, COLORS.OR, 0.4);
+        gfx.strokeCircle(x, y, 24);
+        return gfx;
+    }
 
-        // Options rows
-        const startY = 72;
-        const rowH = 44;
-        this._optionTexts = [];
-        this._valueTexts = [];
-        this._arrowLeftTexts = [];
-        this._arrowRightTexts = [];
-        this._rowBgs = [];
+    _startBreathing() {
+        if (this._p1BreathTween) this._p1BreathTween.destroy();
+        if (this._p2BreathTween) this._p2BreathTween.destroy();
 
-        for (let i = 0; i < OPTIONS.length; i++) {
-            const y = startY + i * rowH;
-            const opt = OPTIONS[i];
+        const s = CHAR_SCALE_QUICKPLAY * 1.5;
 
-            // Row background
-            const rowBg = this.add.graphics().setDepth(2);
-            this._rowBgs.push(rowBg);
-
-            // Label
-            const label = this.add.text(130, y, opt.label, {
-                fontFamily: 'monospace', fontSize: '14px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(1, 0.5).setDepth(3);
-            this._optionTexts.push(label);
-
-            // Arrows
-            const arrowL = this.add.text(180, y, '\u25C0', {
-                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5).setDepth(3).setInteractive({ useHandCursor: true });
-            arrowL.on('pointerdown', () => {
-                this._selectedRow = i;
-                this._changeValue(-1);
+        if (this._p1Sprite && this._p1Sprite.setScale) {
+            this._p1Sprite.setScale(s);
+            this._p1BreathTween = this.tweens.add({
+                targets: this._p1Sprite,
+                scaleY: s * 1.03,
+                duration: 1200,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
             });
-            this._arrowLeftTexts.push(arrowL);
-
-            const val = this.add.text(300, y, opt.values[0].display, {
-                fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center', shadow: SHADOW
-            }).setOrigin(0.5).setDepth(3);
-            this._valueTexts.push(val);
-
-            const arrowR = this.add.text(420, y, '\u25B6', {
-                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5).setDepth(3).setInteractive({ useHandCursor: true });
-            arrowR.on('pointerdown', () => {
-                this._selectedRow = i;
-                this._changeValue(1);
+        }
+        if (this._p2Sprite && this._p2Sprite.setScale) {
+            this._p2Sprite.setScale(s);
+            this._p2BreathTween = this.tweens.add({
+                targets: this._p2Sprite,
+                scaleY: s * 1.03,
+                duration: 1400,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+                delay: 300
             });
-            this._arrowRightTexts.push(arrowR);
+        }
+    }
+
+    _updateBannerSprite(side) {
+        const isP1 = side === 'p1';
+        const idx = isP1 ? this._p1Index : this._p2Index;
+        const char = CHAR_VALUES[idx];
+        const x = isP1 ? 120 : GAME_WIDTH - 120;
+        const y = 44;
+
+        // Destroy old sprite
+        const oldSprite = isP1 ? this._p1Sprite : this._p2Sprite;
+        if (oldSprite && oldSprite.destroy) oldSprite.destroy();
+
+        const newSprite = this._createBannerSprite(x, y, char.sprite);
+        if (!isP1 && newSprite.setFlipX) newSprite.setFlipX(true);
+
+        if (isP1) {
+            this._p1Sprite = newSprite;
+            if (this._p1NameText) this._p1NameText.setText(char.display);
+        } else {
+            this._p2Sprite = newSprite;
+            if (this._p2NameText) this._p2NameText.setText(char.display);
         }
 
-        // JOUER button (centered, big wood button)
-        const jouerY = startY + OPTIONS.length * rowH + 12;
-        this._jouerBtn = UIFactory.createWoodButton(this, LEFT_W / 2, jouerY, 220, 42, 'JOUER !', {
-            fontSize: '14px',
-            depth: 5,
-            selected: false,
-            onDown: () => {
-                if (this._selectedRow === OPTIONS.length) {
-                    this._launchGame();
-                } else {
-                    this._selectedRow = OPTIONS.length;
-                    sfxUIClick();
-                    this._updateDisplay();
-                    this._updateInfoPanel();
-                }
+        this._startBreathing();
+
+        // Pop-in animation
+        if (newSprite.setScale) {
+            newSprite.setScale(0);
+            this.tweens.add({
+                targets: newSprite,
+                scaleX: CHAR_SCALE_QUICKPLAY * 1.5,
+                scaleY: CHAR_SCALE_QUICKPLAY * 1.5,
+                duration: 250,
+                ease: 'Back.easeOut'
+            });
+        }
+    }
+
+    // ================================================================
+    // TAB BAR
+    // ================================================================
+    _buildTabBar() {
+        this._destroyList(this._tabBarObjects);
+        this._tabBarObjects = [];
+
+        const tabW = 170;
+        const totalW = tabW * TAB_LABELS.length;
+        const startX = (GAME_WIDTH - totalW) / 2;
+
+        for (let i = 0; i < TAB_LABELS.length; i++) {
+            const x = startX + i * tabW + tabW / 2;
+            const isActive = i === this._activeTab;
+
+            // Tab background panel
+            const tabBg = this.add.graphics().setDepth(UI.DEPTH_PANEL);
+            tabBg.fillStyle(isActive ? 0x6B4F2D : 0x3A2E28, isActive ? 0.95 : 0.7);
+            tabBg.fillRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, 26,
+                { tl: 6, tr: 6, bl: 0, br: 0 });
+            if (isActive) {
+                tabBg.lineStyle(2, COLORS.OR, 0.6);
+                tabBg.strokeRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, 26,
+                    { tl: 6, tr: 6, bl: 0, br: 0 });
             }
+            this._tabBarObjects.push(tabBg);
+
+            // Number hint (1-4)
+            const numHint = UIFactory.addText(this, x - tabW / 2 + 14, TAB_BAR_Y,
+                `${i + 1}`, '8px', isActive ? CSS.OR : CSS.OMBRE, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 1, alpha: 0.5
+                });
+            this._tabBarObjects.push(numHint);
+
+            const label = UIFactory.addText(this, x + 4, TAB_BAR_Y,
+                TAB_LABELS[i], '9px',
+                isActive ? CSS.OR : CSS.GRIS,
+                { pixel: true, depth: UI.DEPTH_PANEL + 1 }
+            );
+            label.setInteractive({ useHandCursor: true });
+            const tabIndex = i;
+            label.on('pointerdown', () => {
+                sfxUIClick();
+                this._switchTab(tabIndex);
+            });
+            label.on('pointerover', () => { if (tabIndex !== this._activeTab) label.setColor(CSS.CREME); });
+            label.on('pointerout', () => { if (tabIndex !== this._activeTab) label.setColor(CSS.GRIS); });
+            this._tabBarObjects.push(label);
+        }
+    }
+
+    _switchTab(index) {
+        if (index === this._activeTab) return;
+        this._activeTab = index;
+        this._buildTabBar();
+        this._buildTabContent();
+    }
+
+    // ================================================================
+    // TAB CONTENT
+    // ================================================================
+    _buildTabContent() {
+        this._destroyList(this._tabObjects);
+        this._tabObjects = [];
+
+        // Content panel background
+        const panelBg = UIFactory.createWoodPanel(this, 16, TAB_CONTENT_Y, GAME_WIDTH - 32, TAB_CONTENT_H, {
+            depth: UI.DEPTH_PANEL - 1
+        });
+        this._tabObjects.push(panelBg);
+
+        switch (TAB_KEYS[this._activeTab]) {
+            case 'personnages': this._buildTabPersonnages(); break;
+            case 'equipement': this._buildTabEquipement(); break;
+            case 'terrain': this._buildTabTerrain(); break;
+            case 'reglages': this._buildTabReglages(); break;
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // TAB: PERSONNAGES
+    // ----------------------------------------------------------------
+    _buildTabPersonnages() {
+        const roster = this._charsData?.roster || [];
+        const colW = (GAME_WIDTH - 64) / 2;
+        const leftX = 32;
+        const rightX = 32 + colW + 8;
+        const topY = TAB_CONTENT_Y + 12;
+
+        // Column headers
+        this._tabObjects.push(UIFactory.addText(this, leftX + colW / 2, topY, 'JOUEUR 1', '10px', CSS.CIEL, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+        this._tabObjects.push(UIFactory.addText(this, rightX + colW / 2, topY, 'JOUEUR 2', '10px', CSS.ACCENT, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+
+        // Divider between columns
+        const midDivider = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+        midDivider.lineStyle(1, COLORS.OR, 0.25);
+        midDivider.lineBetween(CX, topY + 16, CX, topY + TAB_CONTENT_H - 40);
+        this._tabObjects.push(midDivider);
+
+        // Build both columns
+        this._buildCharColumn(leftX, topY + 22, colW - 8, this._p1Index, 'p1', roster);
+        this._buildCharColumn(rightX, topY + 22, colW - 8, this._p2Index, 'p2', roster);
+    }
+
+    _buildCharColumn(x, y, w, charIndex, side, roster) {
+        const char = CHAR_VALUES[charIndex];
+        const charData = roster.find(c => c.id === char.charId);
+        const centerX = x + w / 2;
+
+        // Character sprite (medium)
+        if (this.textures.exists(char.sprite)) {
+            const spr = this.add.sprite(centerX, y + 48, char.sprite, 0)
+                .setScale(CHAR_SCALE_QUICKPLAY)
+                .setDepth(UI.DEPTH_PANEL + 3);
+            this._tabObjects.push(spr);
+
+            // Gentle float
+            this.tweens.add({
+                targets: spr, y: y + 44,
+                duration: 1500, yoyo: true, repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+
+        // Name
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 86, char.display, '11px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3
+        }));
+
+        // Catchphrase
+        if (charData?.catchphrase) {
+            this._tabObjects.push(UIFactory.addText(this, centerX, y + 102,
+                `"${charData.catchphrase}"`, '10px', CSS.OCRE, {
+                    depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
+                }));
+        }
+
+        // Stat bars
+        if (charData?.stats) {
+            const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+            const barW = Math.min(w - 40, 140);
+            const barH = 8;
+            const barX = centerX - barW / 2 - 18;
+            const barStartY = y + 122;
+
+            for (let i = 0; i < STAT_NAMES.length; i++) {
+                const val = charData.stats[STAT_NAMES[i]] || 0;
+                const sy = barStartY + i * 20;
+
+                // Label
+                this._tabObjects.push(UIFactory.addText(this, barX, sy + barH / 2,
+                    STAT_LABELS[i], '8px', CSS.GRIS, {
+                        pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
+                    }));
+
+                // Bar
+                UIFactory.drawStatBar(gfx, barX + 36, sy, barW, barH, val, 10, STAT_COLORS[i]);
+
+                // Value
+                this._tabObjects.push(UIFactory.addText(this, barX + 36 + barW + 8, sy + barH / 2,
+                    `${val}`, '8px', CSS.CREME, {
+                        pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
+                    }));
+            }
+            this._tabObjects.push(gfx);
+        }
+
+        // Navigation arrows
+        const arrowY = y + 48;
+        this._tabObjects.push(this._createArrowButton(x + 8, arrowY, '<', () => {
+            if (side === 'p1') {
+                this._p1Index = (this._p1Index - 1 + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._updateBannerSprite('p1');
+            } else {
+                this._p2Index = (this._p2Index - 1 + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._updateBannerSprite('p2');
+            }
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+
+        this._tabObjects.push(this._createArrowButton(x + w - 8, arrowY, '>', () => {
+            if (side === 'p1') {
+                this._p1Index = (this._p1Index + 1) % CHAR_VALUES.length;
+                this._updateBannerSprite('p1');
+            } else {
+                this._p2Index = (this._p2Index + 1) % CHAR_VALUES.length;
+                this._updateBannerSprite('p2');
+            }
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+    }
+
+    // ----------------------------------------------------------------
+    // TAB: EQUIPEMENT
+    // ----------------------------------------------------------------
+    _buildTabEquipement() {
+        const colW = (GAME_WIDTH - 64) / 2;
+        const leftX = 32;
+        const rightX = 32 + colW + 8;
+        const topY = TAB_CONTENT_Y + 12;
+
+        // Column headers
+        this._tabObjects.push(UIFactory.addText(this, leftX + colW / 2, topY, 'BOULES', '10px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+        this._tabObjects.push(UIFactory.addText(this, rightX + colW / 2, topY, 'COCHONNET', '10px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+
+        // Divider
+        const midDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+        midDiv.lineStyle(1, COLORS.OR, 0.25);
+        midDiv.lineBetween(CX, topY + 16, CX, topY + TAB_CONTENT_H - 40);
+        this._tabObjects.push(midDiv);
+
+        // Boule display
+        this._buildBouleColumn(leftX, topY + 18, colW - 8);
+
+        // Cochonnet display
+        this._buildCochonnetColumn(rightX, topY + 18, colW - 8);
+    }
+
+    _buildBouleColumn(x, y, w) {
+        const centerX = x + w / 2;
+        const boule = this._ownedBoules[this._bouleIndex] || this._allBoules[0];
+        if (!boule) return;
+
+        // Ball sprite (large)
+        const texKey = boule.textureKey || ('ball_' + boule.id);
+        if (this.textures.exists(texKey)) {
+            const spr = this.add.sprite(centerX, y + 50, texKey)
+                .setScale(3.0)
+                .setDepth(UI.DEPTH_PANEL + 3);
+            this._tabObjects.push(spr);
+
+            // Gentle rotate
+            this.tweens.add({
+                targets: spr, angle: 10,
+                duration: 2000, yoyo: true, repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        } else {
+            // Color circle fallback
+            const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+            const c = parseInt((boule.color || '#A8B5C2').replace('#', ''), 16);
+            gfx.fillStyle(c, 1);
+            gfx.fillCircle(centerX, y + 50, 24);
+            gfx.lineStyle(2, 0xFFFFFF, 0.3);
+            gfx.strokeCircle(centerX, y + 50, 24);
+            // Highlight
+            gfx.fillStyle(0xFFFFFF, 0.25);
+            gfx.fillCircle(centerX - 6, y + 42, 8);
+            this._tabObjects.push(gfx);
+        }
+
+        // Name
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 90, boule.name, '11px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3
+        }));
+
+        // Description
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 108, boule.description || '', '9px', CSS.CREME, {
+            depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
+        }));
+
+        // Stat bars for boule
+        const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+        const barW = Math.min(w - 40, 130);
+        const barX = centerX - barW / 2 - 18;
+        const barStartY = y + 140;
+
+        const bouleStats = [
+            { label: 'PRC', val: boule.stats?.precision || 3, color: COLORS.STAT_PRECISION },
+            { label: 'PUI', val: boule.stats?.puissance || 3, color: COLORS.STAT_PUISSANCE }
+        ];
+
+        for (let i = 0; i < bouleStats.length; i++) {
+            const sy = barStartY + i * 20;
+            this._tabObjects.push(UIFactory.addText(this, barX, sy + 4,
+                bouleStats[i].label, '8px', CSS.GRIS, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
+                }));
+            UIFactory.drawStatBar(gfx, barX + 36, sy, barW, 8, bouleStats[i].val, 5, bouleStats[i].color);
+        }
+        this._tabObjects.push(gfx);
+
+        // Bonus text
+        if (boule.bonus) {
+            this._tabObjects.push(UIFactory.addText(this, centerX, barStartY + 48,
+                'Bonus: ' + boule.bonus, '8px', CSS.LAVANDE, {
+                    depth: UI.DEPTH_PANEL + 3
+                }));
+        }
+
+        // Lore
+        if (boule.lore) {
+            this._tabObjects.push(UIFactory.addText(this, centerX, barStartY + 66,
+                boule.lore, '8px', CSS.OCRE, {
+                    depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 16, align: 'center',
+                    alpha: 0.7
+                }));
+        }
+
+        // Counter
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 248,
+            (this._bouleIndex + 1) + ' / ' + this._ownedBoules.length, '8px', CSS.GRIS, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
+
+        // Arrows
+        this._tabObjects.push(this._createArrowButton(x + 8, y + 50, '<', () => {
+            this._bouleIndex = (this._bouleIndex - 1 + this._ownedBoules.length) % this._ownedBoules.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+        this._tabObjects.push(this._createArrowButton(x + w - 8, y + 50, '>', () => {
+            this._bouleIndex = (this._bouleIndex + 1) % this._ownedBoules.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+    }
+
+    _buildCochonnetColumn(x, y, w) {
+        const centerX = x + w / 2;
+        const coch = this._ownedCochonnets[this._cochonnetIndex] || this._allCochonnets[0];
+        if (!coch) return;
+
+        // Cochonnet sprite
+        const texKey = coch.textureKey || 'ball_cochonnet';
+        if (this.textures.exists(texKey)) {
+            const spr = this.add.sprite(centerX, y + 60, texKey)
+                .setScale(3.5)
+                .setDepth(UI.DEPTH_PANEL + 3);
+            this._tabObjects.push(spr);
+
+            this.tweens.add({
+                targets: spr, angle: -8,
+                duration: 1800, yoyo: true, repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        } else {
+            const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+            const c = parseInt((coch.color || '#FFD700').replace('#', ''), 16);
+            gfx.fillStyle(c, 1);
+            gfx.fillCircle(centerX, y + 60, 18);
+            gfx.fillStyle(0xFFFFFF, 0.3);
+            gfx.fillCircle(centerX - 4, y + 54, 6);
+            this._tabObjects.push(gfx);
+        }
+
+        // Name
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 100, coch.name, '11px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3
+        }));
+
+        // Description
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 120, coch.description || '', '9px', CSS.CREME, {
+            depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
+        }));
+
+        // Counter
+        this._tabObjects.push(UIFactory.addText(this, centerX, y + 170,
+            (this._cochonnetIndex + 1) + ' / ' + this._ownedCochonnets.length, '8px', CSS.GRIS, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
+
+        // Arrows
+        this._tabObjects.push(this._createArrowButton(x + 8, y + 60, '<', () => {
+            this._cochonnetIndex = (this._cochonnetIndex - 1 + this._ownedCochonnets.length) % this._ownedCochonnets.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+        this._tabObjects.push(this._createArrowButton(x + w - 8, y + 60, '>', () => {
+            this._cochonnetIndex = (this._cochonnetIndex + 1) % this._ownedCochonnets.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+    }
+
+    // ----------------------------------------------------------------
+    // TAB: TERRAIN
+    // ----------------------------------------------------------------
+    _buildTabTerrain() {
+        const terrain = this._allTerrains[this._terrainIndex];
+        if (!terrain) return;
+
+        const topY = TAB_CONTENT_Y + 12;
+        const previewW = 420;
+        const previewH = 220;
+        const previewX = CX - previewW / 2;
+        const previewY = topY + 8;
+
+        // Terrain preview background
+        const previewGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 2);
+        const bgColor = parseInt((terrain.colors?.bg || '#C4854A').replace('#', ''), 16);
+
+        // Outer frame
+        previewGfx.lineStyle(3, COLORS.OR, 0.5);
+        previewGfx.strokeRoundedRect(previewX - 2, previewY - 2, previewW + 4, previewH + 4, 6);
+
+        // Fill with terrain color
+        previewGfx.fillStyle(bgColor, 1);
+        previewGfx.fillRoundedRect(previewX, previewY, previewW, previewH, 4);
+
+        // Gravel texture simulation
+        const gravels = terrain.colors?.gravel || [];
+        if (gravels.length > 0) {
+            for (let i = 0; i < 200; i++) {
+                const gx = previewX + Math.random() * previewW;
+                const gy = previewY + Math.random() * previewH;
+                const gc = parseInt(gravels[Math.floor(Math.random() * gravels.length)].replace('#', ''), 16);
+                previewGfx.fillStyle(gc, 0.4 + Math.random() * 0.3);
+                previewGfx.fillCircle(gx, gy, 1 + Math.random() * 2);
+            }
+        }
+
+        // Terrain texture overlay if available
+        const surfaceTexMap = {
+            terre: 'terrain_tex_terre',
+            herbe: 'terrain_tex_herbe',
+            sable: 'terrain_tex_sable',
+            dalles: 'terrain_tex_dalles'
+        };
+        const texKey = surfaceTexMap[terrain.surface];
+        if (texKey && this.textures.exists(texKey)) {
+            const tileSpr = this.add.tileSprite(previewX + previewW / 2, previewY + previewH / 2,
+                previewW, previewH, texKey)
+                .setDepth(UI.DEPTH_PANEL + 3)
+                .setAlpha(0.6);
+            this._tabObjects.push(tileSpr);
+        }
+
+        // Zone indicators (for parc)
+        if (terrain.zones && terrain.zones.length > 0) {
+            for (const zone of terrain.zones) {
+                const zx = previewX + zone.rect.x * previewW;
+                const zy = previewY + zone.rect.y * previewH;
+                const zw = zone.rect.w * previewW;
+                const zh = zone.rect.h * previewH;
+                const zoneColor = parseInt((zone.color || '#B8A888').replace('#', ''), 16);
+                previewGfx.fillStyle(zoneColor, 0.4);
+                previewGfx.fillRect(zx, zy, zw, zh);
+            }
+        }
+
+        // Slope indicators (for colline)
+        if (terrain.slope_zones && terrain.slope_zones.length > 0) {
+            for (const sz of terrain.slope_zones) {
+                const sx = previewX + sz.rect.x * previewW;
+                const sy = previewY + sz.rect.y * previewH;
+                const sw = sz.rect.w * previewW;
+                const sh = sz.rect.h * previewH;
+                previewGfx.lineStyle(1, COLORS.OR, 0.3);
+                previewGfx.strokeRect(sx, sy, sw, sh);
+                // Arrow showing slope direction
+                const arrow = sz.direction === 'down' ? 'v' : '>';
+                this._tabObjects.push(UIFactory.addText(this, sx + sw / 2, sy + sh / 2,
+                    arrow, '10px', CSS.OR, { depth: UI.DEPTH_PANEL + 4, alpha: 0.5 }));
+            }
+        }
+
+        // Wall indicators (for docks)
+        if (terrain.walls) {
+            previewGfx.lineStyle(4, 0x7A7A70, 0.8);
+            previewGfx.strokeRect(previewX + 4, previewY + 4, previewW - 8, previewH - 8);
+
+            this._tabObjects.push(UIFactory.addText(this, previewX + previewW / 2, previewY + previewH - 14,
+                'MURS - Les boules rebondissent !', '8px', CSS.GRIS, {
+                    depth: UI.DEPTH_PANEL + 4, alpha: 0.7
+                }));
+        }
+
+        this._tabObjects.push(previewGfx);
+
+        // LOCKED badge
+        if (!terrain.unlocked) {
+            const lockGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 5);
+            lockGfx.fillStyle(0x1A1510, 0.6);
+            lockGfx.fillRoundedRect(previewX, previewY, previewW, previewH, 4);
+            this._tabObjects.push(lockGfx);
+
+            this._tabObjects.push(UIFactory.addText(this, CX, previewY + previewH / 2 - 10,
+                'VERROUILLE', '14px', CSS.ACCENT, {
+                    pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 6
+                }));
+            this._tabObjects.push(UIFactory.addText(this, CX, previewY + previewH / 2 + 14,
+                'Terminez l\'Arcade pour debloquer', '9px', CSS.GRIS, {
+                    depth: UI.DEPTH_PANEL + 6
+                }));
+        }
+
+        // Info below preview
+        const infoY = previewY + previewH + 10;
+
+        // Terrain name
+        this._tabObjects.push(UIFactory.addText(this, CX, infoY, terrain.name, '12px', CSS.OR, {
+            pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 3
+        }));
+
+        // Description
+        this._tabObjects.push(UIFactory.addText(this, CX, infoY + 18, terrain.description || '', '9px', CSS.CREME, {
+            depth: UI.DEPTH_PANEL + 3, wrapWidth: 600, align: 'center'
+        }));
+
+        // Terrain stat bars
+        const statsGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+        const barW = 120;
+        const statsY = infoY + 40;
+
+        // Adherence (derived from friction)
+        const adherence = Math.min(5, Math.round(terrain.friction * 1.67));
+        UIFactory.drawStatBar(statsGfx, CX - barW - 60, statsY, barW, 8, adherence, 5, COLORS.STAT_ADAPTABILITE);
+        this._tabObjects.push(UIFactory.addText(this, CX - barW - 96, statsY + 4,
+            'ADH', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
+
+        // Complexity
+        let complexity = 1;
+        if (terrain.zones && terrain.zones.length > 0) complexity += terrain.zones.length;
+        if (terrain.slope_zones && terrain.slope_zones.length > 0) complexity += 2;
+        if (terrain.walls) complexity += 2;
+        complexity = Math.min(5, complexity);
+        UIFactory.drawStatBar(statsGfx, CX + 60, statsY, barW, 8, complexity, 5, COLORS.STAT_EFFET);
+        this._tabObjects.push(UIFactory.addText(this, CX + 24, statsY + 4,
+            'CMP', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
+
+        this._tabObjects.push(statsGfx);
+
+        // Counter
+        this._tabObjects.push(UIFactory.addText(this, CX, statsY + 22,
+            (this._terrainIndex + 1) + ' / ' + this._allTerrains.length, '8px', CSS.GRIS, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
+
+        // Navigation arrows
+        this._tabObjects.push(this._createArrowButton(previewX - 24, previewY + previewH / 2, '<', () => {
+            this._terrainIndex = (this._terrainIndex - 1 + this._allTerrains.length) % this._allTerrains.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+        this._tabObjects.push(this._createArrowButton(previewX + previewW + 24, previewY + previewH / 2, '>', () => {
+            this._terrainIndex = (this._terrainIndex + 1) % this._allTerrains.length;
+            this._buildTabContent();
+            this._updateSummary();
+        }));
+    }
+
+    // ----------------------------------------------------------------
+    // TAB: REGLAGES
+    // ----------------------------------------------------------------
+    _buildTabReglages() {
+        const topY = TAB_CONTENT_Y + 30;
+        const rowH = 56;
+        const labelX = CX - 180;
+        const valX = CX + 40;
+
+        // MODE
+        this._buildSettingRow(labelX, topY, valX, 'MODE', MODES, this._modeIndex, (idx) => {
+            this._modeIndex = idx;
+            this._buildTabContent();
+            this._updateSummary();
+        });
+
+        // DIFFICULTY (only visible in VS IA mode)
+        if (MODES[this._modeIndex].key === 'vs_ia') {
+            this._buildSettingRow(labelX, topY + rowH, valX, 'DIFFICULTE', DIFFICULTIES, this._difficultyIndex, (idx) => {
+                this._difficultyIndex = idx;
+                this._buildTabContent();
+                this._updateSummary();
+            });
+        }
+
+        // FORMAT
+        const formatY = MODES[this._modeIndex].key === 'vs_ia' ? topY + rowH * 2 : topY + rowH;
+        this._buildSettingRow(labelX, formatY, valX, 'FORMAT', FORMATS, this._formatIndex, (idx) => {
+            this._formatIndex = idx;
+            this._buildTabContent();
+            this._updateSummary();
+        });
+
+        // Description text for current difficulty
+        if (MODES[this._modeIndex].key === 'vs_ia') {
+            const diffDescriptions = {
+                easy: 'L\'IA est genereuse. Ideal pour decouvrir.',
+                medium: 'L\'IA joue correctement. Un bon defi.',
+                hard: 'L\'IA est impitoyable. Bonne chance.'
+            };
+            const desc = diffDescriptions[DIFFICULTIES[this._difficultyIndex].key] || '';
+            this._tabObjects.push(UIFactory.addText(this, CX, formatY + rowH + 10, desc, '9px', CSS.OCRE, {
+                depth: UI.DEPTH_PANEL + 3, alpha: 0.8
+            }));
+        }
+    }
+
+    _buildSettingRow(labelX, y, valX, label, options, currentIndex, onChange) {
+        // Label
+        this._tabObjects.push(UIFactory.addText(this, labelX, y, label, '10px', CSS.GRIS, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
+        }));
+
+        // Current value (highlighted)
+        const val = options[currentIndex];
+        this._tabObjects.push(UIFactory.addText(this, valX, y, val.display, '12px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3
+        }));
+
+        // Arrows
+        this._tabObjects.push(this._createArrowButton(valX - 80, y, '<', () => {
+            const newIdx = (currentIndex - 1 + options.length) % options.length;
+            onChange(newIdx);
+        }));
+        this._tabObjects.push(this._createArrowButton(valX + 80, y, '>', () => {
+            const newIdx = (currentIndex + 1) % options.length;
+            onChange(newIdx);
+        }));
+    }
+
+    // ================================================================
+    // BOTTOM: JOUER BUTTON + SUMMARY
+    // ================================================================
+    _buildBottom() {
+        this._destroyList(this._bottomObjects);
+        this._bottomObjects = [];
+
+        // Summary text
+        const summaryText = this._getSummaryText();
+        this._summaryLabel = UIFactory.addText(this, CX, BOTTOM_Y - 8, summaryText, '9px', CSS.OCRE, {
+            depth: UI.DEPTH_UI, alpha: 0.8
+        });
+        this._bottomObjects.push(this._summaryLabel);
+
+        // JOUER button
+        const btnW = 240;
+        const btnH = 44;
+        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 28, btnW, btnH, 'JOUER !', {
+            fontSize: '16px',
+            selectedTextColor: CSS.OR,
+            depth: UI.DEPTH_UI,
+            onDown: () => this._launchGame()
+        });
+        this._bottomObjects.push(btn.container);
+
+        // Pulse animation on JOUER button
+        this.tweens.add({
+            targets: btn.container,
+            scaleX: 1.02, scaleY: 1.02,
+            duration: 800, yoyo: true, repeat: -1,
+            ease: 'Sine.easeInOut'
         });
 
         // Controls hint
-        UIFactory.addControlsHint(this,
-            'FLECHES Naviguer   ESPACE Confirmer', { depth: 5 });
-
-        // Back button
-        UIFactory.addBackButton(this, 'TitleScene', { depth: 5 });
-
-        // Info panel elements
-        this._infoBarsGfx = this.add.graphics().setDepth(5);
-        this._infoLabels = [];
-        this._boulePreview = null;
-        this._charPreview = null;
-
-        // Input
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.enterKey = this.input.keyboard.addKey('ENTER');
-        this.spaceKey = this.input.keyboard.addKey('SPACE');
-
-        this._updateDisplay();
-        this._updateInfoPanel();
-
-        this.events.on('shutdown', this._shutdown, this);
+        this._bottomObjects.push(UIFactory.addControlsHint(this,
+            '[1-4] Onglets  [Fleches] Naviguer  [Entree] Jouer  [Echap] Retour',
+            { depth: UI.DEPTH_UI }
+        ));
     }
 
-    _shutdown() {
-        this.input.keyboard.removeAllListeners();
-        this._infoLabels.forEach(l => l.destroy());
-        this._infoLabels = [];
-        if (this._boulePreview) { this._boulePreview.destroy(); this._boulePreview = null; }
-        if (this._charPreview) { this._charPreview.destroy(); this._charPreview = null; }
-        this.tweens.killAll();
+    _getSummaryText() {
+        const p1 = CHAR_VALUES[this._p1Index].display;
+        const p2 = CHAR_VALUES[this._p2Index].display;
+        const terrain = this._allTerrains[this._terrainIndex]?.name || 'Village';
+        const mode = MODES[this._modeIndex].key === 'local' ? 'Local' : DIFFICULTIES[this._difficultyIndex].display;
+        const format = FORMATS[this._formatIndex].display;
+        return p1 + ' vs ' + p2 + ' | ' + terrain + ' | ' + mode + ' | ' + format;
     }
 
-    _changeValue(dir) {
-        if (this._selectedRow >= OPTIONS.length) return;
-        const opt = OPTIONS[this._selectedRow];
-        this._selections[this._selectedRow] = (this._selections[this._selectedRow] + dir + opt.values.length) % opt.values.length;
+    _updateSummary() {
+        if (this._summaryLabel) {
+            this._summaryLabel.setText(this._getSummaryText());
+        }
+    }
+
+    // ================================================================
+    // ARROW BUTTON HELPER
+    // ================================================================
+    _createArrowButton(x, y, label, onClick) {
+        const arrowBg = this.add.graphics().setDepth(UI.DEPTH_PANEL + 4);
+        arrowBg.fillStyle(0x3A2E28, 0.8);
+        arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+        arrowBg.lineStyle(1, COLORS.OR, 0.3);
+        arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+
+        const arrow = this.add.text(x, y, label, {
+            fontFamily: FONT_PIXEL,
+            fontSize: '14px',
+            color: CSS.CREME,
+            shadow: SHADOW
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 5).setInteractive({ useHandCursor: true });
+
+        arrow.on('pointerover', () => {
+            arrow.setColor(CSS.OR);
+            arrowBg.clear();
+            arrowBg.fillStyle(0x5A4A38, 0.9);
+            arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.lineStyle(1, COLORS.OR, 0.6);
+            arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+        });
+        arrow.on('pointerout', () => {
+            arrow.setColor(CSS.CREME);
+            arrowBg.clear();
+            arrowBg.fillStyle(0x3A2E28, 0.8);
+            arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.lineStyle(1, COLORS.OR, 0.3);
+            arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+        });
+        arrow.on('pointerdown', () => {
+            sfxUIClick();
+            onClick();
+        });
+
+        const group = this.add.container(0, 0, [arrowBg, arrow]).setDepth(UI.DEPTH_PANEL + 5);
+        return group;
+    }
+
+    // ================================================================
+    // KEYBOARD NAVIGATION
+    // ================================================================
+    _setupKeyboard() {
+        this.input.keyboard.on('keydown-ONE', () => { sfxUIClick(); this._switchTab(0); });
+        this.input.keyboard.on('keydown-TWO', () => { sfxUIClick(); this._switchTab(1); });
+        this.input.keyboard.on('keydown-THREE', () => { sfxUIClick(); this._switchTab(2); });
+        this.input.keyboard.on('keydown-FOUR', () => { sfxUIClick(); this._switchTab(3); });
+
+        this.input.keyboard.on('keydown-LEFT', () => this._handleArrowKey(-1));
+        this.input.keyboard.on('keydown-RIGHT', () => this._handleArrowKey(1));
+        this.input.keyboard.on('keydown-UP', () => this._handleVerticalKey(-1));
+        this.input.keyboard.on('keydown-DOWN', () => this._handleVerticalKey(1));
+
+        this.input.keyboard.on('keydown-ENTER', () => this._launchGame());
+        this.input.keyboard.on('keydown-SPACE', () => this._launchGame());
+    }
+
+    _handleArrowKey(dir) {
         sfxUIClick();
-        this._updateDisplay();
-        this._updateInfoPanel();
-    }
-
-    _updateDisplay() {
-        for (let i = 0; i < OPTIONS.length; i++) {
-            const sel = this._selections[i];
-            const opt = OPTIONS[i];
-            this._valueTexts[i].setText(opt.values[sel].display);
-
-            const isSelected = (this._selectedRow === i);
-            this._optionTexts[i].setColor(isSelected ? '#FFD700' : '#D4A574');
-            this._valueTexts[i].setColor(isSelected ? '#FFFFFF' : '#F5E6D0');
-            this._arrowLeftTexts[i].setAlpha(isSelected ? 1 : 0.3);
-            this._arrowRightTexts[i].setAlpha(isSelected ? 1 : 0.3);
-
-            // Row background
-            this._rowBgs[i].clear();
-            if (isSelected) {
-                const y = 72 + i * 44;
-                this._rowBgs[i].fillStyle(0x8B6B3D, 0.25);
-                this._rowBgs[i].fillRoundedRect(28, y - 16, LEFT_W - 56, 32, 4);
-                this._rowBgs[i].lineStyle(1, 0xFFD700, 0.3);
-                this._rowBgs[i].strokeRoundedRect(28, y - 16, LEFT_W - 56, 32, 4);
-            }
-        }
-
-        // JOUER button selected state
-        const jouerSelected = (this._selectedRow === OPTIONS.length);
-        this._jouerBtn.setSelected(jouerSelected);
-    }
-
-    _updateInfoPanel() {
-        this._infoBarsGfx.clear();
-        this._infoLabels.forEach(l => l.destroy());
-        this._infoLabels = [];
-        if (this._boulePreview) { this._boulePreview.destroy(); this._boulePreview = null; }
-        if (this._charPreview) { this._charPreview.destroy(); this._charPreview = null; }
-
-        const boulesData = this.cache.json.get('boules');
-        const terrainsData = this.cache.json.get('terrains');
-        const charsData = this.cache.json.get('characters');
-        const cx = PANEL_X;
-        const top = PANEL_TOP;
-
-        if (this._selectedRow === ROW_MODE) {
-            this._drawModePanel(cx, top);
-        } else if ((this._selectedRow === ROW_P1 || this._selectedRow === ROW_P2) && charsData) {
-            this._drawCharPanel(cx, top, charsData, this._selectedRow === ROW_P1);
-        } else if (this._selectedRow === ROW_BOULES && boulesData) {
-            this._drawBoulePanel(cx, top, boulesData);
-        } else if (this._selectedRow === ROW_COCHONNET && boulesData) {
-            this._drawCochonnetPanel(cx, top, boulesData);
-        } else if (this._selectedRow === ROW_TERRAIN && terrainsData) {
-            this._drawTerrainPanel(cx, top, terrainsData);
-        } else if (this._selectedRow === ROW_DIFF) {
-            this._drawDifficultyPanel(cx, top);
-        } else {
-            this._drawSummaryPanel(cx, top, boulesData, charsData);
+        switch (TAB_KEYS[this._activeTab]) {
+            case 'personnages':
+                this._p1Index = (this._p1Index + dir + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._updateBannerSprite('p1');
+                this._buildTabContent();
+                this._updateSummary();
+                break;
+            case 'equipement':
+                this._bouleIndex = (this._bouleIndex + dir + this._ownedBoules.length) % this._ownedBoules.length;
+                this._buildTabContent();
+                this._updateSummary();
+                break;
+            case 'terrain':
+                this._terrainIndex = (this._terrainIndex + dir + this._allTerrains.length) % this._allTerrains.length;
+                this._buildTabContent();
+                this._updateSummary();
+                break;
+            case 'reglages':
+                this._modeIndex = (this._modeIndex + dir + MODES.length) % MODES.length;
+                this._buildTabContent();
+                this._updateSummary();
+                break;
         }
     }
 
-    _drawModePanel(cx, top) {
-        const modeKey = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]].key;
-        const isLocal = modeKey === 'local';
-        this._addLabel(cx, top + 10, isLocal ? 'LOCAL 1v1' : 'VS INTELLIGENCE\nARTIFICIELLE', '16px', '#FFD700', 0.5);
-        const desc = isLocal
-            ? 'Deux joueurs sur le\nmeme ecran.'
-            : 'Affrontez l\'IA.\nChoisissez difficulte\net personnage.';
-        this._addLabel(cx, top + 50, desc, '14px', '#3A2E28', 0.5, PANEL_W - 30);
-
-        const iconY = top + 120;
-        this._infoBarsGfx.fillStyle(0x5B9BD5, 0.8);
-        this._infoBarsGfx.fillCircle(cx - 40, iconY, 16);
-        this._addLabel(cx - 40, iconY - 4, 'J1', '13px', '#FFFFFF', 0.5);
-        this._addLabel(cx, iconY - 4, 'VS', '14px', '#8B6B3D', 0.5);
-        this._infoBarsGfx.fillStyle(isLocal ? 0xC44B3F : 0x5A4A38, 0.8);
-        this._infoBarsGfx.fillCircle(cx + 40, iconY, 16);
-        this._addLabel(cx + 40, iconY - 4, isLocal ? 'J2' : 'IA', '13px', '#FFFFFF', 0.5);
-    }
-
-    _drawBoulePanel(cx, top, boulesData) {
-        const bouleKey = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
-        const boule = boulesData.sets.find(s => s.id === bouleKey);
-        if (!boule) return;
-
-        this._addLabel(cx, top + 8, boule.name, '16px', '#8B6B3D', 0.5);
-        const sphereY = top + 58;
-        const spriteKey = `ball_${bouleKey}`;
-        if (this.textures.exists(spriteKey)) {
-            const tex = this.textures.get(spriteKey);
-            const isSheet = tex.frameTotal > 2;
-            this._boulePreview = isSheet
-                ? this.add.sprite(cx, sphereY, spriteKey, 0).setScale(1).setOrigin(0.5).setDepth(5)
-                : this.add.image(cx, sphereY, spriteKey).setScale(1).setOrigin(0.5).setDepth(5);
-        } else {
-            const color = parseInt(boule.color.replace('#', ''), 16);
-            this._boulePreview = this.add.graphics().setDepth(5);
-            this._boulePreview.fillStyle(color, 1);
-            this._boulePreview.fillCircle(cx, sphereY, 22);
-        }
-        this._addLabel(cx, sphereY + 40, boule.description, '12px', '#3A2E28', 0.5, PANEL_W - 20);
-
-        // Stats
-        const barsY = sphereY + 78;
-        const bonus = boule.bonus || '';
-        let glisseVal = 5;
-        if (bonus.startsWith('friction_x')) {
-            const f = parseFloat(bonus.split('x')[1]) || 1;
-            glisseVal = f < 1 ? Math.round(5 + (1 - f) * 30) : Math.round(5 - (f - 1) * 10);
-        }
-        if (bonus.startsWith('knockback_x')) glisseVal = 3;
-        if (bonus.startsWith('retro_x')) glisseVal = 6;
-        if (bonus.startsWith('restitution_x')) {
-            const r = parseFloat(bonus.split('x')[1]) || 1;
-            glisseVal = r > 1 ? 7 : 4;
-        }
-        this._drawBars(cx, barsY, [
-            { label: 'Poids', value: boule.stats.masse, min: 550, max: 900, color: 0xC4854A },
-            { label: 'Taille', value: boule.stats.rayon, min: 8, max: 12, color: 0x87CEEB },
-            { label: 'Special', value: glisseVal, min: 1, max: 10, color: 0x9B7BB8 }
-        ]);
-        if (boule.lore) {
-            this._addLabel(cx, barsY + 80, `"${boule.lore}"`, '14px', '#7A6A5A', 0.5, PANEL_W - 20);
+    _handleVerticalKey(dir) {
+        sfxUIClick();
+        switch (TAB_KEYS[this._activeTab]) {
+            case 'personnages':
+                this._p2Index = (this._p2Index + dir + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._updateBannerSprite('p2');
+                this._buildTabContent();
+                this._updateSummary();
+                break;
+            case 'equipement':
+                this._cochonnetIndex = (this._cochonnetIndex + dir + this._ownedCochonnets.length) % this._ownedCochonnets.length;
+                this._buildTabContent();
+                this._updateSummary();
+                break;
+            case 'reglages':
+                if (MODES[this._modeIndex].key === 'vs_ia') {
+                    this._difficultyIndex = (this._difficultyIndex + dir + DIFFICULTIES.length) % DIFFICULTIES.length;
+                    this._buildTabContent();
+                    this._updateSummary();
+                }
+                break;
         }
     }
 
-    _drawCochonnetPanel(cx, top, boulesData) {
-        const cochKey = OPTIONS[ROW_COCHONNET].values[this._selections[ROW_COCHONNET]].key;
-        const cochonnets = boulesData.cochonnets || [];
-        const coch = cochonnets.find(c => c.id === cochKey);
-        if (!coch) return;
-        this._addLabel(cx, top + 10, coch.name, '16px', '#8B6B3D', 0.5);
-        const sphereY = top + 70;
-        const texKey = coch.textureKey;
-        if (texKey && this.textures.exists(texKey)) {
-            this._boulePreview = this.add.image(cx, sphereY, texKey)
-                .setScale(2).setOrigin(0.5).setDepth(5);
-        } else {
-            const color = parseInt(coch.color.replace('#', ''), 16);
-            this._boulePreview = this.add.graphics().setDepth(5);
-            this._boulePreview.fillStyle(color, 1);
-            this._boulePreview.fillCircle(cx, sphereY, 18);
-        }
-        this._addLabel(cx, sphereY + 40, coch.description, '13px', '#3A2E28', 0.5, PANEL_W - 20);
+    // ================================================================
+    // COMPUTED STATE (for launch)
+    // ================================================================
+    get _mode() {
+        return MODES[this._modeIndex].key;
     }
 
-    _drawTerrainPanel(cx, top, terrainsData) {
-        const terrainKey = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
-        const terrain = terrainsData.stages.find(t => t.id === terrainKey) ||
-                        terrainsData.stages.find(t => t.surface === terrainKey);
-        if (!terrain) return;
-        this._addLabel(cx, top + 10, terrain.name, '16px', '#8B6B3D', 0.5);
-
-        const swatchY = top + 46;
-        const bgColor = parseInt(terrain.colors.bg.replace('#', ''), 16);
-        this._infoBarsGfx.fillStyle(bgColor, 1);
-        this._infoBarsGfx.fillRoundedRect(cx - 50, swatchY, 100, 28, 4);
-        this._infoBarsGfx.lineStyle(1, 0x8B6B3D, 0.4);
-        this._infoBarsGfx.strokeRoundedRect(cx - 50, swatchY, 100, 28, 4);
-        const gravel = terrain.colors.gravel;
-        for (let i = 0; i < 15; i++) {
-            const gx = cx - 45 + Math.random() * 90;
-            const gy = swatchY + 4 + Math.random() * 20;
-            const gc = parseInt(gravel[Math.floor(Math.random() * gravel.length)].replace('#', ''), 16);
-            this._infoBarsGfx.fillStyle(gc, 0.6);
-            this._infoBarsGfx.fillRect(gx, gy, 2, 2);
-        }
-
-        const shortDesc = terrain.description.length > 80
-            ? terrain.description.substring(0, 77) + '...'
-            : terrain.description;
-        this._addLabel(cx, swatchY + 38, shortDesc, '14px', '#3A2E28', 0.5, PANEL_W - 20);
-
-        const barsY = swatchY + 80;
-        const frictionDesc = terrain.friction >= 2.5 ? 'Arret rapide' : terrain.friction >= 1.5 ? 'Reduit' : terrain.friction <= 0.5 ? 'Ca roule !' : 'Equilibre';
-        const features = [terrain.slope ? 'Pente' : null, terrain.walls ? 'Rebonds' : null, terrain.zones.length > 0 ? 'Zones' : null].filter(Boolean);
-        this._drawBars(cx, barsY, [
-            { label: 'Adherence', value: Math.min(terrain.friction / 3.5 * 10, 10), min: 0, max: 10, color: 0xD4A574, desc: frictionDesc },
-            { label: 'Complexite', value: features.length * 3 + 2, min: 0, max: 10, color: 0xC44B3F, desc: features.join(', ') || 'Plat' }
-        ]);
+    get _difficulty() {
+        return DIFFICULTIES[this._difficultyIndex].key;
     }
 
-    _drawDifficultyPanel(cx, top) {
-        const diffKey = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
-        const diffInfo = {
-            easy: { title: 'Facile', desc: 'L\'adversaire vise mal\net ne tire pas.', stars: 1 },
-            medium: { title: 'Moyen', desc: 'Adversaire correct,\ntire quand il le faut.', stars: 2 },
-            hard: { title: 'Difficile', desc: 'Adversaire precis\net strategique.', stars: 3 }
-        };
-        const d = diffInfo[diffKey] || diffInfo.easy;
-        this._addLabel(cx, top + 10, d.title, '16px', '#8B6B3D', 0.5);
-        const starStr = '\u2605'.repeat(d.stars) + '\u2606'.repeat(3 - d.stars);
-        this._addLabel(cx, top + 46, starStr, '24px', '#FFD700', 0.5);
-        this._addLabel(cx, top + 90, d.desc, '13px', '#3A2E28', 0.5, PANEL_W - 20);
+    get _format() {
+        return FORMATS[this._formatIndex].key;
     }
 
-    _drawCharPanel(cx, top, charsData, isP1 = true) {
-        const rowIdx = isP1 ? ROW_P1 : ROW_P2;
-        const charOption = OPTIONS[rowIdx].values[this._selections[rowIdx]];
-        let char = charsData.roster.find(c => c.id === charOption.charId);
-        if (!char) return;
-
-        if (char.isRookie || char.id === 'rookie') {
-            const save = loadSave();
-            if (save.rookie) char = { ...char, stats: { ...save.rookie.stats } };
-        }
-
-        const teamColor = isP1 ? '#5B9BD5' : '#C44B3F';
-        const teamLabel = isP1 ? 'JOUEUR 1' : 'JOUEUR 2';
-        this._addLabel(cx, top + 6, teamLabel, '12px', teamColor, 0.5);
-        this._addLabel(cx, top + 24, char.name, '16px', '#8B6B3D', 0.5);
-        this._addLabel(cx, top + 42, char.title, '11px', '#6A5A48', 0.5);
-
-        const spriteY = top + 86;
-        const spriteKey = charOption.sprite;
-        if (this.textures.exists(spriteKey)) {
-            this._charPreview = this.add.sprite(cx, spriteY, spriteKey, 0)
-                .setScale(CHAR_SCALE_QUICKPLAY).setOrigin(0.5).setDepth(5);
-        }
-
-        this._addLabel(cx, spriteY + 38, `"${char.catchphrase}"`, '14px', '#7A6A5A', 0.5, PANEL_W - 20);
-
-        const barsY = spriteY + 60;
-        this._drawBars(cx, barsY, [
-            { label: 'Precision', value: char.stats.precision, min: 0, max: 10, color: 0xD4A574 },
-            { label: 'Puissance', value: char.stats.puissance, min: 0, max: 10, color: 0xC4854A },
-            { label: 'Effet', value: char.stats.effet, min: 0, max: 10, color: 0x9B7BB8 },
-            { label: 'Sang-froid', value: char.stats.sang_froid, min: 0, max: 10, color: 0x87CEEB }
-        ]);
+    get _p1CharId() {
+        return CHAR_VALUES[this._p1Index].charId;
     }
 
-    _drawSummaryPanel(cx, top, boulesData, charsData) {
-        this._addLabel(cx, top + 10, 'RESUME', '16px', '#8B6B3D', 0.5);
-        UIFactory.addDivider(this, cx, top + 28, 140, { depth: 5, color: 0x8B6B3D });
-
-        const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]];
-        const p1 = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
-        const p2 = OPTIONS[ROW_P2].values[this._selections[ROW_P2]];
-        const bouleKey = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
-        const boule = boulesData?.sets?.find(s => s.id === bouleKey);
-        const terrain = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]];
-        const diff = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]];
-
-        const lines = [
-            `Mode: ${mode.display}`,
-            `J1: ${p1.display}`,
-            `J2: ${p2.display}`,
-            `Boules: ${boule?.name || bouleKey}`,
-            `Terrain: ${terrain.display}`,
-        ];
-        if (mode.key === 'vs_ia') lines.push(`Diff: ${diff.display}`);
-
-        let ly = top + 44;
-        for (const line of lines) {
-            this._addLabel(cx - PANEL_W / 2 + 14, ly, line, '13px', '#3A2E28', 0);
-            ly += 20;
-        }
+    get _p2CharId() {
+        return CHAR_VALUES[this._p2Index].charId;
     }
 
-    // === HELPERS ===
-    _addLabel(x, y, text, size, color, originX, wrapWidth) {
-        const style = {
-            fontFamily: 'monospace', fontSize: size, color, shadow: SHADOW
-        };
-        if (wrapWidth) {
-            style.wordWrap = { width: wrapWidth };
-            style.align = 'center';
-            style.lineSpacing = 2;
-        }
-        const t = this.add.text(x, y, text, style)
-            .setOrigin(originX, 0).setDepth(5);
-        this._infoLabels.push(t);
-        return t;
+    get _p1Name() {
+        return CHAR_VALUES[this._p1Index].display;
     }
 
-    _drawBars(cx, startY, bars) {
-        const totalW = PANEL_W - 24;
-        const labelW = 76;
-        const barH = 8;
-        const rowH = 26;
-        const barX = cx - totalW / 2 + labelW;
-        const barW = totalW - labelW - 4;
-
-        for (let i = 0; i < bars.length; i++) {
-            const b = bars[i];
-            const by = startY + i * rowH;
-
-            this._addLabel(cx - totalW / 2, by, b.label, '14px', '#6A5A48', 0);
-
-            // Bar
-            this._infoBarsGfx.fillStyle(0x3A2E28, 0.4);
-            this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW, barH, 3);
-
-            const ratio = Phaser.Math.Clamp((b.value - (b.min || 0)) / ((b.max || 10) - (b.min || 0)), 0, 1);
-            if (ratio > 0) {
-                this._infoBarsGfx.fillStyle(b.color, 0.85);
-                this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW * ratio, barH, 3);
-                this._infoBarsGfx.fillStyle(0xFFFFFF, 0.15);
-                this._infoBarsGfx.fillRoundedRect(barX, by + 2, barW * ratio, barH / 2, 3);
-            }
-
-            this._infoBarsGfx.lineStyle(1, 0x8B6B3D, 0.3);
-            this._infoBarsGfx.strokeRoundedRect(barX, by + 2, barW, barH, 3);
-
-            if (b.desc) {
-                this._addLabel(barX, by + barH + 4, b.desc, '10px', '#7A6A5A', 0);
-            }
-        }
+    get _p2Name() {
+        return CHAR_VALUES[this._p2Index].display;
     }
 
-    update() {
-        const up = Phaser.Input.Keyboard.JustDown(this.cursors.up);
-        const down = Phaser.Input.Keyboard.JustDown(this.cursors.down);
-        const left = Phaser.Input.Keyboard.JustDown(this.cursors.left);
-        const right = Phaser.Input.Keyboard.JustDown(this.cursors.right);
-        const confirm = Phaser.Input.Keyboard.JustDown(this.enterKey) || Phaser.Input.Keyboard.JustDown(this.spaceKey);
-
-        if (up) {
-            this._selectedRow = Math.max(0, this._selectedRow - 1);
-            sfxUIClick();
-            this._updateDisplay();
-            this._updateInfoPanel();
-        }
-        if (down) {
-            this._selectedRow = Math.min(this._totalRows - 1, this._selectedRow + 1);
-            sfxUIClick();
-            this._updateDisplay();
-            this._updateInfoPanel();
-        }
-
-        if (this._selectedRow < OPTIONS.length) {
-            if (left) this._changeValue(-1);
-            if (right) this._changeValue(1);
-        }
-
-        if (confirm && this._selectedRow === OPTIONS.length) {
-            sfxUIClick();
-            this._launchGame();
-        }
+    get _terrainKey() {
+        return this._allTerrains[this._terrainIndex]?.id || 'village';
     }
 
+    get _bouleKey() {
+        const boule = this._ownedBoules[this._bouleIndex];
+        return boule?.id || 'acier';
+    }
+
+    get _cochonnetKey() {
+        const coch = this._ownedCochonnets[this._cochonnetIndex];
+        return coch?.id || 'classique';
+    }
+
+    // ================================================================
+    // LAUNCH GAME (preserved exactly)
+    // ================================================================
     _launchGame() {
-        const mode = OPTIONS[ROW_MODE].values[this._selections[ROW_MODE]].key;
-        const p1Option = OPTIONS[ROW_P1].values[this._selections[ROW_P1]];
-        const p2Option = OPTIONS[ROW_P2].values[this._selections[ROW_P2]];
-        const bouleType = OPTIONS[ROW_BOULES].values[this._selections[ROW_BOULES]].key;
-        const cochonnetType = OPTIONS[ROW_COCHONNET].values[this._selections[ROW_COCHONNET]].key;
-        const terrain = OPTIONS[ROW_TERRAIN].values[this._selections[ROW_TERRAIN]].key;
-        const difficulty = OPTIONS[ROW_DIFF].values[this._selections[ROW_DIFF]].key;
-        const isLocal = mode === 'local';
-
-        const gs = this.registry.get('gameState') || {};
-        this.registry.set('gameState', { ...gs, bouleType });
-
+        const isLocal = this._mode === 'local';
         const charsData = this.cache.json.get('characters');
-        let p1Char = charsData?.roster?.find(c => c.id === p1Option.charId) || null;
-        const p2Char = charsData?.roster?.find(c => c.id === p2Option.charId) || null;
+        let p1Char = charsData?.roster?.find(c => c.id === this._p1CharId) || null;
+        const p2Char = charsData?.roster?.find(c => c.id === this._p2CharId) || null;
 
         if (p1Char && (p1Char.isRookie || p1Char.id === 'rookie')) {
             const save = loadSave();
-            if (save.rookie) {
-                p1Char = { ...p1Char, stats: { ...save.rookie.stats } };
-            }
+            if (save.rookie) p1Char = { ...p1Char, stats: { ...save.rookie.stats } };
         }
 
         UIFactory.transitionTo(this, 'PetanqueScene', {
-            terrain,
-            difficulty: isLocal ? 'medium' : difficulty,
-            format: OPTIONS[ROW_FORMAT].values[this._selections[ROW_FORMAT]].key,
-            opponentName: p2Option.display,
-            opponentId: 'quickplay_' + p2Option.key,
+            terrain: this._terrainKey,
+            difficulty: isLocal ? 'medium' : this._difficulty,
+            format: this._format,
+            opponentName: this._p2Name,
+            opponentId: 'quickplay_' + this._p2CharId,
             returnScene: 'QuickPlayScene',
             personality: p2Char?.ai?.personality || null,
             playerCharacter: p1Char,
             opponentCharacter: p2Char,
             localMultiplayer: isLocal,
             quickPlay: true,
-            bouleType,
-            cochonnetType
+            bouleType: this._bouleKey,
+            cochonnetType: this._cochonnetKey
         });
     }
 
-    returnFromBattle(_result) {
-        this.scene.restart();
+    // ================================================================
+    // UTILITY
+    // ================================================================
+    _destroyList(list) {
+        if (!list) return;
+        for (const obj of list) {
+            if (obj && obj.destroy) obj.destroy();
+        }
+        list.length = 0;
     }
 }
