@@ -326,6 +326,12 @@ export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 export const COCHONNET_MAX_COLLISION_SPEED = 7.2; // MAX_THROW_SPEED * 0.6 — cap post-collision
 
+// Phaser 4 filter colors
+export const FILTER_GLOW_PLAYER = 0xFFD700;    // Or doré
+export const FILTER_GLOW_OPPONENT = 0x87CEEB;   // Bleu ciel
+export const FILTER_GLOW_STRENGTH = 4;
+export const FILTER_GLOW_QUALITY = 4;
+
 // Circle de lancer - doubled
 export const THROW_CIRCLE_RADIUS = 16;
 export const THROW_CIRCLE_Y_OFFSET = 20;

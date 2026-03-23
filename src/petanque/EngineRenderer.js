@@ -1,4 +1,4 @@
-import { SHADOW_TEXT, BARK_DURATION } from '../utils/Constants.js';
+import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY } from '../utils/Constants.js';
 
 /**
  * EngineRenderer — handles ALL visual effects for PetanqueEngine.
@@ -320,6 +320,22 @@ export default class EngineRenderer {
             this._bestGfx.strokeCircle(bestBall.x, bestBall.y, radius);
 
             if (bestBall.id !== this._lastBestBallId) {
+                // Clear glow on previous best ball
+                if (this._bestGlowSprite && typeof this._bestGlowSprite.clearFilters === 'function') {
+                    try { this._bestGlowSprite.clearFilters(); } catch (_) {}
+                    this._bestGlowSprite = null;
+                }
+                // Apply Phaser 4 glow on new best ball
+                if (this._hasWebGL && bestBall?.sprite) {
+                    try {
+                        if (typeof bestBall.sprite.enableFilters === 'function') {
+                            bestBall.sprite.enableFilters();
+                            const glowColor = bestBall.team === 'player' ? FILTER_GLOW_PLAYER : FILTER_GLOW_OPPONENT;
+                            bestBall.sprite.filters.internal.addGlow(glowColor, FILTER_GLOW_STRENGTH, 0, 1, false, FILTER_GLOW_QUALITY, FILTER_GLOW_QUALITY);
+                            this._bestGlowSprite = bestBall.sprite;
+                        }
+                    } catch (_) { /* Filter not supported */ }
+                }
                 if (this._lastBestBallId !== null) {
                     const flash = this.scene.add.graphics().setDepth(11);
                     const flashColor = color;
@@ -412,6 +428,10 @@ export default class EngineRenderer {
         // Kill pulse tween to prevent orphaned infinite loop
         if (this._bestPulse && this.scene?.tweens) {
             this.scene.tweens.getTweensOf(this._bestPulse).forEach(t => t.stop());
+        }
+        if (this._bestGlowSprite && typeof this._bestGlowSprite.clearFilters === 'function') {
+            try { this._bestGlowSprite.clearFilters(); } catch (_) {}
+            this._bestGlowSprite = null;
         }
         if (this._bestGfx) { this._bestGfx.destroy(); this._bestGfx = null; }
         if (this._msgText) { this._msgText.destroy(); this._msgText = null; }
