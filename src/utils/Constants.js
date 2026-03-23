@@ -411,6 +411,11 @@ export const CROWD_PROBABILITY = 0.6;
 export const SAVE_KEY = 'petanque_master_save';
 export const SAVE_VERSION = 2;
 
+// Tutorial in-game phases
+export const TUTORIAL_PHASE_AIM = 1;
+export const TUTORIAL_PHASE_LOFT = 2;
+export const TUTORIAL_PHASE_SCORE = 3;
+
 // Daily challenge
 export const GALET_DAILY_REWARD = 75;
 

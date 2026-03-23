@@ -28,6 +28,7 @@ function defaultSaveData() {
         tutorialSeen: false,
         tutorialInGameSeen: false,
         tutorialComplete: false,
+        tutorialPhasesDone: [],
         audioSettings: {
             masterVolume: 1.0,
             musicVolume: 1.0,

@@ -274,9 +274,9 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.engine.startGame();
 
-        // In-game tutorial for first Arcade match
+        // In-game tutorial — 3 phases (VISER, LOFT, SCORE), persistées via tutorialPhasesDone
         const tutSave = loadSave();
-        if (this.arcadeRound === 1 && this.returnScene === 'ArcadeScene' && !tutSave.tutorialInGameSeen) {
+        if (!tutSave.tutorialInGameSeen) {
             this._inGameTutorial = new InGameTutorial(this);
         }
 
