@@ -55,6 +55,9 @@ export default class ScorePanel {
             this.bg.fillRect(nx - 1, ny - 1, 1, 1);
         }
 
+        // Phaser 4 shadow filter on wood panel
+        UIFactory.addPanelShadow(this.bg);
+
         const cx = this.panelX + pw / 2;
 
         // Title

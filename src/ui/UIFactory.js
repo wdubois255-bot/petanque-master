@@ -302,6 +302,20 @@ export default class UIFactory {
     }
 
     /**
+     * Apply a Phaser 4 drop shadow filter on a game object (panel, image, etc.).
+     * Always uses warm brown 0x3A2E28 shadow (never pure black).
+     * Wrapped in try/catch — silently skipped if filters not supported.
+     */
+    static addPanelShadow(gameObject) {
+        try {
+            if (typeof gameObject.enableFilters === 'function') {
+                gameObject.enableFilters();
+                gameObject.filters.internal.addShadow(0x3A2E28, 2, 0.5, 4, 4);
+            }
+        } catch (_) { /* Filter not supported */ }
+    }
+
+    /**
      * Create a wood-textured panel using NineSlice.
      * Falls back to graphics if texture not available.
      */

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE } from '../utils/Constants.js';
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin } from '../utils/SaveManager.js';
+import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -310,6 +311,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 panel.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
                 panel.lineStyle(2, 0xD4A574, 0.4);
                 panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+                UIFactory.addPanelShadow(panel);
             }
 
             // "PROCHAIN COMBAT" header

@@ -87,6 +87,7 @@ export default class ShopScene extends Phaser.Scene {
         lpg.fillRect(0, 40, PREVIEW_W, GAME_HEIGHT - 80);
         lpg.lineStyle(1, 0xD4A574, 0.2);
         lpg.lineBetween(PREVIEW_W, 50, PREVIEW_W, GAME_HEIGHT - 50);
+        UIFactory.addPanelShadow(lpg);
     }
 
     // ================================================================

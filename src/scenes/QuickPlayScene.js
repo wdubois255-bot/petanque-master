@@ -261,6 +261,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const panelBg = UIFactory.createWoodPanel(this, 16, TAB_CONTENT_Y, GAME_WIDTH - 32, TAB_CONTENT_H, {
             depth: UI.DEPTH_PANEL - 1
         });
+        UIFactory.addPanelShadow(panelBg);
         this._tabObjects.push(panelBg);
 
         switch (TAB_KEYS[this._activeTab]) {
