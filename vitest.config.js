@@ -4,6 +4,11 @@ export default defineConfig({
     test: {
         environment: 'node',
         globals: true,
-        setupFiles: ['./tests/setup.js']
+        setupFiles: ['./tests/setup.js'],
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.js'],
+            exclude: ['src/scenes/DevTestScene.js', 'src/scenes/SpriteTestScene.js']
+        }
     }
 });

@@ -276,6 +276,17 @@ export const BALL_COLORS = {
     cochonnet: 0xFFD700
 };
 
+// Ball sprite rendering
+export const BALL_TEXTURE_RADIUS = 28;         // radius in source texture (64x64)
+export const BALL_SHADOW_OFFSET_X = 3;
+export const BALL_SHADOW_OFFSET_Y = 4;
+export const BALL_SHADOW_RATIO_W = 1.8;
+export const BALL_SHADOW_RATIO_H = 0.8;
+export const BALL_ROLL_FRAME_STEP = 15;        // px distance per animation frame
+export const BALL_SHADOW_STRETCH_MAX = 1.4;
+export const BALL_SHADOW_STRETCH_SPEED = 0.003;
+export const BALL_SQUASH_RADIUS_BOOST = 2;
+
 // Ball sizes (pixels in game) - doubled
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 8;

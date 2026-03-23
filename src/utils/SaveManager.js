@@ -26,6 +26,12 @@ function defaultSaveData() {
         selectedCochonnet: "classique",
         tutorialSeen: false,
         tutorialInGameSeen: false,
+        audioSettings: {
+            masterVolume: 1.0,
+            musicVolume: 1.0,
+            sfxVolume: 1.0,
+            muted: false
+        },
         playtime: 0,
         timestamp: Date.now()
     };

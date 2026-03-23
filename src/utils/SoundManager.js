@@ -1,34 +1,38 @@
 // Sound Manager - Uses real audio files (ElevenLabs) with procedural fallback
 // Requires Phaser scene reference for file-based audio
 
+import { loadSave, saveSave } from './SaveManager.js';
+
 let ctx = null;
 let cigalesSource = null;
 let _scene = null;
 let _musicPlaying = null;
 
-// Global settings (persisted in localStorage)
+// Global settings (persisted via SaveManager)
 let _masterVolume = 1.0;
 let _musicVolume = 1.0;
 let _sfxVolume = 1.0;
 let _muted = false;
 
-// Load settings from localStorage
+// Load settings from SaveManager
 try {
-    const saved = JSON.parse(localStorage.getItem('petanque_audio_settings'));
-    if (saved) {
-        _masterVolume = saved.masterVolume ?? 1.0;
-        _musicVolume = saved.musicVolume ?? 1.0;
-        _sfxVolume = saved.sfxVolume ?? 1.0;
-        _muted = saved.muted ?? false;
+    const save = loadSave();
+    if (save.audioSettings) {
+        _masterVolume = save.audioSettings.masterVolume ?? 1.0;
+        _musicVolume = save.audioSettings.musicVolume ?? 1.0;
+        _sfxVolume = save.audioSettings.sfxVolume ?? 1.0;
+        _muted = save.audioSettings.muted ?? false;
     }
 } catch (e) { /* ignore */ }
 
 function _saveAudioSettings() {
     try {
-        localStorage.setItem('petanque_audio_settings', JSON.stringify({
+        const save = loadSave();
+        save.audioSettings = {
             masterVolume: _masterVolume, musicVolume: _musicVolume,
             sfxVolume: _sfxVolume, muted: _muted
-        }));
+        };
+        saveSave(save);
     } catch (e) { /* ignore */ }
 }
 

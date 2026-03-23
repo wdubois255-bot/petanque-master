@@ -129,6 +129,22 @@ export default class OverworldScene extends Phaser.Scene {
             callback: () => this._autoSave(),
             loop: true
         });
+
+        // Cleanup on scene shutdown (prevents memory leaks on scene reuse)
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeAllListeners();
+        this.input.removeAllListeners();
+        this.tweens.killAll();
+        if (this._autoSaveTimer) {
+            this._autoSaveTimer.destroy();
+            this._autoSaveTimer = null;
+        }
+        if (this.dialogBox) {
+            this.dialogBox.destroy();
+        }
     }
 
     update(time, delta) {

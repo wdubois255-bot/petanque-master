@@ -3,7 +3,10 @@ import {
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
     RETRO_FRICTION_MULT, RETRO_PHASE1_MULT, RETRO_PHASE1_FRAMES, RETRO_PHASE2_FRAMES,
-    RETRO_TERRAIN_EFF, WALL_RESTITUTION
+    RETRO_TERRAIN_EFF, WALL_RESTITUTION,
+    BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
+    BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
+    BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -46,13 +49,13 @@ export default class Ball {
             const tex = scene.textures.get(this.textureKey);
             this._rollFrames = tex.frameTotal - 1 || 1; // -1 because Phaser adds __BASE frame
 
-            const scale = this.radius / 28; // texture is 64x64 with radius ~28px
+            const scale = this.radius / BALL_TEXTURE_RADIUS;
             if (this._rollFrames <= 1) {
                 this.sprite = scene.add.image(x, y, this.textureKey).setScale(scale).setDepth(10);
             } else {
                 this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
             }
-            this.shadowSprite = scene.add.ellipse(x + 3, y + 4, this.radius * 1.8, this.radius * 0.8, 0x3A2E28, 0.2).setDepth(9);
+            this.shadowSprite = scene.add.ellipse(x + BALL_SHADOW_OFFSET_X, y + BALL_SHADOW_OFFSET_Y, this.radius * BALL_SHADOW_RATIO_W, this.radius * BALL_SHADOW_RATIO_H, 0x3A2E28, 0.2).setDepth(9);
             this.gfx = null;
             this.shadow = null;
         } else {
@@ -78,18 +81,18 @@ export default class Ball {
             // Sprite mode: update positions + rolling frame animation
             if (this.isAlive) {
                 this.sprite.setPosition(this.x, this.y).setVisible(true);
-                this.shadowSprite.setPosition(this.x + 3, this.y + 4).setVisible(true);
+                this.shadowSprite.setPosition(this.x + BALL_SHADOW_OFFSET_X, this.y + BALL_SHADOW_OFFSET_Y).setVisible(true);
 
                 // Rolling animation: cycle through spritesheet frames based on distance
                 if (this._rollFrames > 1) {
-                    const frameIdx = Math.floor(this._rollDist / 15) % this._rollFrames;
+                    const frameIdx = Math.floor(this._rollDist / BALL_ROLL_FRAME_STEP) % this._rollFrames;
                     this.sprite.setFrame(frameIdx);
                 }
 
                 // Dynamic shadow: stretches when ball moves fast
                 if (this.isMoving) {
                     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                    const stretch = Math.min(1.4, 1 + speed * 0.003);
+                    const stretch = Math.min(BALL_SHADOW_STRETCH_MAX, 1 + speed * BALL_SHADOW_STRETCH_SPEED);
                     this.shadowSprite.setScale(stretch, 0.7);
                 } else {
                     this.shadowSprite.setScale(1, 1);
@@ -99,10 +102,10 @@ export default class Ball {
                 if (this._squashTimer > 0) {
                     this._squashTimer--;
                     this.sprite.setTint(0xFFFFFF);
-                    this.sprite.setScale((this.radius + 2) / 28);
+                    this.sprite.setScale((this.radius + BALL_SQUASH_RADIUS_BOOST) / BALL_TEXTURE_RADIUS);
                 } else {
                     this.sprite.clearTint();
-                    this.sprite.setScale(this.radius / 28);
+                    this.sprite.setScale(this.radius / BALL_TEXTURE_RADIUS);
                 }
             } else {
                 this.sprite.setVisible(false);
