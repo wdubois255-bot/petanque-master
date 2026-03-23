@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC } from '../utils/Constants.js';
-import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
+import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -278,17 +278,28 @@ export default class ResultScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Post-match dialogue (appears after 1.5s, before keyboard handlers are active)
-        if (this.postMatchDialogue && this.postMatchDialogue.length > 0) {
-            this.time.delayedCall(1500, () => {
-                this._showPostMatchDialogue(this.postMatchDialogue, () => {
-                    this._postDialogDone = true;
-                    this._addInputHandlers();
-                });
-            });
-        } else {
+        // Post-match dialogue → character unlock celebration → input handlers
+        const afterEverything = () => {
             this._postDialogDone = true;
             this._addInputHandlers();
+        };
+
+        const afterDialogue = () => {
+            if (this.unlocksOnWin) {
+                this._showCharacterUnlock(this.unlocksOnWin, afterEverything);
+            } else {
+                afterEverything();
+            }
+        };
+
+        if (this.postMatchDialogue && this.postMatchDialogue.length > 0) {
+            this.time.delayedCall(1500, () => {
+                this._showPostMatchDialogue(this.postMatchDialogue, afterDialogue);
+            });
+        } else {
+            this.time.delayedCall(500, () => {
+                afterDialogue();
+            });
         }
 
         this.events.on('shutdown', this._shutdown, this);
@@ -411,6 +422,97 @@ export default class ResultScene extends Phaser.Scene {
         if (speakerId === 'rookie') return this.playerCharacter?.name || 'Rookie';
         if (this.opponentCharacter?.id === speakerId) return this.opponentCharacter.name;
         return speakerId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    // === CHARACTER UNLOCK CELEBRATION (tâche 4.4) ===
+    _showCharacterUnlock(charId, onDone) {
+        const charactersData = this.cache.json.get('characters');
+        const char = charactersData?.roster?.find(c => c.id === charId);
+        if (!char) { onDone(); return; }
+
+        sfxScore();
+
+        const overlay = this.add.graphics().setDepth(300);
+        overlay.fillStyle(0x0A0806, 0.85);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.setAlpha(0);
+        this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
+
+        // Golden stars burst
+        for (let i = 0; i < 20; i++) {
+            const star = this.add.text(
+                GAME_WIDTH / 2 + Phaser.Math.Between(-220, 220),
+                GAME_HEIGHT / 2 + Phaser.Math.Between(-120, 120),
+                '★', {
+                    fontFamily: 'monospace', fontSize: `${Phaser.Math.Between(10, 22)}px`,
+                    color: '#FFD700'
+                }
+            ).setAlpha(0).setDepth(301);
+            this.tweens.add({
+                targets: star, alpha: 0.7, scale: 1.3,
+                duration: 400, delay: i * 40, yoyo: true, repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+        }
+
+        // Panel
+        const panelW = 460;
+        const panelH = 160;
+        const panelX = GAME_WIDTH / 2 - panelW / 2;
+        const panelY = GAME_HEIGHT / 2 - panelH / 2;
+
+        const panel = this.add.graphics().setDepth(302);
+        panel.fillStyle(0x2A1F14, 0.98);
+        panel.fillRoundedRect(panelX, panelY, panelW, panelH, 10);
+        panel.lineStyle(2, 0xFFD700, 0.8);
+        panel.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
+        panel.setScale(0);
+        this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
+
+        const unlockLabel = this.add.text(GAME_WIDTH / 2, panelY + 28, '★ NOUVEAU PERSONNAGE ★', {
+            fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(303).setScale(0);
+        this.tweens.add({ targets: unlockLabel, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
+
+        const charName = this.add.text(GAME_WIDTH / 2, panelY + 60, char.name, {
+            fontFamily: 'monospace', fontSize: '28px', color: '#F5E6D0',
+            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: charName, alpha: 1, y: panelY + 58, duration: 400, ease: 'Quad.easeOut', delay: 300 });
+
+        const charTitle = this.add.text(GAME_WIDTH / 2, panelY + 90, char.title || '', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#D4A574',
+            shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: charTitle, alpha: 1, duration: 300, delay: 500 });
+
+        const joinText = this.add.text(GAME_WIDTH / 2, panelY + 118, 'a rejoint votre roster !', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#9B7BB8', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: joinText, alpha: 1, duration: 300, delay: 600 });
+
+        const continueHint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, '~ Appuyez sur Espace ~', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: continueHint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
+
+        // Dismiss after 3s or on Space/Enter/click
+        let dismissed = false;
+        const dismiss = () => {
+            if (dismissed) return;
+            dismissed = true;
+            this.tweens.add({
+                targets: [overlay, panel, unlockLabel, charName, charTitle, joinText, continueHint],
+                alpha: 0, duration: 300, ease: 'Quad.easeIn',
+                onComplete: () => onDone()
+            });
+        };
+
+        this.time.delayedCall(3000, dismiss);
+        this.input.keyboard.once('keydown-SPACE', dismiss);
+        this.input.keyboard.once('keydown-ENTER', dismiss);
+        this.input.once('pointerdown', dismiss);
     }
 
     _addInputHandlers() {
