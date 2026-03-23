@@ -13,7 +13,8 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 | Sauvegarde (schema, defaults) | `src/utils/SaveManager.js` | Tout passe par SaveManager. Jamais de localStorage direct. |
 | Game design (concept, flow) | `GAME_DESIGN.md` | Bible du design, ne pas contredire. |
 | Etat du projet | `CAHIER_DES_CHARGES.md` | Ce qui est fait, ce qui reste. |
-| Plan d'action | `docs/PLAN_100.md` | Plan unique : 5 axes, 32 taches pour 100/100. |
+| Plan d'action | `docs/PLAN_100.md` | Plan initial (5 axes, termine). |
+| Plan phase 2 | `docs/PLAN_PHASE2.md` | Polish post-playtest : physique, visuels, coherence. |
 
 ## Interdictions absolues
 
@@ -76,7 +77,9 @@ npx vitest run    # Tests unitaires
   CAHIER_DES_CHARGES.md    # Etat complet du projet
   STORY.md                 # Histoire (reserve Phase D)
   /docs
-    PLAN_100.md            # Plan unique : 5 axes pour 100/100
+    PLAN_100.md            # Plan initial (5 axes, termine)
+    PLAN_PHASE2.md         # Polish post-playtest (3 axes, termine)
+    ITCH_IO.md             # Fiche publication itch.io
     /archive               # Documents historiques et plans termines
   /src
     main.js, config.js
