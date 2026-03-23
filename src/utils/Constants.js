@@ -320,8 +320,8 @@ export const BALL_SQUASH_RADIUS_BOOST = 2;
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 8;
 // Visual scale for sprites (smaller look on terrain)
-export const BALL_DISPLAY_SCALE = 0.85;
-export const COCHONNET_DISPLAY_SCALE = 0.7;
+export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
+export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 export const COCHONNET_MAX_COLLISION_SPEED = 7.2; // MAX_THROW_SPEED * 0.6 — cap post-collision
