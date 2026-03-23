@@ -347,6 +347,9 @@ export const CHAR_SPRITE_MAP = {
     'suchaud': 'suchaud_animated'
 };
 
+// Note: le_magicien, marcel, reyes ont des sprites mais ne sont pas dans le roster jouable.
+// Sprites conservés pour future Phase D (narrative overworld).
+
 // Characters that use a single static image (not a spritesheet)
 export const CHAR_STATIC_SPRITES = [];
 
