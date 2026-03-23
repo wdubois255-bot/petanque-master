@@ -14,9 +14,6 @@ export default defineConfig({
             }
         }
     },
-    optimizeDeps: {
-        include: ['phaser3-rex-plugins']
-    },
     server: {
         port: 8080
     }
