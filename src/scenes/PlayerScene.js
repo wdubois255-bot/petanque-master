@@ -244,6 +244,16 @@ export default class PlayerScene extends Phaser.Scene {
         });
 
         // ===== EQUIPPED BOULE (bottom of panel) =====
+        this._equippedElements = [];
+        this._refreshEquippedDisplay();
+    }
+
+    // Refreshable equipped boule/cochonnet display (bottom-left panel)
+    _refreshEquippedDisplay() {
+        // Clear previous
+        this._equippedElements.forEach(el => { try { el.destroy(); } catch (_) {} });
+        this._equippedElements = [];
+
         const eqY = GAME_HEIGHT - 68;
         const boulesData = this.cache.json.get('boules');
         const equipped = boulesData?.sets?.find(s => s.id === this._save.selectedBoule);
@@ -251,21 +261,44 @@ export default class PlayerScene extends Phaser.Scene {
         if (equipped) {
             const sprKey = `ball_${this._save.selectedBoule}`;
             if (this.textures.exists(sprKey)) {
-                this.add.image(30, eqY, sprKey).setScale(0.7).setOrigin(0.5).setDepth(2);
+                this._equippedElements.push(
+                    this.add.image(30, eqY, sprKey).setScale(0.7).setOrigin(0.5).setDepth(2)
+                );
             }
-            this.add.text(50, eqY - 6, equipped.name, {
-                fontFamily: 'monospace', fontSize: '9px',
-                color: CSS.CREME, shadow: SHADOW
-            }).setOrigin(0, 0.5).setDepth(2);
+            this._equippedElements.push(
+                this.add.text(50, eqY - 6, equipped.name, {
+                    fontFamily: 'monospace', fontSize: '9px',
+                    color: CSS.CREME, shadow: SHADOW
+                }).setOrigin(0, 0.5).setDepth(2)
+            );
 
             const bonusTxt = equipped.bonus
                 ? equipped.bonus.replace('friction_x', 'Friction x').replace('knockback_x', 'Impact x').replace('retro_x', 'Retro x').replace('restitution_x', 'Rebond x')
                 : 'Standard';
-            this.add.text(50, eqY + 7, bonusTxt, {
-                fontFamily: 'monospace', fontSize: '7px',
-                color: equipped.bonus ? '#87CEEB' : CSS.GRIS, shadow: SHADOW
-            }).setOrigin(0, 0.5).setDepth(2);
+            this._equippedElements.push(
+                this.add.text(50, eqY + 7, bonusTxt, {
+                    fontFamily: 'monospace', fontSize: '7px',
+                    color: equipped.bonus ? '#87CEEB' : CSS.GRIS, shadow: SHADOW
+                }).setOrigin(0, 0.5).setDepth(2)
+            );
         }
+
+        // Cochonnet mini display
+        const cochId = this._save.selectedCochonnet || 'classique';
+        const cochSprKey = cochId === 'classique' ? 'ball_cochonnet' : `ball_cochonnet_${cochId}`;
+        if (this.textures.exists(cochSprKey)) {
+            this._equippedElements.push(
+                this.add.image(LEFT_W - 30, eqY, cochSprKey).setScale(0.5).setOrigin(0.5).setDepth(2)
+            );
+        }
+    }
+
+    // Called when player equips a boule or cochonnet — no scene restart
+    _onEquipChange() {
+        this._save = loadSave();
+        this._refreshEquippedDisplay();
+        this._clearContent();
+        this._drawTabContent();
     }
 
     // ================================================================
@@ -545,7 +578,7 @@ export default class PlayerScene extends Phaser.Scene {
                 img.on('pointerdown', () => {
                     setSelectedBoule(id);
                     sfxUIClick();
-                    this.scene.restart();
+                    this._onEquipChange();
                 });
 
                 // Hover effect
@@ -612,7 +645,7 @@ export default class PlayerScene extends Phaser.Scene {
             if (this.textures.exists(sprKey)) {
                 const img = this.add.image(cx, cy - 2, sprKey).setScale(0.65).setOrigin(0.5).setDepth(6)
                     .setInteractive({ useHandCursor: true });
-                img.on('pointerdown', () => { setSelectedCochonnet(id); sfxUIClick(); this.scene.restart(); });
+                img.on('pointerdown', () => { setSelectedCochonnet(id); sfxUIClick(); this._onEquipChange(); });
                 img.on('pointerover', () => this.tweens.add({ targets: img, scaleX: 0.75, scaleY: 0.75, duration: 100 }));
                 img.on('pointerout', () => this.tweens.add({ targets: img, scaleX: 0.65, scaleY: 0.65, duration: 100 }));
                 this._addContent(img);
