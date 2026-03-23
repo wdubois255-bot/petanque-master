@@ -61,6 +61,49 @@ const TERRAIN_VISUALS = {
     }
 };
 
+// Frame pools per decor type (curated best frames from PixelLab 4x4 grids)
+const DECOR_FRAMES = {
+    olive:    { key: 'grid_olive',    pool: [0, 1, 4, 5, 8], fallback: 'decor_olivier' },
+    fontaine: { key: 'grid_fontaine', pool: [0, 4, 8, 12],   fallback: 'decor_fontaine' },
+    pin_v1:   { key: 'grid_pin_v1',  pool: [1, 2, 5, 9],     fallback: 'decor_pin' },
+    pin_v2:   { key: 'grid_pin_v2',  pool: [0, 1, 4, 5],     fallback: 'decor_pin' },
+    banc_v1:  { key: 'grid_banc_v1', pool: [0, 1, 4, 8],     fallback: 'decor_banc' },
+    banc_v2:  { key: 'grid_banc_v2', pool: [0, 1, 4, 5],     fallback: 'decor_banc' },
+};
+
+// Decor placement blueprints per terrain (x relative to terrainX, 'R+N' = right of terrain)
+const TERRAIN_DECOR = {
+    village: [
+        { type: 'olive',    x: -70,   y: 100, scale: 2.0, depth: 0.4 },
+        { type: 'olive',    x: -40,   y: 250, scale: 1.6, depth: 0.55 },
+        { type: 'banc_v1',  x: -46,   y: 310, scale: 1.5, depth: 0.7 },
+        { type: 'fontaine', x: 'R+40',  y: 215, scale: 1.5, depth: 0.6 },
+        { type: 'olive',    x: 'R+75',  y: 130, scale: 1.8, depth: 0.45, flipX: true },
+        { type: 'olive',    x: 'R+55',  y: 310, scale: 1.4, depth: 0.65, flipX: true },
+    ],
+    parc: [
+        { type: 'pin_v1',   x: -65,   y: 110, scale: 2.2, depth: 0.4 },
+        { type: 'pin_v2',   x: -30,   y: 210, scale: 1.6, depth: 0.55 },
+        { type: 'banc_v1',  x: -45,   y: 300, scale: 1.4, depth: 0.7 },
+        { type: 'pin_v1',   x: 'R+70',  y: 130, scale: 2.0, depth: 0.4, flipX: true },
+        { type: 'pin_v2',   x: 'R+45',  y: 260, scale: 1.5, depth: 0.55, flipX: true },
+        { type: 'banc_v2',  x: 'R+35',  y: 350, scale: 1.3, depth: 0.7 },
+    ],
+    colline: [
+        { type: 'olive', x: -70,   y: 100, scale: 2.2, depth: 0.4 },
+        { type: 'olive', x: -35,   y: 250, scale: 1.8, depth: 0.6 },
+        { type: 'olive', x: 'R+55',  y: 130, scale: 2.0, depth: 0.42, flipX: true },
+        { type: 'olive', x: 'R+80',  y: 280, scale: 1.7, depth: 0.58, flipX: true },
+        { type: 'olive', x: -90,   y: 60,  scale: 1.0, depth: 0.3, alpha: 0.5 },
+        { type: 'olive', x: 'R+100', y: 70, scale: 1.0, depth: 0.3, alpha: 0.5, flipX: true },
+    ],
+    plage: [
+        { type: 'pin_v1', x: -280,  y: 85,  scale: 1.2, depth: 0.4, alpha: 0.4 },
+        { type: 'pin_v2', x: 'R+110', y: 75, scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
+    ],
+    docks: [],
+};
+
 export default class TerrainRenderer {
     constructor(scene, terrainType, terrainData, terrainX, terrainY) {
         this.scene = scene;
@@ -194,47 +237,39 @@ export default class TerrainRenderer {
 
     _placeDecorSprites(tx, tw) {
         const s = this.scene;
-        const depth = 0.6;
-        const has = (k) => s.textures.exists(k);
+        const placements = TERRAIN_DECOR[this.terrainId] || [];
 
-        switch (this.terrainId) {
-            case 'village':
-                // Bench (left side, near procedural bench position)
-                if (has('decor_banc'))
-                    s.add.image(tx - 46, 300, 'decor_banc').setDepth(depth).setScale(2);
-                // Fountain (right side)
-                if (has('decor_fontaine'))
-                    s.add.image(tx + TERRAIN_WIDTH + 40, 215, 'decor_fontaine').setDepth(depth).setScale(2);
-                break;
+        for (const p of placements) {
+            const decor = DECOR_FRAMES[p.type];
+            if (!decor) continue;
 
-            case 'parc':
-                // Pine tree (left side as tall tree)
-                if (has('decor_pin'))
-                    s.add.image(tx - 55, 160, 'decor_pin').setDepth(depth).setScale(2.5);
-                // Bench (left side below tree)
-                if (has('decor_banc'))
-                    s.add.image(tx - 45, 290, 'decor_banc').setDepth(depth).setScale(1.8);
-                break;
+            // Resolve X position
+            let px;
+            if (typeof p.x === 'string' && p.x.startsWith('R+')) {
+                px = tx + tw + parseInt(p.x.slice(2));
+            } else {
+                px = tx + p.x;
+            }
 
-            case 'colline':
-                // Olive trees replacing procedural ones
-                if (has('decor_olivier')) {
-                    s.add.image(tx - 55, 110, 'decor_olivier').setDepth(depth).setScale(2.5);
-                    s.add.image(tx + TERRAIN_WIDTH + 65, 140, 'decor_olivier').setDepth(depth).setScale(2.2).setFlipX(true);
-                    s.add.image(tx - 30, 260, 'decor_olivier').setDepth(depth).setScale(2);
-                    s.add.image(tx + TERRAIN_WIDTH + 85, 290, 'decor_olivier').setDepth(depth).setScale(2).setFlipX(true);
-                }
-                break;
+            const hasGrid = s.textures.exists(decor.key);
+            const hasFallback = decor.fallback && s.textures.exists(decor.fallback);
 
-            case 'plage':
-                // Pine tree as distant vegetation (left far)
-                if (has('decor_pin'))
-                    s.add.image(30, 85, 'decor_pin').setDepth(depth).setScale(1.5).setAlpha(0.5);
-                break;
-
-            case 'docks':
-                // No nature decor for industrial setting
-                break;
+            if (hasGrid) {
+                const frameIdx = decor.pool[Math.floor(this._rng() * decor.pool.length)];
+                const img = s.add.image(px, p.y, decor.key, frameIdx);
+                img.setDepth(p.depth || 0.6);
+                img.setScale(p.scale || 1);
+                if (p.flipX) img.setFlipX(true);
+                if (p.alpha !== undefined) img.setAlpha(p.alpha);
+                // Distance tint for far elements
+                if (p.alpha && p.alpha < 0.5) img.setTint(0xCCCCCC);
+            } else if (hasFallback) {
+                const img = s.add.image(px, p.y, decor.fallback);
+                img.setDepth(p.depth || 0.6);
+                img.setScale(p.scale || 2);
+                if (p.flipX) img.setFlipX(true);
+                if (p.alpha !== undefined) img.setAlpha(p.alpha);
+            }
         }
     }
 
@@ -255,32 +290,7 @@ export default class TerrainRenderer {
         d.fillRect(689, hy - 38, 4, 10);
         d.fillRect(685, hy - 35, 12, 3);
 
-        // Platane left
-        d.fillStyle(0x7B5B3A, 1); d.fillRect(tx - 85, 65, 18, 95);
-        d.fillStyle(0x5A8A3A, 1); d.fillCircle(tx - 76, 48, 50);
-        d.fillStyle(0x4A7A2A, 0.6); d.fillCircle(tx - 62, 60, 38);
-        d.fillStyle(0x6B9E4E, 0.4); d.fillCircle(tx - 88, 42, 30);
-
-        // Platane right
-        d.fillStyle(0x7B5B3A, 1); d.fillRect(tx + tw + 60, 80, 16, 85);
-        d.fillStyle(0x5A8A3A, 1); d.fillCircle(tx + tw + 68, 65, 44);
-        d.fillStyle(0x4A7A2A, 0.6); d.fillCircle(tx + tw + 78, 78, 32);
-
-        // Bench left
-        d.fillStyle(0x8B6B4A, 1); d.fillRect(tx - 72, 300, 52, 5);
-        d.fillStyle(0x7B5B3A, 1);
-        d.fillRect(tx - 70, 305, 4, 12);
-        d.fillRect(tx - 24, 305, 4, 12);
-        d.fillStyle(0x9B7B5A, 0.8); d.fillRect(tx - 72, 295, 52, 3);
-
-        // Fountain (right side)
-        d.fillStyle(0xC0B8A0, 0.7);
-        d.fillRect(tx + tw + 25, 200, 30, 35);
-        d.fillStyle(0x7AB8D0, 0.4);
-        d.fillRect(tx + tw + 28, 218, 24, 14);
-        // Water spout
-        d.fillStyle(0x8AC8E0, 0.5);
-        d.fillCircle(tx + tw + 40, 208, 3);
+        // Trees, bench, fountain replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
 
         // Stone wall right
         d.fillStyle(0xD4C4A0, 1); d.fillRect(tx + tw + 18, 260, 30, 140);
@@ -375,13 +385,7 @@ export default class TerrainRenderer {
             d.fillCircle(bx, hy - 5, 18 + this._rng() * 12);
         }
 
-        // Wrought iron bench (left)
-        d.fillStyle(0x2A2A2A, 0.8); d.fillRect(tx - 70, 290, 50, 4);
-        d.fillRect(tx - 70, 280, 50, 3);
-        d.fillStyle(0x3A3A3A, 0.7);
-        d.fillRect(tx - 68, 294, 3, 14); d.fillRect(tx - 24, 294, 3, 14);
-        // Armrests
-        d.fillRect(tx - 72, 278, 3, 18); d.fillRect(tx - 20, 278, 3, 18);
+        // Bench replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
 
         // Duck pond (right)
         d.fillStyle(0x5A9AC0, 0.4);
@@ -439,26 +443,7 @@ export default class TerrainRenderer {
         }
         d.lineTo(GAME_WIDTH, GAME_HEIGHT); d.lineTo(0, GAME_HEIGHT); d.closePath(); d.fillPath();
 
-        // Olive trees (twisted trunks)
-        const olivePositions = [
-            { x: tx - 70, y: 100 }, { x: tx - 40, y: 250 },
-            { x: tx + tw + 50, y: 130 }, { x: tx + tw + 80, y: 280 }
-        ];
-        for (const op of olivePositions) {
-            // Trunk (twisted)
-            d.fillStyle(0x6B5B3A, 0.9);
-            d.fillRect(op.x - 3, op.y, 8, 55);
-            d.fillRect(op.x - 6, op.y + 10, 5, 35);
-            // Canopy (silver-green, sparse)
-            d.fillStyle(0x8AAA6A, 0.7);
-            d.fillCircle(op.x, op.y - 5, 24);
-            d.fillStyle(0x7A9A5A, 0.5);
-            d.fillCircle(op.x + 12, op.y, 18);
-            d.fillCircle(op.x - 10, op.y + 5, 16);
-            // Sparse leaves (olive trees are not dense)
-            d.fillStyle(0x9ABA7A, 0.3);
-            d.fillCircle(op.x + 5, op.y - 12, 12);
-        }
+        // Olive trees replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
 
         // Dry stone wall (muret) in background
         d.fillStyle(0xB0A888, 0.6);

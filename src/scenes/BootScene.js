@@ -223,11 +223,19 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('border_docks_corner_bl', `${BASE}assets/sprites/borders/docks/corner_bl.png`);
         this.load.image('border_docks_corner_br', `${BASE}assets/sprites/borders/docks/corner_br.png`);
 
-        // Decor sprites (provencal)
+        // Decor sprites (provencal) — old single sprites as fallback
         this.load.image('decor_pin', `${BASE}assets/sprites/decor_pin.png`);
         this.load.image('decor_olivier', `${BASE}assets/sprites/decor_olivier.png`);
         this.load.image('decor_banc', `${BASE}assets/sprites/decor_banc.png`);
         this.load.image('decor_fontaine', `${BASE}assets/sprites/decor_fontaine.png`);
+
+        // Decor sprite grids (PixelLab 4x4, 64x64 per frame — 16 variants each)
+        this.load.spritesheet('grid_olive', `${BASE}assets/sprites/decor/grid_olive.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_fontaine', `${BASE}assets/sprites/decor/grid_fontaine.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_pin_v1', `${BASE}assets/sprites/decor/grid_pin_v1.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_pin_v2', `${BASE}assets/sprites/decor/grid_pin_v2.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_banc_v1', `${BASE}assets/sprites/decor/grid_banc_v1.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_banc_v2', `${BASE}assets/sprites/decor/grid_banc_v2.png`, { frameWidth: 64, frameHeight: 64 });
 
         // Audio - SFX (ElevenLabs generated)
         const sfxFiles = [
