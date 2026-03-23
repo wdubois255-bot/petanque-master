@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, SHADOW_TEXT, UI } from '../utils/Constants.js';
-import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -237,7 +237,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 sfxUIClick();
                 this._switchTab(tabIndex);
             });
-            label.on('pointerover', () => { if (tabIndex !== this._activeTab) label.setColor(CSS.CREME); });
+            label.on('pointerover', () => { if (tabIndex !== this._activeTab) { label.setColor(CSS.CREME); sfxUIHover(); } });
             label.on('pointerout', () => { if (tabIndex !== this._activeTab) label.setColor(CSS.GRIS); });
             this._tabBarObjects.push(label);
         }
@@ -411,6 +411,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                     cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
                     cellGfx.lineStyle(1, 0xD4A574, 0.5);
                     cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                    sfxUIHover();
                 }
             });
             zone.on('pointerout', () => {

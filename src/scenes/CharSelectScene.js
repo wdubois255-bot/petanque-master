@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI } from '../utils/Constants.js';
-import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -391,7 +391,7 @@ export default class CharSelectScene extends Phaser.Scene {
         }
 
         if (changed) {
-            sfxUIClick();
+            sfxUIHover();
             this._updateSelection();
         }
 

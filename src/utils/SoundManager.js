@@ -332,6 +332,23 @@ export function sfxUIClick() {
     osc.stop(c.currentTime + 0.04);
 }
 
+export function sfxUIHover() {
+    if (playFile('sfx_ui_click', { volume: 0.3, rate: 1.3 })) return;
+    // Same as click but softer and higher pitch
+    const c = getCtx();
+    if (!c) return;
+    const vol = _effectiveVol(0.08);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 1100;
+    gain.gain.setValueAtTime(vol, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.02);
+    osc.connect(gain).connect(c.destination);
+    osc.start();
+    osc.stop(c.currentTime + 0.025);
+}
+
 export function sfxUINavigate() {
     const c = getCtx();
     if (!c) return;

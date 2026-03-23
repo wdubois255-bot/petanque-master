@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
 import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '../utils/SaveManager.js';
-import { setSoundScene, startMusic, stopMusic, sfxUIClick, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
+import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -366,11 +366,12 @@ export default class TitleScene extends Phaser.Scene {
                 }
             });
 
-            // Hover → select this index
+            // Hover → select this index + hover SFX
             btn.hitZone.on('pointerover', () => {
                 if (this._mode !== 'main') return;
                 this._selectedIndex = i;
                 this._updateSelection();
+                sfxUIHover();
             });
 
             // Draw menu icon inside button container

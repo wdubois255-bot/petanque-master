@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL } from '../utils/Constants.js';
 import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
-import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
+import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -130,7 +130,7 @@ export default class ShopScene extends Phaser.Scene {
             const zone = this.add.zone(tx, TAB_Y + 8, tabW - 4, 22)
                 .setOrigin(0.5).setInteractive({ useHandCursor: true });
             zone.on('pointerdown', () => { sfxUIClick(); this._switchTab(i); });
-            zone.on('pointerover', () => { if (i !== this.activeTab) txt.setColor(CSS.OCRE); });
+            zone.on('pointerover', () => { if (i !== this.activeTab) { txt.setColor(CSS.OCRE); sfxUIHover(); } });
             zone.on('pointerout', () => { if (i !== this.activeTab) txt.setColor(CSS.GRIS); });
 
             this._tabElements.push(tbg, txt, zone);
@@ -532,6 +532,7 @@ export default class ShopScene extends Phaser.Scene {
                 g.fillRoundedRect(x, y, CARD_W, CARD_H, 5);
                 g.lineStyle(1, 0xD4A574, 0.5);
                 g.strokeRoundedRect(x, y, CARD_W, CARD_H, 5);
+                sfxUIHover();
             }
         });
         zone.on('pointerout', () => {
