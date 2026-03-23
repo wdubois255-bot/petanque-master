@@ -20,10 +20,10 @@
 | Quick Play | ✅ 100% | 4 onglets, sélection complète |
 | Boutique | ✅ 100% | 16 boules, 6 cochonnets, capacités |
 | Sauvegarde V2 | ✅ 100% | Migration, progression, daily |
-| Audio | ✅ 95% | 13 SFX + 2 musiques, **manque variation** |
+| Audio | ✅ 100% | 13 SFX + 2 musiques, variation pitch, sfxUIHover |
 | Tests | ✅ 100% | 213 tests passants |
 | Bugs P0/P1 | ✅ 100% | Tous corrigés (AXE 1 terminé) |
-| Phaser 4 filters | ⚠️ 30% | Flash glow implémenté, **glow/shadow non** |
+| Phaser 4 filters | ✅ 100% | Glow meilleure boule, shadow panneaux, flash collisions |
 | Tutoriel in-game | ⚠️ 60% | InGameTutorial.js existe, **trop discret** |
 | Narrative arcade | ❌ 0% | Aucun dialogue pré/post-match |
 | Config cleanup | ✅ 100% | AXE 1 terminé — code propre |
@@ -206,12 +206,12 @@ sans titre_0016.png → decor_bush_variant_2.png
 
 ---
 
-## AXE 2 — GAME FEEL & JUICE (~3h)
+## AXE 2 — GAME FEEL & JUICE ✅ TERMINÉ (23 mars 2026)
 
 > Rendre le jeu vivant et satisfaisant. Phaser 4 filters, SFX, feedback.
 > **Impact** : Le joueur "sent" chaque action. Différence entre démo et jeu fini.
 
-### 2.1 Glow filter sur la meilleure boule (Phaser 4)
+### ✅ 2.1 Glow filter sur la meilleure boule (Phaser 4)
 
 **Fichier** : `src/petanque/EngineRenderer.js`
 **Contexte** : La propriété `_bestGlowSprite` existe (L22) et `_hasWebGL` est vérifié (L25). Le code pour dessiner le cercle pulsant existe déjà.
@@ -250,7 +250,7 @@ export const FILTER_GLOW_QUALITY = 4;
 
 ---
 
-### 2.2 Shadow filter sur les panneaux UI
+### ✅ 2.2 Shadow filter sur les panneaux UI
 
 **Fichiers** : `src/ui/UIFactory.js`, `src/ui/ScorePanel.js`
 **Action** : Dans UIFactory, ajouter une méthode utilitaire :
@@ -275,7 +275,7 @@ static addPanelShadow(gameObject) {
 
 ---
 
-### 2.3 Variation de pitch sur les SFX
+### ✅ 2.3 Variation de pitch sur les SFX
 
 **Fichier** : `src/utils/SoundManager.js`
 **Action** : Trouver toutes les fonctions `sfx*()` (sfxBouleBoule, sfxLanding, sfxThrow, etc.) et ajouter une variation de pitch aléatoire :
@@ -294,7 +294,7 @@ scene.sound.play('boule_clac', {
 
 ---
 
-### 2.4 Poussière aux collisions boule-boule
+### ✅ 2.4 Poussière aux collisions boule-boule
 
 **Fichier** : `src/petanque/PetanqueEngine.js`
 **Action** : Trouver la méthode de collision boule-boule (chercher `resolveCollision` ou `_handleCollision`). Après la résolution de collision, ajouter :
@@ -311,7 +311,7 @@ if (this.renderer) {
 
 ---
 
-### 2.5 Renforcer le screen shake sur carreau
+### ✅ 2.5 Renforcer le screen shake sur carreau
 
 **Fichier** : `src/petanque/PetanqueEngine.js`
 **Action** : Trouver la détection de carreau (chercher `CARREAU_THRESHOLD` ou `isCarreau`). Après détection, augmenter l'intensité du shake :
@@ -328,7 +328,7 @@ export const CARREAU_SHAKE_INTENSITY = 0.012;
 
 ---
 
-### 2.6 Hitstop étendu sur impacts forts
+### ✅ 2.6 Hitstop étendu sur impacts forts
 
 **Fichier** : `src/utils/Constants.js`
 **Action** : Les constantes existent déjà (L158-159) :
@@ -345,7 +345,7 @@ export const HITSTOP_CARREAU_MS = 150;    // 100 → 150 (moment dramatique)
 
 ---
 
-### 2.7 Barks plus fréquentes et visibles
+### ✅ 2.7 Barks plus fréquentes et visibles
 
 **Fichier** : `src/utils/Constants.js`
 **Ligne 165** : Changer `BARK_PROBABILITY` de `0.4` à `0.55` :
@@ -365,7 +365,7 @@ bg.fillRoundedRect(barkText.x - barkText.width/2 - 6, barkText.y - 8, barkText.w
 
 ---
 
-### 2.8 SFX pour interactions UI (menus)
+### ✅ 2.8 SFX pour interactions UI (menus)
 
 **Fichier** : `src/utils/SoundManager.js`
 **Action** : Vérifier que `sfxUIClick` existe et est appelé. Ajouter une variante `sfxUIHover` :
