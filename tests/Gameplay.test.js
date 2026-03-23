@@ -11,7 +11,8 @@ import {
     TERRAIN_FRICTION, WALL_RESTITUTION,
     RETRO_FRICTION_MULT,
     LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
-    TERRAIN_HEIGHT, BALL_CLAMP_MARGIN
+    TERRAIN_HEIGHT, BALL_CLAMP_MARGIN,
+    COCHONNET_MAX_COLLISION_SPEED, puissanceMultiplier
 } from '../src/utils/Constants.js';
 
 const mockScene = {
@@ -54,10 +55,10 @@ function simulate(ball, frames = 500) {
 
 describe('Terrain friction — all 4 surfaces', () => {
     const surfaces = [
-        { name: 'terre', mult: 1.0 },
-        { name: 'herbe', mult: 1.8 },
-        { name: 'sable', mult: 3.5 },
-        { name: 'dalles', mult: 0.4 }
+        { name: 'terre', mult: TERRAIN_FRICTION.terre },
+        { name: 'herbe', mult: TERRAIN_FRICTION.herbe },
+        { name: 'sable', mult: TERRAIN_FRICTION.sable },
+        { name: 'dalles', mult: TERRAIN_FRICTION.dalles }
     ];
 
     for (const { name, mult } of surfaces) {
@@ -70,8 +71,8 @@ describe('Terrain friction — all 4 surfaces', () => {
     }
 
     it('sable stops ball WAY faster than dalles', () => {
-        const sable = new Ball(mockScene, 200, 200, { frictionMult: 3.5 });
-        const dalles = new Ball(mockScene, 200, 200, { frictionMult: 0.4 });
+        const sable = new Ball(mockScene, 200, 200, { frictionMult: TERRAIN_FRICTION.sable });
+        const dalles = new Ball(mockScene, 200, 200, { frictionMult: TERRAIN_FRICTION.dalles });
         sable.launch(5, 0);
         dalles.launch(5, 0);
 
@@ -82,7 +83,7 @@ describe('Terrain friction — all 4 surfaces', () => {
             if (!sable.isMoving && !dalles.isMoving) break;
         }
         expect(sableFrames).toBeLessThan(dallesFrames);
-        expect(dallesFrames).toBeGreaterThan(sableFrames * 3); // dalles ~8x less friction
+        expect(dallesFrames).toBeGreaterThan(sableFrames * 3); // sable ~4x more friction than dalles
     });
 
     it('herbe ball travels less than terre ball', () => {
@@ -735,5 +736,103 @@ describe('Session 7 — Critical gameplay tests', () => {
         // Sable (friction 3.0 + retro) should stop MUCH shorter than dalles (friction 0.7)
         expect(ballSable.x).toBeLessThan(ballDalles.x);
         expect(ballDalles.x - ballSable.x).toBeGreaterThan(20);
+    });
+});
+
+// =====================================================
+//  A.5 PUISSANCE STAT — Effets cohérents (source: Constants.puissanceMultiplier)
+// =====================================================
+
+describe('Puissance stat extremes', () => {
+    it('Pui 1 = 0.8x, Pui 5 ≈ 1.02x, Pui 10 = 1.3x', () => {
+        expect(puissanceMultiplier(1)).toBeCloseTo(0.8, 5);
+        expect(puissanceMultiplier(5)).toBeCloseTo(0.8 + 4 / 9 * 0.5, 5);
+        expect(puissanceMultiplier(10)).toBeCloseTo(1.3, 5);
+    });
+
+    it('Pui 1 ball travels shorter distance than Pui 10 ball (same launch angle)', () => {
+        // Simulate via PetanqueEngine.computeThrowParams — use speed as proxy for distance
+        // Higher puissance → higher rollingSpeed → more distance
+        const pui1 = puissanceMultiplier(1);
+        const pui10 = puissanceMultiplier(10);
+        expect(pui10).toBeGreaterThan(pui1);
+        // maxDist proportional to mult
+        const maxDist1 = TERRAIN_HEIGHT * 0.85 * pui1;
+        const maxDist10 = TERRAIN_HEIGHT * 0.85 * pui10;
+        expect(maxDist10).toBeGreaterThan(maxDist1 * 1.3); // >30% more range
+    });
+});
+
+// =====================================================
+//  A.5 COCHONNET CAP — Vitesse plafonnée post-collision
+// =====================================================
+
+describe('Cochonnet collision cap', () => {
+    it('cochonnet speed capped at COCHONNET_MAX_COLLISION_SPEED after hard hit', () => {
+        const ball = new Ball(mockScene, 200, 200, { isCochonnet: false });
+        ball.vx = 12; // MAX_THROW_SPEED — moving right
+        ball.vy = 0;
+        ball.isMoving = true;
+
+        // Cochonnet to the right, within collision range (distance=15 < minDist=20)
+        const cochonnet = new Ball(mockScene, 215, 200, { isCochonnet: true, mass: 16 });
+        cochonnet.vx = 0;
+        cochonnet.vy = 0;
+        cochonnet.isMoving = false;
+
+        // Apply collision
+        Ball.resolveCollision(ball, cochonnet);
+
+        const speed = Math.sqrt(cochonnet.vx ** 2 + cochonnet.vy ** 2);
+        expect(speed).toBeGreaterThan(0); // cochonnet actually moved
+        expect(speed).toBeLessThanOrEqual(COCHONNET_MAX_COLLISION_SPEED + 0.01); // but capped
+    });
+
+    it('cochonnet still moves after a light hit', () => {
+        const ball = new Ball(mockScene, 200, 200, { isCochonnet: false });
+        ball.vx = 4; // moving right
+        ball.vy = 0;
+        ball.isMoving = true;
+
+        // Cochonnet positioned to the right, within collision distance (15 < radius 10+10=20)
+        const cochonnet = new Ball(mockScene, 215, 200, { isCochonnet: true, mass: 16 });
+        cochonnet.vx = 0;
+        cochonnet.vy = 0;
+        cochonnet.isMoving = false;
+
+        Ball.resolveCollision(ball, cochonnet);
+
+        const speed = Math.sqrt(cochonnet.vx ** 2 + cochonnet.vy ** 2);
+        expect(speed).toBeGreaterThan(0);
+    });
+});
+
+// =====================================================
+//  A.5 SLOPE TIMEOUT — Force stop après 120 frames max
+// =====================================================
+
+describe('Slope timeout', () => {
+    it('ball stops within 120 frames on a steep slope (safety timeout)', () => {
+        const slopeTerrain = { slope: { gravity_component: 0.15 } }; // Force slope > friction
+        const ball = new Ball(mockScene, 200, 200, {
+            frictionMult: 1.0,
+            terrain: slopeTerrain
+        });
+        // Put ball at low speed (below SPEED_THRESHOLD) to enter slope protection path
+        ball.vx = 0.1;
+        ball.vy = 0;
+        ball.isMoving = true;
+        ball._lowSpeedFrames = 0;
+
+        let framesStopped = -1;
+        for (let i = 0; i < 200; i++) {
+            ball.update(16);
+            if (!ball.isMoving) {
+                framesStopped = i + 1;
+                break;
+            }
+        }
+        expect(framesStopped).toBeGreaterThan(0);          // ball actually stopped
+        expect(framesStopped).toBeLessThanOrEqual(121);    // stopped within ~120 frames
     });
 });

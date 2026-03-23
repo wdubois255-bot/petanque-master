@@ -21,7 +21,8 @@ import {
     GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
     PALET_THRESHOLD,
     CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED,
-    CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY
+    CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY,
+    puissanceMultiplier
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
@@ -357,8 +358,8 @@ export default class PetanqueEngine {
 
     static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6) {
         const isTir = loftPreset.id === 'tir';
-        // Puissance stat affects max distance: 1 = 70% range, 6 = 100%, 10 = 120%
-        const puissanceMult = 0.7 + (puissanceStat - 1) / 9 * 0.5;
+        // Puissance stat affects max distance (source: Constants.puissanceMultiplier)
+        const puissanceMult = puissanceMultiplier(puissanceStat);
         const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85) * puissanceMult;
         const totalDist = power * maxDist;
         const landDist = totalDist * loftPreset.landingFactor;

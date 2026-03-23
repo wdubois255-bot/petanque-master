@@ -176,11 +176,6 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_cochonnet_jungle', `${BASE}assets/sprites/cochonnet_jungle.png`);
         this.load.image('ball_cochonnet_multicolor', `${BASE}assets/sprites/cochonnet_multicolor.png`);
 
-        // Terrain decoration sprites (PixelLab)
-        this.load.image('terrain_herbe_touffe', `${BASE}assets/sprites/terrain_herbe_touffe.png`);
-        this.load.image('terrain_fissure', `${BASE}assets/sprites/terrain_fissure.png`);
-        this.load.image('terrain_planche_bord', `${BASE}assets/sprites/terrain_planche_bord.png`);
-
         // Terrain surface textures (seamless 64x64)
         this.load.image('terrain_tex_terre', `${BASE}assets/sprites/terrain_tex_terre.png`);
         this.load.image('terrain_tex_herbe', `${BASE}assets/sprites/terrain_tex_herbe.png`);

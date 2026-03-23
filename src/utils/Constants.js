@@ -325,7 +325,7 @@ export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
 export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
-export const COCHONNET_MAX_COLLISION_SPEED = 7.2; // MAX_THROW_SPEED * 0.6 — cap post-collision
+export const COCHONNET_MAX_COLLISION_SPEED = 10.0; // ~83% de MAX_THROW_SPEED — réaliste, le cochonnet se déplace significativement
 
 // Screen shake (carreau)
 export const CARREAU_SHAKE_DURATION = 250;
@@ -419,6 +419,14 @@ export const TUTORIAL_PHASE_SCORE = 3;
 
 // Daily challenge
 export const GALET_DAILY_REWARD = 75;
+
+// Puissance stat multiplier — source unique, utilisée partout
+// Pui 1 = 0.8x, Pui 5 ≈ 1.02x, Pui 10 = 1.3x
+export const PUISSANCE_BASE = 0.8;
+export const PUISSANCE_RANGE = 0.5;
+export function puissanceMultiplier(puiStat) {
+    return PUISSANCE_BASE + (puiStat - 1) / 9 * PUISSANCE_RANGE;
+}
 
 // Gameplay constants (extracted from inline values)
 export const FOCUS_CHARGES_PER_MATCH = 5;

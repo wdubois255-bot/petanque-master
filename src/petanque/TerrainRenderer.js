@@ -65,8 +65,6 @@ const TERRAIN_VISUALS = {
 const DECOR_FRAMES = {
     olive:    { key: 'grid_olive',    pool: [0, 1, 4, 5, 8], fallback: 'decor_olivier' },
     fontaine: { key: 'grid_fontaine', pool: [0, 4, 8, 12],   fallback: 'decor_fontaine' },
-    pin_v1:   { key: 'grid_pin_v1',  pool: [1, 2, 5, 9],     fallback: 'decor_pin' },
-    pin_v2:   { key: 'grid_pin_v2',  pool: [0, 1, 4, 5],     fallback: 'decor_pin' },
     banc_v1:  { key: 'grid_banc_v1', pool: [0, 1, 4, 8],     fallback: 'decor_banc' },
     banc_v2:  { key: 'grid_banc_v2', pool: [0, 1, 4, 5],     fallback: 'decor_banc' },
     // New PixelLab sprites (4x4 grids, 64x64 frames)

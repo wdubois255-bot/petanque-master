@@ -4,7 +4,8 @@ import {
     AI_DELAY_MIN, AI_DELAY_MAX,
     TERRAIN_HEIGHT,
     AI_PERSONALITY_MODIFIERS,
-    AI_MOMENTUM_SENSITIVITY
+    AI_MOMENTUM_SENSITIVITY,
+    puissanceMultiplier
 } from '../utils/Constants.js';
 
 import PointeurStrategy from './ai/PointeurStrategy.js';
@@ -178,7 +179,7 @@ export default class PetanqueAI {
 
         const angle = idealAngle + angleNoise;
         const isTir = shotMode === 'tirer';
-        const puissanceMult = 0.7 + (this._charStats.puissance - 1) / 9 * 0.5;
+        const puissanceMult = puissanceMultiplier(this._charStats.puissance);
         const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85) * puissanceMult;
         const idealPower = idealDist / maxDist;
         const power = Phaser.Math.Clamp(idealPower + powerNoise, 0.1, 1.0);

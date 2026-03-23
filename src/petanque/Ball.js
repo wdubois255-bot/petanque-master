@@ -7,7 +7,8 @@ import {
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
-    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE, COCHONNET_MAX_COLLISION_SPEED
+    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE, COCHONNET_MAX_COLLISION_SPEED,
+    puissanceMultiplier
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -259,7 +260,7 @@ export default class Ball {
             this._rollDist += speed * cappedDt * 60;
         } else {
             // On slopes, don't stop if gravity is still pushing the ball
-            // BUT cap at ~5 seconds (300 frames) to prevent infinite roll
+            // BUT cap at ~2 seconds (120 frames) to prevent infinite roll
             let activeSlopeForce = 0;
             if (terrain?.slope_zones?.length && this._bounds) {
                 const b = this._bounds;
@@ -279,8 +280,8 @@ export default class Ball {
             if (activeSlopeForce > 0) {
                 this._lowSpeedFrames = (this._lowSpeedFrames || 0) + 1;
                 const frictionForce = FRICTION_BASE * effectiveFriction * 60;
-                // Allow slope roll for up to ~5 seconds, then force stop
-                if (activeSlopeForce > frictionForce * 0.5 && this._lowSpeedFrames < 300) return;
+                // Safety: force stop after ~2s of low-speed slope roll (was 5s, too sluggish)
+                if (activeSlopeForce > frictionForce * 0.5 && this._lowSpeedFrames < 120) return;
             }
             this.vx = 0;
             this.vy = 0;
@@ -410,9 +411,9 @@ export default class Ball {
 
         // === PUISSANCE impacts ejection distance ===
         // The thrower's puissance stat amplifies how far the target gets pushed
-        // PUI 5 = 1.0x (baseline), PUI 10 = 1.25x, PUI 1 = 0.8x
+        // Pui 1 = 0.8x, Pui 5 ≈ 1.02x, Pui 10 = 1.3x (source: Constants.puissanceMultiplier)
         const throwerPui = a.puissanceStat || b.puissanceStat || 0;
-        const puissanceBoost = throwerPui > 0 ? 0.8 + (throwerPui - 1) / 9 * 0.45 : 1.0;
+        const puissanceBoost = throwerPui > 0 ? puissanceMultiplier(throwerPui) : 1.0;
 
         // Carreau Instinct (Ley): 50% stronger ejection on TARGET ball only
         const carreauBoostB = (a.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
