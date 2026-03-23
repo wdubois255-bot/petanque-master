@@ -390,12 +390,12 @@ button.on('pointerdown', () => sfxUIClick(this));
 
 ---
 
-## AXE 3 — TUTORIEL IN-GAME & FTUE (~3h)
+## AXE 3 — TUTORIEL IN-GAME & FTUE (~3h) ✅ TERMINÉ (23 mars 2026)
 
 > Guider le nouveau joueur sans bloquer. Overlay dans PetanqueScene.
 > **Impact** : Sans FTUE, 80% des joueurs quittent en 30 secondes.
 
-### 3.1 Refondre InGameTutorial pour 3 étapes guidées
+### ✅ 3.1 Refondre InGameTutorial pour 3 étapes guidées
 
 **Fichier** : `src/ui/InGameTutorial.js` (588 lignes existantes)
 **Action** : Refactorer pour 3 phases claires au lieu de hints contextuels :
@@ -444,7 +444,7 @@ export const TUTORIAL_PHASE_SCORE = 3;
 
 ---
 
-### 3.2 Quick Start depuis le titre
+### ✅ 3.2 Quick Start depuis le titre
 
 **Fichier** : `src/scenes/TitleScene.js`
 **Action** : Ajouter un bouton "JOUER" proéminent qui lance une partie rapide avec des paramètres par défaut :
@@ -471,7 +471,7 @@ quickStartBtn.on('pointerdown', () => {
 
 ---
 
-### 3.3 Premier lancement : forcer Arcade
+### ✅ 3.3 Premier lancement : forcer Arcade
 
 **Fichier** : `src/scenes/TitleScene.js`
 **Action** : Si `save.arcadeProgress.currentRound === 0` ET `save.tutorialPhasesDone.length === 0` (jamais joué), rediriger automatiquement vers ArcadeScene au lieu d'afficher le menu :
@@ -490,7 +490,7 @@ if (save.arcadeProgress.currentRound === 0 && (!save.tutorialPhasesDone || save.
 
 ---
 
-### 3.4 Hint contextuel : "Appuyez TAB pour le classement"
+### ✅ 3.4 Hint contextuel : "Appuyez TAB pour le classement"
 
 **Fichier** : `src/petanque/PetanqueEngine.js`
 **Action** : Après la première mène, si le joueur n'a jamais appuyé TAB, afficher via `renderer.showMessage()` :
