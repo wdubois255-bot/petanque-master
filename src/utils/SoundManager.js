@@ -138,7 +138,7 @@ export function sfxBouleBoule() {
 }
 
 export function sfxBouleCochonnet() {
-    if (playFile('sfx_cochonnet_touche')) return;
+    if (playFile('sfx_cochonnet_touche', { rate: 0.9 + Math.random() * 0.2 })) return;
     playTone(1400, 0.06, 'square', 0.2);
     playTone(2000, 0.04, 'sine', 0.1);
     playNoise(0.04, 0.12, 5000);
@@ -161,7 +161,7 @@ export function sfxRoll() {
 }
 
 export function sfxCarreau() {
-    if (playFile('sfx_carreau', { volume: 0.7 })) return;
+    if (playFile('sfx_carreau', { volume: 0.7, rate: 0.9 + Math.random() * 0.2 })) return;
     let c;
     try {
         c = getCtx();
@@ -292,7 +292,7 @@ export function sfxCarreau() {
 }
 
 export function sfxThrow() {
-    if (playFile('sfx_lancer_swoosh')) return;
+    if (playFile('sfx_lancer_swoosh', { rate: 0.9 + Math.random() * 0.2 })) return;
     const c = getCtx();
     if (!c) return;
     const bufferSize = c.sampleRate * 0.2;
