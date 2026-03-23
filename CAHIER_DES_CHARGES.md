@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.4 — 23 mars 2026 (FTUE, stats persistantes, collection tracker, balance, SFX, bugfixes)
+> Version 2.5 — 24 mars 2026 (terrains redessinés dans éditeur, nouveaux sprites, depth bordure)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -186,7 +186,7 @@
 - [ ] Traces d'impact (verifier RenderTexture)
 
 ### 3.4 Tests automatises
-- [x] Vitest : 138 tests unitaires (physique, collisions, IA, terrains, retro, loft) — **138/138 PASS**
+- [x] Vitest : 218 tests unitaires (physique, collisions, IA, terrains, retro, loft) — **218/218 PASS**
 - [x] Playwright e2e : 85 tests (navigation, health, performance, stress, visual regression)
   - **67/67 tests fonctionnels PASS** (game, health, performance, stress)
   - **18 tests visual regression** : baselines a regenerer apres chaque changement visuel
