@@ -369,118 +369,178 @@ export default class QuickPlayScene extends Phaser.Scene {
     // ----------------------------------------------------------------
     _buildTabPersonnages() {
         const roster = this._charsData?.roster || [];
-        const colW = (GAME_WIDTH - 64) / 2;
-        const leftX = 32;
-        const rightX = 32 + colW + 8;
-        const topY = TAB_CONTENT_Y + 12;
+        const topY = TAB_CONTENT_Y + 8;
 
-        // Column headers
-        this._tabObjects.push(UIFactory.addText(this, leftX + colW / 2, topY, 'JOUEUR 1', '10px', CSS.CIEL, {
-            pixel: true, depth: UI.DEPTH_PANEL + 2
+        // === ROSTER GRID (fighting game style) ===
+        // 2 rows of 6 = 12 characters, each as a clickable mini card
+        const gridCols = 6;
+        const cellW = 62;
+        const cellH = 72;
+        const cellGap = 4;
+        const gridW = gridCols * (cellW + cellGap) - cellGap;
+        const gridX = CX - gridW / 2;
+
+        // J1 label (top-left of grid)
+        this._tabObjects.push(UIFactory.addText(this, gridX - 4, topY + 2, 'J1', '8px', CSS.CIEL, {
+            pixel: true, depth: UI.DEPTH_PANEL + 4, originX: 1
         }));
-        this._tabObjects.push(UIFactory.addText(this, rightX + colW / 2, topY, 'JOUEUR 2', '10px', CSS.ACCENT, {
-            pixel: true, depth: UI.DEPTH_PANEL + 2
+        // J2 label (top-right of grid)
+        this._tabObjects.push(UIFactory.addText(this, gridX + gridW + 4, topY + 2, 'J2', '8px', CSS.ACCENT, {
+            pixel: true, depth: UI.DEPTH_PANEL + 4, originX: 0
         }));
 
-        // Divider between columns
-        const midDivider = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
-        midDivider.lineStyle(1, COLORS.OR, 0.25);
-        midDivider.lineBetween(CX, topY + 16, CX, topY + TAB_CONTENT_H - 40);
-        this._tabObjects.push(midDivider);
+        for (let i = 0; i < CHAR_VALUES.length; i++) {
+            const col = i % gridCols;
+            const row = Math.floor(i / gridCols);
+            const cx = gridX + col * (cellW + cellGap) + cellW / 2;
+            const cy = topY + 14 + row * (cellH + cellGap) + cellH / 2;
+            const char = CHAR_VALUES[i];
+            const isP1 = i === this._p1Index;
+            const isP2 = i === this._p2Index;
 
-        // Build both columns
-        this._buildCharColumn(leftX, topY + 22, colW - 8, this._p1Index, 'p1', roster);
-        this._buildCharColumn(rightX, topY + 22, colW - 8, this._p2Index, 'p2', roster);
+            // Cell background
+            const cellGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 2);
+            cellGfx.fillStyle(isP1 ? 0x2A3A5A : isP2 ? 0x5A2A2A : 0x2A2218, 0.8);
+            cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+            if (isP1) {
+                cellGfx.lineStyle(2, 0x5B9BD5, 0.9);
+                cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+            } else if (isP2) {
+                cellGfx.lineStyle(2, 0xC44B3F, 0.9);
+                cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+            } else {
+                cellGfx.lineStyle(1, 0xD4A574, 0.2);
+                cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+            }
+            this._tabObjects.push(cellGfx);
+
+            // Mini sprite
+            if (this.textures.exists(char.sprite)) {
+                const spr = this.add.sprite(cx, cy - 8, char.sprite, 0)
+                    .setScale(0.4).setDepth(UI.DEPTH_PANEL + 3);
+                this._tabObjects.push(spr);
+            }
+
+            // Name (small)
+            const shortName = char.display.length > 8 ? char.display.substring(0, 7) + '.' : char.display;
+            this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
+                fontFamily: 'monospace', fontSize: '7px',
+                color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : CSS.GRIS,
+                shadow: SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+
+            // P1/P2 badge
+            if (isP1) {
+                this._tabObjects.push(this.add.text(cx - cellW / 2 + 3, cy - cellH / 2 + 2, 'J1', {
+                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#5B9BD5', shadow: SHADOW
+                }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 4));
+            }
+            if (isP2) {
+                this._tabObjects.push(this.add.text(cx + cellW / 2 - 3, cy - cellH / 2 + 2, 'J2', {
+                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#C44B3F', shadow: SHADOW
+                }).setOrigin(1, 0).setDepth(UI.DEPTH_PANEL + 4));
+            }
+
+            // Interactive hit zone
+            const zone = this.add.zone(cx, cy, cellW, cellH)
+                .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(UI.DEPTH_PANEL + 5);
+            zone.on('pointerdown', () => {
+                sfxUIClick();
+                // Left click = J1, right click or shift+click = J2
+                if (this.input.activePointer.event?.shiftKey || this.input.activePointer.rightButtonDown()) {
+                    this._p2Index = i;
+                    this._updateBannerSprite('p2');
+                } else {
+                    this._p1Index = i;
+                    this._updateBannerSprite('p1');
+                }
+                this._buildTabContent();
+                this._updateSummary();
+            });
+            zone.on('pointerover', () => {
+                if (!isP1 && !isP2) {
+                    cellGfx.clear();
+                    cellGfx.fillStyle(0x3A3228, 0.9);
+                    cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                    cellGfx.lineStyle(1, 0xD4A574, 0.5);
+                    cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                }
+            });
+            zone.on('pointerout', () => {
+                if (!isP1 && !isP2) {
+                    cellGfx.clear();
+                    cellGfx.fillStyle(0x2A2218, 0.8);
+                    cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                    cellGfx.lineStyle(1, 0xD4A574, 0.2);
+                    cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                }
+            });
+            this._tabObjects.push(zone);
+        }
+
+        // === SELECTED CHARACTERS DETAIL (below grid) ===
+        const detailY = topY + 14 + 2 * (cellH + cellGap) + 12;
+        const halfW = (GAME_WIDTH - 80) / 2;
+
+        // Divider
+        const midDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+        midDiv.lineStyle(1, COLORS.OR, 0.2);
+        midDiv.lineBetween(CX, detailY, CX, detailY + 100);
+        this._tabObjects.push(midDiv);
+
+        // P1 detail
+        this._buildCharDetail(40, detailY, halfW, this._p1Index, 'J1', '#5B9BD5');
+        // P2 detail
+        this._buildCharDetail(40 + halfW + 8, detailY, halfW, this._p2Index, 'J2', '#C44B3F');
+
+        // Hint
+        this._tabObjects.push(UIFactory.addText(this, CX, detailY + 105,
+            'Clic = J1  |  Shift+Clic = J2', '7px', CSS.GRIS, {
+                depth: UI.DEPTH_PANEL + 2, alpha: 0.6
+            }));
     }
 
-    _buildCharColumn(x, y, w, charIndex, side, roster) {
+    _buildCharDetail(x, y, w, charIndex, label, color) {
+        const roster = this._charsData?.roster || [];
         const char = CHAR_VALUES[charIndex];
         const charData = roster.find(c => c.id === char.charId);
-        const centerX = x + w / 2;
+        if (!charData) return;
 
-        // Character sprite (medium)
-        if (this.textures.exists(char.sprite)) {
-            const spr = this.add.sprite(centerX, y + 48, char.sprite, 0)
-                .setScale(CHAR_SCALE_QUICKPLAY)
-                .setDepth(UI.DEPTH_PANEL + 3);
-            this._tabObjects.push(spr);
-
-            // Gentle float
-            this.tweens.add({
-                targets: spr, y: y + 44,
-                duration: 1500, yoyo: true, repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        }
-
-        // Name
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 86, char.display, '11px', CSS.OR, {
-            pixel: true, depth: UI.DEPTH_PANEL + 3
-        }));
+        // Label + name
+        this._tabObjects.push(this.add.text(x, y, `${label}: ${char.display}`, {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color, shadow: SHADOW
+        }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
 
         // Catchphrase
-        if (charData?.catchphrase) {
-            this._tabObjects.push(UIFactory.addText(this, centerX, y + 102,
-                `"${charData.catchphrase}"`, '10px', CSS.OCRE, {
-                    depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
-                }));
+        if (charData.catchphrase) {
+            this._tabObjects.push(this.add.text(x, y + 14, `"${charData.catchphrase}"`, {
+                fontFamily: 'monospace', fontSize: '8px', color: CSS.OCRE, shadow: SHADOW
+            }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
         }
 
-        // Stat bars
-        if (charData?.stats) {
+        // Stat bars (compact horizontal)
+        if (charData.stats) {
             const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
-            const barW = Math.min(w - 40, 140);
-            const barH = 8;
-            const barX = centerX - barW / 2 - 18;
-            const barStartY = y + 122;
+            const barW = Math.min(w - 80, 140);
+            const barX = x + 32;
+            const barStartY = y + 30;
 
             for (let i = 0; i < STAT_NAMES.length; i++) {
                 const val = charData.stats[STAT_NAMES[i]] || 0;
-                const sy = barStartY + i * 20;
+                const sy = barStartY + i * 16;
 
-                // Label
-                this._tabObjects.push(UIFactory.addText(this, barX, sy + barH / 2,
-                    STAT_LABELS[i], '8px', CSS.GRIS, {
-                        pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
-                    }));
+                this._tabObjects.push(this.add.text(barX - 4, sy + 3, STAT_LABELS[i], {
+                    fontFamily: 'monospace', fontSize: '7px', color: CSS.GRIS, shadow: SHADOW
+                }).setOrigin(1, 0.5).setDepth(UI.DEPTH_PANEL + 3));
 
-                // Bar
-                UIFactory.drawStatBar(gfx, barX + 36, sy, barW, barH, val, 10, STAT_COLORS[i]);
+                UIFactory.drawStatBar(gfx, barX, sy, barW, 6, val, 10, STAT_COLORS[i]);
 
-                // Value
-                this._tabObjects.push(UIFactory.addText(this, barX + 36 + barW + 8, sy + barH / 2,
-                    `${val}`, '8px', CSS.CREME, {
-                        pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
-                    }));
+                this._tabObjects.push(this.add.text(barX + barW + 6, sy + 3, `${val}`, {
+                    fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+                }).setOrigin(0, 0.5).setDepth(UI.DEPTH_PANEL + 3));
             }
             this._tabObjects.push(gfx);
         }
-
-        // Navigation arrows
-        const arrowY = y + 48;
-        this._tabObjects.push(this._createArrowButton(x + 8, arrowY, '<', () => {
-            if (side === 'p1') {
-                this._p1Index = (this._p1Index - 1 + CHAR_VALUES.length) % CHAR_VALUES.length;
-                this._updateBannerSprite('p1');
-            } else {
-                this._p2Index = (this._p2Index - 1 + CHAR_VALUES.length) % CHAR_VALUES.length;
-                this._updateBannerSprite('p2');
-            }
-            this._buildTabContent();
-            this._updateSummary();
-        }));
-
-        this._tabObjects.push(this._createArrowButton(x + w - 8, arrowY, '>', () => {
-            if (side === 'p1') {
-                this._p1Index = (this._p1Index + 1) % CHAR_VALUES.length;
-                this._updateBannerSprite('p1');
-            } else {
-                this._p2Index = (this._p2Index + 1) % CHAR_VALUES.length;
-                this._updateBannerSprite('p2');
-            }
-            this._buildTabContent();
-            this._updateSummary();
-        }));
     }
 
     // ----------------------------------------------------------------
@@ -522,7 +582,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const texKey = boule.textureKey || ('ball_' + boule.id);
         if (this.textures.exists(texKey)) {
             const spr = this.add.sprite(centerX, y + 50, texKey)
-                .setScale(3.0)
+                .setScale(1.2)
                 .setDepth(UI.DEPTH_PANEL + 3);
             this._tabObjects.push(spr);
 
@@ -622,7 +682,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const texKey = coch.textureKey || 'ball_cochonnet';
         if (this.textures.exists(texKey)) {
             const spr = this.add.sprite(centerX, y + 60, texKey)
-                .setScale(3.5)
+                .setScale(1.8)
                 .setDepth(UI.DEPTH_PANEL + 3);
             this._tabObjects.push(spr);
 
@@ -1026,6 +1086,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         sfxUIClick();
         switch (TAB_KEYS[this._activeTab]) {
             case 'personnages':
+                // Left/Right = cycle J1
                 this._p1Index = (this._p1Index + dir + CHAR_VALUES.length) % CHAR_VALUES.length;
                 this._updateBannerSprite('p1');
                 this._buildTabContent();
