@@ -429,12 +429,16 @@ export default class ArcadeScene extends Phaser.Scene {
             terrainName: terrain ? terrain.name : 'Place du Village',
             roundNumber: this.currentRound,
             introText: match.intro_text || '',
+            preMatchDialogue: match.preMatchDialogue || null,
             matchData: {
                 difficulty: match.difficulty || 'medium',
                 format: 'tete_a_tete',
                 bouleType,
                 cochonnetType,
                 returnScene: 'ArcadeScene',
+                postMatchWin: match.postMatchWin || null,
+                postMatchLose: match.postMatchLose || null,
+                unlocksOnWin: match.opponent || null,
                 arcadeState: {
                     playerCharacter: this.playerCharacter,
                     currentRound: this.currentRound + 1,

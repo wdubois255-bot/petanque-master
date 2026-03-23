@@ -2,17 +2,16 @@
   "name": "Le Tournoi de La Ciotat",
   "description": "Le Rookie debarque au boulodrome de La Ciotat. Cinq joueurs reguliers l'attendent. Pour gagner sa place, il devra tous les battre.",
   "intro_narrative": [
-    "Boulodrome de La Ciotat.",
-    "Chaque dimanche, les legendes se retrouvent ici.",
+    "Un coffret poussiéreux au fond du grenier...",
+    "Les boules de ton grand-père Auguste.",
     "",
-    "La Choupe, le bourrin. Mamie Josette, la terreur.",
-    "Fazzino, le calculateur. Suchaud, le tireur supreme.",
-    "Et Ley... le tireur que personne ne bat.",
+    "On dit qu'il était le meilleur joueur de La Ciotat.",
+    "Champion du Carreau d'Or trois fois de suite.",
     "",
-    "Aujourd'hui, c'est le Tournoi annuel.",
-    "Un nouveau venu entre sur le terrain.",
+    "Le Tournoi annuel commence aujourd'hui.",
+    "C'est le moment de prouver que tu es digne de son héritage.",
     "",
-    "Montre-leur de quoi tu es capable."
+    "Montre-leur de quoi les Bertolini sont capables."
   ],
   "mid_narrative_after_3": [
     "Trois victoires. Pas mal pour un debutant.",
@@ -42,7 +41,18 @@
       "terrain": "village",
       "difficulty": "easy",
       "difficulty_label": "Facile",
-      "intro_text": "La Choupe envoie du lourd, mais vise mal. Profitez-en pour apprendre !"
+      "intro_text": "La Choupe envoie du lourd, mais vise mal. Profitez-en pour apprendre !",
+      "preMatchDialogue": [
+        { "speaker": "narrator", "text": "Place du Village. Le soleil tape fort." },
+        { "speaker": "la_choupe", "text": "Alors p'tit, tu veux jouer avec les grands ? Montre-moi c'que t'as dans les tripes !" },
+        { "speaker": "rookie", "text": "Je suis prêt." }
+      ],
+      "postMatchWin": [
+        { "speaker": "la_choupe", "text": "Pas mal... T'as du cran, gamin. Ton grand-père serait fier." }
+      ],
+      "postMatchLose": [
+        { "speaker": "la_choupe", "text": "Hé hé ! Reviens quand t'auras grandi, p'tit !" }
+      ]
     },
     {
       "round": 2,
@@ -50,7 +60,19 @@
       "terrain": "parc",
       "difficulty": "medium",
       "difficulty_label": "Moyen",
-      "intro_text": "Mamie Josette, 72 ans et un calme olympien. Ne vous fiez pas aux apparences..."
+      "intro_text": "Mamie Josette, 72 ans et un calme olympien. Ne vous fiez pas aux apparences...",
+      "preMatchDialogue": [
+        { "speaker": "narrator", "text": "Parc Municipal. Les cigales chantent." },
+        { "speaker": "mamie_josette", "text": "Mon petit... Approche, que je te montre comment on jouait dans le temps." },
+        { "speaker": "rookie", "text": "Je ne vous sous-estime pas, Mamie." },
+        { "speaker": "mamie_josette", "text": "Tu as raison de pas le faire." }
+      ],
+      "postMatchWin": [
+        { "speaker": "mamie_josette", "text": "Ah, jeunesse... Tu as de beaux jours devant toi. Auguste serait content." }
+      ],
+      "postMatchLose": [
+        { "speaker": "mamie_josette", "text": "Patience, mon petit. Rome ne s'est pas faite en un jour." }
+      ]
     },
     {
       "round": 3,
@@ -58,7 +80,19 @@
       "terrain": "colline",
       "difficulty": "hard",
       "difficulty_label": "Difficile",
-      "intro_text": "Fazzino, joueur du siecle. Sur la colline, chaque boule est un calcul."
+      "intro_text": "Fazzino, joueur du siecle. Sur la colline, chaque boule est un calcul.",
+      "preMatchDialogue": [
+        { "speaker": "narrator", "text": "La Colline. Le vent souffle dans les oliviers." },
+        { "speaker": "fazzino", "text": "J'ai analysé ton style. Probabilité de ta victoire : 23,7%." },
+        { "speaker": "rookie", "text": "Les chiffres ne disent pas tout, Fazzino." },
+        { "speaker": "fazzino", "text": "On verra bien." }
+      ],
+      "postMatchWin": [
+        { "speaker": "fazzino", "text": "Erreur de calcul... Impressionnant. Tu m'as surpris." }
+      ],
+      "postMatchLose": [
+        { "speaker": "fazzino", "text": "Les mathématiques ne mentent jamais. Retravaille ta précision." }
+      ]
     },
     {
       "round": 4,
@@ -66,7 +100,19 @@
       "terrain": "docks",
       "difficulty": "hard",
       "difficulty_label": "Tres difficile",
-      "intro_text": "Suchaud, 14 fois champion. Sur les dalles, ses tirs sont chirurgicaux."
+      "intro_text": "Suchaud, 14 fois champion. Sur les dalles, ses tirs sont chirurgicaux.",
+      "preMatchDialogue": [
+        { "speaker": "narrator", "text": "Les Docks. Béton, sel et silence." },
+        { "speaker": "suchaud", "text": "..." },
+        { "speaker": "suchaud", "text": "Joue. On verra." },
+        { "speaker": "rookie", "text": "(Il est intimidant... Reste concentré.)" }
+      ],
+      "postMatchWin": [
+        { "speaker": "suchaud", "text": "...Bien joué. T'as les nerfs solides." }
+      ],
+      "postMatchLose": [
+        { "speaker": "suchaud", "text": "Trop tendre. Reviens quand t'auras durci." }
+      ]
     },
     {
       "round": 5,
@@ -74,7 +120,28 @@
       "terrain": "plage",
       "difficulty": "hard",
       "difficulty_label": "Expert",
-      "intro_text": "Ley. Le tireur legendaire. Sur le sable lourd de la plage, ses carreaux sont devastateurs."
+      "intro_text": "Ley. Le tireur legendaire. Sur le sable lourd de la plage, ses carreaux sont devastateurs.",
+      "preMatchDialogue": [
+        { "speaker": "narrator", "text": "La Plage de La Ciotat. Le soleil se couche. La finale." },
+        { "speaker": "ley", "text": "Donc c'est toi qui a battu tout le monde... Le petit-fils d'Auguste." },
+        { "speaker": "rookie", "text": "Pour lui. Pour le Carreau d'Or." },
+        { "speaker": "ley", "text": "Alors montre-moi pourquoi tu mérites de porter son nom." }
+      ],
+      "postMatchWin": [
+        { "speaker": "ley", "text": "Le petit-fils d'Auguste... Tu portes bien son nom." },
+        { "speaker": "narrator", "text": "Le Rookie est Champion du Carreau d'Or !" }
+      ],
+      "postMatchLose": [
+        { "speaker": "ley", "text": "Pas encore prêt. Reviens plus fort. Auguste aurait voulu que tu persévères." }
+      ]
     }
+  ],
+  "milestones": [
+    { "id": "first_win", "condition": "arcadeWins >= 1", "reward": 50, "text": "Première victoire !" },
+    { "id": "first_carreau", "condition": "carreaux >= 1", "reward": 25, "text": "Premier carreau !" },
+    { "id": "arcade_half", "condition": "arcadeWins >= 3", "reward": 75, "text": "Mi-parcours !" },
+    { "id": "champion", "condition": "arcade_complete", "reward": 200, "text": "Champion du Carreau d'Or !" },
+    { "id": "perfect_run", "condition": "arcade_perfect", "reward": 300, "text": "Sans faute !" },
+    { "id": "fanny", "condition": "match_fanny", "reward": 100, "text": "FANNY !" }
   ]
 }
