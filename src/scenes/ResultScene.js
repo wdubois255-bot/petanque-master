@@ -491,7 +491,7 @@ export default class ResultScene extends Phaser.Scene {
                         wins: this.arcadeState.wins,
                         losses: this.arcadeState.losses,
                         matchResults: this.arcadeState.matchResults,
-                        lastMatchResult: { won: true }
+                        lastMatchResult: { won: this.won }
                     }
                 });
             } else {
