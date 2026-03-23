@@ -5,7 +5,7 @@ import {
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
     CHAR_SPRITE_MAP, CHAR_THROW_MAP, CHAR_STATIC_SPRITES,
-    BARK_PROBABILITY
+    BARK_PROBABILITY, PAUSE_KEY
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -13,7 +13,7 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
+import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 
@@ -41,6 +41,9 @@ export default class PetanqueScene extends Phaser.Scene {
         this.postMatchWin = data.postMatchWin || null;
         this.postMatchLose = data.postMatchLose || null;
         this.unlocksOnWin = data.unlocksOnWin || null;
+        // Pause menu state (reset on each scene init — CLAUDE.md rule)
+        this._gamePaused = false;
+        this._pauseContainer = null;
     }
 
     create() {
@@ -300,10 +303,15 @@ export default class PetanqueScene extends Phaser.Scene {
         // Music tension crossfade when score >= 10
         this.events.on('match-tension', (tense) => setMusicTension(tense));
 
+        // Pause button (top-left corner) + touche P
+        this._createPauseButton();
+
         this.events.on('shutdown', this._shutdown, this);
     }
 
     _shutdown() {
+        if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
+        this._gamePaused = false;
         this.input.keyboard.removeAllListeners();
         this.input.removeAllListeners();
         stopTerrainAmbiance();
@@ -1104,6 +1112,148 @@ export default class PetanqueScene extends Phaser.Scene {
     // drawTerrain, _placeTerrainDecor, _drawTerrainBorders, _darkenHex
     // replaced by TerrainRenderer.js
 
+    _createPauseButton() {
+        // Bouton ⏸ — coin haut-gauche (le ScorePanel occupe le haut-droit)
+        const btnX = 26, btnY = 18;
+        const btnW = 28, btnH = 24;
+
+        const gfx = this.add.graphics().setDepth(100);
+        const drawNormal = () => {
+            gfx.clear();
+            gfx.fillStyle(0x1A1510, 0.72);
+            gfx.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 5);
+            gfx.lineStyle(1, 0xD4A574, 0.6);
+            gfx.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 5);
+            gfx.fillStyle(0xD4A574, 0.85);
+            gfx.fillRect(btnX - 5, btnY - 5, 3, 10);
+            gfx.fillRect(btnX + 2, btnY - 5, 3, 10);
+        };
+        const drawHover = () => {
+            gfx.clear();
+            gfx.fillStyle(0x3A2818, 0.95);
+            gfx.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 5);
+            gfx.lineStyle(1, 0xFFD700, 0.9);
+            gfx.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 5);
+            gfx.fillStyle(0xFFD700, 1);
+            gfx.fillRect(btnX - 5, btnY - 5, 3, 10);
+            gfx.fillRect(btnX + 2, btnY - 5, 3, 10);
+        };
+        drawNormal();
+
+        const zone = this.add.zone(btnX, btnY, btnW + 8, btnH + 8)
+            .setInteractive({ useHandCursor: true })
+            .setDepth(100);
+        zone.on('pointerover', () => { drawHover(); sfxUIHover(); });
+        zone.on('pointerout', () => drawNormal());
+        zone.on('pointerup', () => { sfxUIClick(); this._openPauseMenu(); });
+
+        this.input.keyboard.on(`keydown-${PAUSE_KEY}`, () => {
+            sfxUIClick();
+            if (this._gamePaused) this._closePauseMenu();
+            else this._openPauseMenu();
+        });
+    }
+
+    _openPauseMenu() {
+        if (this._gamePaused) return;
+        this._gamePaused = true;
+        // Annuler tout tir en cours
+        if (this.aimingSystem) this.aimingSystem.cancel();
+
+        const CX = GAME_WIDTH / 2;
+        const CY = GAME_HEIGHT / 2;
+        const pw = 240, ph = 210;
+        const btnW = pw - 32, btnH = 36;
+
+        const container = this.add.container(0, 0).setDepth(300);
+        this._pauseContainer = container;
+
+        // Overlay sombre
+        const overlay = this.add.graphics();
+        overlay.fillStyle(0x1A1510, 0.78);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        container.add(overlay);
+
+        // Panel principal
+        const panelGfx = this.add.graphics();
+        panelGfx.fillStyle(0x5A3E28, 0.97);
+        panelGfx.fillRoundedRect(CX - pw / 2, CY - ph / 2, pw, ph, 14);
+        panelGfx.fillStyle(0x8B6B3D, 0.45);
+        panelGfx.fillRoundedRect(CX - pw / 2, CY - ph / 2, pw, 52, { tl: 14, tr: 14, bl: 0, br: 0 });
+        panelGfx.lineStyle(2, 0xD4A574, 0.85);
+        panelGfx.strokeRoundedRect(CX - pw / 2, CY - ph / 2, pw, ph, 14);
+        container.add(panelGfx);
+
+        // Titre
+        container.add(this.add.text(CX, CY - ph / 2 + 27, 'PAUSE', {
+            fontFamily: 'monospace', fontSize: '20px', color: '#FFD700',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5));
+
+        // Séparateur
+        const sepGfx = this.add.graphics();
+        sepGfx.lineStyle(1, 0xD4A574, 0.3);
+        sepGfx.lineBetween(CX - pw / 2 + 20, CY - ph / 2 + 54, CX + pw / 2 - 20, CY - ph / 2 + 54);
+        container.add(sepGfx);
+
+        // Usine à bouton (label dynamique via labelFn)
+        const makeBtn = (labelFn, y, callback) => {
+            const btnGfx = this.add.graphics();
+            const lbl = this.add.text(CX, y, labelFn(), {
+                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0'
+            }).setOrigin(0.5);
+            const zone = this.add.zone(CX, y, btnW, btnH)
+                .setInteractive({ useHandCursor: true });
+            const drawN = () => {
+                btnGfx.clear();
+                btnGfx.fillStyle(0x3A2818, 0.85);
+                btnGfx.fillRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+                btnGfx.lineStyle(1, 0x6B4F2D, 0.6);
+                btnGfx.strokeRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+            };
+            const drawH = () => {
+                btnGfx.clear();
+                btnGfx.fillStyle(0x6B4F2D, 1);
+                btnGfx.fillRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+                btnGfx.lineStyle(1, 0xD4A574, 0.9);
+                btnGfx.strokeRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+            };
+            drawN();
+            zone.on('pointerover', () => { drawH(); lbl.setColor('#FFD700'); sfxUIHover(); });
+            zone.on('pointerout', () => { drawN(); lbl.setColor('#F5E6D0'); });
+            zone.on('pointerup', () => {
+                sfxUIClick();
+                callback();
+                if (this._pauseContainer) lbl.setText(labelFn());
+            });
+            container.add([btnGfx, lbl, zone]);
+        };
+
+        const BTN_Y1 = CY - ph / 2 + 86;
+        const BTN_Y2 = CY - ph / 2 + 132;
+        const BTN_Y3 = CY - ph / 2 + 178;
+
+        makeBtn(() => '> Reprendre', BTN_Y1, () => this._closePauseMenu());
+        makeBtn(
+            () => `Son: ${getAudioSettings().muted ? 'OFF' : 'ON '}`,
+            BTN_Y2,
+            () => toggleMute()
+        );
+        makeBtn(() => '< Quitter', BTN_Y3, () => {
+            this._closePauseMenu();
+            this.scene.start(this.returnScene || 'TitleScene');
+        });
+    }
+
+    _closePauseMenu() {
+        if (!this._gamePaused) return;
+        this._gamePaused = false;
+        if (this._pauseContainer) {
+            this._pauseContainer.destroy(true);
+            this._pauseContainer = null;
+        }
+    }
+
     _playIrisOpen() {
         const cx = GAME_WIDTH / 2;
         const cy = GAME_HEIGHT / 2;
@@ -1139,9 +1289,9 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this._gamePaused) return;
         if (this.engine) this.engine.update(delta);
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
-
     }
 }

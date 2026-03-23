@@ -163,6 +163,7 @@ export const GAME_OVER_REDIRECT_DELAY = 1000;
 export const AIM_HINT_DURATION = 5000;
 export const BARK_DURATION = 2000;
 export const BARK_PROBABILITY = 0.55; // 40% → 55%
+export const PAUSE_KEY = 'P'; // Pause menu (ESC pris par AimingSystem pour annuler)
 export const DUST_COUNT_ROULETTE = 2;
 export const DUST_COUNT_DEMI = 6;
 export const DUST_COUNT_PLOMBEE = 10;
