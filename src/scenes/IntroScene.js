@@ -25,24 +25,24 @@ const INTRO_DIALOGUE = [
 const BOULE_SETS = [
     {
         id: 'acier',
-        name: 'Acier Classic',
+        name: 'Acier',
         desc: 'L\'equilibre du milieu.\nPointer ou tirer, a toi de choisir.',
         stats: { precision: 3, puissance: 3 },
         color: 0xA8B5C2
     },
     {
         id: 'bronze',
-        name: 'Bronze du Tireur',
-        desc: 'Lourdes comme un pastis.\nFaites pour le carreau !',
-        stats: { precision: 2, puissance: 4 },
+        name: 'Bronze',
+        desc: 'Lourdes et accrochantes.\nFaites pour le carreau !',
+        stats: { precision: 4, puissance: 4 },
         color: 0xCD7F32
     },
     {
         id: 'chrome',
-        name: 'Chrome du Pointeur',
+        name: 'Chrome',
         desc: 'Legeres et precises.\nLa plombee parfaite.',
         stats: { precision: 4, puissance: 2 },
-        color: 0xDCDCDC
+        color: 0xC0C8D4
     }
 ];
 

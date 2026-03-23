@@ -150,18 +150,18 @@ export default class BootScene extends Phaser.Scene {
             // Silently ignore missing Tiled maps — procedural generation will be used
         });
 
-        // Boules sprites — standard (3D style)
-        this.load.image('ball_acier', `${BASE}assets/sprites/boule_acier.png`);
-        this.load.image('ball_bronze', `${BASE}assets/sprites/boule_bronze.png`);
-        this.load.image('ball_chrome', `${BASE}assets/sprites/boule_chrome.png`);
-        this.load.image('ball_noire', `${BASE}assets/sprites/boule_noire.png`);
-        this.load.image('ball_rouge', `${BASE}assets/sprites/boule_rouge.png`);
-        this.load.image('ball_doree', `${BASE}assets/sprites/boule_doree.png`);
-        this.load.image('ball_rouille', `${BASE}assets/sprites/boule_rouille.png`);
-        this.load.image('ball_bleue', `${BASE}assets/sprites/boule_bleue.png`);
-        this.load.image('ball_cuivre', `${BASE}assets/sprites/boule_cuivre.png`);
-        this.load.image('ball_titane', `${BASE}assets/sprites/boule_titane.png`);
-        // (Retro boules removed — same visuals as standard boules)
+        // Boules v3 — 16 couleurs, pixel art avec 6-frame roll animation (384x64)
+        const BOULES = [
+            'acier', 'bronze', 'doree', 'cuivre',
+            'noire', 'bleue', 'rouge', 'emeraude',
+            'rouille', 'titane', 'lavande', 'ivoire',
+            'obsidienne', 'corail', 'sable', 'chrome'
+        ];
+        for (const id of BOULES) {
+            this.load.spritesheet(`ball_${id}`, `${BASE}assets/sprites/boules_v3/boule_${id}.png`, {
+                frameWidth: 64, frameHeight: 64
+            });
+        }
         // Cochonnets (pixel art only — classique + variantes)
         this.load.image('ball_cochonnet', `${BASE}assets/sprites/cochonnet.png`);
         this.load.image('ball_cochonnet_bleu', `${BASE}assets/sprites/cochonnet_bleu.png`);

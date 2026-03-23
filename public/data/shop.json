@@ -4,26 +4,22 @@
       "id": "boules",
       "label": "Boules",
       "items": [
-        { "id": "boule_bronze", "name": "Boule Bronze", "price": 150, "type": "boule", "description": "Puissance +5%, Precision -5%", "icon": "ball_bronze" },
-        { "id": "boule_chrome", "name": "Boule Chrome", "price": 150, "type": "boule", "description": "Precision +5%, Puissance -5%", "icon": "ball_chrome" },
-        { "id": "boule_noire", "name": "Boule Noire", "price": 250, "type": "boule", "description": "Intimidation visuelle", "icon": "ball_noire" },
-        { "id": "boule_rouge", "name": "Boule Rouge", "price": 250, "type": "boule", "description": "Style flamboyant", "icon": "ball_rouge" },
-        { "id": "boule_doree", "name": "Boule Doree", "price": 500, "type": "boule", "description": "+2% toutes stats", "icon": "ball_doree" },
-        { "id": "boule_bleue", "name": "Boule Bleue", "price": 300, "type": "boule", "description": "Elegance azuree", "icon": "ball_bleue" },
-        { "id": "boule_cuivre", "name": "Boule Cuivre", "price": 300, "type": "boule", "description": "Patine provencale", "icon": "ball_cuivre" },
-        { "id": "boule_rouille", "name": "Boule Rouillee", "price": 200, "type": "boule", "description": "Grip naturel, friction +10%", "icon": "ball_rouille" },
-        { "id": "boule_titane", "name": "Boule Titane", "price": 800, "type": "boule", "description": "+3% precision, +3% puissance", "icon": "ball_titane" }
-      ]
-    },
-    {
-      "id": "boules_retro",
-      "label": "Retro (Pixel Art)",
-      "items": [
-        { "id": "boule_acier_retro", "name": "Acier Retro", "price": 200, "type": "boule", "description": "Edition pixel art vintage", "icon": "ball_acier_retro" },
-        { "id": "boule_bronze_retro", "name": "Bronze Retro", "price": 200, "type": "boule", "description": "Bronze pixel art collector", "icon": "ball_bronze_retro" },
-        { "id": "boule_chrome_retro", "name": "Chrome Retro", "price": 200, "type": "boule", "description": "Chrome pixel art classique", "icon": "ball_chrome_retro" },
-        { "id": "boule_noire_retro", "name": "Noire Retro", "price": 250, "type": "boule", "description": "Sombre et vintage", "icon": "ball_noire_retro" },
-        { "id": "boule_rouge_retro", "name": "Rouge Retro", "price": 250, "type": "boule", "description": "Rouge pixel art flamboyante", "icon": "ball_rouge_retro" }
+        { "id": "boule_acier", "name": "Boule Acier", "price": 0, "type": "boule", "description": "Classique et fiable, la premiere boule", "icon": "ball_acier" },
+        { "id": "boule_bronze", "name": "Boule Bronze", "price": 150, "type": "boule", "description": "Alliage chaud, grip naturel", "icon": "ball_bronze" },
+        { "id": "boule_chrome", "name": "Boule Chrome", "price": 150, "type": "boule", "description": "Miroir poli, glisse parfaite", "icon": "ball_chrome" },
+        { "id": "boule_cuivre", "name": "Boule Cuivre", "price": 200, "type": "boule", "description": "Patine noble, toucher unique", "icon": "ball_cuivre" },
+        { "id": "boule_rouge", "name": "Boule Rouge", "price": 200, "type": "boule", "description": "Sportive et rapide", "icon": "ball_rouge" },
+        { "id": "boule_rouille", "name": "Boule Rouille", "price": 200, "type": "boule", "description": "Rustique et accrochante", "icon": "ball_rouille" },
+        { "id": "boule_bleue", "name": "Boule Bleue", "price": 250, "type": "boule", "description": "Azur mediterraneen", "icon": "ball_bleue" },
+        { "id": "boule_noire", "name": "Boule Noire", "price": 250, "type": "boule", "description": "Acier carbure minimaliste", "icon": "ball_noire" },
+        { "id": "boule_sable", "name": "Boule Sable", "price": 250, "type": "boule", "description": "Teinte dune, esprit provencal", "icon": "ball_sable" },
+        { "id": "boule_lavande", "name": "Boule Lavande", "price": 300, "type": "boule", "description": "Parfum de Provence", "icon": "ball_lavande" },
+        { "id": "boule_corail", "name": "Boule Corail", "price": 300, "type": "boule", "description": "Rose des calanques", "icon": "ball_corail" },
+        { "id": "boule_ivoire", "name": "Boule Ivoire", "price": 350, "type": "boule", "description": "Elegance pure, finition nacree", "icon": "ball_ivoire" },
+        { "id": "boule_titane", "name": "Boule Titane", "price": 400, "type": "boule", "description": "Ultra-legere et resistante", "icon": "ball_titane" },
+        { "id": "boule_emeraude", "name": "Boule Emeraude", "price": 400, "type": "boule", "description": "Vert profond, pierre precieuse", "icon": "ball_emeraude" },
+        { "id": "boule_doree", "name": "Boule Doree", "price": 500, "type": "boule", "description": "Or pur, le prestige absolu", "icon": "ball_doree" },
+        { "id": "boule_obsidienne", "name": "Boule Obsidienne", "price": 500, "type": "boule", "description": "Verre volcanique, sombre et fatale", "icon": "ball_obsidienne" }
       ]
     },
     {

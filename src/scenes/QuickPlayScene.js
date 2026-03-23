@@ -26,11 +26,22 @@ const OPTIONS = [
     { label: 'JOUEUR 1', values: CHAR_VALUES },
     { label: 'JOUEUR 2', values: CHAR_VALUES },
     { label: 'BOULES', values: [
-        { display: 'Acier', key: 'acier' }, { display: 'Bronze', key: 'bronze' },
-        { display: 'Chrome', key: 'chrome' }, { display: 'Noire', key: 'noire' },
-        { display: 'Rouge', key: 'rouge' }, { display: 'Doree', key: 'doree' },
-        { display: 'Rouillee', key: 'rouille' }, { display: 'Bleue', key: 'bleue' },
-        { display: 'Cuivre', key: 'cuivre' }, { display: 'Titane', key: 'titane' }
+        { display: 'Acier', key: 'acier' },
+        { display: 'Bronze', key: 'bronze' },
+        { display: 'Doree', key: 'doree' },
+        { display: 'Cuivre', key: 'cuivre' },
+        { display: 'Noire', key: 'noire' },
+        { display: 'Bleue', key: 'bleue' },
+        { display: 'Rouge', key: 'rouge' },
+        { display: 'Emeraude', key: 'emeraude' },
+        { display: 'Rouille', key: 'rouille' },
+        { display: 'Titane', key: 'titane' },
+        { display: 'Lavande', key: 'lavande' },
+        { display: 'Ivoire', key: 'ivoire' },
+        { display: 'Obsidienne', key: 'obsidienne' },
+        { display: 'Corail', key: 'corail' },
+        { display: 'Sable', key: 'sable' },
+        { display: 'Chrome', key: 'chrome' }
     ]},
     { label: 'COCHONNET', values: [
         { display: 'Classique', key: 'classique' }, { display: 'Bleu', key: 'bleu' },
@@ -299,22 +310,25 @@ export default class QuickPlayScene extends Phaser.Scene {
         const boule = boulesData.sets.find(s => s.id === bouleKey);
         if (!boule) return;
 
-        this._addLabel(cx, top + 10, boule.name, '16px', '#8B6B3D', 0.5);
-        const sphereY = top + 60;
+        this._addLabel(cx, top + 8, boule.name, '16px', '#8B6B3D', 0.5);
+        const sphereY = top + 58;
         const spriteKey = `ball_${bouleKey}`;
         if (this.textures.exists(spriteKey)) {
-            this._boulePreview = this.add.image(cx, sphereY, spriteKey)
-                .setScale(1.5).setOrigin(0.5).setDepth(5);
+            const tex = this.textures.get(spriteKey);
+            const isSheet = tex.frameTotal > 2;
+            this._boulePreview = isSheet
+                ? this.add.sprite(cx, sphereY, spriteKey, 0).setScale(1).setOrigin(0.5).setDepth(5)
+                : this.add.image(cx, sphereY, spriteKey).setScale(1).setOrigin(0.5).setDepth(5);
         } else {
             const color = parseInt(boule.color.replace('#', ''), 16);
             this._boulePreview = this.add.graphics().setDepth(5);
             this._boulePreview.fillStyle(color, 1);
             this._boulePreview.fillCircle(cx, sphereY, 22);
         }
-        this._addLabel(cx, sphereY + 36, boule.description, '13px', '#3A2E28', 0.5, PANEL_W - 20);
+        this._addLabel(cx, sphereY + 40, boule.description, '12px', '#3A2E28', 0.5, PANEL_W - 20);
 
         // Stats
-        const barsY = sphereY + 76;
+        const barsY = sphereY + 78;
         const bonus = boule.bonus || '';
         let glisseVal = 5;
         if (bonus.startsWith('friction_x')) {

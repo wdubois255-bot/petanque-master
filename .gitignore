@@ -15,4 +15,7 @@ playwright-report/
 comparison/
 photo vrai joueur/
 *.pxo
+voice/samples/
+voice/transcripts/
+voice/index.json
 # docs/ — inclus dans le repo (MASTER_PLAN, archives)

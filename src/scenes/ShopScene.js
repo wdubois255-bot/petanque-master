@@ -215,10 +215,14 @@ export default class ShopScene extends Phaser.Scene {
         cardGfx.strokeRoundedRect(cardX, cardY, CARD_W, CARD_H, 6);
         objects.push(cardGfx);
 
-        // Item icon
+        // Item icon (use sprite with frame 0 for spritesheets like boules v2)
         const iconY = cardY + 24;
         if (item.icon && this.textures.exists(item.icon)) {
-            const icon = this.add.image(cx, iconY, item.icon).setScale(0.9);
+            const tex = this.textures.get(item.icon);
+            const isSheet = tex.frameTotal > 2;
+            const icon = isSheet
+                ? this.add.sprite(cx, iconY, item.icon, 0).setScale(0.6)
+                : this.add.image(cx, iconY, item.icon).setScale(0.9);
             objects.push(icon);
         } else {
             const placeholder = this.add.graphics();
@@ -423,7 +427,7 @@ export default class ShopScene extends Phaser.Scene {
         const centerX = 230;
         objects.push(UIFactory.addText(this, centerX + 90, topY, 'BOULES', '14px', '#FFD700', { originX: 0.5 }));
 
-        // Normalize boule ID: "boule_bronze" → "bronze", "acier" stays "acier"
+        // Normalize boule ID: "boule_acier" → "acier"
         const normBoule = (id) => id.replace(/^boule_/, '');
 
         // All owned boules: start with acier (always owned) + purchased + unlocked
@@ -450,11 +454,15 @@ export default class ShopScene extends Phaser.Scene {
                 gfx.strokeRoundedRect(bx - bouleSize / 2 - 4, by - bouleSize / 2 - 4, bouleSize + 8, bouleSize + 20, 4);
             }
 
-            // Sprite
+            // Sprite (use sprite with frame 0 for spritesheets like boules v2)
             const sprKey = `ball_${id}`;
             if (this.textures.exists(sprKey)) {
-                const img = this.add.image(bx, by, sprKey).setScale(0.8).setOrigin(0.5)
-                    .setInteractive({ useHandCursor: true });
+                const tex = this.textures.get(sprKey);
+                const isSheet = tex.frameTotal > 2;
+                const img = isSheet
+                    ? this.add.sprite(bx, by, sprKey, 0).setScale(0.5).setOrigin(0.5)
+                    : this.add.image(bx, by, sprKey).setScale(0.8).setOrigin(0.5);
+                img.setInteractive({ useHandCursor: true });
                 img.on('pointerdown', () => {
                     setSelectedBoule(id);
                     sfxUIClick();

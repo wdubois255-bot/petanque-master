@@ -69,7 +69,7 @@ export default class Ball {
         if (explicit) return explicit;
         if (this.team === 'cochonnet') return 'ball_cochonnet';
         // Default fallbacks — can be overridden via options.textureKey
-        if (this.team === 'opponent') return 'ball_chrome';
+        if (this.team === 'opponent') return 'ball_noire';
         return 'ball_acier';
     }
 

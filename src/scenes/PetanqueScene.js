@@ -1028,8 +1028,10 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // All ball texture keys that should become rolling spritesheets
         const ballKeys = [
-            'ball_acier', 'ball_bronze', 'ball_chrome', 'ball_noire', 'ball_rouge',
-            'ball_doree', 'ball_rouille', 'ball_bleue', 'ball_cuivre', 'ball_titane',
+            'ball_acier', 'ball_bronze', 'ball_doree', 'ball_cuivre',
+            'ball_noire', 'ball_bleue', 'ball_rouge', 'ball_emeraude',
+            'ball_rouille', 'ball_titane', 'ball_lavande', 'ball_ivoire',
+            'ball_obsidienne', 'ball_corail', 'ball_sable', 'ball_chrome',
             'ball_opponent',
             'ball_cochonnet', 'ball_cochonnet_bleu', 'ball_cochonnet_vert',
             'ball_cochonnet_rouge', 'ball_cochonnet_jungle', 'ball_cochonnet_multicolor'
