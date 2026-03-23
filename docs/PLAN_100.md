@@ -25,7 +25,7 @@
 | Bugs P0/P1 | ✅ 100% | Tous corrigés (AXE 1 terminé) |
 | Phaser 4 filters | ✅ 100% | Glow meilleure boule, shadow panneaux, flash collisions |
 | Tutoriel in-game | ⚠️ 60% | InGameTutorial.js existe, **trop discret** |
-| Narrative arcade | ❌ 0% | Aucun dialogue pré/post-match |
+| Narrative arcade | ✅ 100% | Dialogues pré/post-match, intro, unlock, milestones |
 | Config cleanup | ✅ 100% | AXE 1 terminé — code propre |
 
 ### Bugs restants (vérifiés dans le code)
@@ -506,13 +506,13 @@ if (!this._tabHintShown) {
 
 ---
 
-## AXE 4 — NARRATIVE ARCADE (~4h)
+## AXE 4 — NARRATIVE ARCADE (~4h) ✅ TERMINÉ (23 mars 2026)
 
 > Donner de la chair au mode Arcade. Dialogues, personnalité, progression.
 > **Référence** : `docs/plans/PLAN_NARRATIVE_ARCADE.md` (bible narrative complète).
 > **Impact** : Le joueur joue pour l'histoire, pas juste pour le gameplay.
 
-### 4.1 Dialogues pré-match dans VSIntroScene
+### ✅ 4.1 Dialogues pré-match dans VSIntroScene
 
 **Fichier** : `src/scenes/VSIntroScene.js` (319 lignes)
 **Action** : Ajouter un système de dialogue narratif AVANT le "VS" :
@@ -620,7 +620,7 @@ if (!this._tabHintShown) {
 
 ---
 
-### 4.2 Dialogues post-match dans ResultScene
+### ✅ 4.2 Dialogues post-match dans ResultScene
 
 **Fichier** : `src/scenes/ResultScene.js` (528 lignes)
 **Action** : Avant l'affichage des récompenses, afficher le dialogue post-match :
@@ -648,7 +648,7 @@ this.scene.start('ResultScene', {
 
 ---
 
-### 4.3 Intro narrative Arcade
+### ✅ 4.3 Intro narrative Arcade
 
 **Fichier** : `src/scenes/ArcadeScene.js` (565 lignes)
 **Action** : Au premier lancement de l'Arcade (`arcadeState.currentRound === 0` ou 1), afficher une intro narrative :
@@ -681,7 +681,7 @@ arcadeProgress: {
 
 ---
 
-### 4.4 Célébration de déblocage personnage
+### ✅ 4.4 Célébration de déblocage personnage
 
 **Fichier** : `src/scenes/ResultScene.js`
 **Action** : Quand un adversaire est battu en Arcade et devient jouable, afficher une notification spéciale :
@@ -701,7 +701,7 @@ arcadeProgress: {
 
 ---
 
-### 4.5 Notification de milestones
+### ✅ 4.5 Notification de milestones
 
 **Fichier** : `src/scenes/ResultScene.js`
 **Action** : Après chaque match, vérifier les milestones de `arcade.json` :
