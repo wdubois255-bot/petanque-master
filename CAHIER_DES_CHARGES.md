@@ -168,7 +168,8 @@
 
 ## 3. RESTE A IMPLEMENTER
 
-> Detail complet dans `SPRINT_FINAL.md`
+> Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
+> Reste a implementer = Phase D (narrative overworld) ou polish cosmétique
 
 ### 3.1 Sprite Rookie
 - [ ] Sprite de base via PixelLab (128x128, 4 directions, animations)
