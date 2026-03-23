@@ -207,10 +207,9 @@
 
 | Composant | Technologie | Version |
 |-----------|-------------|---------|
-| Framework jeu | Phaser 3 "Tsugumi" | 3.90.0 |
+| Framework jeu | Phaser 4 | 4.0.0-rc.6 |
 | Langage | JavaScript ES6+ | — |
 | Build | Vite | 6.3+ |
-| UI/Dialogues | phaser3-rex-plugins | 1.80+ |
 | Maps | Tiled Map Editor | JSON export |
 | Sprites IA | PixelLab MCP (pixflux) | — |
 | SFX IA | ElevenLabs MCP | — |
