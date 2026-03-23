@@ -44,7 +44,7 @@ const MODES = [
 const CX = GAME_WIDTH / 2;
 
 // Layout constants
-const BANNER_H = 95;
+const BANNER_H = 50;
 const TAB_BAR_Y = BANNER_H + 6;
 const TAB_CONTENT_Y = TAB_BAR_Y + 28;
 const TAB_CONTENT_H = 280;
@@ -147,124 +147,51 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._destroyList(this._bannerObjects);
         this._bannerObjects = [];
 
-        // Dark wood banner background
-        const bannerBg = UIFactory.createWoodPanel(this, 0, 0, GAME_WIDTH, BANNER_H, {
-            depth: UI.DEPTH_BG + 1, textureKey: 'ui_wood_dark'
-        });
+        // Compact banner: just VS text + player names
+        const bannerBg = this.add.graphics().setDepth(UI.DEPTH_BG + 1);
+        bannerBg.fillStyle(0x2A1E15, 0.9);
+        bannerBg.fillRect(0, 0, GAME_WIDTH, BANNER_H);
         this._bannerObjects.push(bannerBg);
 
-        // J1 sprite
+        // J1 name (left)
         const p1Char = CHAR_VALUES[this._p1Index];
-        this._p1Sprite = this._createBannerSprite(120, 44, p1Char.sprite);
-        this._bannerObjects.push(this._p1Sprite);
-
-        // J1 name
-        const p1Name = UIFactory.addText(this, 120, 78, p1Char.display, '10px', CSS.CREME, {
-            pixel: true, depth: UI.DEPTH_UI
+        this._p1NameText = UIFactory.addText(this, CX - 80, 24, p1Char.display, '10px', '#5B9BD5', {
+            pixel: true, depth: UI.DEPTH_UI, originX: 1
         });
-        this._bannerObjects.push(p1Name);
-        this._p1NameText = p1Name;
+        this._bannerObjects.push(this._p1NameText);
 
-        // VS text
-        const vsText = UIFactory.addText(this, CX, 38, 'VS', '28px', CSS.ACCENT, {
+        // VS text (center)
+        const vsText = UIFactory.addText(this, CX, 22, 'VS', '18px', CSS.ACCENT, {
             pixel: true, heavyShadow: true, depth: UI.DEPTH_UI
         });
         this._bannerObjects.push(vsText);
 
-        // Pulse on VS text
-        this.tweens.add({
-            targets: vsText,
-            scaleX: 1.08, scaleY: 1.08,
-            duration: 1000, yoyo: true, repeat: -1,
-            ease: 'Sine.easeInOut'
-        });
-
-        // Decorative dividers on both sides of VS
-        const divL = UIFactory.addDivider(this, CX - 80, 38, 80, { depth: UI.DEPTH_UI });
-        const divR = UIFactory.addDivider(this, CX + 80, 38, 80, { depth: UI.DEPTH_UI });
+        // Decorative dividers
+        const divL = UIFactory.addDivider(this, CX - 60, 22, 50, { depth: UI.DEPTH_UI });
+        const divR = UIFactory.addDivider(this, CX + 60, 22, 50, { depth: UI.DEPTH_UI });
         this._bannerObjects.push(divL, divR);
 
-        // J2 sprite
+        // J2 name (right)
         const p2Char = CHAR_VALUES[this._p2Index];
-        this._p2Sprite = this._createBannerSprite(GAME_WIDTH - 120, 44, p2Char.sprite);
-        if (this._p2Sprite.setFlipX) this._p2Sprite.setFlipX(true);
-        this._bannerObjects.push(this._p2Sprite);
-
-        // J2 name
-        const p2Name = UIFactory.addText(this, GAME_WIDTH - 120, 78, p2Char.display, '10px', CSS.CREME, {
-            pixel: true, depth: UI.DEPTH_UI
+        this._p2NameText = UIFactory.addText(this, CX + 80, 24, p2Char.display, '10px', '#C44B3F', {
+            pixel: true, depth: UI.DEPTH_UI, originX: 0
         });
-        this._bannerObjects.push(p2Name);
-        this._p2NameText = p2Name;
+        this._bannerObjects.push(this._p2NameText);
 
-        // Breathing animations
-        this._startBreathing();
+        // Title
+        UIFactory.addTitle(this, CX, 42, 'PARTIE RAPIDE', { depth: UI.DEPTH_UI });
     }
 
-    _createBannerSprite(x, y, spriteKey) {
-        if (this.textures.exists(spriteKey)) {
-            const sprite = this.add.sprite(x, y, spriteKey, 0);
-            sprite.setScale(CHAR_SCALE_QUICKPLAY * 2.0);
-            sprite.setDepth(UI.DEPTH_UI);
-            return sprite;
-        }
-        // Fallback placeholder circle
-        const gfx = this.add.graphics().setDepth(UI.DEPTH_UI);
-        gfx.fillStyle(COLORS.OCRE, 0.5);
-        gfx.fillCircle(x, y, 24);
-        gfx.lineStyle(2, COLORS.OR, 0.4);
-        gfx.strokeCircle(x, y, 24);
-        return gfx;
-    }
-
-    _startBreathing() {
-        // Sprites stay static (frame 0, no animation)
-        // Future: each character will have a unique greeting animation
-        const s = CHAR_SCALE_QUICKPLAY * 2.0;
-
-        if (this._p1Sprite && this._p1Sprite.setScale) {
-            this._p1Sprite.setScale(s);
-        }
-        if (this._p2Sprite && this._p2Sprite.setScale) {
-            this._p2Sprite.setScale(s);
-        }
-    }
+    // Future: _createBannerSprite will be used for greeting animations per character
 
     _updateBannerSprite(side) {
         const isP1 = side === 'p1';
         const idx = isP1 ? this._p1Index : this._p2Index;
         const char = CHAR_VALUES[idx];
-        const x = isP1 ? 120 : GAME_WIDTH - 120;
-        const y = 44;
 
-        // Destroy old sprite
-        const oldSprite = isP1 ? this._p1Sprite : this._p2Sprite;
-        if (oldSprite && oldSprite.destroy) oldSprite.destroy();
-
-        const newSprite = this._createBannerSprite(x, y, char.sprite);
-        if (!isP1 && newSprite.setFlipX) newSprite.setFlipX(true);
-
-        if (isP1) {
-            this._p1Sprite = newSprite;
-            if (this._p1NameText) this._p1NameText.setText(char.display);
-        } else {
-            this._p2Sprite = newSprite;
-            if (this._p2NameText) this._p2NameText.setText(char.display);
-        }
-
-        this._startBreathing();
-
-        // Pop-in animation
-        if (newSprite.setScale) {
-            newSprite.setScale(0);
-            this.tweens.add({
-                targets: newSprite,
-                scaleX: CHAR_SCALE_QUICKPLAY * 2.0,
-                scaleY: CHAR_SCALE_QUICKPLAY * 2.0,
-                duration: 250,
-                ease: 'Back.easeOut'
-            });
-        }
+        // Just update name text in banner
+        if (isP1 && this._p1NameText) this._p1NameText.setText(char.display);
+        if (!isP1 && this._p2NameText) this._p2NameText.setText(char.display);
     }
 
     // ================================================================
@@ -362,14 +289,35 @@ export default class QuickPlayScene extends Phaser.Scene {
         const gridW = gridCols * (cellW + cellGap) - cellGap;
         const gridX = CX - gridW / 2;
 
-        // J1 label (top-left of grid)
-        this._tabObjects.push(UIFactory.addText(this, gridX - 4, topY + 2, 'J1', '8px', CSS.CIEL, {
-            pixel: true, depth: UI.DEPTH_PANEL + 4, originX: 1
-        }));
-        // J2 label (top-right of grid)
-        this._tabObjects.push(UIFactory.addText(this, gridX + gridW + 4, topY + 2, 'J2', '8px', CSS.ACCENT, {
-            pixel: true, depth: UI.DEPTH_PANEL + 4, originX: 0
-        }));
+        // J1 preview sprite (left of grid)
+        const sideMargin = (gridX - 20) / 2 + 10; // center in left margin
+        const p1Char = CHAR_VALUES[this._p1Index];
+        if (this.textures.exists(p1Char.sprite)) {
+            const p1Spr = this.add.sprite(sideMargin, topY + 70, p1Char.sprite, 0)
+                .setScale(1.2).setDepth(UI.DEPTH_PANEL + 4);
+            this._tabObjects.push(p1Spr);
+        }
+        this._tabObjects.push(this.add.text(sideMargin, topY + 108, 'J1', {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#5B9BD5', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+        this._tabObjects.push(this.add.text(sideMargin, topY + 122, p1Char.display, {
+            fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+
+        // J2 preview sprite (right of grid)
+        const rightMargin = gridX + gridW + (GAME_WIDTH - gridX - gridW - 20) / 2 + 10;
+        const p2Char = CHAR_VALUES[this._p2Index];
+        if (this.textures.exists(p2Char.sprite)) {
+            const p2Spr = this.add.sprite(rightMargin, topY + 70, p2Char.sprite, 0)
+                .setScale(1.2).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
+            this._tabObjects.push(p2Spr);
+        }
+        this._tabObjects.push(this.add.text(rightMargin, topY + 108, 'J2', {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#C44B3F', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+        this._tabObjects.push(this.add.text(rightMargin, topY + 122, p2Char.display, {
+            fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         for (let i = 0; i < CHAR_VALUES.length; i++) {
             const col = i % gridCols;
