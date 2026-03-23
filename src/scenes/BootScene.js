@@ -223,6 +223,17 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('border_docks_corner_bl', `${BASE}assets/sprites/borders/docks/corner_bl.png`);
         this.load.image('border_docks_corner_br', `${BASE}assets/sprites/borders/docks/corner_br.png`);
 
+        // Greeting animation spritesheets (4 frames of 128x128, horizontal strip 512x128)
+        const GREETING_CHARS = [
+            'la_choupe', 'ley', 'fazzino', 'rocher', 'suchaud',
+            'rizzi', 'robineau', 'mamie_josette', 'sofia'
+        ];
+        for (const charName of GREETING_CHARS) {
+            this.load.spritesheet(`${charName}_greeting`, `${BASE}assets/sprites/${charName}_greeting.png`, {
+                frameWidth: 128, frameHeight: 128
+            });
+        }
+
         // Decor sprites (provencal) — old single sprites as fallback
         this.load.image('decor_pin', `${BASE}assets/sprites/decor_pin.png`);
         this.load.image('decor_olivier', `${BASE}assets/sprites/decor_olivier.png`);
@@ -232,10 +243,17 @@ export default class BootScene extends Phaser.Scene {
         // Decor sprite grids (PixelLab 4x4, 64x64 per frame — 16 variants each)
         this.load.spritesheet('grid_olive', `${BASE}assets/sprites/decor/grid_olive.png`, { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('grid_fontaine', `${BASE}assets/sprites/decor/grid_fontaine.png`, { frameWidth: 64, frameHeight: 64 });
-        this.load.spritesheet('grid_pin_v1', `${BASE}assets/sprites/decor/grid_pin_v1.png`, { frameWidth: 64, frameHeight: 64 });
-        this.load.spritesheet('grid_pin_v2', `${BASE}assets/sprites/decor/grid_pin_v2.png`, { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('grid_banc_v1', `${BASE}assets/sprites/decor/grid_banc_v1.png`, { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('grid_banc_v2', `${BASE}assets/sprites/decor/grid_banc_v2.png`, { frameWidth: 64, frameHeight: 64 });
+
+        // New decor sprite grids (PixelLab 4x4, 64x64 frames)
+        const decorBase = `${BASE}assets/sprites/decor/`;
+        this.load.spritesheet('grid_tree', `${decorBase}pixellab-pixel-art-top-down-tree--direc-1774279608365.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_herbe', `${decorBase}pixellab-pixel-art-grass-tuft--top-down-1774283489357.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_stones', `${decorBase}pixellab-pixel-art-small-scattered-ston-1774283903515.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_table', `${decorBase}pixellab-pixel-art-small-outdoor-table--1774282453490.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_banc_td', `${decorBase}pixellab-pixel-art-wooden-bench--top-do-1774281600119.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_sac', `${decorBase}pixellab-pixel-art-p-tanque-ball-bag--t-1774282033460.png`, { frameWidth: 64, frameHeight: 64 });
 
         // Audio - SFX (ElevenLabs generated)
         const sfxFiles = [
@@ -306,6 +324,23 @@ export default class BootScene extends Phaser.Scene {
                 if (this.textures.exists(tempKey)) {
                     this.textures.remove(tempKey);
                 }
+            }
+        }
+
+        // Create greeting animations (4-frame loop per character)
+        const GREETING_CHARS_ANIM = [
+            'la_choupe', 'ley', 'fazzino', 'rocher', 'suchaud',
+            'rizzi', 'robineau', 'mamie_josette', 'sofia'
+        ];
+        for (const charName of GREETING_CHARS_ANIM) {
+            const greetKey = `${charName}_greeting`;
+            if (this.textures.exists(greetKey)) {
+                this.anims.create({
+                    key: `${charName}_greet`,
+                    frames: this.anims.generateFrameNumbers(greetKey, { start: 0, end: 3 }),
+                    frameRate: 4,
+                    repeat: -1
+                });
             }
         }
 

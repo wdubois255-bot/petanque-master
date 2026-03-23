@@ -287,12 +287,19 @@ export default class QuickPlayScene extends Phaser.Scene {
         const gridW = gridCols * (cellW + cellGap) - cellGap;
         const gridX = CX - gridW / 2;
 
-        // J1 preview sprite (left of grid, vertically centered)
+        // J1 preview sprite (left of grid, vertically centered) — animated greeting
         const leftSpace = gridX - 24;
         const sideX = 12 + leftSpace / 2;
         const sideY = topY + 14 + cellH; // middle of the 2 rows
         const p1Char = CHAR_VALUES[this._p1Index];
-        if (this.textures.exists(p1Char.sprite)) {
+        const p1GreetKey = `${p1Char.charId}_greeting`;
+        const p1AnimKey = `${p1Char.charId}_greet`;
+        if (this.textures.exists(p1GreetKey) && this.anims.exists(p1AnimKey)) {
+            const spr = this.add.sprite(sideX, sideY - 10, p1GreetKey, 0)
+                .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4);
+            spr.play(p1AnimKey);
+            this._tabObjects.push(spr);
+        } else if (this.textures.exists(p1Char.sprite)) {
             this._tabObjects.push(
                 this.add.sprite(sideX, sideY - 10, p1Char.sprite, 0)
                     .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4)
@@ -302,11 +309,18 @@ export default class QuickPlayScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
-        // J2 preview sprite (right of grid)
+        // J2 preview sprite (right of grid) — animated greeting
         const rightSpace = GAME_WIDTH - 24 - gridX - gridW;
         const rightX = gridX + gridW + 12 + rightSpace / 2;
         const p2Char = CHAR_VALUES[this._p2Index];
-        if (this.textures.exists(p2Char.sprite)) {
+        const p2GreetKey = `${p2Char.charId}_greeting`;
+        const p2AnimKey = `${p2Char.charId}_greet`;
+        if (this.textures.exists(p2GreetKey) && this.anims.exists(p2AnimKey)) {
+            const spr = this.add.sprite(rightX, sideY - 10, p2GreetKey, 0)
+                .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
+            spr.play(p2AnimKey);
+            this._tabObjects.push(spr);
+        } else if (this.textures.exists(p2Char.sprite)) {
             this._tabObjects.push(
                 this.add.sprite(rightX, sideY - 10, p2Char.sprite, 0)
                     .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
@@ -341,8 +355,13 @@ export default class QuickPlayScene extends Phaser.Scene {
             }
             this._tabObjects.push(cellGfx);
 
-            // Character sprite
-            if (this.textures.exists(char.sprite)) {
+            // Character sprite — greeting frame 0 (static) if available, else canvas frame 0
+            const greetKeyGrid = `${char.charId}_greeting`;
+            if (this.textures.exists(greetKeyGrid)) {
+                const spr = this.add.sprite(cx, cy - 6, greetKeyGrid, 0)
+                    .setScale(0.7).setDepth(UI.DEPTH_PANEL + 3);
+                this._tabObjects.push(spr);
+            } else if (this.textures.exists(char.sprite)) {
                 const spr = this.add.sprite(cx, cy - 6, char.sprite, 0)
                     .setScale(0.7).setDepth(UI.DEPTH_PANEL + 3);
                 this._tabObjects.push(spr);
