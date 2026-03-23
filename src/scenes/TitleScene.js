@@ -321,6 +321,15 @@ export default class TitleScene extends Phaser.Scene {
     // MENU SYSTEM (wood buttons)
     // ================================================================
     _showMainMenu() {
+        // Premier lancement (FTUE) : rediriger vers Arcade
+        const save = loadSave();
+        if (save.arcadeProgress === 0 && (!save.tutorialPhasesDone || save.tutorialPhasesDone.length === 0)) {
+            this.time.delayedCall(500, () => {
+                this.scene.start('ArcadeScene');
+            });
+            return;
+        }
+
         this._clearMenu();
         this._mode = 'main';
         this._selectedIndex = 0;
@@ -579,15 +588,15 @@ export default class TitleScene extends Phaser.Scene {
             this._transitionTo(() => {
                 const chars = this.cache.json.get('characters');
                 const rookie = chars.roster.find(c => c.id === 'rookie');
-                const choupe = chars.roster.find(c => c.id === 'la_choupe');
+                const papiRene = chars.roster.find(c => c.id === 'papi_rene');
                 const save = loadSave();
                 if (rookie && save.rookie) rookie.stats = { ...save.rookie.stats };
                 if (rookie) rookie.isRookie = true;
                 this.scene.start('PetanqueScene', {
                     terrain: 'village', difficulty: 'easy',
-                    playerCharacter: rookie, opponentCharacter: choupe,
-                    playerCharId: 'rookie', opponentId: 'la_choupe',
-                    opponentName: choupe?.name || 'La Choupe',
+                    playerCharacter: rookie, opponentCharacter: papiRene,
+                    playerCharId: 'rookie', opponentId: 'papi_rene',
+                    opponentName: papiRene?.name || 'Papi René',
                     bouleType: save.selectedBoule || 'acier',
                     cochonnetType: save.selectedCochonnet || 'classique',
                     format: 'tete_a_tete',
