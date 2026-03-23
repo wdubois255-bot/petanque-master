@@ -7,7 +7,7 @@ import {
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
-    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE
+    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE, COCHONNET_MAX_COLLISION_SPEED
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -422,6 +422,17 @@ export default class Ball {
         a.vy -= impulse * b.mass * ny * carreauBoostA;
         b.vx += impulse * a.mass * nx * carreauBoostB * puissanceBoost;
         b.vy += impulse * a.mass * ny * carreauBoostB * puissanceBoost;
+
+        // Cap cochonnet post-collision velocity to prevent ejection from terrain
+        if (isBouleVsCochonnet) {
+            const lighter = a.mass < b.mass ? a : b;
+            const speed = Math.sqrt(lighter.vx * lighter.vx + lighter.vy * lighter.vy);
+            if (speed > COCHONNET_MAX_COLLISION_SPEED) {
+                const ratio = COCHONNET_MAX_COLLISION_SPEED / speed;
+                lighter.vx *= ratio;
+                lighter.vy *= ratio;
+            }
+        }
 
         const overlap = minDist - dist;
         const sepX = (overlap / 2 + 0.5) * nx;

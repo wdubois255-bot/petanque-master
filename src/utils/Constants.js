@@ -324,6 +324,7 @@ export const BALL_DISPLAY_SCALE = 0.85;
 export const COCHONNET_DISPLAY_SCALE = 0.7;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
+export const COCHONNET_MAX_COLLISION_SPEED = 7.2; // MAX_THROW_SPEED * 0.6 — cap post-collision
 
 // Circle de lancer - doubled
 export const THROW_CIRCLE_RADIUS = 16;
