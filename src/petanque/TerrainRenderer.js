@@ -92,21 +92,20 @@ const DECOR_FRAMES = {
 // Decor placement blueprints per terrain (x relative to terrainX, 'R+N' = right of terrain)
 const TERRAIN_DECOR = {
     village: [
-        // Layout conçu dans l'éditeur de terrain (v2 — 24/03/2026)
-        { type: 'olive',       x: -50,    y: 79,  scale: 2.35, depth: 1.00, frame: 4 },
-        { type: 'olive',       x: -36,    y: 178, scale: 1.8,  depth: 1.00, frame: 4 },
-        { type: 'olive',       x: 'R+68', y: 178, scale: 2.0,  depth: 1.00, frame: 5 },
-        { type: 'olive',       x: 'R+50', y: 117, scale: 1.3,  depth: 0.50, frame: 5 },
-        { type: 'olive',       x: -53,    y: 409, scale: 1.55, depth: 1.00, frame: 4 },
+        // Layout conçu dans l'éditeur de terrain (v3 — 24/03/2026)
+        { type: 'olive',       x: -76,    y: 74,  scale: 2.35, depth: 0.50, frame: 4 },
+        { type: 'olive',       x: -62,    y: 153, scale: 1.8,  depth: 0.50, frame: 4 },
+        { type: 'olive',       x: 'R+68', y: 170, scale: 2.0,  depth: 0.65, frame: 5 },
+        { type: 'olive',       x: 'R+50', y: 116, scale: 1.3,  depth: 0.50, frame: 5 },
+        { type: 'olive',       x: -54,    y: 405, scale: 1.55, depth: 0.50, frame: 4 },
         { type: 'banc_td',     x: 32,     y: -4,  scale: 1.1,  depth: 0.50, frame: 3 },
-        { type: 'banc_td',     x: 138,    y: -4,  scale: 1.1,  depth: 0.50, frame: 3 },
-        { type: 'herbe',       x: 72,     y: 6,   scale: 0.55, depth: 0.50, frame: 6 },
-        { type: 'herbe',       x: 'R+26', y: 325, scale: 0.5,  depth: 1.00, frame: 7 },
-        { type: 'fontaine',    x: -60,    y: 369, scale: 1.05, depth: 0.50, frame: 8 },
-        { type: 'table',       x: 'R+37', y: 293, scale: 0.75, depth: 0.50, frame: 14 },
-        { type: 'sac',         x: 'R+33', y: 314, scale: 0.45, depth: 0.50, frame: 15 },
-        { type: 'items_retro', x: 'R+31', y: 263, scale: 0.5,  depth: 0.50, frame: 9 },
-        { type: 'olive',       x: 'R+79', y: 229, scale: 1.95, depth: 1.00, frame: 5 },
+        { type: 'banc_td',     x: 137,    y: -3,  scale: 1.1,  depth: 0.50, frame: 3 },
+        { type: 'herbe',       x: 75,     y: 6,   scale: 0.55, depth: 0.50, frame: 6 },
+        { type: 'herbe',       x: 'R+26', y: 328, scale: 0.5,  depth: 1.00, frame: 7 },
+        { type: 'fontaine',    x: -56,    y: 366, scale: 1.05, depth: 0.20, frame: 8 },
+        { type: 'table',       x: 'R+36', y: 293, scale: 0.75, depth: 0.50, frame: 14 },
+        { type: 'sac',         x: 'R+33', y: 317, scale: 0.45, depth: 0.50, frame: 15 },
+        { type: 'items_retro', x: 'R+32', y: 265, scale: 0.5,  depth: 0.50, frame: 9 },
     ],
     parc: [
         // Layout conçu dans l'éditeur de terrain (v2 — 24/03/2026)
