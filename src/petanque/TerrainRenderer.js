@@ -92,12 +92,12 @@ const DECOR_FRAMES = {
 // Decor placement blueprints per terrain (x relative to terrainX, 'R+N' = right of terrain)
 const TERRAIN_DECOR = {
     village: [
-        // Layout conçu dans l'éditeur de terrain (v3 — 24/03/2026)
-        { type: 'olive',       x: -76,    y: 74,  scale: 2.35, depth: 0.50, frame: 4 },
-        { type: 'olive',       x: -62,    y: 153, scale: 1.8,  depth: 0.50, frame: 4 },
-        { type: 'olive',       x: 'R+68', y: 170, scale: 2.0,  depth: 0.65, frame: 5 },
-        { type: 'olive',       x: 'R+50', y: 116, scale: 1.3,  depth: 0.50, frame: 5 },
-        { type: 'olive',       x: -54,    y: 405, scale: 1.55, depth: 0.50, frame: 4 },
+        // Layout conçu dans l'éditeur de terrain (v4 — 24/03/2026)
+        { type: 'olive',       x: -67,    y: 85,  scale: 2.35, depth: 4.00, frame: 4 }, // devant bordure
+        { type: 'olive',       x: -46,    y: 152, scale: 1.8,  depth: 4.00, frame: 4 }, // devant bordure
+        { type: 'olive',       x: 'R+65', y: 170, scale: 2.0,  depth: 4.00, frame: 5 }, // devant bordure
+        { type: 'olive',       x: 'R+50', y: 116, scale: 1.3,  depth: 4.00, frame: 5 }, // devant bordure
+        { type: 'olive',       x: -54,    y: 405, scale: 1.55, depth: 4.00, frame: 4 }, // devant bordure
         { type: 'banc_td',     x: 32,     y: -4,  scale: 1.1,  depth: 0.50, frame: 3 },
         { type: 'banc_td',     x: 137,    y: -3,  scale: 1.1,  depth: 0.50, frame: 3 },
         { type: 'herbe',       x: 75,     y: 6,   scale: 0.55, depth: 0.50, frame: 6 },
