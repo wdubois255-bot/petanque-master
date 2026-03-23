@@ -21,7 +21,7 @@
 > Corriger les incohérences physiques découvertes à l'audit.
 > **Impact** : Le jeu "sonne" juste et les tests sont fiables.
 
-### A.1 Corriger l'incohérence friction sable (3.0 vs 3.5)
+### ~~A.1 Corriger l'incohérence friction sable (3.0 vs 3.5)~~
 
 **Problème** : `Constants.js` L298 dit `sable: 3.0` mais `tests/Gameplay.test.js` L59 utilise `3.5`.
 **Fichier 1** : `src/utils/Constants.js` L298
@@ -31,7 +31,7 @@
 
 ---
 
-### A.2 Unifier la formule Puissance (throw vs collision)
+### ~~A.2 Unifier la formule Puissance (throw vs collision)~~
 
 **Problème** : Deux formules différentes pour le même stat :
 - Throw (PetanqueEngine.js) : `puissanceMult = 0.7 + (pui - 1) / 9 * 0.5` → range 0.7-1.2
@@ -53,7 +53,7 @@ export function puissanceMultiplier(puiStat) {
 
 ---
 
-### A.3 Ajuster le cap de vitesse cochonnet
+### ~~A.3 Ajuster le cap de vitesse cochonnet~~
 
 **Problème** : `COCHONNET_MAX_COLLISION_SPEED = 7.2` est très conservateur. Le cochonnet bouge à peine sur un tir direct. En pétanque réelle, le cochonnet peut se déplacer significativement.
 
@@ -70,7 +70,7 @@ export const COCHONNET_MAX_COLLISION_SPEED = 10.0; // ~83% de MAX_THROW_SPEED
 
 ---
 
-### A.4 Améliorer la protection slope infinite roll
+### ~~A.4 Améliorer la protection slope infinite roll~~
 
 **Problème** : La protection actuelle attend 300 frames (~5s) avant de forcer l'arrêt. C'est trop long.
 
@@ -88,7 +88,7 @@ if (this._lowSpeedFrames > 120) {
 
 ---
 
-### A.5 Ajouter les tests physique manquants
+### ~~A.5 Ajouter les tests physique manquants~~
 
 **Fichier** : `tests/Gameplay.test.js`
 **Action** : Ajouter ces tests :
@@ -111,7 +111,7 @@ describe('Slope timeout', () => {
 
 ---
 
-### A.6 Nettoyer les assets fantômes et le code mort
+### ~~A.6 Nettoyer les assets fantômes et le code mort~~
 
 **Fichier** : `src/scenes/BootScene.js`
 **Action** : Supprimer le chargement de ces assets inutilisés :
@@ -132,7 +132,7 @@ describe('Slope timeout', () => {
 > Créer un outil pour peaufiner chaque terrain à la main.
 > **Impact** : Cohérence visuelle, chaque terrain a sa personnalité.
 
-### B.1 Créer l'éditeur HTML de terrains
+### ~~B.1 Créer l'éditeur HTML de terrains~~
 
 **Fichier** : `public/terrain_editor.html` (nouveau fichier)
 **Action** : Créer une page HTML standalone qui :
@@ -178,7 +178,7 @@ describe('Slope timeout', () => {
 
 ---
 
-### B.2 Enrichir les décors Plage
+### ~~B.2 Enrichir les décors Plage~~
 
 **Problème** : La plage n'a que 2 arbres et 1 pierres (3 sprites). Les autres terrains en ont 7-9.
 **Fichier** : `src/petanque/TerrainRenderer.js` — section TERRAIN_DECOR.plage
@@ -194,7 +194,7 @@ Utiliser des positions qui ne gênent pas le terrain de jeu (gauche/droite du te
 
 ---
 
-### B.3 Enrichir les décors Docks
+### ~~B.3 Enrichir les décors Docks~~
 
 **Problème** : Les Docks n'ont qu'1 sprite (sac). L'ambiance industrielle est entièrement procédurale.
 **Fichier** : `src/petanque/TerrainRenderer.js` — section TERRAIN_DECOR.docks
@@ -206,7 +206,7 @@ Utiliser des positions qui ne gênent pas le terrain de jeu (gauche/droite du te
 
 ---
 
-### B.4 Ajouter des ombres sous les grands sprites
+### ~~B.4 Ajouter des ombres sous les grands sprites~~
 
 **Fichier** : `src/petanque/TerrainRenderer.js` — méthode `_placeDecorSprites()`
 **Action** : Pour chaque sprite avec scale > 1.5, ajouter une ombre elliptique en dessous :
@@ -229,7 +229,7 @@ if (scale > 1.5) {
 > Ranger, documenter, s'assurer que tout est aligné.
 > **Impact** : Le projet est compréhensible et maintenable.
 
-### C.1 Archiver les fichiers research obsolètes
+### ~~C.1 Archiver les fichiers research obsolètes~~
 
 **Dossier** : `research/`
 **Action** : Déplacer dans `research/archive/` :
@@ -241,7 +241,7 @@ if (scale > 1.5) {
 
 ---
 
-### C.2 Mettre à jour research/00_synthese_etat_projet.md
+### ~~C.2 Mettre à jour research/00_synthese_etat_projet.md~~
 
 **Action** : Mettre à jour la synthèse avec l'état actuel :
 - Score 100/100 (PLAN_100 terminé)
@@ -253,7 +253,7 @@ if (scale > 1.5) {
 
 ---
 
-### C.3 Vérifier la cohérence physique audit vs code
+### ~~C.3 Vérifier la cohérence physique audit vs code~~
 
 **Fichier** : `research/04c_physique_audit_specifications.md`
 **Action** : Relire cet audit et vérifier chaque point dans le code actuel :
