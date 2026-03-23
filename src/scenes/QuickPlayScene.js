@@ -44,11 +44,11 @@ const MODES = [
 const CX = GAME_WIDTH / 2;
 
 // Layout constants
-const BANNER_H = 50;
-const TAB_BAR_Y = BANNER_H + 6;
-const TAB_CONTENT_Y = TAB_BAR_Y + 28;
-const TAB_CONTENT_H = 280;
-const BOTTOM_Y = 420;
+const BANNER_H = 32;
+const TAB_BAR_Y = BANNER_H + 2;
+const TAB_CONTENT_Y = TAB_BAR_Y + 26;
+const TAB_CONTENT_H = 310;
+const BOTTOM_Y = 428;
 
 const STAT_NAMES = ['precision', 'puissance', 'effet', 'sang_froid'];
 const STAT_LABELS = ['PRC', 'PUI', 'EFF', 'SDF'];
@@ -147,39 +147,37 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._destroyList(this._bannerObjects);
         this._bannerObjects = [];
 
-        // Compact banner: just VS text + player names
-        const bannerBg = this.add.graphics().setDepth(UI.DEPTH_BG + 1);
-        bannerBg.fillStyle(0x2A1E15, 0.9);
-        bannerBg.fillRect(0, 0, GAME_WIDTH, BANNER_H);
-        this._bannerObjects.push(bannerBg);
+        // Title left-aligned
+        this._bannerObjects.push(
+            this.add.text(16, 14, 'PARTIE RAPIDE', {
+                fontFamily: FONT_PIXEL, fontSize: '14px',
+                color: CSS.OR,
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI)
+        );
 
-        // J1 name (left)
+        // VS summary right-aligned: "J1 name  VS  J2 name"
         const p1Char = CHAR_VALUES[this._p1Index];
-        this._p1NameText = UIFactory.addText(this, CX - 80, 24, p1Char.display, '10px', '#5B9BD5', {
-            pixel: true, depth: UI.DEPTH_UI, originX: 1
-        });
+        const p2Char = CHAR_VALUES[this._p2Index];
+
+        this._p1NameText = this.add.text(GAME_WIDTH - 220, 14, p1Char.display, {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: '#5B9BD5', shadow: SHADOW
+        }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
         this._bannerObjects.push(this._p1NameText);
 
-        // VS text (center)
-        const vsText = UIFactory.addText(this, CX, 22, 'VS', '18px', CSS.ACCENT, {
-            pixel: true, heavyShadow: true, depth: UI.DEPTH_UI
-        });
-        this._bannerObjects.push(vsText);
+        this._bannerObjects.push(
+            this.add.text(GAME_WIDTH - 200, 14, 'VS', {
+                fontFamily: FONT_PIXEL, fontSize: '10px',
+                color: CSS.ACCENT, shadow: SHADOW
+            }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
+        );
 
-        // Decorative dividers
-        const divL = UIFactory.addDivider(this, CX - 60, 22, 50, { depth: UI.DEPTH_UI });
-        const divR = UIFactory.addDivider(this, CX + 60, 22, 50, { depth: UI.DEPTH_UI });
-        this._bannerObjects.push(divL, divR);
-
-        // J2 name (right)
-        const p2Char = CHAR_VALUES[this._p2Index];
-        this._p2NameText = UIFactory.addText(this, CX + 80, 24, p2Char.display, '10px', '#C44B3F', {
-            pixel: true, depth: UI.DEPTH_UI, originX: 0
-        });
+        this._p2NameText = this.add.text(GAME_WIDTH - 180, 14, p2Char.display, {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: '#C44B3F', shadow: SHADOW
+        }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
         this._bannerObjects.push(this._p2NameText);
-
-        // Title
-        UIFactory.addTitle(this, CX, 42, 'PARTIE RAPIDE', { depth: UI.DEPTH_UI });
     }
 
     // Future: _createBannerSprite will be used for greeting animations per character
@@ -289,34 +287,33 @@ export default class QuickPlayScene extends Phaser.Scene {
         const gridW = gridCols * (cellW + cellGap) - cellGap;
         const gridX = CX - gridW / 2;
 
-        // J1 preview sprite (left of grid)
-        const sideMargin = (gridX - 20) / 2 + 10; // center in left margin
+        // J1 preview sprite (left of grid, vertically centered)
+        const leftSpace = gridX - 24;
+        const sideX = 12 + leftSpace / 2;
+        const sideY = topY + 14 + cellH; // middle of the 2 rows
         const p1Char = CHAR_VALUES[this._p1Index];
         if (this.textures.exists(p1Char.sprite)) {
-            const p1Spr = this.add.sprite(sideMargin, topY + 70, p1Char.sprite, 0)
-                .setScale(1.2).setDepth(UI.DEPTH_PANEL + 4);
-            this._tabObjects.push(p1Spr);
+            this._tabObjects.push(
+                this.add.sprite(sideX, sideY - 10, p1Char.sprite, 0)
+                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4)
+            );
         }
-        this._tabObjects.push(this.add.text(sideMargin, topY + 108, 'J1', {
-            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#5B9BD5', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
-        this._tabObjects.push(this.add.text(sideMargin, topY + 122, p1Char.display, {
-            fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+        this._tabObjects.push(this.add.text(sideX, sideY + 28, 'J1', {
+            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         // J2 preview sprite (right of grid)
-        const rightMargin = gridX + gridW + (GAME_WIDTH - gridX - gridW - 20) / 2 + 10;
+        const rightSpace = GAME_WIDTH - 24 - gridX - gridW;
+        const rightX = gridX + gridW + 12 + rightSpace / 2;
         const p2Char = CHAR_VALUES[this._p2Index];
         if (this.textures.exists(p2Char.sprite)) {
-            const p2Spr = this.add.sprite(rightMargin, topY + 70, p2Char.sprite, 0)
-                .setScale(1.2).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
-            this._tabObjects.push(p2Spr);
+            this._tabObjects.push(
+                this.add.sprite(rightX, sideY - 10, p2Char.sprite, 0)
+                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
+            );
         }
-        this._tabObjects.push(this.add.text(rightMargin, topY + 108, 'J2', {
-            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#C44B3F', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
-        this._tabObjects.push(this.add.text(rightMargin, topY + 122, p2Char.display, {
-            fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+        this._tabObjects.push(this.add.text(rightX, sideY + 28, 'J2', {
+            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         for (let i = 0; i < CHAR_VALUES.length; i++) {
@@ -409,25 +406,32 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // === SELECTED CHARACTERS DETAIL (below grid) ===
-        const detailY = topY + 14 + 2 * (cellH + cellGap) + 6;
+        const detailY = topY + 14 + 2 * (cellH + cellGap) + 8;
         const halfW = (GAME_WIDTH - 80) / 2;
 
-        // Divider
+        // Horizontal divider above details
+        const topDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+        topDiv.lineStyle(1, COLORS.OR, 0.15);
+        topDiv.lineBetween(40, detailY - 4, GAME_WIDTH - 40, detailY - 4);
+        this._tabObjects.push(topDiv);
+
+        // Vertical divider between P1 and P2
         const midDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
-        midDiv.lineStyle(1, COLORS.OR, 0.2);
-        midDiv.lineBetween(CX, detailY, CX, detailY + 100);
+        midDiv.lineStyle(1, COLORS.OR, 0.15);
+        midDiv.lineBetween(CX, detailY, CX, detailY + 90);
         this._tabObjects.push(midDiv);
 
         // P1 detail
-        this._buildCharDetail(40, detailY, halfW, this._p1Index, 'J1', '#5B9BD5');
+        this._buildCharDetail(40, detailY + 2, halfW, this._p1Index, 'J1', '#5B9BD5');
         // P2 detail
-        this._buildCharDetail(40 + halfW + 8, detailY, halfW, this._p2Index, 'J2', '#C44B3F');
+        this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, 'J2', '#C44B3F');
 
-        // Hint
-        this._tabObjects.push(UIFactory.addText(this, CX, detailY + 105,
-            'Clic = J1  |  Shift+Clic = J2', '7px', CSS.GRIS, {
-                depth: UI.DEPTH_PANEL + 2, alpha: 0.6
-            }));
+        // Hint at bottom
+        this._tabObjects.push(this.add.text(CX, detailY + 95,
+            'Clic = J1  |  Shift+Clic = J2', {
+                fontFamily: 'monospace', fontSize: '7px',
+                color: CSS.GRIS, shadow: SHADOW, alpha: 0.5
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 2));
     }
 
     _buildCharDetail(x, y, w, charIndex, label, color) {
@@ -893,15 +897,16 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Summary text
         const summaryText = this._getSummaryText();
-        this._summaryLabel = UIFactory.addText(this, CX, BOTTOM_Y - 8, summaryText, '9px', CSS.OCRE, {
-            depth: UI.DEPTH_UI, alpha: 0.8
-        });
+        this._summaryLabel = this.add.text(CX, BOTTOM_Y - 4, summaryText, {
+            fontFamily: 'monospace', fontSize: '8px',
+            color: CSS.OCRE, shadow: SHADOW, alpha: 0.7
+        }).setOrigin(0.5).setDepth(UI.DEPTH_UI);
         this._bottomObjects.push(this._summaryLabel);
 
         // JOUER button
-        const btnW = 240;
-        const btnH = 44;
-        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 28, btnW, btnH, 'JOUER !', {
+        const btnW = 220;
+        const btnH = 36;
+        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 22, btnW, btnH, 'JOUER !', {
             fontSize: '16px',
             selectedTextColor: CSS.OR,
             depth: UI.DEPTH_UI,
