@@ -373,6 +373,9 @@ export default class TitleScene extends Phaser.Scene {
                 this._updateSelection();
             });
 
+            // Draw menu icon inside button container
+            this._drawMenuIcon(btn.container, i, def);
+
             // Start invisible for stagger animation
             btn.container.setAlpha(0).setScale(0.8);
             this._menuContainer.add(btn.container);
@@ -750,6 +753,157 @@ export default class TitleScene extends Phaser.Scene {
         }
         this._settingsValues = getAudioSettings();
         this._rebuildSettingsItems();
+    }
+
+    // ================================================================
+    // MENU ICONS — pixel art procedural icons for each button
+    // ================================================================
+    _drawMenuIcon(container, index, def) {
+        const g = this.add.graphics();
+        const iconX = -def.w / 2 + (def.hero ? 24 : 18);
+        const iconY = 0;
+        const s = def.hero ? 1.4 : 1; // scale for hero button
+
+        // Shift button text slightly right to make room for icon
+        const textNode = container.list.find(c => c.type === 'Text');
+        if (textNode && index < 5) {
+            textNode.setX(textNode.x + (def.hero ? 10 : 8));
+        }
+
+        switch (index) {
+            case 0: // JOUER — boule de petanque
+                this._iconBoule(g, iconX, iconY, s);
+                break;
+            case 1: // MODE ARCADE — trophee
+                this._iconTrophy(g, iconX, iconY, s);
+                break;
+            case 2: // PARTIE RAPIDE — eclair
+                this._iconBolt(g, iconX, iconY, s);
+                break;
+            case 3: // MON PERSO — personnage
+                this._iconPerso(g, iconX, iconY, s);
+                break;
+            case 4: // BOUTIQUE — sac/galets
+                this._iconShop(g, iconX, iconY, s);
+                break;
+            case 5: // PARAMETRES — engrenage
+                this._iconGear(g, iconX, iconY, s);
+                break;
+        }
+
+        container.add(g);
+    }
+
+    _iconBoule(g, x, y, s) {
+        // Metallic boule (silver sphere)
+        g.fillStyle(0xB0B0B0, 1);
+        g.fillCircle(x, y, 7 * s);
+        g.fillStyle(0xD8D8D8, 0.8);
+        g.fillCircle(x - 2 * s, y - 2 * s, 4 * s);
+        g.fillStyle(0xFFFFFF, 0.5);
+        g.fillCircle(x - 3 * s, y - 3 * s, 2 * s);
+        // Cochonnet next to it
+        g.fillStyle(0xFFD700, 1);
+        g.fillCircle(x + 9 * s, y + 3 * s, 3 * s);
+        g.fillStyle(0xFFE866, 0.6);
+        g.fillCircle(x + 8 * s, y + 2 * s, 1.5 * s);
+    }
+
+    _iconTrophy(g, x, y, s) {
+        // Cup body
+        g.fillStyle(0xFFD700, 1);
+        g.fillRect(x - 5 * s, y - 6 * s, 10 * s, 9 * s);
+        // Cup rim
+        g.fillStyle(0xFFE866, 0.8);
+        g.fillRect(x - 6 * s, y - 7 * s, 12 * s, 2 * s);
+        // Cup handles
+        g.fillStyle(0xFFD700, 0.9);
+        g.fillRect(x - 8 * s, y - 5 * s, 3 * s, 5 * s);
+        g.fillRect(x + 5 * s, y - 5 * s, 3 * s, 5 * s);
+        // Stem
+        g.fillStyle(0xD4A574, 1);
+        g.fillRect(x - 2 * s, y + 3 * s, 4 * s, 3 * s);
+        // Base
+        g.fillStyle(0xC4854A, 1);
+        g.fillRect(x - 5 * s, y + 5 * s, 10 * s, 2 * s);
+        // Star on cup
+        g.fillStyle(0xFFFFFF, 0.6);
+        g.fillRect(x - 1 * s, y - 4 * s, 2 * s, 2 * s);
+    }
+
+    _iconBolt(g, x, y, s) {
+        // Lightning bolt
+        g.fillStyle(0xFFD700, 1);
+        g.beginPath();
+        g.moveTo(x + 2 * s, y - 8 * s);
+        g.lineTo(x - 4 * s, y + 1 * s);
+        g.lineTo(x - 1 * s, y + 1 * s);
+        g.lineTo(x - 3 * s, y + 8 * s);
+        g.lineTo(x + 4 * s, y - 1 * s);
+        g.lineTo(x + 1 * s, y - 1 * s);
+        g.closePath();
+        g.fillPath();
+        // Highlight
+        g.fillStyle(0xFFE866, 0.5);
+        g.fillRect(x, y - 5 * s, 2 * s, 3 * s);
+    }
+
+    _iconPerso(g, x, y, s) {
+        // Head
+        g.fillStyle(0xF0C8A0, 1);
+        g.fillCircle(x, y - 4 * s, 4 * s);
+        // Hair
+        g.fillStyle(0x8B6B3A, 1);
+        g.fillRect(x - 4 * s, y - 8 * s, 8 * s, 3 * s);
+        // Body
+        g.fillStyle(0x4A8AD0, 1);
+        g.fillRect(x - 4 * s, y, 8 * s, 7 * s);
+        // Arms
+        g.fillStyle(0x4A8AD0, 0.8);
+        g.fillRect(x - 6 * s, y + 1 * s, 2 * s, 5 * s);
+        g.fillRect(x + 4 * s, y + 1 * s, 2 * s, 5 * s);
+        // Eyes
+        g.fillStyle(0x3A2E28, 1);
+        g.fillRect(x - 2 * s, y - 5 * s, 1.5 * s, 1.5 * s);
+        g.fillRect(x + 1 * s, y - 5 * s, 1.5 * s, 1.5 * s);
+    }
+
+    _iconShop(g, x, y, s) {
+        // Galet (coin)
+        g.fillStyle(0xD4A574, 1);
+        g.fillCircle(x - 3 * s, y - 2 * s, 5 * s);
+        g.fillStyle(0xC4854A, 0.8);
+        g.fillCircle(x - 3 * s, y - 2 * s, 3.5 * s);
+        g.fillStyle(0xE8C890, 0.6);
+        g.fillCircle(x - 4 * s, y - 3 * s, 2 * s);
+        // "G" on coin
+        g.fillStyle(0x8B6B3A, 0.7);
+        g.fillRect(x - 4.5 * s, y - 3 * s, 3 * s, 1 * s);
+        // Second coin (stacked)
+        g.fillStyle(0xD4A574, 0.7);
+        g.fillCircle(x + 4 * s, y + 2 * s, 5 * s);
+        g.fillStyle(0xC4854A, 0.6);
+        g.fillCircle(x + 4 * s, y + 2 * s, 3.5 * s);
+    }
+
+    _iconGear(g, x, y, s) {
+        // Gear wheel
+        const teeth = 6;
+        g.fillStyle(0x9E9E8E, 1);
+        g.fillCircle(x, y, 5 * s);
+        // Teeth
+        for (let i = 0; i < teeth; i++) {
+            const angle = (i / teeth) * Math.PI * 2;
+            const tx = x + Math.cos(angle) * 6.5 * s;
+            const ty = y + Math.sin(angle) * 6.5 * s;
+            g.fillRect(tx - 1.5 * s, ty - 1.5 * s, 3 * s, 3 * s);
+        }
+        // Center hole
+        g.fillStyle(0x6B5B3A, 1);
+        g.fillCircle(x, y, 2.5 * s);
+        // Highlight
+        g.fillStyle(0xBBBBBB, 0.4);
+        g.fillCircle(x - 1.5 * s, y - 1.5 * s, 2 * s);
     }
 
     _transitionTo(callback) {
