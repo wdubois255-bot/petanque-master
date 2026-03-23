@@ -1,7 +1,7 @@
 # Synthese : Etat du projet et plan d'action
 
 > Document de synthese qui centralise TOUT ce qu'il faut savoir pour avancer.
-> Mis a jour : **18 mars 2026**.
+> Mis a jour : **23 mars 2026**.
 
 ---
 
@@ -18,6 +18,9 @@
 | Game Feel | COMPLET | SFX, particules, zoom camera, stats boules, UI combinee |
 | Sprint 4 | COMPLET | 5 persos (Ley, Magicien, Choupe, Marcel, Reyes), Focus/Respire, capacites uniques |
 | Sprint 4+ | COMPLET | 10 boules, 8 cochonnets, 5 terrains, confettis, musique terrain, arcade 3 rounds |
+| PLAN_100 | COMPLET | Score 100/100 — 5 axes (progression, visuel, audio, polish, publication) |
+| Playtest 23/03 | COMPLET | Bugs corriges : game freeze fin de partie + tutoriel invisible |
+| PLAN_PHASE2 | COMPLET | Physique polish (A), decors visuels (B), coherence docs (C) |
 
 ### Personnages (6 : Rookie + 5 adversaires)
 | Perso | Archetype | Stats (P/Pu/E/SF) | Capacite | Sprite |
@@ -36,6 +39,23 @@
 - Moteur (PetanqueEngine.js) : state machine complet, regles FIPJP
 - Audio : 14 SFX + 2 musiques + ambiance terrain
 - Scenes : Boot, Title, CharSelect, QuickPlay, Arcade, VSIntro, Petanque, Result, LevelUp, Shop, Tutorial
+
+---
+
+## PHYSIQUE — POINTS BANCALS IDENTIFIES (audit 04c)
+
+> Reference complete : `research/04c_physique_audit_specifications.md`
+> Corrections prioritaires pour phase suivante :
+
+| Point | Statut | Detail |
+|-------|--------|--------|
+| Recul detection | BANCAL | `throwerSpeed > 0.8 && < 5` — trop etroit, tirs puissants (>5) non detectes |
+| Palet measurement | BANCAL | Mesure la distance au cochonnet au lieu du point d'impact |
+| Retro (backspin) | PARTIEL | Modele lineaire constant, ne se "consomme" pas comme en realite |
+| Tir au fer rollEfficiency | FRAGILE | `16.0` est un hack, fonctionne mais non-intuitif |
+| Collisions par intensite | MANQUANT | Tir fort vs tap leger = meme retour visuel |
+
+> Ces points sont documentés, non bloquants. A corriger en Phase 3 si gameplay insuffisant.
 
 ---
 
@@ -75,6 +95,17 @@
 ---
 
 ## DOSSIER RESEARCH — GUIDE DE LECTURE
+
+### Plan actif
+- **docs/PLAN_PHASE2.md** : terminé (physique A + visuels B + coherence C)
+- **Prochaine etape** : Phase 3 narrative ou Phase C Polish selon priorites
+
+### Fichiers archives (obsoletes)
+- `research/archive/07_cross_analysis.md` : ancienne resolution 416x240 (projet = 832x480)
+- `research/archive/02_tilemaps_assets.md` : reference 16x16 (projet = 32x32)
+- `research/archive/05_pokemon_architecture.md` : patterns generaux supersedeés par CLAUDE.md
+
+---
 
 ### Je veux coder / polir la scene petanque
 1. **research/20** : Plan en 6 etapes (background → boules 3D → camera → joueurs → traces → ambiance)
