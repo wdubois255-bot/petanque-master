@@ -125,6 +125,35 @@ export const AI_TIREUR = {
     loftPref: 'tir', targetsCocho: false
 };
 
+// AI personality precision modifiers (multiplier on angleDev/powerDev)
+// Each archetype has bonuses in their specialty and penalties outside it
+export const AI_PERSONALITY_MODIFIERS = {
+    tireur: {
+        tirer: { angle: 0.55, power: 0.55 },      // Strong bonus when shooting
+        pointer: { angle: 1.3, power: 1.3 }        // Penalty when pointing
+    },
+    pointeur: {
+        pointer: { angle: 0.6, power: 0.6 },       // Strong bonus when pointing
+        tirer: { angle: 1.5, power: 1.5 }           // Penalty when shooting
+    },
+    complet: {
+        pointer: { angle: 0.75, power: 0.75 },     // Good at everything
+        tirer: { angle: 0.75, power: 0.75 }         // No penalty
+    },
+    equilibre: {
+        pointer: { angle: 0.65, power: 0.65 },     // Decent at pointing
+        tirer: { angle: 0.85, power: 0.85 }         // Decent at shooting
+    }
+};
+
+// AI momentum sensitivity per archetype (how much momentum affects precision)
+export const AI_MOMENTUM_SENSITIVITY = {
+    pointeur: 0.05,
+    tireur: 0.20,
+    equilibre: 0.10,
+    complet: 0.03
+};
+
 // Petanque - timing & feedback
 export const HITSTOP_BOULE_MS = 60;
 export const HITSTOP_CARREAU_MS = 100;
@@ -287,9 +316,12 @@ export const BALL_SHADOW_STRETCH_MAX = 1.4;
 export const BALL_SHADOW_STRETCH_SPEED = 0.003;
 export const BALL_SQUASH_RADIUS_BOOST = 2;
 
-// Ball sizes (pixels in game) - doubled
+// Ball sizes (pixels in game) - physics radius
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 8;
+// Visual scale for sprites (smaller look on terrain)
+export const BALL_DISPLAY_SCALE = 0.75;
+export const COCHONNET_DISPLAY_SCALE = 0.6;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 

@@ -63,13 +63,18 @@ export function loadSave() {
     }
 }
 
+// Callback for save failure notifications (set by UI layer)
+let _onSaveFailure = null;
+export function onSaveFailure(callback) { _onSaveFailure = callback; }
+
 export function saveSave(data) {
     try {
         data.version = SAVE_VERSION;
         data.timestamp = Date.now();
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
         return true;
-    } catch {
+    } catch (e) {
+        if (_onSaveFailure) _onSaveFailure(e);
         return false;
     }
 }

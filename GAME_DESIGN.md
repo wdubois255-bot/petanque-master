@@ -251,7 +251,8 @@ Chaque personnage doit avoir :
 | Creme chaud | `#F5E6CC` | Facades, highlights |
 | Tournesol | `#FFDA03` | Accent vif, energie |
 | Bleu mediterraneen | `#1E90FF` | Volets, mer, accent bold |
-| Ombre chaude | `#3A2E28` | Ombres (JAMAIS de noir pur #000) |
+| Ombre legere | `#3A2E28` | Ombres legeres, bordures, contours (JAMAIS de noir pur #000) |
+| Ombre profonde | `#1A1510` | Ombres profondes, text shadow, arriere-plans sombres |
 
 ### Outils de production
 

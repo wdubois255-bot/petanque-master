@@ -81,9 +81,9 @@ npx vitest run    # Tests unitaires
     /plans                 # Plans specifiques par feature
   /src
     main.js, config.js
-    /scenes/               # 15 scenes (Boot, Title, CharSelect, QuickPlay, Arcade,
+    /scenes/               # 16 scenes (Boot, Title, CharSelect, QuickPlay, Arcade,
                            #   VSIntro, Petanque, Result, LevelUp, Shop, Tutorial,
-                           #   Player, Intro, Overworld, SpriteTest)
+                           #   Player, Intro, Overworld, SpriteTest, DevTest)
     /petanque/             # Ball, Cochonnet, PetanqueEngine, PetanqueAI,
                            #   AimingSystem, EngineRenderer, TerrainRenderer, ai/
     /ui/                   # ScorePanel, DialogBox, UIFactory

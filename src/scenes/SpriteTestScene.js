@@ -12,6 +12,14 @@ export default class SpriteTestScene extends Phaser.Scene {
         super('SpriteTestScene');
     }
 
+    init() {
+        // Reset all flags for scene reuse (CLAUDE.md rule)
+        this._cycling = false;
+        this.continuousChar = null;
+        this.keyframeChar = null;
+        this.phaseLabel = null;
+    }
+
     create() {
         this.cameras.main.setBackgroundColor('#87CEEB');
 

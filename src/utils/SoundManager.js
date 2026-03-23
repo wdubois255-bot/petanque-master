@@ -64,7 +64,11 @@ export function setSoundScene(scene) {
 
 function getCtx() {
     if (!ctx) {
-        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return null;
+        try {
+            ctx = new AudioCtx();
+        } catch { return null; }
     }
     if (ctx.state === 'suspended') ctx.resume();
     return ctx;
@@ -85,6 +89,7 @@ function playFile(key, config = {}) {
 
 function playTone(freq, duration, type = 'sine', volume = 0.3, decay = true) {
     const c = getCtx();
+    if (!c) return;
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = type;
@@ -101,6 +106,7 @@ function playTone(freq, duration, type = 'sine', volume = 0.3, decay = true) {
 
 function playNoise(duration, volume = 0.15, filterFreq = 2000, filterType = 'lowpass') {
     const c = getCtx();
+    if (!c) return;
     const bufferSize = c.sampleRate * duration;
     const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
     const data = buffer.getChannelData(0);
@@ -288,6 +294,7 @@ export function sfxCarreau() {
 export function sfxThrow() {
     if (playFile('sfx_lancer_swoosh')) return;
     const c = getCtx();
+    if (!c) return;
     const bufferSize = c.sampleRate * 0.2;
     const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
     const data = buffer.getChannelData(0);
@@ -316,6 +323,7 @@ export function sfxUIClick() {
 export function sfxVictory() {
     if (playFile('sfx_victoire', { volume: 0.6 })) return;
     const c = getCtx();
+    if (!c) return;
     const now = c.currentTime;
     [392, 494, 587, 784, 784].forEach((freq, i) => {
         const osc = c.createOscillator();
@@ -334,6 +342,7 @@ export function sfxVictory() {
 export function sfxDefeat() {
     if (playFile('sfx_defaite', { volume: 0.6 })) return;
     const c = getCtx();
+    if (!c) return;
     const now = c.currentTime;
     [400, 350, 300, 250].forEach((freq, i) => {
         const osc = c.createOscillator();
@@ -352,11 +361,30 @@ export function sfxDefeat() {
 export function sfxScore() {
     if (playFile('sfx_point_marque', { volume: 0.5 })) return;
     playTone(880, 0.15, 'sine', 0.15);
-    setTimeout(() => playTone(1100, 0.2, 'sine', 0.12), 100);
+    // Use Phaser timer if available, otherwise schedule via AudioContext
+    if (_scene && _scene.time) {
+        _scene.time.delayedCall(100, () => playTone(1100, 0.2, 'sine', 0.12));
+    } else {
+        const c = getCtx();
+        if (c) {
+            // Schedule second tone 100ms later via Web Audio timing
+            const now = c.currentTime;
+            const osc = c.createOscillator();
+            const gain = c.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1100, now + 0.1);
+            gain.gain.setValueAtTime(0.12, now + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc.connect(gain);
+            gain.connect(c.destination);
+            osc.start(now + 0.1);
+            osc.stop(now + 0.3);
+        }
+    }
 }
 
 export function sfxVSSlam() {
-    // Heavy impact for VS screen slam
+    // Heavy impact for VS screen slam (playTone already has null guard)
     playTone(100, 0.2, 'square', 0.3);
     playTone(60, 0.3, 'sawtooth', 0.2);
     playNoise(0.15, 0.25, 1200);
@@ -372,6 +400,7 @@ let _rollingFilter = null;
 export function startRollingSound() {
     if (_rollingSource) return;
     const c = getCtx();
+    if (!c) return;
     // Create 2-second pink noise buffer
     const duration = 2;
     const bufferSize = c.sampleRate * duration;
@@ -549,6 +578,7 @@ export function startCigales() {
     }
     // Fallback: procedural cigales
     const c = getCtx();
+    if (!c) return;
     const duration = 2;
     const sampleRate = c.sampleRate;
     const buffer = c.createBuffer(1, sampleRate * duration, sampleRate);

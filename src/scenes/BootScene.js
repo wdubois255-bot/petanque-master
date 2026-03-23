@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
 import { generateAllPortraits } from '../utils/PortraitGenerator.js';
+import { onSaveFailure } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const TIPS = [
@@ -17,6 +18,11 @@ const TIPS = [
 export default class BootScene extends Phaser.Scene {
     constructor() {
         super('BootScene');
+    }
+
+    init() {
+        // Reset all flags for scene reuse (CLAUDE.md rule)
+        this._loadComplete = false;
     }
 
     preload() {
@@ -181,9 +187,18 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('terrain_tex_sable', `${BASE}assets/sprites/terrain_tex_sable.png`);
         this.load.image('terrain_tex_dalles', `${BASE}assets/sprites/terrain_tex_dalles.png`);
 
-        // Border 9-slice textures (48x48)
-        this.load.image('border_wood', `${BASE}assets/sprites/border_wood_9slice.png`);
-        this.load.image('border_stone', `${BASE}assets/sprites/border_stone_9slice.png`);
+        // Border textures (PixelLab 16x16 tiles)
+        this.load.image('border_wood_h', `${BASE}assets/sprites/border_wood_h.png`);
+        this.load.image('border_wood_v', `${BASE}assets/sprites/border_wood_v.png`);
+        // Pre-baked corner sprites (no rotation needed in-game)
+        this.load.image('corner_tl_v', `${BASE}assets/sprites/borders/corner_tl_v.png`);
+        this.load.image('corner_tl_h', `${BASE}assets/sprites/borders/corner_tl_h.png`);
+        this.load.image('corner_tr_v', `${BASE}assets/sprites/borders/corner_tr_v.png`);
+        this.load.image('corner_tr_h', `${BASE}assets/sprites/borders/corner_tr_h.png`);
+        this.load.image('corner_bl_v', `${BASE}assets/sprites/borders/corner_bl_v.png`);
+        this.load.image('corner_bl_h', `${BASE}assets/sprites/borders/corner_bl_h.png`);
+        this.load.image('corner_br_v', `${BASE}assets/sprites/borders/corner_br_v.png`);
+        this.load.image('corner_br_h', `${BASE}assets/sprites/borders/corner_br_h.png`);
 
         // Decor sprites (provencal)
         this.load.image('decor_pin', `${BASE}assets/sprites/decor_pin.png`);
@@ -207,6 +222,16 @@ export default class BootScene extends Phaser.Scene {
     }
 
     create() {
+        // Register save failure handler (shows warning on localStorage quota exceeded)
+        onSaveFailure(() => {
+            const activeScene = this.scene.manager.getScenes(true)[0];
+            if (activeScene) {
+                UIFactory.showFloatingText(activeScene, GAME_WIDTH / 2, 20,
+                    'Sauvegarde echouee !', '#C44B3F',
+                    { fontSize: '12px', duration: 3000, depth: 200 });
+            }
+        });
+
         // Compose V2 character spritesheets from individual direction PNGs
         // Layout: 4x4 grid (128x128 each), rows = south/east/west/north, cols = walk frames (duplicated)
         const V2_CHARS_CREATE = [

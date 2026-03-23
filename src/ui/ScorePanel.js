@@ -350,6 +350,11 @@ export default class ScorePanel {
     }
 
     destroy() {
+        // Cleanup TAB key listener to prevent accumulation on scene reuse
+        if (this._tabKey) {
+            this.scene.input.keyboard.removeKey('TAB');
+            this._tabKey = null;
+        }
         this.bg.destroy();
         this.titleText.destroy();
         this.playerLabel.destroy();

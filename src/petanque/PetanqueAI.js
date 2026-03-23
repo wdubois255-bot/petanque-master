@@ -2,7 +2,9 @@ import {
     AI_EASY, AI_MEDIUM, AI_HARD,
     AI_POINTEUR, AI_TIREUR,
     AI_DELAY_MIN, AI_DELAY_MAX,
-    TERRAIN_HEIGHT
+    TERRAIN_HEIGHT,
+    AI_PERSONALITY_MODIFIERS,
+    AI_MOMENTUM_SENSITIVITY
 } from '../utils/Constants.js';
 
 import PointeurStrategy from './ai/PointeurStrategy.js';
@@ -66,13 +68,7 @@ export default class PetanqueAI {
 
     _getMomentumSensitivity() {
         const p = this.personality?.personality || 'equilibre';
-        switch (p) {
-            case 'pointeur':  return 0.05;
-            case 'tireur':    return 0.20;
-            case 'equilibre': return 0.10;
-            case 'complet':   return 0.03; // Reyes stays calm under any momentum
-            default:          return 0.10;
-        }
+        return AI_MOMENTUM_SENSITIVITY[p] ?? AI_MOMENTUM_SENSITIVITY.equilibre;
     }
 
     // Called after each shot result to update momentum
@@ -160,29 +156,16 @@ export default class PetanqueAI {
             powerDev *= pressureMult;
         }
 
-        // Tireur gets bonus precision when shooting
-        if (this.personality.personality === 'tireur') {
-            if (shotMode === 'tirer') { angleDev *= 0.55; powerDev *= 0.55; }
-            else { angleDev *= 1.3; powerDev *= 1.3; }
-        }
-
-        // Pointeur gets bonus precision when pointing
-        if (this.personality.personality === 'pointeur') {
-            if (shotMode === 'pointer') { angleDev *= 0.6; powerDev *= 0.6; }
-            else { angleDev *= 1.5; powerDev *= 1.5; }
-        }
-
-        // Complet (Reyes): good at everything — slight bonus in both modes, no penalty
-        if (this.personality.personality === 'complet') {
-            angleDev *= 0.75;
-            powerDev *= 0.75;
-        }
-
-        // Equilibre (Marcel): Le Vieux Renard — bon partout, pas aussi specialise
-        // Bonus moderé dans les deux modes (entre specialiste et generique)
-        if (this.personality.personality === 'equilibre') {
-            if (shotMode === 'pointer') { angleDev *= 0.65; powerDev *= 0.65; }
-            else { angleDev *= 0.85; powerDev *= 0.85; }
+        // Personality-based precision modifiers (centralized in Constants.js)
+        const archetype = this.personality.personality;
+        const mods = AI_PERSONALITY_MODIFIERS[archetype];
+        if (mods) {
+            const mode = shotMode === 'tirer' ? 'tirer' : 'pointer';
+            const mod = mods[mode];
+            if (mod) {
+                angleDev *= mod.angle;
+                powerDev *= mod.power;
+            }
         }
 
         // === MOMENTUM EFFECT (all personalities) ===

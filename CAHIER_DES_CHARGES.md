@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.2 — 18 mars 2026 (audit complet)
+> Version 2.3 — 23 mars 2026 (audit complet, roster et monnaie corriges)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -55,17 +55,23 @@
 - [x] Pression sous score (sang_froid interaction)
 - **Fichiers** : `src/petanque/PetanqueAI.js`, `src/petanque/ai/`
 
-### 2.4 Personnages (6 : Rookie + 5 adversaires)
-| ID | Nom | Archetype | Prec | Puis | Effet | SF | Total | Capacite |
-|----|-----|-----------|------|------|-------|----|-------|----------|
-| rookie | Le Rookie | adaptable | 3 | 3 | 2 | 2 | 10/40 | Evolutif (3 abilities debloquees a 18/26/34 pts) |
-| ley | Ley | tireur | 8 | 9 | 9 | 5 | 31 | Carreau Instinct (ejection +50%) |
-| magicien | Le Magicien | pointeur | 10 | 4 | 7 | 9 | 30 | Lecture du Terrain (trajectoire 3s) |
-| la_choupe | La Choupe | tireur | 6 | 10 | 3 | 8 | 27 | Coup de Canon (+30% puiss, -20% prec) |
-| marcel | Marcel | equilibre | 8 | 5 | 5 | 8 | 26 | Vieux Renard (annule tremblement) |
-| reyes | Reyes | complet | 7 | 7 | 7 | 8 | 29 | Le Mur (boule 2x rayon) |
-- Le Rookie est le seul personnage jouable en Arcade (stats evoluent avec les victoires)
-- Les 5 adversaires sont debloquables et jouables en Quick Play
+### 2.4 Personnages (12 : Rookie + 11 adversaires)
+| ID | Nom | Archetype | Prec | Puis | Effet | SF | Total |
+|----|-----|-----------|------|------|-------|----|-------|
+| rookie | Le Rookie | adaptable | 4 | 4 | 3 | 3 | 14/40 |
+| la_choupe | La Choupe | tireur | 6 | 10 | 3 | 8 | 27 |
+| ley | Ley | tireur | 8 | 9 | 9 | 5 | 31 |
+| foyot | Foyot | milieu | 8 | 7 | 8 | 7 | 30 |
+| suchaud | Suchaud | tireur | 9 | 8 | 7 | 9 | 33 |
+| fazzino | Fazzino | equilibre | 9 | 6 | 8 | 9 | 32 |
+| rocher | Rocher | complet | 8 | 8 | 8 | 7 | 31 |
+| robineau | Robineau | tireur | 8 | 8 | 5 | 8 | 29 |
+| mamie_josette | Mamie Josette | pointeur | 7 | 3 | 6 | 10 | 26 |
+| sofia | Sofia | pointeur | 9 | 5 | 8 | 7 | 29 |
+| papi_rene | Papi Rene | pointeur | 8 | 2 | 4 | 10 | 24 |
+| rizzi | Rizzi | complet | 8 | 7 | 10 | 6 | 31 |
+- Le Rookie est le seul personnage jouable en Arcade (stats evoluent, abilities debloquees a 18/24/32 pts)
+- Les adversaires sont debloquables et jouables en Quick Play
 - **Donnees** : `public/data/characters.json`
 - **Sprites** : `public/assets/sprites/` (128x128 spritesheets + throw animations)
 
@@ -91,14 +97,14 @@
   | Round | Adversaire | Terrain | Difficulte |
   |-------|-----------|---------|------------|
   | 1 | La Choupe | Village | Facile |
-  | 2 | Marcel | Parc | Moyen |
-  | 3 | Le Magicien | Colline | Difficile |
-  | 4 | Reyes | Docks | Tres difficile |
+  | 2 | Mamie Josette | Parc | Moyen |
+  | 3 | Fazzino | Colline | Difficile |
+  | 4 | Suchaud | Docks | Tres difficile |
   | 5 | Ley (boss) | Plage | Expert |
   - Intro/ending narrative
   - Retry sur defaite (pas de game over)
   - Deblocage personnage apres victoire
-  - Gain d'Ecus (50/victoire + 10/carreau + bonus run)
+  - Gain de Galets (100/victoire + 15/carreau + bonus run)
   - **Fichier** : `src/scenes/ArcadeScene.js`
 - [x] **Quick Play** : choix libre terrain/adversaire/difficulte/format/boules
   - **Fichier** : `src/scenes/QuickPlayScene.js`
@@ -128,7 +134,7 @@
 - **Fichiers** : `public/assets/audio/sfx/`, `public/assets/audio/music/`
 
 ### 2.10 Sauvegarde
-- [x] SaveManager v2 : schema unique (Rookie, Ecus, deblocages, achats)
+- [x] SaveManager v2 : schema unique (Rookie, Galets, deblocages, achats)
 - [x] Migration automatique v1 → v2
 - **Fichier** : `src/utils/SaveManager.js`
 
@@ -141,12 +147,12 @@
 
 ### 2.12 Progression (implemente 18 mars 2026)
 - [x] Le Rookie dans characters.json (10/40 pts, 3 abilities)
-- [x] Ecus : gain par victoire + carreaux + bonus run
+- [x] Galets : gain par victoire + carreaux + bonus run
 - [x] LevelUpScene : repartition des points
 - [x] ShopScene : 3 onglets (boules, cochonnets, capacites)
 - [x] TutorialScene : 5 pages illustrees
 - [x] Deblocages par progression arcade
-- [x] Arcade 5 matchs + boss (Choupe→Marcel→Magicien→Reyes→Ley)
+- [x] Arcade 5 matchs (Choupe→Mamie Josette→Fazzino→Suchaud→Ley)
 
 ---
 
