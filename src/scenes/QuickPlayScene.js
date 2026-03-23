@@ -44,7 +44,7 @@ const MODES = [
 const CX = GAME_WIDTH / 2;
 
 // Layout constants
-const BANNER_H = 88;
+const BANNER_H = 95;
 const TAB_BAR_Y = BANNER_H + 6;
 const TAB_CONTENT_Y = TAB_BAR_Y + 28;
 const TAB_CONTENT_H = 280;
@@ -204,7 +204,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     _createBannerSprite(x, y, spriteKey) {
         if (this.textures.exists(spriteKey)) {
             const sprite = this.add.sprite(x, y, spriteKey, 0);
-            sprite.setScale(CHAR_SCALE_QUICKPLAY * 1.5);
+            sprite.setScale(CHAR_SCALE_QUICKPLAY * 2.0);
             sprite.setDepth(UI.DEPTH_UI);
             return sprite;
         }
@@ -218,33 +218,15 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     _startBreathing() {
-        if (this._p1BreathTween) this._p1BreathTween.destroy();
-        if (this._p2BreathTween) this._p2BreathTween.destroy();
-
-        const s = CHAR_SCALE_QUICKPLAY * 1.5;
+        // Sprites stay static (frame 0, no animation)
+        // Future: each character will have a unique greeting animation
+        const s = CHAR_SCALE_QUICKPLAY * 2.0;
 
         if (this._p1Sprite && this._p1Sprite.setScale) {
             this._p1Sprite.setScale(s);
-            this._p1BreathTween = this.tweens.add({
-                targets: this._p1Sprite,
-                scaleY: s * 1.03,
-                duration: 1200,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
         }
         if (this._p2Sprite && this._p2Sprite.setScale) {
             this._p2Sprite.setScale(s);
-            this._p2BreathTween = this.tweens.add({
-                targets: this._p2Sprite,
-                scaleY: s * 1.03,
-                duration: 1400,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut',
-                delay: 300
-            });
         }
     }
 
@@ -277,8 +259,8 @@ export default class QuickPlayScene extends Phaser.Scene {
             newSprite.setScale(0);
             this.tweens.add({
                 targets: newSprite,
-                scaleX: CHAR_SCALE_QUICKPLAY * 1.5,
-                scaleY: CHAR_SCALE_QUICKPLAY * 1.5,
+                scaleX: CHAR_SCALE_QUICKPLAY * 2.0,
+                scaleY: CHAR_SCALE_QUICKPLAY * 2.0,
                 duration: 250,
                 ease: 'Back.easeOut'
             });
@@ -372,10 +354,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         const topY = TAB_CONTENT_Y + 8;
 
         // === ROSTER GRID (fighting game style) ===
-        // 2 rows of 6 = 12 characters, each as a clickable mini card
+        // 2 rows of 6 = 12 characters, each as a clickable card
         const gridCols = 6;
-        const cellW = 62;
-        const cellH = 72;
+        const cellW = 80;
+        const cellH = 82;
         const cellGap = 4;
         const gridW = gridCols * (cellW + cellGap) - cellGap;
         const gridX = CX - gridW / 2;
@@ -414,15 +396,15 @@ export default class QuickPlayScene extends Phaser.Scene {
             }
             this._tabObjects.push(cellGfx);
 
-            // Mini sprite
+            // Character sprite
             if (this.textures.exists(char.sprite)) {
-                const spr = this.add.sprite(cx, cy - 8, char.sprite, 0)
-                    .setScale(0.4).setDepth(UI.DEPTH_PANEL + 3);
+                const spr = this.add.sprite(cx, cy - 6, char.sprite, 0)
+                    .setScale(0.7).setDepth(UI.DEPTH_PANEL + 3);
                 this._tabObjects.push(spr);
             }
 
-            // Name (small)
-            const shortName = char.display.length > 8 ? char.display.substring(0, 7) + '.' : char.display;
+            // Name
+            const shortName = char.display.length > 10 ? char.display.substring(0, 9) + '.' : char.display;
             this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
                 fontFamily: 'monospace', fontSize: '7px',
                 color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : CSS.GRIS,
@@ -479,7 +461,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // === SELECTED CHARACTERS DETAIL (below grid) ===
-        const detailY = topY + 14 + 2 * (cellH + cellGap) + 12;
+        const detailY = topY + 14 + 2 * (cellH + cellGap) + 6;
         const halfW = (GAME_WIDTH - 80) / 2;
 
         // Divider
@@ -585,13 +567,6 @@ export default class QuickPlayScene extends Phaser.Scene {
                 .setScale(1.2)
                 .setDepth(UI.DEPTH_PANEL + 3);
             this._tabObjects.push(spr);
-
-            // Gentle rotate
-            this.tweens.add({
-                targets: spr, angle: 10,
-                duration: 2000, yoyo: true, repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
         } else {
             // Color circle fallback
             const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
@@ -685,12 +660,6 @@ export default class QuickPlayScene extends Phaser.Scene {
                 .setScale(1.8)
                 .setDepth(UI.DEPTH_PANEL + 3);
             this._tabObjects.push(spr);
-
-            this.tweens.add({
-                targets: spr, angle: -8,
-                duration: 1800, yoyo: true, repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
         } else {
             const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
             const c = parseInt((coch.color || '#FFD700').replace('#', ''), 16);
