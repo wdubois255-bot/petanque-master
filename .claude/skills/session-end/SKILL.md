@@ -97,8 +97,8 @@ Le mettre a jour avec :
 ### 6. Mettre a jour CAHIER_DES_CHARGES.md
 Cocher les items termines. Ajouter les nouveaux items decouverts.
 
-### 7. Mettre a jour docs/MASTER_PLAN.md
-Si des items de la roadmap ont ete completes, les marquer.
+### 7. Mettre a jour docs/PLAN_100.md
+Si des taches du plan ont ete completees, les marquer.
 
 ### 8. Rapport de fin
 ```

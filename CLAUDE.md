@@ -13,7 +13,7 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 | Sauvegarde (schema, defaults) | `src/utils/SaveManager.js` | Tout passe par SaveManager. Jamais de localStorage direct. |
 | Game design (concept, flow) | `GAME_DESIGN.md` | Bible du design, ne pas contredire. |
 | Etat du projet | `CAHIER_DES_CHARGES.md` | Ce qui est fait, ce qui reste. |
-| Audit et corrections | `docs/MASTER_PLAN.md` | Plan d'action complet avec priorites. |
+| Plan d'action | `docs/PLAN_100.md` | Plan unique : 5 axes, 32 taches pour 100/100. |
 
 ## Interdictions absolues
 
@@ -76,9 +76,8 @@ npx vitest run    # Tests unitaires
   CAHIER_DES_CHARGES.md    # Etat complet du projet
   STORY.md                 # Histoire (reserve Phase D)
   /docs
-    MASTER_PLAN.md         # Plan d'action complet (audit + corrections + roadmap)
-    /archive               # Documents historiques (HANDOFF, PLAN_MVP, etc.)
-    /plans                 # Plans specifiques par feature
+    PLAN_100.md            # Plan unique : 5 axes pour 100/100
+    /archive               # Documents historiques et plans termines
   /src
     main.js, config.js
     /scenes/               # 16 scenes (Boot, Title, CharSelect, QuickPlay, Arcade,

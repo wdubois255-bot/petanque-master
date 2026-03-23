@@ -16,7 +16,7 @@ allowed-tools: Read, Glob, Grep, Agent
 4. **Identifier les constantes** : quelles nouvelles constantes dans `src/utils/Constants.js` ?
 5. **Identifier les donnees** : quels JSON dans `public/data/` seront impactes ?
 6. **Verifier les contradictions** : la feature est-elle coherente avec `GAME_DESIGN.md` ?
-7. **Verifier le MASTER_PLAN** : la feature est-elle deja decrite dans `docs/MASTER_PLAN.md` ? Si oui, suivre ses instructions.
+7. **Verifier le PLAN_100** : la feature est-elle deja decrite dans `docs/PLAN_100.md` ? Si oui, suivre ses instructions.
 8. **Proposer un plan** : liste ordonnee des modifications, fichier par fichier
 
 ## Format de sortie
