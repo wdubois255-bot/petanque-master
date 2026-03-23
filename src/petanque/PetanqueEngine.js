@@ -761,6 +761,10 @@ export default class PetanqueEngine {
             galetsEarned += playerCarreaux * GALET_CARREAU_BONUS;
         }
 
+        const postMatchDialogue = isVictory
+            ? (this.scene.postMatchWin || null)
+            : (this.scene.postMatchLose || null);
+
         const resultData = {
             won: isVictory,
             scores: { ...this.scores },
@@ -770,6 +774,8 @@ export default class PetanqueEngine {
             returnScene: this.scene.returnScene || 'TitleScene',
             arcadeState: this.scene.arcadeState,
             galetsEarned,
+            postMatchDialogue,
+            unlocksOnWin: isVictory ? (this.scene.unlocksOnWin || null) : null,
             matchStats: {
                 menes: this.matchStats?.menesPlayed || this.mene,
                 fanny: isFanny,

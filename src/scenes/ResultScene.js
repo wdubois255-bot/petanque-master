@@ -21,11 +21,15 @@ export default class ResultScene extends Phaser.Scene {
         this.arcadeState = data.arcadeState || null;
         this.matchStats = data.matchStats || {};
         this.galetsEarned = data.galetsEarned || 0;
+        this.postMatchDialogue = data.postMatchDialogue || null;
+        this.unlocksOnWin = data.unlocksOnWin || null;
+        // Reset flags — Phaser reuses scene instances!
+        this._returning = false;
+        this._postDialogDone = false;
     }
 
     create() {
         setSoundScene(this);
-        this._returning = false;
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
         if (this.won) { sfxVictory(); } else { sfxDefeat(); }
@@ -245,7 +249,7 @@ export default class ResultScene extends Phaser.Scene {
                 padding: { x: 20, y: 10 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-            continueBtn.on('pointerdown', () => this._returnToArcade());
+            continueBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
 
             const menuBtn = this.add.text(GAME_WIDTH / 2, btnY + 50, '[ MENU ]', {
                 fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
@@ -253,9 +257,6 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             menuBtn.on('pointerdown', () => this.scene.start('TitleScene'));
-
-            this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
-            this.input.keyboard.on('keydown-ENTER', () => this._returnToArcade());
         } else {
             // Quick Play / other modes
             const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, '[ REJOUER ]', {
@@ -263,7 +264,7 @@ export default class ResultScene extends Phaser.Scene {
                 backgroundColor: this.won ? '#44CC44' : '#C44B3F', padding: { x: 14, y: 8 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-            replayBtn.on('pointerdown', () => this._returnToArcade());
+            replayBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
 
             const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, '[ MENU ]', {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
@@ -271,10 +272,154 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             menuBtn.on('pointerdown', () => this.scene.start('TitleScene'));
-
-            this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
         }
 
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
+        }).setOrigin(0.5);
+
+        // Post-match dialogue (appears after 1.5s, before keyboard handlers are active)
+        if (this.postMatchDialogue && this.postMatchDialogue.length > 0) {
+            this.time.delayedCall(1500, () => {
+                this._showPostMatchDialogue(this.postMatchDialogue, () => {
+                    this._postDialogDone = true;
+                    this._addInputHandlers();
+                });
+            });
+        } else {
+            this._postDialogDone = true;
+            this._addInputHandlers();
+        }
+
+        this.events.on('shutdown', this._shutdown, this);
+    }
+
+    // === POST-MATCH DIALOGUE ===
+    _showPostMatchDialogue(dialogues, onDone) {
+        let currentIndex = 0;
+        let canAdvance = false;
+        let typeTimer = null;
+        const container = this.add.container(0, 0).setDepth(200);
+
+        const boxH = 70;
+        const boxY = GAME_HEIGHT - boxH - 10;
+
+        // Parchment box
+        const boxBg = this.add.graphics();
+        boxBg.fillStyle(0x1A1510, 0.88);
+        boxBg.fillRoundedRect(12, boxY, GAME_WIDTH - 24, boxH, 6);
+        boxBg.lineStyle(1, 0x8B6B3D, 0.5);
+        boxBg.strokeRoundedRect(12, boxY, GAME_WIDTH - 24, boxH, 6);
+        container.add(boxBg);
+
+        const nameTag = this.add.text(28, boxY - 14, '', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#FFD700',
+            backgroundColor: '#1A1510', padding: { x: 6, y: 3 }, shadow: SHADOW
+        }).setDepth(201);
+        container.add(nameTag);
+
+        const dialogText = this.add.text(28, boxY + 14, '', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0',
+            shadow: SHADOW, wordWrap: { width: GAME_WIDTH - 56 }
+        }).setDepth(201);
+        container.add(dialogText);
+
+        const arrow = this.add.text(GAME_WIDTH - 28, boxY + boxH - 18, '▼', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#8B6B3D'
+        }).setAlpha(0).setDepth(201);
+        container.add(arrow);
+
+        // Animate in
+        container.setAlpha(0);
+        this.tweens.add({ targets: container, alpha: 1, duration: 300, ease: 'Quad.easeOut' });
+
+        const showLine = (index) => {
+            if (index >= dialogues.length) {
+                this.tweens.add({
+                    targets: container, alpha: 0, duration: 300, ease: 'Quad.easeIn',
+                    onComplete: () => { container.destroy(true); onDone(); }
+                });
+                return;
+            }
+
+            const entry = dialogues[index];
+            const isNarrator = (entry.speaker === 'narrator');
+            const speakerName = this._getSpeakerDisplayName(entry.speaker);
+
+            nameTag.setText(speakerName || '');
+            nameTag.setVisible(!!speakerName);
+            dialogText.setText('');
+            arrow.setAlpha(0);
+            this.tweens.killTweensOf(arrow);
+
+            if (isNarrator) {
+                dialogText.setStyle({ fontFamily: 'Georgia, serif', fontSize: '13px', color: '#C8A06A', fontStyle: 'italic' });
+            } else {
+                dialogText.setStyle({ fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0', fontStyle: 'normal' });
+            }
+
+            canAdvance = false;
+            let charIdx = 0;
+            const fullText = entry.text;
+            if (typeTimer) { typeTimer.remove(); typeTimer = null; }
+
+            typeTimer = this.time.addEvent({
+                delay: 28,
+                repeat: fullText.length - 1,
+                callback: () => {
+                    charIdx++;
+                    dialogText.setText(fullText.substring(0, charIdx));
+                    if (charIdx >= fullText.length) {
+                        canAdvance = true;
+                        arrow.setAlpha(1);
+                        this.tweens.add({ targets: arrow, alpha: 0, duration: 400, yoyo: true, repeat: -1 });
+                    }
+                }
+            });
+        };
+
+        const advance = () => {
+            if (!canAdvance) {
+                if (typeTimer) { typeTimer.remove(); typeTimer = null; }
+                const entry = dialogues[currentIndex];
+                dialogText.setText(entry?.text || '');
+                canAdvance = true;
+                arrow.setAlpha(1);
+                return;
+            }
+            currentIndex++;
+            showLine(currentIndex);
+        };
+
+        this._dialogAdvanceFn = advance;
+
+        this._dialogSpaceKey = this.input.keyboard.on('keydown-SPACE', () => {
+            if (!this._postDialogDone) advance();
+        });
+        this._dialogEnterKey = this.input.keyboard.on('keydown-ENTER', () => {
+            if (!this._postDialogDone) advance();
+        });
+        this._dialogPointer = this.input.on('pointerdown', () => {
+            if (!this._postDialogDone) advance();
+        });
+
+        showLine(0);
+    }
+
+    _getSpeakerDisplayName(speakerId) {
+        if (speakerId === 'narrator') return null;
+        if (speakerId === 'rookie') return this.playerCharacter?.name || 'Rookie';
+        if (this.opponentCharacter?.id === speakerId) return this.opponentCharacter.name;
+        return speakerId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    _addInputHandlers() {
+        if (this.arcadeState) {
+            this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
+            this.input.keyboard.on('keydown-ENTER', () => this._returnToArcade());
+        } else {
+            this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
+        }
         this.input.keyboard.on('keydown-ESC', () => {
             if (this.arcadeState) {
                 this._returnToArcade();
@@ -282,12 +427,6 @@ export default class ResultScene extends Phaser.Scene {
                 this.scene.start('TitleScene');
             }
         });
-
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5);
-
-        this.events.on('shutdown', this._shutdown, this);
     }
 
     _spawnConfetti() {

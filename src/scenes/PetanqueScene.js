@@ -38,6 +38,9 @@ export default class PetanqueScene extends Phaser.Scene {
         this.localMultiplayer = data.localMultiplayer || false;
         this.bouleType = data.bouleType || 'acier';
         this.cochonnetType = data.cochonnetType || 'classique';
+        this.postMatchWin = data.postMatchWin || null;
+        this.postMatchLose = data.postMatchLose || null;
+        this.unlocksOnWin = data.unlocksOnWin || null;
     }
 
     create() {
