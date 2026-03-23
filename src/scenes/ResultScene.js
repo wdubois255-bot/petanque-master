@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
-import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats } from '../utils/SaveManager.js';
+import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -516,6 +516,9 @@ export default class ResultScene extends Phaser.Scene {
     }
 
     _addInputHandlers() {
+        // Check milestones before enabling navigation
+        this._checkMilestones();
+
         if (this.arcadeState) {
             this.input.keyboard.on('keydown-SPACE', () => this._returnToArcade());
             this.input.keyboard.on('keydown-ENTER', () => this._returnToArcade());
@@ -528,6 +531,73 @@ export default class ResultScene extends Phaser.Scene {
             } else {
                 this.scene.start('TitleScene');
             }
+        });
+    }
+
+    // === MILESTONES (tâche 4.5) ===
+    _checkMilestones() {
+        const arcadeData = this.cache.json.get('arcade');
+        if (!arcadeData?.milestones) return;
+
+        const save = loadSave();
+        const arcadeWins = save.totalWins || 0;
+        const totalCarreaux = (save.stats?.totalCarreaux || 0) + (this.matchStats?.carreaux || 0);
+        const arcadeComplete = (save.arcadeProgress || 0) >= 5;
+        const arcadePerfect = save.arcadePerfect || false;
+        const isFanny = !!(this.matchStats?.fanny);
+        const matchCarreaux = this.matchStats?.carreaux || 0;
+
+        const toasts = [];
+
+        for (const milestone of arcadeData.milestones) {
+            if (isMilestoneUnlocked(milestone.id)) continue;
+
+            let condMet = false;
+            switch (milestone.condition) {
+                case 'arcadeWins >= 1':   condMet = arcadeWins >= 1; break;
+                case 'carreaux >= 1':     condMet = matchCarreaux >= 1; break;
+                case 'arcadeWins >= 3':   condMet = arcadeWins >= 3; break;
+                case 'arcade_complete':   condMet = arcadeComplete; break;
+                case 'arcade_perfect':    condMet = arcadePerfect; break;
+                case 'match_fanny':       condMet = isFanny; break;
+            }
+
+            if (condMet) {
+                const wasNew = unlockMilestone(milestone.id);
+                if (wasNew) {
+                    addGalets(milestone.reward);
+                    toasts.push({ text: milestone.text, reward: milestone.reward });
+                }
+            }
+        }
+
+        if (toasts.length > 0) {
+            this._showMilestoneToasts(toasts);
+        }
+    }
+
+    _showMilestoneToasts(toasts) {
+        toasts.forEach((toast, i) => {
+            const toastText = this.add.text(GAME_WIDTH / 2, 20 + i * 36,
+                `★ ${toast.text}  +${toast.reward} Galets`, {
+                    fontFamily: 'monospace', fontSize: '13px', color: '#FFD700',
+                    backgroundColor: '#2A1F14', padding: { x: 12, y: 6 },
+                    shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+                }
+            ).setOrigin(0.5).setDepth(250).setAlpha(0).setY(60 + i * 40);
+
+            this.tweens.add({
+                targets: toastText,
+                alpha: 1, y: 55 + i * 40,
+                duration: 400, ease: 'Back.easeOut', delay: i * 300
+            });
+
+            this.tweens.add({
+                targets: toastText,
+                alpha: 0, y: 45 + i * 40,
+                duration: 400, ease: 'Quad.easeIn',
+                delay: 2500 + i * 300
+            });
         });
     }
 
