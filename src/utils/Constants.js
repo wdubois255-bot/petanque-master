@@ -155,8 +155,8 @@ export const AI_MOMENTUM_SENSITIVITY = {
 };
 
 // Petanque - timing & feedback
-export const HITSTOP_BOULE_MS = 60;
-export const HITSTOP_CARREAU_MS = 100;
+export const HITSTOP_BOULE_MS = 80;      // 60 → 80 (plus perceptible)
+export const HITSTOP_CARREAU_MS = 150;    // 100 → 150 (moment dramatique)
 export const MESSAGE_DURATION = 2000;
 export const SCORE_MENE_DELAY = 1500;
 export const GAME_OVER_REDIRECT_DELAY = 1000;
