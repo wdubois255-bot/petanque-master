@@ -118,14 +118,27 @@ const TERRAIN_DECOR = {
         { type: 'stones',   x: -75,   y: 180, scale: 0.7, depth: 0.3, alpha: 0.4 },
     ],
     plage: [
-        { type: 'tree',  x: -280,  y: 85,  scale: 1.2, depth: 0.4, alpha: 0.4 },
-        { type: 'tree',  x: 'R+110', y: 75, scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
-        // New: stones near beach edge
-        { type: 'stones',   x: -40,   y: 400, scale: 0.8, depth: 0.3, alpha: 0.4 },
+        { type: 'tree',     x: -280,    y: 85,  scale: 1.2, depth: 0.4,  alpha: 0.4 },
+        { type: 'tree',     x: 'R+110', y: 75,  scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
+        // Stones near beach edge
+        { type: 'stones',   x: -40,     y: 400, scale: 0.8, depth: 0.3,  alpha: 0.4 },
+        // Ball bag near throwing side
+        { type: 'sac',      x: -28,     y: 420, scale: 1.2, depth: 0.75 },
+        // Sparse grass tufts (sand atmosphere - low alpha)
+        { type: 'herbe',    x: -70,     y: 200, scale: 0.9, depth: 0.35, alpha: 0.35 },
+        { type: 'herbe',    x: 'R+80',  y: 250, scale: 0.8, depth: 0.35, alpha: 0.3, flipX: true },
+        // Bench and table on right side (spectators)
+        { type: 'banc_td',  x: 'R+45',  y: 340, scale: 1.4, depth: 0.7, flipX: true },
+        { type: 'table',    x: 'R+55',  y: 415, scale: 1.3, depth: 0.72, flipX: true },
     ],
     docks: [
-        // New: ball bag in industrial setting
-        { type: 'sac',      x: -35,   y: 400, scale: 1.1, depth: 0.7 },
+        // Ball bag in industrial setting
+        { type: 'sac',      x: -35,     y: 400, scale: 1.1, depth: 0.7 },
+        // Industrial debris (stones as rubble)
+        { type: 'stones',   x: -55,     y: 360, scale: 1.0, depth: 0.5, alpha: 0.7 },
+        { type: 'stones',   x: 'R+60',  y: 375, scale: 1.1, depth: 0.5, alpha: 0.65, flipX: true },
+        // Score table
+        { type: 'table',    x: 'R+45',  y: 320, scale: 1.3, depth: 0.65, flipX: true },
     ],
 };
 
@@ -279,19 +292,28 @@ export default class TerrainRenderer {
             const hasGrid = s.textures.exists(decor.key);
             const hasFallback = decor.fallback && s.textures.exists(decor.fallback);
 
+            const scale = p.scale || 1;
+            const depth = p.depth || 0.6;
+
+            // Shadow under large sprites (scale > 1.5) — warm brown, not pure black
+            if (scale > 1.5) {
+                s.add.ellipse(px, p.y + 64 * scale * 0.4, 64 * scale * 0.6, 8, 0x3A2E28, 0.15)
+                    .setDepth(depth - 0.01);
+            }
+
             if (hasGrid) {
                 const frameIdx = decor.pool[Math.floor(this._rng() * decor.pool.length)];
                 const img = s.add.image(px, p.y, decor.key, frameIdx);
-                img.setDepth(p.depth || 0.6);
-                img.setScale(p.scale || 1);
+                img.setDepth(depth);
+                img.setScale(scale);
                 if (p.flipX) img.setFlipX(true);
                 if (p.alpha !== undefined) img.setAlpha(p.alpha);
                 // Distance tint for far elements
                 if (p.alpha && p.alpha < 0.5) img.setTint(0xCCCCCC);
             } else if (hasFallback) {
                 const img = s.add.image(px, p.y, decor.fallback);
-                img.setDepth(p.depth || 0.6);
-                img.setScale(p.scale || 2);
+                img.setDepth(depth);
+                img.setScale(scale);
                 if (p.flipX) img.setFlipX(true);
                 if (p.alpha !== undefined) img.setAlpha(p.alpha);
             }
