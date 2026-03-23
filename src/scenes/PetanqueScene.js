@@ -279,12 +279,13 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // In-game tutorial — 3 phases (VISER, LOFT, SCORE), persistées via tutorialPhasesDone
         const tutSave = loadSave();
-        if (!tutSave.tutorialInGameSeen) {
+        const phasesDone = tutSave.tutorialPhasesDone || [];
+        if (phasesDone.length < 3) {
             this._inGameTutorial = new InGameTutorial(this);
         }
 
         // Contextual terrain tooltips (post-tutorial, one-time hints)
-        if (tutSave.tutorialInGameSeen) {
+        if (phasesDone.length >= 3) {
             const terrainId = this.terrainFullData?.id || 'village';
             const terrainHints = {
                 plage: { id: 'hint_sand', msg: 'Le sable ralentit les boules. Tirez plus fort !' },

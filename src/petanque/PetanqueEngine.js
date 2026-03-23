@@ -906,6 +906,9 @@ export default class PetanqueEngine {
     }
 
     update(delta) {
+        // Stop processing once game is over — transition is handled by delayedCall
+        if (this.state === STATES.GAME_OVER) return;
+
         // Hitstop: freeze physics during celebration
         if (this._hitstopUntil > 0 && Date.now() < this._hitstopUntil) return;
         this._hitstopUntil = 0;

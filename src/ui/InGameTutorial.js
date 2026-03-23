@@ -372,8 +372,14 @@ export default class InGameTutorial {
     _markComplete() {
         this.completed = true;
         const save = loadSave();
-        save.tutorialInGameSeen = true;
-        save.tutorialComplete = true;
+        // Only mark as fully seen when ALL 3 phases are done
+        const phases = save.tutorialPhasesDone || [];
+        if (phases.includes(TUTORIAL_PHASE_AIM) &&
+            phases.includes(TUTORIAL_PHASE_LOFT) &&
+            phases.includes(TUTORIAL_PHASE_SCORE)) {
+            save.tutorialInGameSeen = true;
+            save.tutorialComplete = true;
+        }
         saveSave(save);
     }
 
