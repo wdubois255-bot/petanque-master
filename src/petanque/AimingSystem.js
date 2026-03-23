@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import {
     DEAD_ZONE_PX,
     LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT,
-    COCHONNET_MIN_DIST, COCHONNET_MAX_DIST
+    COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
+    FOCUS_CHARGES_PER_MATCH
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
@@ -45,7 +46,7 @@ export default class AimingSystem {
         this.retroActive = false;
 
         // === FOCUS (Respire) system: reduces wobble by 80% for one throw ===
-        this._focusCharges = 5;           // charges per match
+        this._focusCharges = FOCUS_CHARGES_PER_MATCH;
         this._focusActive = false;        // active this throw?
         this._focusUI = [];
         this._focusReduction = 0.20;      // multiplier when active (80% reduction = 0.20)

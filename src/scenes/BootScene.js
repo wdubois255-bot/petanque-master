@@ -187,10 +187,12 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('terrain_tex_sable', `${BASE}assets/sprites/terrain_tex_sable.png`);
         this.load.image('terrain_tex_dalles', `${BASE}assets/sprites/terrain_tex_dalles.png`);
 
-        // Border textures (PixelLab 16x16 tiles)
+        // Border textures per terrain
+        // Village — rondins bois clair
         this.load.image('border_wood_h', `${BASE}assets/sprites/border_wood_h.png`);
         this.load.image('border_wood_v', `${BASE}assets/sprites/border_wood_v.png`);
-        // Pre-baked corner sprites (no rotation needed in-game)
+        this.load.image('border_wood_corner', `${BASE}assets/sprites/border_corner.png`);
+        // Pre-baked rondin ends for village corners
         this.load.image('corner_tl_v', `${BASE}assets/sprites/borders/corner_tl_v.png`);
         this.load.image('corner_tl_h', `${BASE}assets/sprites/borders/corner_tl_h.png`);
         this.load.image('corner_tr_v', `${BASE}assets/sprites/borders/corner_tr_v.png`);
@@ -199,6 +201,27 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('corner_bl_h', `${BASE}assets/sprites/borders/corner_bl_h.png`);
         this.load.image('corner_br_v', `${BASE}assets/sprites/borders/corner_br_v.png`);
         this.load.image('corner_br_h', `${BASE}assets/sprites/borders/corner_br_h.png`);
+        // Parc — planches sombres
+        this.load.image('border_parc_h', `${BASE}assets/sprites/borders/parc/border_h.png`);
+        this.load.image('border_parc_v', `${BASE}assets/sprites/borders/parc/border_v.png`);
+        this.load.image('border_parc_corner_tl', `${BASE}assets/sprites/borders/parc/corner_tl.png`);
+        this.load.image('border_parc_corner_tr', `${BASE}assets/sprites/borders/parc/corner_tr.png`);
+        this.load.image('border_parc_corner_bl', `${BASE}assets/sprites/borders/parc/corner_bl.png`);
+        this.load.image('border_parc_corner_br', `${BASE}assets/sprites/borders/parc/corner_br.png`);
+        // Colline — pierres sèches
+        this.load.image('border_colline_h', `${BASE}assets/sprites/borders/colline/border_h.png`);
+        this.load.image('border_colline_v', `${BASE}assets/sprites/borders/colline/border_v.png`);
+        this.load.image('border_colline_corner_tl', `${BASE}assets/sprites/borders/colline/corner_tl.png`);
+        this.load.image('border_colline_corner_tr', `${BASE}assets/sprites/borders/colline/corner_tr.png`);
+        this.load.image('border_colline_corner_bl', `${BASE}assets/sprites/borders/colline/corner_bl.png`);
+        this.load.image('border_colline_corner_br', `${BASE}assets/sprites/borders/colline/corner_br.png`);
+        // Docks — rails métalliques
+        this.load.image('border_docks_h', `${BASE}assets/sprites/borders/docks/border_h.png`);
+        this.load.image('border_docks_v', `${BASE}assets/sprites/borders/docks/border_v.png`);
+        this.load.image('border_docks_corner_tl', `${BASE}assets/sprites/borders/docks/corner_tl.png`);
+        this.load.image('border_docks_corner_tr', `${BASE}assets/sprites/borders/docks/corner_tr.png`);
+        this.load.image('border_docks_corner_bl', `${BASE}assets/sprites/borders/docks/corner_bl.png`);
+        this.load.image('border_docks_corner_br', `${BASE}assets/sprites/borders/docks/corner_br.png`);
 
         // Decor sprites (provencal)
         this.load.image('decor_pin', `${BASE}assets/sprites/decor_pin.png`);
@@ -285,5 +308,11 @@ export default class BootScene extends Phaser.Scene {
         generateAllPortraits(this);
 
         this.scene.start('TitleScene');
+    }
+
+    shutdown() {
+        this.load.removeAllListeners('progress');
+        this.load.removeAllListeners('complete');
+        this.load.removeAllListeners('loaderror');
     }
 }

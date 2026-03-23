@@ -23,6 +23,8 @@ export default class LevelUpScene extends Phaser.Scene {
     }
 
     init(data) {
+        // Reset all flags for scene reuse (CLAUDE.md rule)
+        this._confirmed = false;
         this.pointsRemaining = data.pointsToDistribute || 4;
         this.totalPointsGiven = this.pointsRemaining;
         this.baseStats = { ...data.currentStats };

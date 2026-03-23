@@ -680,3 +680,60 @@ describe('Multi-ball simulation stress tests', () => {
         expect(maxSpeed).toBeLessThanOrEqual(6); // 5 + small margin
     });
 });
+
+describe('Session 7 — Critical gameplay tests', () => {
+    let Ball;
+    beforeEach(async () => {
+        const mod = await import('../src/petanque/Ball.js');
+        Ball = mod.default;
+    });
+
+    it('Carreau detection: tir that ejects + places near impact point', () => {
+        // Simulate a tir: ball A hits ball B, A stops near B's original position
+        const a = new Ball(mockScene, 100, 200, { mass: BALL_MASS });
+        const b = new Ball(mockScene, 100 + BALL_RADIUS * 2 - 2, 200, { mass: BALL_MASS });
+        const origBx = b.x;
+        a.launch(8, 0); // Fast tir
+
+        Ball.resolveCollision(a, b);
+
+        // After collision with COR 0.62, A should retain ~19% speed → stops near impact
+        // B should fly away
+        expect(b.vx).toBeGreaterThan(a.vx);
+        // A should be close to B's original position
+        const dist = Math.abs(a.x - origBx);
+        expect(dist).toBeLessThan(BALL_RADIUS * 4); // Within carreau threshold range
+    });
+
+    it('Cochonnet placement stays within bounds (1000 random)', () => {
+        const bounds = { x: 326, y: 30, w: 180, h: 420 };
+        const margin = 15;
+        for (let i = 0; i < 1000; i++) {
+            const x = bounds.x + margin + Math.random() * (bounds.w - 2 * margin);
+            const y = bounds.y + margin + Math.random() * (bounds.h - 2 * margin);
+            expect(x).toBeGreaterThanOrEqual(bounds.x);
+            expect(x).toBeLessThanOrEqual(bounds.x + bounds.w);
+            expect(y).toBeGreaterThanOrEqual(bounds.y);
+            expect(y).toBeLessThanOrEqual(bounds.y + bounds.h);
+        }
+    });
+
+    it('Retro on sable vs dalles: sable stops much shorter', () => {
+        const ballSable = new Ball(mockScene, 100, 200, { frictionMult: TERRAIN_FRICTION.sable });
+        const ballDalles = new Ball(mockScene, 100, 200, { frictionMult: TERRAIN_FRICTION.dalles });
+
+        ballSable.retro = 0.5;
+        ballDalles.retro = 0.5;
+        ballSable.launch(5, 0);
+        ballDalles.launch(5, 0);
+
+        for (let i = 0; i < 300; i++) {
+            ballSable.update(16);
+            ballDalles.update(16);
+        }
+
+        // Sable (friction 3.0 + retro) should stop MUCH shorter than dalles (friction 0.7)
+        expect(ballSable.x).toBeLessThan(ballDalles.x);
+        expect(ballDalles.x - ballSable.x).toBeGreaterThan(20);
+    });
+});

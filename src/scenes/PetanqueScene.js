@@ -4,7 +4,8 @@ import {
     TERRAIN_WIDTH, TERRAIN_HEIGHT,
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
-    CHAR_SPRITE_MAP, CHAR_THROW_MAP, CHAR_STATIC_SPRITES
+    CHAR_SPRITE_MAP, CHAR_THROW_MAP, CHAR_STATIC_SPRITES,
+    BARK_PROBABILITY
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -12,7 +13,7 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
+import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 
@@ -292,6 +293,9 @@ export default class PetanqueScene extends Phaser.Scene {
                 });
             }
         }
+
+        // Music tension crossfade when score >= 10
+        this.events.on('match-tension', (tense) => setMusicTension(tense));
 
         this.events.on('shutdown', this._shutdown, this);
     }

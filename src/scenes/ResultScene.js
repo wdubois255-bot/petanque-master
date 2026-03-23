@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat } from '../utils/SoundManager.js';
-import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin } from '../utils/SaveManager.js';
+import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -171,6 +171,17 @@ export default class ResultScene extends Phaser.Scene {
                 fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
             }).setOrigin(0.5);
         }
+
+        // === PERSISTENT STATS ===
+        recordMatchStats({
+            won: this.won,
+            terrainName: this.terrainName,
+            characterId: this.playerCharacter?.id,
+            carreaux: this.matchStats?.carreaux || 0,
+            biberons: this.matchStats?.biberons || 0,
+            galetsEarned: this.won ? this.galetsEarned : 0,
+            bestMeneScore: this.matchStats?.bestMene || 0
+        });
 
         // === GALETS EARNED ===
         const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;

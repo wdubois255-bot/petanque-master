@@ -42,7 +42,7 @@
         "decor": "parasols_bateaux",
         "sfx_ambient": "vagues_mouettes"
       },
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "parc",
@@ -119,7 +119,7 @@
         "decor": "oliviers_murets",
         "sfx_ambient": "vent_grillons"
       },
-      "unlocked": false
+      "unlocked": true
     },
     {
       "id": "docks",
@@ -141,7 +141,7 @@
         "decor": "containers_grues",
         "sfx_ambient": "industriel_nocturne"
       },
-      "unlocked": false
+      "unlocked": true
     }
   ]
 }

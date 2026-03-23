@@ -317,7 +317,73 @@ export function sfxThrow() {
 
 export function sfxUIClick() {
     if (playFile('sfx_ui_click', { volume: 0.4 })) return;
-    playTone(600, 0.05, 'square', 0.1);
+    // Wood "toc" — short triangle wave with fast decay
+    const c = getCtx();
+    if (!c) return;
+    const vol = _effectiveVol(0.15);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 800;
+    gain.gain.setValueAtTime(vol, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.03);
+    osc.connect(gain).connect(c.destination);
+    osc.start();
+    osc.stop(c.currentTime + 0.04);
+}
+
+export function sfxUINavigate() {
+    const c = getCtx();
+    if (!c) return;
+    const vol = _effectiveVol(0.08);
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(500, c.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(700, c.currentTime + 0.06);
+    gain.gain.setValueAtTime(vol, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06);
+    osc.connect(gain).connect(c.destination);
+    osc.start();
+    osc.stop(c.currentTime + 0.07);
+}
+
+export function sfxPurchase() {
+    const c = getCtx();
+    if (!c) return;
+    const vol = _effectiveVol(0.12);
+    const now = c.currentTime;
+    // Coin clink sound
+    [1200, 1600, 2000].forEach((freq, i) => {
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol * (1 - i * 0.25), now + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.1);
+        osc.connect(gain).connect(c.destination);
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.1);
+    });
+}
+
+export function sfxLevelUp() {
+    const c = getCtx();
+    if (!c) return;
+    const vol = _effectiveVol(0.12);
+    const now = c.currentTime;
+    // Short ascending fanfare
+    [523, 659, 784, 1047].forEach((freq, i) => {
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.25);
+        osc.connect(gain).connect(c.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.25);
+    });
 }
 
 export function sfxVictory() {
@@ -559,6 +625,30 @@ export function sfxCrowdGroan() {
     osc2.stop(now + 0.7);
 }
 
+// === COMMENTATEUR (triggered by game events) ===
+
+const COMMENTATOR_LINES = {
+    good_point: ['sfx_comm_joli', 'sfx_comm_magnifique'],
+    very_close: ['sfx_comm_ohlala'],
+    carreau: ['sfx_comm_carreau'],
+    mene_win: ['sfx_comm_magnifique'],
+    oob: ['sfx_comm_aie'],
+    great_shot: ['sfx_comm_quel_tir'],
+    tight: ['sfx_comm_serre'],
+    fanny: ['sfx_comm_fanny'],
+    encourage: ['sfx_comm_allez'],
+    surprise: ['sfx_comm_ouh']
+};
+
+export function sfxCommentator(eventType) {
+    if (_muted) return;
+    const keys = COMMENTATOR_LINES[eventType];
+    if (!keys || keys.length === 0) return;
+    const key = keys[Math.floor(Math.random() * keys.length)];
+    if (playFile(key, { volume: 0.6 })) return;
+    // No procedural fallback for commentary — requires real audio files
+}
+
 // === AMBIANCE ===
 
 export function startCigales() {
@@ -680,5 +770,12 @@ export function stopMusic() {
         _musicPlaying.stop();
         _musicPlaying.destroy();
         _musicPlaying = null;
+    }
+}
+
+/** Increase music tension (tempo up, slight pitch shift) for intense match moments */
+export function setMusicTension(tense) {
+    if (_musicPlaying) {
+        _musicPlaying.rate = tense ? 1.12 : 1.0;
     }
 }

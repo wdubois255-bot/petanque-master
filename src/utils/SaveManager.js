@@ -1,5 +1,4 @@
-const SAVE_KEY = 'petanque_master_save';
-const SAVE_VERSION = 2;
+import { SAVE_KEY, SAVE_VERSION } from './Constants.js';
 
 function defaultSaveData() {
     return {
@@ -26,6 +25,7 @@ function defaultSaveData() {
         selectedCochonnet: "classique",
         tutorialSeen: false,
         tutorialInGameSeen: false,
+        tutorialComplete: false,
         audioSettings: {
             masterVolume: 1.0,
             musicVolume: 1.0,
@@ -33,7 +33,20 @@ function defaultSaveData() {
             muted: false
         },
         playtime: 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        stats: {
+            totalMatches: 0,
+            totalWins: 0,
+            totalCarreaux: 0,
+            totalBiberons: 0,
+            totalGaletsEarned: 0,
+            bestMeneScore: 0,
+            totalTimePlayed: 0,
+            winsPerTerrain: {},
+            winsPerCharacter: {}
+        },
+        lastDailyDate: null,
+        dailyCompleted: false
     };
 }
 
@@ -86,7 +99,7 @@ export function resetSave() {
 // Convenience helpers
 export function addGalets(amount) {
     const save = loadSave();
-    save.galets += amount;
+    save.galets = Math.max(0, save.galets + amount);
     saveSave(save);
     return save.galets;
 }
@@ -209,6 +222,51 @@ export function getRookieStats() {
 
 export function getGalets() {
     return loadSave().galets;
+}
+
+export function recordMatchStats({ won, terrainName, characterId, carreaux, biberons, galetsEarned, bestMeneScore }) {
+    const save = loadSave();
+    if (!save.stats) save.stats = {};
+    save.stats.totalMatches = (save.stats.totalMatches || 0) + 1;
+    if (won) {
+        save.stats.totalWins = (save.stats.totalWins || 0) + 1;
+        if (terrainName) {
+            if (!save.stats.winsPerTerrain) save.stats.winsPerTerrain = {};
+            save.stats.winsPerTerrain[terrainName] = (save.stats.winsPerTerrain[terrainName] || 0) + 1;
+        }
+        if (characterId) {
+            if (!save.stats.winsPerCharacter) save.stats.winsPerCharacter = {};
+            save.stats.winsPerCharacter[characterId] = (save.stats.winsPerCharacter[characterId] || 0) + 1;
+        }
+    }
+    save.stats.totalCarreaux = (save.stats.totalCarreaux || 0) + (carreaux || 0);
+    save.stats.totalBiberons = (save.stats.totalBiberons || 0) + (biberons || 0);
+    save.stats.totalGaletsEarned = (save.stats.totalGaletsEarned || 0) + (galetsEarned || 0);
+    if (bestMeneScore && bestMeneScore > (save.stats.bestMeneScore || 0)) {
+        save.stats.bestMeneScore = bestMeneScore;
+    }
+    saveSave(save);
+    return save.stats;
+}
+
+export function getStats() {
+    return loadSave().stats || {};
+}
+
+export function getDailyState() {
+    const save = loadSave();
+    const today = new Date().toDateString();
+    return {
+        isNewDay: save.lastDailyDate !== today,
+        completed: save.lastDailyDate === today && save.dailyCompleted
+    };
+}
+
+export function completeDailyChallenge() {
+    const save = loadSave();
+    save.lastDailyDate = new Date().toDateString();
+    save.dailyCompleted = true;
+    saveSave(save);
 }
 
 // Keep backward-compatible exports for old code that might use slots

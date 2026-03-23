@@ -188,7 +188,7 @@
       "stats": { "precision": 9, "puissance": 8, "effet": 7, "sang_froid": 9 },
       "ai": {
         "personality": "tireur",
-        "angleDev": 2,
+        "angleDev": 3,
         "powerDev": 0.03,
         "shootProbability": 0.85,
         "loftPref": "tir",
@@ -210,7 +210,7 @@
         "post_match_win": ["Routine.", "A la prochaine.", "Toujours le meme resultat."],
         "post_match_lose": ["T'es fort. Respect.", "Bon match.", "Je reviendrai."]
       },
-      "ability": { "name": "Tir Chirurgical", "charges": 2, "description": "Tir parfait: dispersion quasi-nulle" },
+      "ability": { "name": "Tir Chirurgical", "charges": 1, "description": "Tir parfait: dispersion quasi-nulle" },
       "sprite": "suchaud_animated",
       "portrait": "portrait_suchaud",
       "palette": { "primary": "#8B1A1A", "secondary": "#F5E6D0", "accent": "#C0C0C0" },

@@ -572,6 +572,7 @@ export default class InGameTutorial {
         this.completed = true;
         const save = loadSave();
         save.tutorialInGameSeen = true;
+        save.tutorialComplete = true;
         saveSave(save);
     }
 

@@ -1,9 +1,9 @@
 # GAME DESIGN - Petanque Master
 
-> **ATTENTION** : Ce fichier est une bible de design generique.
-> Les personnages "TBD" ont ete remplaces par le roster actuel : Rookie, Ley, Le Magicien, La Choupe, Marcel, Reyes.
+> **ATTENTION** : Ce fichier est la bible de design du jeu.
+> Le roster actuel compte 12 personnages : Rookie, La Choupe, Ley, Foyot, Suchaud, Fazzino, Mamie Josette, Papi Rene, Robineau, Rocher, Sofia, Rizzi.
 > Pour les stats et donnees reelles : **public/data/characters.json** (source de verite).
-> Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.1.
+> Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.3.
 
 ## Concept
 
@@ -45,7 +45,7 @@ Chaque joueur choisit un personnage avec des stats uniques, un jeu de boules, et
 
 ---
 
-## Personnages (Roster v1 - 5 + 1 secret)
+## Personnages (Roster - 12 joueurs)
 
 ### Systeme de stats
 
@@ -60,20 +60,26 @@ Chaque personnage a **4 stats** (echelle 1-10) :
 
 **Mecanique de pression :** A partir de 10-10, la visee de tous les joueurs commence a trembler legerement. L'amplitude du tremblement depend du sang-froid du personnage. Ca cree une tension naturelle en fin de partie.
 
-**Total de stats :** Chaque perso a un total de ~24-26 points repartis differemment (pas d'equilibrage parfait, c'est voulu — certains persos sont plus durs a jouer mais plus rewarding).
+**Total de stats :** Chaque perso a un total de ~24-28 points repartis differemment (pas d'equilibrage parfait, c'est voulu — certains persos sont plus durs a jouer mais plus rewarding).
 
-### Les 5 personnages + boss
+### Le Roster (12 personnages)
 
-| # | Nom | Archetype | PRE | PUI | EFF | S-F | Style |
-|---|-----|-----------|-----|-----|-----|-----|-------|
-| 1 | TBD | **Le Pointeur** | 9 | 4 | 6 | 7 | Veteran calme, chirurgical. Gagne en placement. |
-| 2 | TBD | **Le Tireur** | 5 | 9 | 4 | 6 | Brute sympathique. Tire et casse tout. |
-| 3 | TBD | **L'Equilibre** | 6 | 6 | 6 | 6 | Rookie, joueur du dimanche. Facile a prendre en main. |
-| 4 | TBD | **Le Stratege** | 6 | 5 | 9 | 6 | Intellectuel, calcule tout. Maitre des courbes et effets. |
-| 5 | TBD | **Le Wild Card** | 7 | 8 | 7 | 3 | Flambeur, tout ou rien. Tres fort mais craque sous pression. |
-| 6 | TBD | **Le Boss Secret** | 8 | 7 | 8 | 9 | Debloquable en finissant l'arcade. Le maitre absolu. |
+> **Source de verite stats** : `public/data/characters.json`. Le tableau ci-dessous donne l'archetype et le style — pour les chiffres exacts, toujours consulter le JSON.
 
-**Noms et personnalites** : a developper un par un, bases sur la realite, style provencal/sud de la France.
+| # | ID | Nom | Archetype | Style |
+|---|-----|-----------|-----|-------|
+| 1 | rookie | **Le Rookie** | Adaptable | Debutant qui evolue. Stats basses mais progressent avec chaque victoire. |
+| 2 | la_choupe | **La Choupe** | Tireur | Canon du boulodrome. Puissance devastatrice, pas de finesse. |
+| 3 | ley | **Ley** | Tireur legendaire | Le boss final de l'Arcade. Carreaux devastateurs, calme absolu. |
+| 4 | foyot | **Foyot** | Pointeur | Veteran calme et chirurgical. Gagne en placement. |
+| 5 | suchaud | **Suchaud** | Tireur elite | 14 fois champion. Tirs chirurgicaux, sang-froid d'acier. |
+| 6 | fazzino | **Fazzino** | Stratege | Joueur du siecle. Maitre des courbes et des effets. |
+| 7 | mamie_josette | **Mamie Josette** | Pointeuse | 72 ans, calme olympien. Precision mortelle, ne vous fiez pas aux apparences. |
+| 8 | papi_rene | **Papi Rene** | Milieu de terrain | Le doyen du boulodrome. Sage et regulier. |
+| 9 | robineau | **Robineau** | Equilibre | Solide et fiable, bon en tout sans exces. |
+| 10 | rocher | **Rocher** | Puissance brute | Force physique impressionnante, controle limite. |
+| 11 | sofia | **Sofia** | Technique | Technique et creative, maitrise des effets. |
+| 12 | rizzi | **Rizzi** | Wild Card | Flambeur, tout ou rien. Tres fort mais craque sous pression. |
 
 **Visuels** (voir section "Direction Artistique" pour le detail complet) :
 - Sprite in-game 32x32 pixel art (4 directions, idle + throw + celebrate + lose)
@@ -149,11 +155,11 @@ MENU PRINCIPAL
 ```
 
 ### Ecran de selection de personnage
-- Grille de portraits (2x3 pour 5+1 persos)
+- Grille de portraits (roster de 12 personnages)
 - Curseur anime
 - Preview du perso a droite avec stats en barres
 - Musique energique pendant la selection
-- Perso secret = silhouette "???" tant que non debloque
+- Persos non debloques = silhouette "???"
 
 ### Intro match
 - Ecran split "VS" avec les deux portraits face a face
@@ -169,14 +175,74 @@ MENU PRINCIPAL
 
 ## Ordre Arcade (progression)
 
+Le joueur incarne le Rookie et affronte 5 adversaires dans l'ordre suivant :
+
 | Match | Adversaire | Terrain | Difficulte IA |
 |-------|-----------|---------|---------------|
-| 1 | L'Equilibre | Place du Village | Facile |
-| 2 | Le Pointeur | Plage | Facile+ |
-| 3 | Le Tireur | Parc Municipal | Moyen |
-| 4 | Le Stratege | Colline aux Oliviers | Moyen+ |
-| 5 | Le Wild Card | Les Docks | Difficile |
-| BOSS | Le Boss Secret | ??? (terrain special) | Expert |
+| 1 | La Choupe | Place du Village | Facile |
+| 2 | Mamie Josette | Parc Municipal | Moyen |
+| 3 | Fazzino | Colline aux Oliviers | Difficile |
+| 4 | Suchaud | Les Docks | Tres difficile |
+| 5 | Ley | Plage de la Ciotat | Expert |
+
+> Source de verite : `public/data/arcade.json`
+
+---
+
+## Rookie Progression
+
+Le Rookie est le personnage principal du mode Arcade. Contrairement aux autres personnages, ses stats evoluent avec les points accumules en jeu. A certains seuils, il debloque des capacites uniques :
+
+| Seuil (pts) | Capacite | Type | Effet |
+|-------------|----------|------|-------|
+| 18 | **L'Instinct** | Active (1 charge) | Slow-mo 2s pendant la visee |
+| 24 | **Determination** | Passive | Apres une mene perdue, -80% wobble au tir suivant |
+| 32 | **Le Naturel** | Active (1 charge) | Lancer quasi-parfait, wobble proche de 0 |
+
+> Source de verite : `public/data/characters.json` (champ `abilities_unlock` du Rookie)
+
+---
+
+## Monnaie : Galets
+
+La monnaie du jeu s'appelle les **Galets** (PAS "Ecus", PAS "Coins").
+
+| Source | Montant |
+|--------|---------|
+| Depart (nouveau joueur) | 100 Galets |
+| Victoire Arcade (par match) | 100 Galets |
+| Victoire QuickPlay | 40 Galets |
+| Bonus carreau | 15 Galets |
+| Defaite (consolation) | 15 Galets |
+| Arcade complete (5 victoires) | 150 Galets bonus |
+| Arcade parfaite (13-0 partout) | 300 Galets bonus |
+| Defi quotidien | 75 Galets |
+
+> Source de verite : constantes `GALET_*` dans `src/utils/Constants.js`
+
+---
+
+## Game Feel
+
+Le game feel est ce qui rend chaque tir satisfaisant. Voici les effets en jeu :
+
+- **Slow-mo pres du cochonnet** : quand la boule arrive a proximite du cochonnet, le temps ralentit brievement pour creer de la tension
+- **Hitstop sur collision** : 60ms sur collision boule-boule, 100ms sur carreau — gel du jeu pour donner de l'impact
+- **Camera shake** : secousse proportionnelle a la violence de l'impact
+- **Barks IA** : chaque personnage a des repliques contextuelles (bon tir, mauvais tir, carreau, pression, victoire, defaite) — voir `barks` dans `characters.json`
+- **Reactions foule** : sons de foule (oh, ah, applaudissements) selon la qualite du tir
+- **Son de roulement** : son continu pendant que la boule roule, volume proportionnel a la vitesse
+
+---
+
+## Defi Quotidien (Daily Challenge)
+
+Un defi unique par jour, identique pour tous les joueurs :
+
+- **Seed** : basee sur la date du jour (ex. `20260323`) — meme defi pour tout le monde
+- **Parametres aleatoires** : personnage impose, terrain impose, contrainte speciale (ex. "pas de tir", "puissance max 50%", "3 boules en 1 mene")
+- **Recompense** : 75 Galets
+- **Limite** : 1 tentative par jour (rejouable mais recompense unique)
 
 ---
 

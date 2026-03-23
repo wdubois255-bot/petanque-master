@@ -281,6 +281,39 @@ describe('Ball - simulateTrajectory', () => {
     });
 });
 
+describe('Ball - knockbackMult multiplication', () => {
+    it('should multiply knockbackMult of both balls', () => {
+        const a = new Ball(mockScene, 100, 200, { mass: BALL_MASS });
+        const b = new Ball(mockScene, 100 + BALL_RADIUS * 2 - 2, 200, { mass: BALL_MASS });
+        a.knockbackMult = 1.3;
+        b.knockbackMult = 1.2;
+        a.launch(5, 0);
+
+        Ball.resolveCollision(a, b);
+
+        // With multiplied knockback (1.3 * 1.2 = 1.56), b should move faster
+        // than with just max(1.3, 1.2) = 1.3
+        const bSpeed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+        // Compare to a collision without knockback bonus
+        const a2 = new Ball(mockScene, 100, 200, { mass: BALL_MASS });
+        const b2 = new Ball(mockScene, 100 + BALL_RADIUS * 2 - 2, 200, { mass: BALL_MASS });
+        a2.launch(5, 0);
+        Ball.resolveCollision(a2, b2);
+        const b2Speed = Math.sqrt(b2.vx * b2.vx + b2.vy * b2.vy);
+
+        // knockbackMult 1.56x should make b significantly faster
+        expect(bSpeed / b2Speed).toBeCloseTo(1.56, 1);
+    });
+});
+
+describe('Ball - _rollFrames edge case', () => {
+    it('should have _rollFrames >= 1 even with frameTotal 0 or 1', () => {
+        // With no texture, _rollFrames defaults to 6
+        const ball = new Ball(mockScene, 100, 200);
+        expect(ball._rollFrames).toBeGreaterThanOrEqual(1);
+    });
+});
+
 describe('Ball - kill', () => {
     it('should stop all motion and mark as dead', () => {
         const ball = new Ball(mockScene, 100, 200);

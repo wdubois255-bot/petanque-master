@@ -1,5 +1,5 @@
 import AIStrategy from './AIStrategy.js';
-import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE } from '../../utils/Constants.js';
+import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, HIT_PROB_SCALE } from '../../utils/Constants.js';
 
 /**
  * Reyes: Le Complet — The smartest player on the boulodrome.
@@ -112,7 +112,7 @@ export default class CompletStrategy extends AIStrategy {
 
         // Probability of hitting: closer target + lower angleDev = higher chance
         // angleDev 3 at 50px → ~80% hit. angleDev 3 at 100px → ~50%
-        const hitProb = Math.max(0.1, Math.min(0.95, 1 - (myAngleDev * enemyDist) / 500));
+        const hitProb = Math.max(0.1, Math.min(0.95, 1 - (myAngleDev * enemyDist) / HIT_PROB_SCALE));
 
         // Value of a successful shot: removes opponent's best ball
         // Higher value when opponent is winning more projected points

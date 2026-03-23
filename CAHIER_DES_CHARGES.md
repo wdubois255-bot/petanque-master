@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.3 — 23 mars 2026 (audit complet, roster et monnaie corriges)
+> Version 2.4 — 23 mars 2026 (FTUE, stats persistantes, collection tracker, balance, SFX, bugfixes)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -125,17 +125,23 @@
 | LevelUpScene | `src/scenes/LevelUpScene.js` | Complet (repartition stats Rookie) |
 | ShopScene | `src/scenes/ShopScene.js` | Complet (3 onglets) |
 | TutorialScene | `src/scenes/TutorialScene.js` | Complet (5 pages) |
+| PlayerScene | `src/scenes/PlayerScene.js` | Complet (stats, collection %, progression) |
 | OverworldScene | `src/scenes/OverworldScene.js` | Reserve (Phase D) |
 
 ### 2.9 Audio
 - [x] 14 SFX (boule_boule, boule_cochonnet, lancer_swoosh, carreau, victoire, defaite...)
+- [x] 3 SFX UI : sfxUINavigate, sfxPurchase, sfxLevelUp
 - [x] 2 musiques (title_theme, match_theme)
+- [x] Music tension crossfade (crossfade dynamique selon pression du match)
+- [x] Commentator infrastructure (systeme de commentaires audio)
 - [x] Ambiance par terrain (cigales, vagues, oiseaux, vent, industriel)
 - **Fichiers** : `public/assets/audio/sfx/`, `public/assets/audio/music/`
 
 ### 2.10 Sauvegarde
 - [x] SaveManager v2 : schema unique (Rookie, Galets, deblocages, achats)
 - [x] Migration automatique v1 → v2
+- [x] SAVE_KEY et SAVE_VERSION centralises dans Constants.js
+- [x] Stats persistantes (totalMatches, winsPerTerrain, bestScore, carreaux, etc.)
 - **Fichier** : `src/utils/SaveManager.js`
 
 ### 2.11 Game Feel (implemente 18 mars 2026)
@@ -144,15 +150,19 @@
 - [x] Pause dramatique 1.5s avant score de mene
 - [x] Reactions foule audio (applaudissements, cheer, groan)
 - [x] Ambiance par terrain (cigales, vagues, oiseaux, vent)
+- [x] "+X pts" floating text on score (texte flottant anime a chaque gain de points)
 
 ### 2.12 Progression (implemente 18 mars 2026)
 - [x] Le Rookie dans characters.json (10/40 pts, 3 abilities)
 - [x] Galets : gain par victoire + carreaux + bonus run
-- [x] LevelUpScene : repartition des points
+- [x] LevelUpScene : repartition des points, _confirmed reset dans init()
 - [x] ShopScene : 3 onglets (boules, cochonnets, capacites)
 - [x] TutorialScene : 5 pages illustrees
+- [x] Tutoriel in-game overlay (FTUE) : guide interactif premiere partie
 - [x] Deblocages par progression arcade
 - [x] Arcade 5 matchs (Choupe→Mamie Josette→Fazzino→Suchaud→Ley)
+- [x] Collection tracker : progression % visible dans PlayerScene
+- [x] Daily Challenge system (seed-based, defi quotidien unique)
 
 ---
 
@@ -190,6 +200,14 @@
 - [x] **00_synthese** : stats Reyes corrigees (complet 8/8/7/9, pas equilibre 7/7/6/7)
 - [x] **00_synthese** : seuils Rookie corriges (18/26/34, pas 20/30)
 - [x] **HANDOFF.md** : marque OBSOLETE (ancien roster Rene/Fanny/Ricardo)
+
+### 3.6 Balance et corrections (session 8)
+- [x] **Balance Suchaud** : 1 charge Tir Chirurgical (etait illimite), angleDev 3 (precision reduite)
+- [x] **Bug addGalets** : protection contre valeurs negatives
+- [x] **Bug knockbackMult** : correction multiplication (etait appliquee en double)
+- [x] **Bug _rollFrames** : correction edge case (frames de roulement)
+- [x] **Bug window.__PHASER_GAME__** : supprime (interdit par convention, utiliser this.registry)
+- [x] **Bug BootScene shutdown** : cleanup propre des ressources au shutdown
 
 ---
 
@@ -244,7 +262,7 @@
   STORY.md               # Histoire "L'Heritier de la Ciotat" (reserve Phase D)
   /src
     main.js, config.js
-    /scenes/             # 12 scenes actives (+ OverworldScene reserve Phase D)
+    /scenes/             # 13 scenes actives (+ OverworldScene reserve Phase D)
     /petanque/           # Ball, Cochonnet, PetanqueEngine, PetanqueAI, AimingSystem
     /ui/                 # DialogBox, ScorePanel, MiniMap, CharSelectUI, UIFactory
     /utils/              # SaveManager, Constants, SoundManager, PortraitGenerator

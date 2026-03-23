@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, TYPEWRITER_SPEED, FONT_PIXEL, SHADOW_TEXT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, TYPEWRITER_SPEED, FONT_PIXEL, SHADOW_TEXT, DIALOG_BOX_HEIGHT } from '../utils/Constants.js';
 
-const BOX_HEIGHT = 110;
+const BOX_HEIGHT = DIALOG_BOX_HEIGHT;
 const BOX_MARGIN = 12;
 const BOX_PADDING = 16;
 const TEXT_COLOR = '#3A2E28';

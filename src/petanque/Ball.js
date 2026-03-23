@@ -6,7 +6,8 @@ import {
     RETRO_TERRAIN_EFF, WALL_RESTITUTION,
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
-    BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST
+    BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
+    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -47,15 +48,18 @@ export default class Ball {
         // Use sprite if texture exists, fallback to graphics
         if (this.textureKey && scene.textures.exists(this.textureKey)) {
             const tex = scene.textures.get(this.textureKey);
-            this._rollFrames = tex.frameTotal - 1 || 1; // -1 because Phaser adds __BASE frame
+            this._rollFrames = Math.max(1, tex.frameTotal - 1); // -1 because Phaser adds __BASE frame
 
-            const scale = this.radius / BALL_TEXTURE_RADIUS;
+            const isCochonnet = this.mass < 100; // cochonnet is ~16g, boules are 700g
+            this._displayMult = isCochonnet ? COCHONNET_DISPLAY_SCALE : BALL_DISPLAY_SCALE;
+            const scale = (this.radius / BALL_TEXTURE_RADIUS) * this._displayMult;
             if (this._rollFrames <= 1) {
                 this.sprite = scene.add.image(x, y, this.textureKey).setScale(scale).setDepth(10);
             } else {
                 this.sprite = scene.add.sprite(x, y, this.textureKey, 0).setScale(scale).setDepth(10);
             }
-            this.shadowSprite = scene.add.ellipse(x + BALL_SHADOW_OFFSET_X, y + BALL_SHADOW_OFFSET_Y, this.radius * BALL_SHADOW_RATIO_W, this.radius * BALL_SHADOW_RATIO_H, 0x3A2E28, 0.2).setDepth(9);
+            const shadowScale = this._displayMult;
+            this.shadowSprite = scene.add.ellipse(x + BALL_SHADOW_OFFSET_X, y + BALL_SHADOW_OFFSET_Y, this.radius * BALL_SHADOW_RATIO_W * shadowScale, this.radius * BALL_SHADOW_RATIO_H * shadowScale, 0x3A2E28, 0.2).setDepth(9);
             this.gfx = null;
             this.shadow = null;
         } else {
@@ -102,10 +106,10 @@ export default class Ball {
                 if (this._squashTimer > 0) {
                     this._squashTimer--;
                     this.sprite.setTint(0xFFFFFF);
-                    this.sprite.setScale((this.radius + BALL_SQUASH_RADIUS_BOOST) / BALL_TEXTURE_RADIUS);
+                    this.sprite.setScale(((this.radius + BALL_SQUASH_RADIUS_BOOST) / BALL_TEXTURE_RADIUS) * this._displayMult);
                 } else {
                     this.sprite.clearTint();
-                    this.sprite.setScale(this.radius / BALL_TEXTURE_RADIUS);
+                    this.sprite.setScale((this.radius / BALL_TEXTURE_RADIUS) * this._displayMult);
                 }
             } else {
                 this.sprite.setVisible(false);
@@ -397,7 +401,7 @@ export default class Ball {
         const totalMass = a.mass + b.mass;
         let impulse = (1 + restitution) * dvn / totalMass;
         // Apply knockback bonus (e.g. Bronze hits harder)
-        impulse *= Math.max(a.knockbackMult || 1, b.knockbackMult || 1);
+        impulse *= (a.knockbackMult || 1) * (b.knockbackMult || 1);
 
         // === PUISSANCE impacts ejection distance ===
         // The thrower's puissance stat amplifies how far the target gets pushed

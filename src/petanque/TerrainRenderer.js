@@ -5,7 +5,7 @@ import { GAME_WIDTH, GAME_HEIGHT, TERRAIN_WIDTH, TERRAIN_HEIGHT, COLORS } from '
 // Textures procedurale riches, bordures uniques, decors, lignes de mort
 // ============================================================
 
-const BORDER_WIDTH = 10;
+const BORDER_WIDTH = 16; // Match PixelLab tile size (16x16)
 
 // Config visuelle par terrain ID
 const TERRAIN_VISUALS = {
@@ -1081,70 +1081,55 @@ export default class TerrainRenderer {
         const ty = this.ty;
         const tw = TERRAIN_WIDTH;
         const th = TERRAIN_HEIGHT;
-        const inset = 3; // pixels inside terrain edge
+        const inset = 3;
 
         switch (this.vis.deadLineStyle) {
-            case 'chalk': this._deadLineChalk(g, tx, ty, tw, th, inset); break;
-            case 'driftwood': this._deadLineDriftwood(g, tx, ty, tw, th, inset); break;
-            case 'painted': this._deadLinePainted(g, tx, ty, tw, th, inset); break;
-            case 'stones': this._deadLineStones(g, tx, ty, tw, th, inset); break;
-            case 'hazard': this._deadLineHazard(g, tx, ty, tw, th, inset); break;
+            case 'chalk':     this._deadLineFicelle(g, tx, ty, tw, th, inset, 0xFFFFFF, 0.45); break;
+            case 'driftwood': this._deadLineFicelle(g, tx, ty, tw, th, inset, 0xE8D8C0, 0.5); break;
+            case 'painted':   this._deadLinePainted(g, tx, ty, tw, th, inset); break;
+            case 'stones':    this._deadLineFicelle(g, tx, ty, tw, th, inset, 0xD4C8B0, 0.4); break;
+            case 'hazard':    this._deadLineHazard(g, tx, ty, tw, th, inset); break;
         }
+    }
 
-        // "LIGNE DE MORT" labels at top and bottom (small)
-        const labelStyle = {
-            fontFamily: 'monospace', fontSize: '7px',
-            color: this.terrainId === 'docks' ? '#FFD700' : '#FFFFFF',
-            alpha: 0.4
+    // Ficelle de petanque — fine string stretched between stakes, like real competition
+    _deadLineFicelle(g, tx, ty, tw, th, inset, color, alpha) {
+        // Main string: 1px line with very slight wobble every ~20px
+        const drawString = (x1, y1, x2, y2) => {
+            const isH = Math.abs(y1 - y2) < 2;
+            const len = isH ? Math.abs(x2 - x1) : Math.abs(y2 - y1);
+
+            for (let i = 0; i < len; i++) {
+                // Slight sag: 1px wobble every ~24px
+                const wobble = (Math.sin(i * 0.26) > 0.9) ? 1 : 0;
+                const px = isH ? x1 + i : x1 + wobble;
+                const py = isH ? y1 + wobble : y1 + i;
+                g.fillStyle(color, alpha);
+                g.fillRect(px, py, 1, 1);
+            }
         };
-        this.scene.add.text(tx + tw / 2, ty + 8, 'LIGNE DE FOND', labelStyle)
-            .setOrigin(0.5).setDepth(3.3).setAlpha(0.35);
-        this.scene.add.text(tx + tw / 2, ty + th - 8, 'LIGNE DE FOND', labelStyle)
-            .setOrigin(0.5).setDepth(3.3).setAlpha(0.35);
-    }
 
-    _deadLineChalk(g, tx, ty, tw, th, inset) {
-        // White chalk lines - slightly irregular
-        g.lineStyle(2, 0xFFFFFF, 0.5);
-        // Top
-        for (let x = tx + inset; x < tx + tw - inset; x += 4) {
-            g.fillStyle(0xFFFFFF, 0.3 + Math.random() * 0.3);
-            g.fillRect(x, ty + inset, 3, 2);
-        }
-        // Bottom
-        for (let x = tx + inset; x < tx + tw - inset; x += 4) {
-            g.fillStyle(0xFFFFFF, 0.3 + Math.random() * 0.3);
-            g.fillRect(x, ty + th - inset - 2, 3, 2);
-        }
-        // Left
-        for (let y = ty + inset; y < ty + th - inset; y += 4) {
-            g.fillStyle(0xFFFFFF, 0.3 + Math.random() * 0.3);
-            g.fillRect(tx + inset, y, 2, 3);
-        }
-        // Right
-        for (let y = ty + inset; y < ty + th - inset; y += 4) {
-            g.fillStyle(0xFFFFFF, 0.3 + Math.random() * 0.3);
-            g.fillRect(tx + tw - inset - 2, y, 2, 3);
-        }
-    }
+        // Small stakes at corners and midpoints
+        const drawStake = (x, y) => {
+            g.fillStyle(0x8B6B4A, 0.6);
+            g.fillRect(x - 1, y - 1, 2, 2);
+        };
 
-    _deadLineDriftwood(g, tx, ty, tw, th, inset) {
-        // Driftwood sticks and shells marking the boundary
-        const color = 0xB09870;
-        // Top & Bottom
-        for (let x = tx + inset; x < tx + tw - inset; x += 8 + Math.random() * 6) {
-            g.fillStyle(color, 0.4 + Math.random() * 0.3);
-            const w = 4 + Math.random() * 5;
-            g.fillRect(x, ty + inset, w, 1.5);
-            g.fillRect(x + 2, ty + th - inset - 1.5, w, 1.5);
-        }
-        // Left & Right
-        for (let y = ty + inset; y < ty + th - inset; y += 8 + Math.random() * 6) {
-            g.fillStyle(color, 0.4 + Math.random() * 0.3);
-            const h = 4 + Math.random() * 5;
-            g.fillRect(tx + inset, y, 1.5, h);
-            g.fillRect(tx + tw - inset - 1.5, y, 1.5, h);
-        }
+        // Top ficelle
+        drawString(tx + inset, ty + inset, tx + tw - inset, ty + inset);
+        // Bottom ficelle
+        drawString(tx + inset, ty + th - inset, tx + tw - inset, ty + th - inset);
+        // Left ficelle
+        drawString(tx + inset, ty + inset, tx + inset, ty + th - inset);
+        // Right ficelle
+        drawString(tx + tw - inset, ty + inset, tx + tw - inset, ty + th - inset);
+
+        // Stakes at corners
+        const corners = [
+            [tx + inset, ty + inset], [tx + tw - inset, ty + inset],
+            [tx + inset, ty + th - inset], [tx + tw - inset, ty + th - inset]
+        ];
+        for (const [sx, sy] of corners) drawStake(sx, sy);
     }
 
     _deadLinePainted(g, tx, ty, tw, th, inset) {
@@ -1166,22 +1151,6 @@ export default class TerrainRenderer {
         // Bottom-right
         g.lineBetween(tx + tw - inset, ty + th - inset, tx + tw - inset - cm, ty + th - inset);
         g.lineBetween(tx + tw - inset, ty + th - inset, tx + tw - inset, ty + th - inset - cm);
-    }
-
-    _deadLineStones(g, tx, ty, tw, th, inset) {
-        // Stone cairn markers at intervals
-        const stoneColor = 0xA09878;
-        const spacing = 18;
-        // Top & Bottom
-        for (let x = tx + inset + 6; x < tx + tw - inset; x += spacing) {
-            g.fillStyle(stoneColor, 0.5); g.fillCircle(x, ty + inset + 1, 2.5);
-            g.fillStyle(stoneColor, 0.5); g.fillCircle(x, ty + th - inset - 1, 2.5);
-        }
-        // Left & Right
-        for (let y = ty + inset + 6; y < ty + th - inset; y += spacing) {
-            g.fillStyle(stoneColor, 0.5); g.fillCircle(tx + inset + 1, y, 2.5);
-            g.fillStyle(stoneColor, 0.5); g.fillCircle(tx + tw - inset - 1, y, 2.5);
-        }
     }
 
     _deadLineHazard(g, tx, ty, tw, th, inset) {
@@ -1210,56 +1179,95 @@ export default class TerrainRenderer {
     }
 
     // ============================================================
-    // BORDERS - Uniques par terrain
+    // BORDERS - Tiles PixelLab bois avec teinte par terrain
     // ============================================================
-    _drawBorders() {
-        switch (this.vis.borderType) {
-            case 'wood':  this._borderWood(); break;
-            case 'rope':  this._borderRope(); break;
-            case 'hedge': this._borderHedge(); break;
-            case 'stone': this._borderStone(); break;
-            case 'metal': this._borderMetal(); break;
-        }
-    }
 
-    // --- WOOD (Village) - Rondins de bois uses avec grain visible ---
-    _borderWood() {
+    // Border texture keys per terrain
+    static BORDER_ASSETS = {
+        village: { h: 'border_wood_h', v: 'border_wood_v', corners: 'rondin_ends' },
+        plage:   { h: 'border_wood_h', v: 'border_wood_v', corners: 'rondin_ends', tint: 0xE8D0B0 },
+        parc:    { h: 'border_parc_h', v: 'border_parc_v', corners: 'simple' },
+        colline: { h: 'border_colline_h', v: 'border_colline_v', corners: 'simple' },
+        docks:   { h: 'border_docks_h', v: 'border_docks_v', corners: 'simple' },
+    };
+
+    _drawBorders() {
         const tx = this.tx, ty = this.ty;
         const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
         const bw = BORDER_WIDTH;
-        const hasTex = this.scene.textures.exists('border_wood');
+        const half = bw / 2;
+        const depth = 3.5;
+        const assets = TerrainRenderer.BORDER_ASSETS[this.terrainId] || TerrainRenderer.BORDER_ASSETS.village;
+        const hasH = this.scene.textures.exists(assets.h);
+        const hasV = this.scene.textures.exists(assets.v);
 
-        if (hasTex) {
-            // TileSprite borders using loaded wood texture
-            const depth = 3.5;
-            // Top
-            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty - bw + bw / 2,
-                tw + bw * 2, bw, 'border_wood').setDepth(depth);
-            // Bottom
-            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty + th + bw / 2,
-                tw + bw * 2, bw, 'border_wood').setDepth(depth);
-            // Left
-            this.scene.add.tileSprite(tx - bw + bw / 2, ty + th / 2,
-                bw, th, 'border_wood').setDepth(depth);
-            // Right
-            this.scene.add.tileSprite(tx + tw + bw / 2, ty + th / 2,
-                bw, th, 'border_wood').setDepth(depth);
+        if (!hasH || !hasV) { this._borderWoodFallback(); return; }
+
+        const all = [];
+
+        // 4 edges — H covers full width including corners, V fits between H borders
+        const fullW = tw + bw * 2;
+        all.push(this.scene.add.tileSprite(tx - bw + fullW / 2, ty - half, fullW, bw, assets.h).setDepth(depth));
+        all.push(this.scene.add.tileSprite(tx - bw + fullW / 2, ty + th + half, fullW, bw, assets.h).setDepth(depth).setFlipY(true));
+        all.push(this.scene.add.tileSprite(tx - half, ty + th / 2, bw, th, assets.v).setDepth(depth));
+        all.push(this.scene.add.tileSprite(tx + tw + half, ty + th / 2, bw, th, assets.v).setDepth(depth).setFlipX(true));
+
+        // Corners
+        const cd = depth + 0.1;
+        if (assets.corners === 'rondin_ends') {
+            // Village/Plage: pre-baked rondin end sprites (8 pieces)
+            const ends = [
+                ['corner_tl_v', tx - half,            ty + half],
+                ['corner_tl_h', tx - bw + half,       ty - half],
+                ['corner_tr_v', tx + tw + half,        ty + half],
+                ['corner_tr_h', tx + tw + bw - half,   ty - half],
+                ['corner_bl_v', tx - half,             ty + th - half],
+                ['corner_bl_h', tx - bw + half,        ty + th + half],
+                ['corner_br_v', tx + tw + half,         ty + th - half],
+                ['corner_br_h', tx + tw + bw - half,    ty + th + half],
+            ];
+            for (const [key, cx, cy] of ends) {
+                if (this.scene.textures.exists(key)) {
+                    all.push(this.scene.add.sprite(cx, cy, key).setDepth(cd));
+                }
+            }
+        } else {
+            // Parc/Colline/Docks: 4 corner sprites (pre-flipped)
+            const prefix = 'border_' + this.terrainId + '_corner_';
+            const cornerDefs = [
+                [prefix + 'tl', tx - half, ty - half],
+                [prefix + 'tr', tx + tw + half, ty - half],
+                [prefix + 'bl', tx - half, ty + th + half],
+                [prefix + 'br', tx + tw + half, ty + th + half],
+            ];
+            for (const [key, cx, cy] of cornerDefs) {
+                if (this.scene.textures.exists(key)) {
+                    all.push(this.scene.add.sprite(cx, cy, key).setDepth(cd));
+                }
+            }
         }
 
-        const g = this.scene.add.graphics().setDepth(3.6);
+        // Apply optional tint
+        if (assets.tint) {
+            for (const item of all) item.setTint(assets.tint);
+        }
+    }
+
+    // Procedural fallback when PixelLab textures are not loaded
+    _borderWoodFallback() {
+        const tx = this.tx, ty = this.ty;
+        const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
+        const bw = BORDER_WIDTH;
+        const g = this.scene.add.graphics().setDepth(3.5);
         const dark = 0x6B4B2A;
         const light = 0xA88B4A;
 
-        if (!hasTex) {
-            // Fallback: procedural base fill
-            g.fillStyle(0x8B6B3A, 1);
-            g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
-            g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
-            g.fillRect(tx - bw, ty, bw, th);
-            g.fillRect(tx + tw, ty, bw, th);
-        }
+        g.fillStyle(0x8B6B3A, 1);
+        g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
+        g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
+        g.fillRect(tx - bw, ty, bw, th);
+        g.fillRect(tx + tw, ty, bw, th);
 
-        // Wood grain overlay (horizontal lines on H borders, vertical on V)
         g.fillStyle(dark, 0.2);
         for (let gy = 0; gy < bw; gy += 2) {
             g.fillRect(tx - bw, ty - bw + gy, tw + bw * 2, 0.8);
@@ -1270,275 +1278,9 @@ export default class TerrainRenderer {
             g.fillRect(tx + tw + gx, ty, 0.8, th);
         }
 
-        // Plank joints
-        g.fillStyle(dark, 0.35);
-        for (let jx = tx - bw; jx < tx + tw + bw; jx += 30 + this._rng() * 10) {
-            g.fillRect(jx, ty - bw, 1.5, bw);
-            g.fillRect(jx, ty + th, 1.5, bw);
-        }
-        for (let jy = ty; jy < ty + th; jy += 30 + this._rng() * 10) {
-            g.fillRect(tx - bw, jy, bw, 1.5);
-            g.fillRect(tx + tw, jy, bw, 1.5);
-        }
-
-        // Highlight
         g.fillStyle(light, 0.25);
         g.fillRect(tx - bw, ty - bw, tw + bw * 2, 1.5);
         g.fillRect(tx - bw, ty, 1.5, th);
-
-        // Corner nails
-        this._drawNails(g, tx, ty, tw, th, bw);
-    }
-
-    _drawNails(g, tx, ty, tw, th, bw) {
-        const nailPositions = [
-            [tx - bw / 2, ty - bw / 2],
-            [tx + tw + bw / 2, ty - bw / 2],
-            [tx - bw / 2, ty + th + bw / 2],
-            [tx + tw + bw / 2, ty + th + bw / 2],
-            // Mid-points
-            [tx + tw / 2, ty - bw / 2],
-            [tx + tw / 2, ty + th + bw / 2],
-            [tx - bw / 2, ty + th / 2],
-            [tx + tw + bw / 2, ty + th / 2],
-        ];
-        for (const [nx, ny] of nailPositions) {
-            g.fillStyle(0x606058, 0.8); g.fillCircle(nx, ny, 2.5);
-            g.fillStyle(0x909088, 0.5); g.fillCircle(nx - 0.5, ny - 0.5, 1);
-        }
-    }
-
-    // --- ROPE (Plage) - Corde de chanvre sur piquets ---
-    _borderRope() {
-        const tx = this.tx, ty = this.ty;
-        const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
-        const bw = BORDER_WIDTH;
-        const g = this.scene.add.graphics().setDepth(3.5);
-
-        const postSpacing = 35;
-        const ropeColor = 0xC4A060;
-        const ropeDark = 0x9A7A40;
-        const postColor = 0x8B6B4A;
-
-        // Draw rope (thick, slightly wavy)
-        const drawRopeSegment = (x1, y1, x2, y2) => {
-            const isHorizontal = Math.abs(y1 - y2) < 2;
-            const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-            const steps = Math.ceil(len / 2);
-
-            for (let i = 0; i < steps; i++) {
-                const t = i / steps;
-                const x = x1 + (x2 - x1) * t;
-                const y = y1 + (y2 - y1) * t;
-                const sag = Math.sin(t * Math.PI) * 2; // slight sag
-
-                const rx = isHorizontal ? x : x + sag;
-                const ry = isHorizontal ? y + sag : y;
-
-                // Rope strand colors (alternating for twist effect)
-                const c = (Math.floor(i / 3) % 2 === 0) ? ropeColor : ropeDark;
-                g.fillStyle(c, 0.85);
-                g.fillRect(rx - 1.5, ry - 1.5, 3, 3);
-            }
-        };
-
-        // Top rope
-        drawRopeSegment(tx - bw, ty - bw / 2, tx + tw + bw, ty - bw / 2);
-        // Bottom rope
-        drawRopeSegment(tx - bw, ty + th + bw / 2, tx + tw + bw, ty + th + bw / 2);
-        // Left rope
-        drawRopeSegment(tx - bw / 2, ty - bw, tx - bw / 2, ty + th + bw);
-        // Right rope
-        drawRopeSegment(tx + tw + bw / 2, ty - bw, tx + tw + bw / 2, ty + th + bw);
-
-        // Posts
-        for (let px = tx; px <= tx + tw; px += postSpacing) {
-            this._drawPost(g, px, ty - bw / 2, postColor);
-            this._drawPost(g, px, ty + th + bw / 2, postColor);
-        }
-        for (let py = ty; py <= ty + th; py += postSpacing) {
-            this._drawPost(g, tx - bw / 2, py, postColor);
-            this._drawPost(g, tx + tw + bw / 2, py, postColor);
-        }
-
-        // Corner posts (larger)
-        const corners = [
-            [tx - bw / 2, ty - bw / 2], [tx + tw + bw / 2, ty - bw / 2],
-            [tx - bw / 2, ty + th + bw / 2], [tx + tw + bw / 2, ty + th + bw / 2]
-        ];
-        for (const [cx, cy] of corners) {
-            g.fillStyle(postColor, 1); g.fillCircle(cx, cy, 5);
-            g.fillStyle(0xA88B5A, 0.5); g.fillCircle(cx - 1, cy - 1, 2);
-        }
-    }
-
-    _drawPost(g, x, y, color) {
-        g.fillStyle(color, 0.9);
-        g.fillCircle(x, y, 3.5);
-        g.fillStyle(0xB09060, 0.4);
-        g.fillCircle(x - 0.5, y - 0.5, 1.5);
-    }
-
-    // --- HEDGE (Parc) - Haie de buis taillee ---
-    _borderHedge() {
-        const tx = this.tx, ty = this.ty;
-        const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
-        const bw = BORDER_WIDTH + 2; // slightly wider
-        const g = this.scene.add.graphics().setDepth(3.5);
-
-        const hedgeBase = 0x3A6A2A;
-        const hedgeLight = 0x5A8A3A;
-        const hedgeDark = 0x2A5A1A;
-
-        // Base hedge shape
-        g.fillStyle(hedgeBase, 1);
-        g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
-        g.fillRect(tx - bw, ty, bw, th);
-        g.fillRect(tx + tw, ty, bw, th);
-
-        // Leafy texture (random circles for bush effect)
-        const drawLeaves = (rx, ry, rw, rh) => {
-            for (let i = 0; i < rw * rh / 12; i++) {
-                const lx = rx + this._rng() * rw;
-                const ly = ry + this._rng() * rh;
-                const color = this._rng() > 0.5 ? hedgeLight : hedgeDark;
-                g.fillStyle(color, 0.5 + this._rng() * 0.3);
-                g.fillCircle(lx, ly, 1.5 + this._rng() * 2);
-            }
-        };
-
-        drawLeaves(tx - bw, ty - bw, tw + bw * 2, bw);
-        drawLeaves(tx - bw, ty + th, tw + bw * 2, bw);
-        drawLeaves(tx - bw, ty, bw, th);
-        drawLeaves(tx + tw, ty, bw, th);
-
-        // Top highlight (light catching top of hedge)
-        g.fillStyle(hedgeLight, 0.3);
-        g.fillRect(tx - bw, ty - bw, tw + bw * 2, 2);
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, 2);
-
-        // Trim line (darker base)
-        g.fillStyle(hedgeDark, 0.4);
-        g.fillRect(tx - bw, ty - 1, tw + bw * 2, 1);
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, 1);
-        g.fillRect(tx - 1, ty, 1, th);
-        g.fillRect(tx + tw, ty, 1, th);
-    }
-
-    // --- STONE (Colline) - Muret provencal en pierres seches ---
-    _borderStone() {
-        const tx = this.tx, ty = this.ty;
-        const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
-        const bw = BORDER_WIDTH + 1;
-        const hasTex = this.scene.textures.exists('border_stone');
-
-        if (hasTex) {
-            const depth = 3.5;
-            // TileSprite borders using loaded stone texture
-            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty - bw + bw / 2,
-                tw + bw * 2, bw, 'border_stone').setDepth(depth);
-            this.scene.add.tileSprite(tx - bw + (tw + bw * 2) / 2, ty + th + bw / 2,
-                tw + bw * 2, bw, 'border_stone').setDepth(depth);
-            this.scene.add.tileSprite(tx - bw + bw / 2, ty + th / 2,
-                bw, th, 'border_stone').setDepth(depth);
-            this.scene.add.tileSprite(tx + tw + bw / 2, ty + th / 2,
-                bw, th, 'border_stone').setDepth(depth);
-        }
-
-        const g = this.scene.add.graphics().setDepth(3.6);
-
-        if (!hasTex) {
-            // Fallback: procedural stacked stones
-            const stoneColors = [0xB0A888, 0xC4B898, 0x9A9070, 0xA8A080, 0xD0C8A8];
-            const drawStoneWall = (startX, startY, length, isHorizontal) => {
-                let pos = 0;
-                while (pos < length) {
-                    const sw = isHorizontal ? (6 + this._rng() * 8) : bw - 1;
-                    const sh = isHorizontal ? bw - 1 : (6 + this._rng() * 8);
-                    const sx = isHorizontal ? startX + pos : startX;
-                    const sy = isHorizontal ? startY : startY + pos;
-                    const color = stoneColors[Math.floor(this._rng() * stoneColors.length)];
-                    g.fillStyle(color, 0.9);
-                    g.fillRoundedRect(sx, sy, sw, sh, 1);
-                    g.fillStyle(0x3A2E28, 0.15);
-                    g.fillRect(sx + sw - 1, sy + 1, 1, sh - 1);
-                    g.fillRect(sx + 1, sy + sh - 1, sw - 1, 1);
-                    g.fillStyle(0xFFFFFF, 0.08);
-                    g.fillRect(sx, sy, sw, 1);
-                    g.fillRect(sx, sy, 1, sh);
-                    pos += isHorizontal ? sw + 1 : sh + 1;
-                }
-            };
-            drawStoneWall(tx - bw, ty - bw, tw + bw * 2, true);
-            drawStoneWall(tx - bw, ty + th, tw + bw * 2, true);
-            drawStoneWall(tx - bw, ty, th, false);
-            drawStoneWall(tx + tw, ty, th, false);
-        }
-
-        // Mortar lines overlay (subtle, works on both textured and procedural)
-        g.fillStyle(0x8A8060, 0.2);
-        g.fillRect(tx - bw, ty, tw + bw * 2, 0.5);
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, 0.5);
-    }
-
-    // --- METAL (Docks) - Rails metalliques avec rivets ---
-    _borderMetal() {
-        const tx = this.tx, ty = this.ty;
-        const tw = TERRAIN_WIDTH, th = TERRAIN_HEIGHT;
-        const bw = BORDER_WIDTH;
-        const g = this.scene.add.graphics().setDepth(3.5);
-
-        const metalBase = 0x5A5A50;
-        const metalLight = 0x808078;
-        const metalDark = 0x3A3A35;
-
-        // Main rail shape
-        g.fillStyle(metalBase, 1);
-        g.fillRect(tx - bw, ty - bw, tw + bw * 2, bw);
-        g.fillRect(tx - bw, ty + th, tw + bw * 2, bw);
-        g.fillRect(tx - bw, ty, bw, th);
-        g.fillRect(tx + tw, ty, bw, th);
-
-        // Brushed metal effect (horizontal lines)
-        for (let ly = 0; ly < bw; ly += 1.5) {
-            g.fillStyle(ly % 3 === 0 ? metalLight : metalDark, 0.15);
-            g.fillRect(tx - bw, ty - bw + ly, tw + bw * 2, 0.8);
-            g.fillRect(tx - bw, ty + th + ly, tw + bw * 2, 0.8);
-        }
-        for (let lx = 0; lx < bw; lx += 1.5) {
-            g.fillStyle(lx % 3 === 0 ? metalLight : metalDark, 0.15);
-            g.fillRect(tx - bw + lx, ty, 0.8, th);
-            g.fillRect(tx + tw + lx, ty, 0.8, th);
-        }
-
-        // Edge bevel (bright top, dark bottom)
-        g.fillStyle(metalLight, 0.4);
-        g.fillRect(tx - bw, ty - bw, tw + bw * 2, 1.5);
-        g.fillStyle(metalDark, 0.5);
-        g.fillRect(tx - bw, ty - 1, tw + bw * 2, 1.5);
-        g.fillRect(tx - bw, ty + th + bw - 1, tw + bw * 2, 1.5);
-
-        // Rivets
-        const rivetSpacing = 20;
-        for (let rx = tx - bw / 2; rx <= tx + tw + bw / 2; rx += rivetSpacing) {
-            this._drawRivet(g, rx, ty - bw / 2);
-            this._drawRivet(g, rx, ty + th + bw / 2);
-        }
-        for (let ry = ty; ry <= ty + th; ry += rivetSpacing) {
-            this._drawRivet(g, tx - bw / 2, ry);
-            this._drawRivet(g, tx + tw + bw / 2, ry);
-        }
-
-        // Weld marks (subtle)
-        g.lineStyle(1, metalDark, 0.2);
-        g.strokeRect(tx, ty, tw, th);
-    }
-
-    _drawRivet(g, x, y) {
-        g.fillStyle(0x707068, 0.9); g.fillCircle(x, y, 2.5);
-        g.fillStyle(0x909088, 0.4); g.fillCircle(x - 0.5, y - 0.5, 1.2);
-        g.fillStyle(0x3A3A35, 0.3); g.fillCircle(x + 0.5, y + 0.5, 1);
     }
 
     // ============================================================

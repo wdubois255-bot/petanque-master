@@ -670,6 +670,16 @@ export default class PetanqueEngine {
         const winnerName = this._teamName(winner);
         this._showMessage(`${winnerName} ${winner === 'player' ? 'gagnez' : 'gagne'} ${points} point${points > 1 ? 's' : ''} !`);
 
+        // Floating "+X" text above cochonnet
+        if (this.cochonnet && this.cochonnet.isAlive) {
+            this._showShotLabel(this.cochonnet, `+${points}`, '#FFD700', 28);
+        }
+
+        // Emit tension event when score gets high (for music crossfade)
+        if (this.scores.player >= 10 || this.scores.opponent >= 10) {
+            this.scene.events.emit('match-tension', true);
+        }
+
         // Dramatic pause: 1.5s of suspense before showing score
         this.scene.events.emit('dramatic-pause');
         this.scene.time.delayedCall(1500, () => {
@@ -1081,9 +1091,9 @@ export default class PetanqueEngine {
         // Hitstop
         this._hitstopUntil = Date.now() + HITSTOP_CARREAU_MS;
 
-        // SFX + visuals + stronger shake for carreau
+        // SFX + visuals + stronger shake for carreau (Balatro-style punch)
         sfxCarreau();
-        this.scene.cameras.main.shake(120, 0.006);
+        this.scene.cameras.main.shake(150, 0.008);
         this.renderer.celebrateCarreau(ball);
     }
 

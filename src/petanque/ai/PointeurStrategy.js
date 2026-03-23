@@ -1,4 +1,5 @@
 import AIStrategy from './AIStrategy.js';
+import { POINTEUR_DESPERATION_CHANCE } from '../../utils/Constants.js';
 
 /**
  * Le Magicien: Le Pointeur (Le Chirurgien)
@@ -9,7 +10,7 @@ export default class PointeurStrategy extends AIStrategy {
     chooseTarget(cochonnet, sit) {
         // Ultra-rare desperation shot: only when losing 3+ points AND last ball
         if (!sit.aiHasPoint && sit.playerProjectedPoints >= 3 && sit.isLastBall) {
-            if (Math.random() < 0.3 && sit.bestPlayerBall) {
+            if (Math.random() < POINTEUR_DESPERATION_CHANCE && sit.bestPlayerBall) {
                 return this._makeShot(sit.bestPlayerBall.ball);
             }
         }

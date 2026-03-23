@@ -320,8 +320,8 @@ export const BALL_SQUASH_RADIUS_BOOST = 2;
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 8;
 // Visual scale for sprites (smaller look on terrain)
-export const BALL_DISPLAY_SCALE = 0.75;
-export const COCHONNET_DISPLAY_SCALE = 0.6;
+export const BALL_DISPLAY_SCALE = 0.85;
+export const COCHONNET_DISPLAY_SCALE = 0.7;
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 
@@ -392,3 +392,16 @@ export const ROOKIE_MAX_STAT = 10;
 export const CROWD_GOOD_DISTANCE = 25;
 export const CROWD_BAD_DISTANCE = 90;
 export const CROWD_PROBABILITY = 0.6;
+
+// Save system
+export const SAVE_KEY = 'petanque_master_save';
+export const SAVE_VERSION = 2;
+
+// Daily challenge
+export const GALET_DAILY_REWARD = 75;
+
+// Gameplay constants (extracted from inline values)
+export const FOCUS_CHARGES_PER_MATCH = 5;
+export const HIT_PROB_SCALE = 500;
+export const POINTEUR_DESPERATION_CHANCE = 0.3;
+export const DIALOG_BOX_HEIGHT = 110;

@@ -1,4 +1,4 @@
-import { SHADOW_TEXT } from '../utils/Constants.js';
+import { SHADOW_TEXT, BARK_DURATION } from '../utils/Constants.js';
 
 /**
  * EngineRenderer — handles ALL visual effects for PetanqueEngine.
@@ -338,6 +338,33 @@ export default class EngineRenderer {
                 this._lastBestBallId = bestBall.id;
             }
         }
+    }
+
+    // ================================================================
+    // BARK (AI speech bubble)
+    // ================================================================
+
+    showBark(text, isGood) {
+        const x = this.scene.scale.width - 80;
+        const y = 60;
+        const color = isGood ? '#6B8E4E' : '#C44B3F';
+        const bubble = this.scene.add.text(x, y, text, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+            backgroundColor: color, padding: { x: 8, y: 4 },
+            wordWrap: { width: 140 }
+        }).setOrigin(0.5).setDepth(100).setAlpha(0);
+
+        this.scene.tweens.add({
+            targets: bubble, alpha: 1, duration: 200,
+            onComplete: () => {
+                this.scene.time.delayedCall(BARK_DURATION, () => {
+                    this.scene.tweens.add({
+                        targets: bubble, alpha: 0, duration: 300,
+                        onComplete: () => bubble.destroy()
+                    });
+                });
+            }
+        });
     }
 
     // ================================================================

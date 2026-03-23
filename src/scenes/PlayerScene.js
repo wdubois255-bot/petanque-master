@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, ROOKIE_MAX_POINTS } from '../utils/Constants.js';
-import { loadSave, setSelectedBoule, setSelectedCochonnet, formatPlaytime } from '../utils/SaveManager.js';
+import { loadSave, setSelectedBoule, setSelectedCochonnet, formatPlaytime, getStats } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -815,6 +815,83 @@ export default class PlayerScene extends Phaser.Scene {
                 color: CSS.CREME, shadow: SHADOW
             }).setOrigin(0, 0.5).setDepth(6));
         });
+
+        // ===== COLLECTION PROGRESS =====
+        const collY = charsY + 18 + Math.ceil(unlocked.length / charCols) * 28 + 12;
+        this._addContent(this.add.text(x, collY, 'COLLECTION', {
+            fontFamily: FONT_PIXEL, fontSize: '10px', color: CSS.OR, shadow: SHADOW
+        }).setDepth(5));
+
+        const totalChars = 12;
+        const totalTerrains = 5;
+        const totalBoules = 16;
+        const totalCochonnets = 6;
+        const unlockedChars = (save.unlockedCharacters || []).length;
+        const unlockedTerrains = (save.unlockedTerrains || []).length;
+        const unlockedBoules = (save.unlockedBoules || []).length;
+        const unlockedCochonnets = (save.unlockedCochonnets || []).length;
+        const totalItems = totalChars + totalTerrains + totalBoules + totalCochonnets;
+        const unlockedItems = unlockedChars + unlockedTerrains + unlockedBoules + unlockedCochonnets;
+        const pct = Math.round(unlockedItems / totalItems * 100);
+
+        const collItems = [
+            { label: 'Persos', val: unlockedChars, max: totalChars, color: 0x87CEEB },
+            { label: 'Terrains', val: unlockedTerrains, max: totalTerrains, color: 0x6B8E4E },
+            { label: 'Boules', val: unlockedBoules, max: totalBoules, color: 0xD4A574 },
+            { label: 'Cochonnets', val: unlockedCochonnets, max: totalCochonnets, color: 0xFFD700 }
+        ];
+
+        // Overall bar
+        const barW = CONTENT_W - 40;
+        const barX = x;
+        const barY = collY + 18;
+        const cg = this.add.graphics().setDepth(5);
+        cg.fillStyle(0x1A1510, 0.6);
+        cg.fillRoundedRect(barX, barY, barW, 12, 3);
+        cg.fillStyle(0xFFD700, 0.8);
+        cg.fillRoundedRect(barX, barY, barW * (pct / 100), 12, 3);
+        cg.fillStyle(0xFFFFFF, 0.15);
+        cg.fillRect(barX + 1, barY + 1, barW * (pct / 100) - 2, 5);
+        this._addContent(cg);
+
+        this._addContent(this.add.text(barX + barW / 2, barY + 6, `${pct}% complet`, {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color: CSS.CREME, shadow: SHADOW
+        }).setOrigin(0.5).setDepth(6));
+
+        collItems.forEach((item, i) => {
+            const ix = x + i * ((CONTENT_W - 40) / 4);
+            const iy = barY + 18;
+            this._addContent(this.add.text(ix, iy, `${item.label}: ${item.val}/${item.max}`, {
+                fontFamily: 'monospace', fontSize: '8px',
+                color: item.val >= item.max ? '#FFD700' : CSS.GRIS, shadow: SHADOW
+            }).setDepth(6));
+        });
+
+        // Persistent stats summary
+        const ps = getStats();
+        if (ps.totalMatches > 0) {
+            const psY = barY + 40;
+            this._addContent(this.add.text(x, psY, 'STATISTIQUES GLOBALES', {
+                fontFamily: FONT_PIXEL, fontSize: '10px', color: CSS.OR, shadow: SHADOW
+            }).setDepth(5));
+
+            const psItems = [
+                `Matchs joues: ${ps.totalMatches}`,
+                `Victoires: ${ps.totalWins} (${Math.round((ps.totalWins / ps.totalMatches) * 100)}%)`,
+                `Carreaux: ${ps.totalCarreaux || 0}`,
+                `Biberons: ${ps.totalBiberons || 0}`,
+                `Galets gagnes: ${ps.totalGaletsEarned || 0}`,
+                `Meilleure mene: ${ps.bestMeneScore || 0} pts`
+            ];
+
+            psItems.forEach((txt, i) => {
+                const col = i % 3;
+                const row = Math.floor(i / 3);
+                this._addContent(this.add.text(x + col * 195, psY + 16 + row * 16, txt, {
+                    fontFamily: 'monospace', fontSize: '9px', color: CSS.CREME, shadow: SHADOW
+                }).setDepth(6));
+            });
+        }
     }
 
     // ================================================================
