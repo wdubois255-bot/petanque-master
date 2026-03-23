@@ -21,6 +21,8 @@ function defaultSaveData() {
         totalCarreaux: 0,
         arcadeProgress: 0,
         arcadePerfect: false,
+        arcadeIntroSeen: false,
+        milestonesUnlocked: [],
         selectedBoule: "acier",
         selectedCochonnet: "classique",
         tutorialSeen: false,
@@ -203,6 +205,28 @@ export function setArcadeProgress(round) {
     const save = loadSave();
     if (round > save.arcadeProgress) save.arcadeProgress = round;
     saveSave(save);
+}
+
+export function setArcadeIntroSeen() {
+    const save = loadSave();
+    save.arcadeIntroSeen = true;
+    saveSave(save);
+}
+
+export function isMilestoneUnlocked(milestoneId) {
+    const save = loadSave();
+    return (save.milestonesUnlocked || []).includes(milestoneId);
+}
+
+export function unlockMilestone(milestoneId) {
+    const save = loadSave();
+    if (!save.milestonesUnlocked) save.milestonesUnlocked = [];
+    if (!save.milestonesUnlocked.includes(milestoneId)) {
+        save.milestonesUnlocked.push(milestoneId);
+        saveSave(save);
+        return true; // newly unlocked
+    }
+    return false;
 }
 
 export function isCharacterUnlocked(charId) {
