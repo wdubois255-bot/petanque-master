@@ -20,7 +20,8 @@ import {
     SPEED_THRESHOLD,
     GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
     PALET_THRESHOLD,
-    CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED
+    CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED,
+    CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
@@ -1144,7 +1145,7 @@ export default class PetanqueEngine {
 
         // SFX + visuals + stronger shake for carreau (Balatro-style punch)
         sfxCarreau();
-        this.scene.cameras.main.shake(150, 0.008);
+        this.scene.cameras.main.shake(CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY);
         this.renderer.celebrateCarreau(ball);
     }
 
