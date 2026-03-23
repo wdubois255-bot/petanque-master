@@ -735,12 +735,12 @@ milestonesUnlocked: []
 
 ---
 
-## AXE 5 — PUBLICATION & POLISH (~2h)
+## AXE 5 — PUBLICATION & POLISH ✅ TERMINÉ (23 mars 2026)
 
 > Préparer le jeu pour itch.io. Build, performance, derniers détails.
 > **Impact** : Le jeu fonctionne partout, charge vite, fait pro.
 
-### 5.1 Optimiser le build Vite
+### ✅ 5.1 Optimiser le build Vite
 
 **Fichier** : `vite.config.js`
 **Action** : Après le nettoyage de l'axe 1, vérifier que la config est optimale :
@@ -773,7 +773,7 @@ export default defineConfig({
 
 ---
 
-### 5.2 Meta tags et page HTML
+### ✅ 5.2 Meta tags et page HTML
 
 **Fichier** : `index.html`
 **Action** : Vérifier/ajouter les meta tags essentiels pour le web :
@@ -789,7 +789,7 @@ export default defineConfig({
 
 ---
 
-### 5.3 Écran de chargement informatif
+### ✅ 5.3 Écran de chargement informatif
 
 **Fichier** : `src/scenes/BootScene.js`
 **Action** : L'écran de chargement existe déjà avec des tips. Vérifier que :
@@ -801,7 +801,7 @@ export default defineConfig({
 
 ---
 
-### 5.4 Pause menu en jeu
+### ✅ 5.4 Pause menu en jeu
 
 **Fichier** : `src/scenes/PetanqueScene.js`
 **Action** : Ajouter un bouton pause / touche Échap qui ouvre un menu :
@@ -833,7 +833,7 @@ export const PAUSE_KEY = 'P';
 
 ---
 
-### 5.5 Validation performance finale
+### ✅ 5.5 Validation performance finale
 
 **Action manuelle** (pas de code) :
 1. `npm run build` — vérifier que le build passe sans erreur
@@ -847,7 +847,7 @@ export const PAUSE_KEY = 'P';
 
 ---
 
-### 5.6 Préparation itch.io
+### ✅ 5.6 Préparation itch.io
 
 **Action manuelle** :
 1. `npm run build` → le dossier `dist/` contient le jeu complet
@@ -873,8 +873,8 @@ export const PAUSE_KEY = 'P';
 | 2. Game Feel & Juice | 8 tâches | ~3h | **Le jeu "sent" bien** |
 | 3. Tutoriel & FTUE | 4 tâches | ~3h | **Accessibilité nouveaux joueurs** |
 | 4. Narrative Arcade | 5 tâches | ~4h | **Le joueur joue pour l'histoire** |
-| 5. Publication & Polish | 6 tâches | ~2h | Prêt pour distribution |
-| **TOTAL** | **32 tâches** | **~15h** | **100/100** |
+| 5. Publication & Polish | 6 tâches ✅ | ~2h | Prêt pour distribution |
+| **TOTAL** | **32 tâches ✅ TOUTES TERMINÉES** | **~15h** | **🎉 100/100** |
 
 ## ORDRE D'EXÉCUTION RECOMMANDÉ
 
