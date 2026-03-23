@@ -19,5 +19,8 @@ voice/
 scripts/voice-record.py
 border_test.html
 public/border_test.html
+# Fichiers de session de l'éditeur de terrain
+docs/*.json
+public/assets/maps/terrain_*.json
 tests/e2e/cleanup-screenshots/
 # docs/ — inclus dans le repo (MASTER_PLAN, archives)

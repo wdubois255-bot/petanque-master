@@ -21,6 +21,7 @@
 | PLAN_100 | COMPLET | Score 100/100 — 5 axes (progression, visuel, audio, polish, publication) |
 | Playtest 23/03 | COMPLET | Bugs corriges : game freeze fin de partie + tutoriel invisible |
 | PLAN_PHASE2 | COMPLET | Physique polish (A), decors visuels (B), coherence docs (C) |
+| Session editeur | COMPLET | Editeur terrain HTML (terrain_editor.html), 5 terrains redessinés à la main, nouveaux sprites (pastis, parasol, lavande, glaciere, willows, dusty ground), import/export session JSON |
 
 ### Personnages (6 : Rookie + 5 adversaires)
 | Perso | Archetype | Stats (P/Pu/E/SF) | Capacite | Sprite |
