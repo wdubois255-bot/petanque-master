@@ -364,19 +364,30 @@ export default class EngineRenderer {
         const x = this.scene.scale.width - 80;
         const y = 60;
         const color = isGood ? '#6B8E4E' : '#C44B3F';
+        const bgColor = isGood ? 0x6B8E4E : 0xC44B3F;
+
         const bubble = this.scene.add.text(x, y, text, {
             fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
-            backgroundColor: color, padding: { x: 8, y: 4 },
+            padding: { x: 8, y: 4 },
             wordWrap: { width: 140 }
         }).setOrigin(0.5).setDepth(100).setAlpha(0);
 
+        // Fond semi-transparent derrière le bark pour meilleure lisibilité
+        const bw = bubble.width + 12;
+        const bh = bubble.height + 4;
+        const bg = this.scene.add.graphics().setDepth(99).setAlpha(0);
+        bg.fillStyle(0x3A2E28, 0.7);
+        bg.fillRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 4);
+        bg.fillStyle(bgColor, 0.85);
+        bg.fillRoundedRect(x - bw / 2 + 1, y - bh / 2 + 1, bw - 2, bh - 2, 3);
+
         this.scene.tweens.add({
-            targets: bubble, alpha: 1, duration: 200,
+            targets: [bubble, bg], alpha: 1, duration: 200,
             onComplete: () => {
                 this.scene.time.delayedCall(BARK_DURATION, () => {
                     this.scene.tweens.add({
-                        targets: bubble, alpha: 0, duration: 300,
-                        onComplete: () => bubble.destroy()
+                        targets: [bubble, bg], alpha: 0, duration: 300,
+                        onComplete: () => { bubble.destroy(); bg.destroy(); }
                     });
                 });
             }
