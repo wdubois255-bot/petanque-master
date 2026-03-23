@@ -249,6 +249,20 @@ export default class BootScene extends Phaser.Scene {
         this.load.spritesheet('grid_table', `${decorBase}pixellab-pixel-art-small-outdoor-table--1774282453490.png`, { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('grid_banc_td', `${decorBase}pixellab-pixel-art-wooden-bench--top-do-1774281600119.png`, { frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('grid_sac', `${decorBase}pixellab-pixel-art-p-tanque-ball-bag--t-1774282033460.png`, { frameWidth: 64, frameHeight: 64 });
+        // Nouveaux décors provençaux (générés session PLAN_PHASE2)
+        this.load.spritesheet('grid_items_retro', `${BASE}assets/sprites/v2_new/ui/pixellab-Top-down-retro-8-bit-style-bro-1774223172989.png`, { frameWidth: 64, frameHeight: 64 });
+        // Anciens "inutilisés" promus en décors actifs
+        this.load.image('decor_willow',         `${decorBase}_unused/decor_tree_willow.png`);
+        this.load.spritesheet('grid_scoreboard',`${decorBase}_unused/pixellab-pixel-art-small-p-tanque-score-1774283062999.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_dusty',     `${decorBase}_unused/pixellab-pixel-art-dusty-ground-tile-fo-1774281809868.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.image('grid_pastis',   `${decorBase}grid_pastis.png`);
+        this.load.image('grid_parasol',  `${decorBase}grid_parasol.png`);
+        this.load.image('grid_lavande',  `${decorBase}grid_lavande.png`);
+        this.load.image('grid_glaciere', `${decorBase}grid_glaciere.png`);
+        // Banc et fontaine v2 (grids ui/)
+        const uiBase = `${BASE}assets/sprites/v2_new/ui/`;
+        this.load.spritesheet('grid_fontaine_pierre', `${uiBase}pixellab-pixel-art-stone-fountain--roun-1774270327746.png`, { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('grid_banc_v3', `${uiBase}pixellab-pixel-art-wooden-park-bench--w-1774269873380.png`, { frameWidth: 64, frameHeight: 64 });
 
         // Audio - SFX (ElevenLabs generated)
         const sfxFiles = [

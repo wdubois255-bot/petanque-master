@@ -19,6 +19,5 @@ voice/
 scripts/voice-record.py
 border_test.html
 public/border_test.html
-public/terrain_editor.html
 tests/e2e/cleanup-screenshots/
 # docs/ — inclus dans le repo (MASTER_PLAN, archives)

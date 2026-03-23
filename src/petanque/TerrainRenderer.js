@@ -73,72 +73,113 @@ const DECOR_FRAMES = {
     stones:   { key: 'grid_stones',   pool: [1, 2, 5, 6, 9],    fallback: null },
     table:    { key: 'grid_table',    pool: [0, 1, 4, 5],       fallback: null },
     banc_td:  { key: 'grid_banc_td',  pool: [0, 1, 4, 5, 8, 9], fallback: null },
-    sac:      { key: 'grid_sac',      pool: [0, 2, 4, 5],       fallback: null },
+    sac:         { key: 'grid_sac',         pool: [0, 2, 4, 5, 15],   fallback: null },
+    items_retro: { key: 'grid_items_retro', pool: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], fallback: null },
+    // Anciens "inutilisés" promus
+    willow:       { key: 'decor_willow',    pool: [0],                        fallback: null },
+    scoreboard:   { key: 'grid_scoreboard', pool: [0,1,2,4,5,8,9,12,13],     fallback: null },
+    dusty_ground: { key: 'grid_dusty',      pool: [0,1,2,4,5,8,9,12,13,14],  fallback: null },
+    // Nouveaux décors provençaux (images simples générées)
+    pastis_decor: { key: 'grid_pastis',   pool: [0], fallback: null },
+    parasol:      { key: 'grid_parasol',  pool: [0], fallback: null },
+    lavande:      { key: 'grid_lavande',  pool: [0], fallback: null },
+    glaciere:     { key: 'grid_glaciere', pool: [0], fallback: null },
+    // Grids v2
+    fontaine_pierre: { key: 'grid_fontaine_pierre', pool: [0, 4, 8, 12], fallback: 'decor_fontaine' },
+    banc_v3:         { key: 'grid_banc_v3',          pool: [0, 1, 4, 5], fallback: 'decor_banc' },
 };
 
 // Decor placement blueprints per terrain (x relative to terrainX, 'R+N' = right of terrain)
 const TERRAIN_DECOR = {
     village: [
-        { type: 'olive',    x: -70,   y: 100, scale: 2.0, depth: 0.4 },
-        { type: 'olive',    x: -40,   y: 250, scale: 1.6, depth: 0.55 },
-        { type: 'banc_td',  x: -46,   y: 310, scale: 1.5, depth: 0.7 },
-        { type: 'fontaine', x: 'R+40',  y: 215, scale: 1.5, depth: 0.6 },
-        { type: 'olive',    x: 'R+75',  y: 130, scale: 1.8, depth: 0.45, flipX: true },
-        { type: 'table',    x: 'R+55',  y: 310, scale: 1.4, depth: 0.65, flipX: true },
-        // New: ball bag near throwing circle
-        { type: 'sac',      x: -30,   y: 410, scale: 1.2, depth: 0.75 },
-        // New: scattered stones on ground sides
-        { type: 'stones',   x: -55,   y: 370, scale: 1.0, depth: 0.3, alpha: 0.6 },
-        { type: 'stones',   x: 'R+60',  y: 380, scale: 0.9, depth: 0.3, alpha: 0.5, flipX: true },
+        // Layout conçu dans l'éditeur de terrain
+        { type: 'olive',       x: -54,    y: 76,  scale: 2.35, depth: 0.50, frame: 4 },
+        { type: 'olive',       x: -38,    y: 157, scale: 1.8,  depth: 0.50, frame: 4 },
+        { type: 'olive',       x: 'R+49', y: 168, scale: 2.0,  depth: 0.65, frame: 5 },
+        { type: 'olive',       x: 'R+31', y: 118, scale: 1.3,  depth: 0.50, frame: 5 },
+        { type: 'olive',       x: -39,    y: 406, scale: 1.55, depth: 0.50, frame: 4 },
+        { type: 'banc_td',     x: 35,     y: 10,  scale: 1.1,  depth: 0.50, frame: 3 },
+        { type: 'banc_td',     x: 137,    y: 10,  scale: 1.1,  depth: 0.50, frame: 3 },
+        { type: 'herbe',       x: 79,     y: 20,  scale: 0.55, depth: 0.50, frame: 6 },
+        { type: 'herbe',       x: 'R+10', y: 328, scale: 0.5,  depth: 1.00, frame: 7 },
+        { type: 'fontaine',    x: -32,    y: 376, scale: 1.05, depth: 0.50, frame: 8 },
+        { type: 'table',       x: 'R+22', y: 292, scale: 0.75, depth: 0.50, frame: 14 },
+        { type: 'sac',         x: 'R+17', y: 318, scale: 0.45, depth: 0.50, frame: 15 },
+        { type: 'items_retro', x: 'R+18', y: 266, scale: 0.5,  depth: 0.50, frame: 9 },
     ],
     parc: [
-        { type: 'tree',     x: -65,   y: 110, scale: 2.2, depth: 0.4 },
-        { type: 'tree',     x: -30,   y: 210, scale: 1.6, depth: 0.55 },
-        { type: 'banc_td',  x: -45,   y: 300, scale: 1.4, depth: 0.7 },
-        { type: 'tree',     x: 'R+70',  y: 130, scale: 2.0, depth: 0.4, flipX: true },
-        { type: 'tree',     x: 'R+45',  y: 260, scale: 1.5, depth: 0.55, flipX: true },
-        { type: 'banc_td',  x: 'R+35',  y: 350, scale: 1.3, depth: 0.7, flipX: true },
-        // New: grass tufts scattered around park
-        { type: 'herbe',    x: -80,   y: 170, scale: 1.0, depth: 0.35, alpha: 0.7 },
-        { type: 'herbe',    x: 'R+85',  y: 200, scale: 0.9, depth: 0.35, alpha: 0.6, flipX: true },
-        { type: 'herbe',    x: -60,   y: 380, scale: 0.8, depth: 0.65, alpha: 0.5 },
-        // New: ball bag
-        { type: 'sac',      x: 'R+30',  y: 420, scale: 1.1, depth: 0.75 },
+        // Layout conçu dans l'éditeur de terrain
+        { type: 'olive',   x: -41,    y: 73,  scale: 1.85, depth: 0.50, frame: 14 },
+        { type: 'olive',   x: -41,    y: 134, scale: 1.85, depth: 0.50, frame: 14 },
+        { type: 'olive',   x: -42,    y: 170, scale: 1.85, depth: 0.50, frame: 14 },
+        { type: 'olive',   x: -38,    y: 230, scale: 2.0,  depth: 0.50, frame: 14 },
+        { type: 'olive',   x: 'R+61', y: 220, scale: 1.85, depth: 0.50, frame: 10 },
+        { type: 'olive',   x: 'R+57', y: 159, scale: 1.85, depth: 0.30, frame: 10 },
+        { type: 'olive',   x: 'R+46', y: 101, scale: 2.0,  depth: 0.00, frame: 14 },
+        { type: 'banc_td', x: 29,     y: 15,  scale: 0.9,  depth: 0.50, frame: 1 },
+        { type: 'banc_td', x: 94,     y: 15,  scale: 0.9,  depth: 0.50, frame: 1 },
+        { type: 'banc_td', x: 156,    y: 15,  scale: 0.9,  depth: 0.50, frame: 1 },
+        { type: 'table',   x: -21,    y: 314, scale: 0.65, depth: 0.50, frame: 6 },
+        { type: 'herbe',   x: 'R+15', y: 269, scale: 0.6,  depth: 0.35, frame: 4 },
+        { type: 'herbe',   x: 'R+31', y: 275, scale: 0.6,  depth: 0.50, frame: 7 },
+        { type: 'sac',     x: -20,    y: 297, scale: 0.45, depth: 0.50, frame: 5 },
     ],
     colline: [
-        { type: 'olive', x: -70,   y: 100, scale: 2.2, depth: 0.4 },
-        { type: 'olive', x: -35,   y: 250, scale: 1.8, depth: 0.6 },
-        { type: 'olive', x: 'R+55',  y: 130, scale: 2.0, depth: 0.42, flipX: true },
-        { type: 'olive', x: 'R+80',  y: 280, scale: 1.7, depth: 0.58, flipX: true },
-        { type: 'olive', x: -90,   y: 60,  scale: 1.0, depth: 0.3, alpha: 0.5 },
-        { type: 'olive', x: 'R+100', y: 70, scale: 1.0, depth: 0.3, alpha: 0.5, flipX: true },
-        // New: scattered stones on dry hillside
-        { type: 'stones',   x: -50,   y: 340, scale: 1.1, depth: 0.5, alpha: 0.7 },
-        { type: 'stones',   x: 'R+65',  y: 360, scale: 1.0, depth: 0.5, alpha: 0.6, flipX: true },
-        { type: 'stones',   x: -75,   y: 180, scale: 0.7, depth: 0.3, alpha: 0.4 },
+        // Layout conçu dans l'éditeur de terrain
+        { type: 'olive',    x: -69,    y: 77,  scale: 2.6,  depth: 0.50, frame: 15 },
+        { type: 'olive',    x: -67,    y: 151, scale: 2.45, depth: 0.50, frame: 15 },
+        { type: 'olive',    x: -62,    y: 229, scale: 2.45, depth: 0.50, frame: 15 },
+        { type: 'olive',    x: -60,    y: 390, scale: 2.55, depth: 0.50, frame: 15 },
+        { type: 'olive',    x: 'R+71', y: 292, scale: 2.75, depth: 0.50, frame: 14 },
+        { type: 'olive',    x: 'R+70', y: 125, scale: 2.9,  depth: 0.50, frame: 14 },
+        { type: 'fontaine', x: 'R+55', y: 209, scale: 1.5,  depth: 0.00, frame: 1 },
+        { type: 'banc_td',  x: 89,     y: 12,  scale: 0.95, depth: 0.50, frame: 2 },
     ],
     plage: [
-        { type: 'tree',     x: -280,    y: 85,  scale: 1.2, depth: 0.4,  alpha: 0.4 },
-        { type: 'tree',     x: 'R+110', y: 75,  scale: 1.0, depth: 0.35, alpha: 0.35, flipX: true },
-        // Stones near beach edge
-        { type: 'stones',   x: -40,     y: 400, scale: 0.8, depth: 0.3,  alpha: 0.4 },
-        // Ball bag near throwing side
-        { type: 'sac',      x: -28,     y: 420, scale: 1.2, depth: 0.75 },
-        // Sparse grass tufts (sand atmosphere - low alpha)
-        { type: 'herbe',    x: -70,     y: 200, scale: 0.9, depth: 0.35, alpha: 0.35 },
-        { type: 'herbe',    x: 'R+80',  y: 250, scale: 0.8, depth: 0.35, alpha: 0.3, flipX: true },
-        // Bench and table on right side (spectators)
-        { type: 'banc_td',  x: 'R+45',  y: 340, scale: 1.4, depth: 0.7, flipX: true },
-        { type: 'table',    x: 'R+55',  y: 415, scale: 1.3, depth: 0.72, flipX: true },
+        // Layout conçu dans l'éditeur de terrain
+        { type: 'willow',       x: -75,    y: 111, scale: 2.85, depth: 0.50 },
+        { type: 'willow',       x: 'R+62', y: 157, scale: 2.25, depth: 0.50 },
+        { type: 'willow',       x: 'R+63', y: 242, scale: 2.25, depth: 0.50 },
+        { type: 'willow',       x: 'R+62', y: 327, scale: 2.25, depth: 0.50 },
+        { type: 'scoreboard',   x: -22,    y: 185, scale: 0.6,  depth: 0.50, frame: 8 },
+        { type: 'dusty_ground', x: -21,    y: 361, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'dusty_ground', x: -50,    y: 368, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'dusty_ground', x: -71,    y: 391, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'dusty_ground', x: -102,   y: 388, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'dusty_ground', x: -117,   y: 421, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'dusty_ground', x: -156,   y: 420, scale: 0.5,  depth: 0.50, frame: 14 },
+        { type: 'banc_td',      x: 'R+38', y: 98,  scale: 1.35, depth: 0.40, flipX: true, frame: 7 },
     ],
     docks: [
-        // Ball bag in industrial setting
-        { type: 'sac',      x: -35,     y: 400, scale: 1.1, depth: 0.7 },
-        // Industrial debris (stones as rubble)
-        { type: 'stones',   x: -55,     y: 360, scale: 1.0, depth: 0.5, alpha: 0.7 },
-        { type: 'stones',   x: 'R+60',  y: 375, scale: 1.1, depth: 0.5, alpha: 0.65, flipX: true },
-        // Score table
-        { type: 'table',    x: 'R+45',  y: 320, scale: 1.3, depth: 0.65, flipX: true },
+        // Layout conçu dans l'éditeur de terrain
+        { type: 'olive',   x: -42,    y: 40,  scale: 1.5,  depth: 0.25, frame: 8 },
+        { type: 'olive',   x: -42,    y: 70,  scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -43,    y: 122, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -41,    y: 179, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -42,    y: 233, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -43,    y: 280, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -43,    y: 341, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -43,    y: 395, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: -45,    y: 441, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'olive',   x: 'R+53', y: 126, scale: 2.3,  depth: 0.50, frame: 11 },
+        { type: 'olive',   x: 'R+60', y: 175, scale: 2.3,  depth: 0.50, frame: 11 },
+        { type: 'olive',   x: 'R+64', y: 234, scale: 2.3,  depth: 0.50, frame: 11 },
+        { type: 'olive',   x: 'R+61', y: 333, scale: 1.5,  depth: 0.50, frame: 8 },
+        { type: 'banc_v1', x: 'R+51', y: 288, scale: 0.8,  depth: 0.10, frame: 7 },
+        { type: 'herbe',   x: 15,     y: 11,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 47,     y: 12,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 77,     y: 13,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 109,    y: 11,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 139,    y: 12,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 168,    y: 11,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 'R+20', y: 18,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 'R+22', y: 42,  scale: 0.75, depth: 0.50, frame: 3 },
+        { type: 'herbe',   x: 'R+22', y: 62,  scale: 0.75, depth: 0.20, frame: 3 },
+        { type: 'herbe',   x: 'R+19', y: 10,  scale: 0.75, depth: 0.00, frame: 3 },
+        { type: 'herbe',   x: 'R+46', y: 12,  scale: 0.75, depth: 0.20, frame: 3 },
+        { type: 'herbe',   x: 'R+55', y: 30,  scale: 0.75, depth: 0.20, frame: 3 },
+        { type: 'herbe',   x: 'R+57', y: 48,  scale: 0.75, depth: 0.20, frame: 3 },
+        { type: 'herbe',   x: 'R+57', y: 74,  scale: 0.75, depth: 0.20, frame: 3 },
     ],
 };
 
@@ -302,7 +343,7 @@ export default class TerrainRenderer {
             }
 
             if (hasGrid) {
-                const frameIdx = decor.pool[Math.floor(this._rng() * decor.pool.length)];
+                const frameIdx = p.frame !== undefined ? p.frame : decor.pool[Math.floor(this._rng() * decor.pool.length)];
                 const img = s.add.image(px, p.y, decor.key, frameIdx);
                 img.setDepth(depth);
                 img.setScale(scale);
