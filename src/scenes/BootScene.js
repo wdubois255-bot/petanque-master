@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
 import { generateAllPortraits } from '../utils/PortraitGenerator.js';
 import { onSaveFailure } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import PortalSDK from '../utils/PortalSDK.js';
 
 const TIPS = [
     'Maintenez TAB pour voir le classement des boules.',
@@ -85,6 +86,7 @@ export default class BootScene extends Phaser.Scene {
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
         this.load.json('shop', `${BASE}data/shop.json`);
+        this.load.json('commentator', `${BASE}data/commentator.json`);
 
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
@@ -279,7 +281,10 @@ export default class BootScene extends Phaser.Scene {
         this.load.audio('music_title', `${BASE}assets/audio/music/title_theme.mp3`);
     }
 
-    create() {
+    async create() {
+        // Initialiser le Portal SDK (no-op en standalone/itch.io)
+        await PortalSDK.init();
+
         // Register save failure handler (shows warning on localStorage quota exceeded)
         onSaveFailure(() => {
             const activeScene = this.scene.manager.getScenes(true)[0];
@@ -358,6 +363,9 @@ export default class BootScene extends Phaser.Scene {
 
         // Generate procedural portraits for all characters
         generateAllPortraits(this);
+
+        // Signaler au SDK portail que le chargement est terminé (Poki)
+        PortalSDK.loadingFinished();
 
         this.scene.start('TitleScene');
     }

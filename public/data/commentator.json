@@ -1,0 +1,87 @@
+{
+  "premier_lancer": [
+    "Premier lancer de la mene !",
+    "C'est parti !",
+    "A vous de jouer !",
+    "On y va !"
+  ],
+  "bon_point": [
+    "Joli point !",
+    "Bien place !",
+    "Ca, c'est du beau jeu !",
+    "Belle boule !",
+    "Propre !"
+  ],
+  "tres_pres": [
+    "C'est serre !",
+    "On va devoir mesurer...",
+    "Impossible a departager a l'oeil !",
+    "Au millimetre !"
+  ],
+  "carreau": [
+    "CARREAU ! Magnifique !",
+    "Et c'est le carreau ! Parfait !",
+    "CLAC ! Carreau sur place !",
+    "Un carreau de maitre !"
+  ],
+  "ciseau": [
+    "CISEAU ! Deux d'un coup !",
+    "Le ciseau ! Exceptionnel !",
+    "Deux boules ejectees ! Le ciseau !"
+  ],
+  "palet": [
+    "Palet ! Il prend la place !",
+    "Et il chasse pour se placer !",
+    "Tire et remplace ! Le palet !"
+  ],
+  "biberon": [
+    "Biberon ! Le cochonnet bouge !",
+    "Oh ! Il a touche le but !",
+    "Biberon ! Tout change !"
+  ],
+  "contre": [
+    "Oh non ! Il touche sa propre boule !",
+    "Le contre ! Ca fait mal...",
+    "Aie ! Erreur de tir !",
+    "Contre ! C'est la tuile..."
+  ],
+  "trou": [
+    "Et... c'est le trou.",
+    "Completement a cote !",
+    "Le trou. On oublie et on passe.",
+    "Ca arrive aux meilleurs..."
+  ],
+  "match_point": [
+    "Match point !",
+    "Plus qu'un point pour la victoire !",
+    "On y est presque ! Match point !",
+    "La balle de match !"
+  ],
+  "tension": [
+    "Egalite ! La tension monte !",
+    "Score serre ! Tout se joue maintenant !",
+    "Rien n'est fait ! Egalite !",
+    "Les deux equipes au coude a coude !"
+  ],
+  "fanny": [
+    "13-0 ! La fanny !",
+    "Fanny ! Ca c'est de l'humiliation !",
+    "La fanny est consommee !"
+  ],
+  "comeback": [
+    "Quel retournement !",
+    "Il revient de loin !",
+    "Le comeback ! On y croit !"
+  ],
+  "derniere_boule": [
+    "Derniere boule de la mene !",
+    "Tout se joue sur ce lancer !",
+    "La derniere ! Concentration !"
+  ],
+  "victoire": [
+    "Et c'est gagne !",
+    "Victoire ! Bravo !",
+    "Le match est plie ! Felicitations !",
+    "VICTOIRE !"
+  ]
+}

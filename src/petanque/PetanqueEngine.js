@@ -28,7 +28,8 @@ import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
     sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore,
     startRollingSound, updateRollingSound, stopRollingSound,
-    sfxPalet, sfxCasquette, sfxCiseau, sfxBiberon, sfxContre, sfxTrou
+    sfxPalet, sfxCasquette, sfxCiseau, sfxBiberon, sfxContre, sfxTrou,
+    sfxCrowdGasp, sfxCrowdBoo, sfxCrowdCheer, sfxCrowdOoh
 } from '../utils/SoundManager.js';
 
 const STATES = {
@@ -75,6 +76,7 @@ export default class PetanqueEngine {
         this.onScore = null;
         this.onTurnChange = null;
         this.onAfterStop = null;
+        this.onShotResult = null; // (resultType: string, ball: Ball) => void
 
         // Aiming enabled flag
         this.aimingEnabled = false;
@@ -1183,6 +1185,7 @@ export default class PetanqueEngine {
         sfxCarreau();
         this.scene.cameras.main.shake(CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY);
         this.renderer.celebrateCarreau(ball);
+        if (this.onShotResult) this.onShotResult('carreau', ball);
     }
 
     // --- SHOT RESULT DETECTION (discreet feedback) ---
@@ -1217,6 +1220,7 @@ export default class PetanqueEngine {
                 if (this.matchStats && ball.team) this.matchStats.biberons[ball.team]++;
                 sfxBiberon();
                 this._showShotLabel(ball, 'BIBERON !', '#FFD700', 14);
+                if (this.onShotResult) this.onShotResult('biberon', ball);
             }
             this._shotCollisions = [];
             return;
@@ -1235,9 +1239,11 @@ export default class PetanqueEngine {
             // Sautee : passe a moins de 6 rayons d'une cible
             if (minDist < ball.radius * 6) {
                 this._showShotLabel(ball, 'Sautee !', '#C4854A', 13);
+                if (this.onShotResult) this.onShotResult('sautee', ball);
             } else {
                 sfxTrou();
                 this._showShotLabel(ball, 'Trou...', '#888888', 12);
+                if (this.onShotResult) this.onShotResult('trou', ball);
             }
             this._shotCollisions = [];
             return;
@@ -1247,7 +1253,9 @@ export default class PetanqueEngine {
         const hitAllied = hitBalls.filter(b => b.team === ball.team && b.team !== 'cochonnet');
         if (hitAllied.length > 0) {
             sfxContre();
+            this.scene.time.delayedCall(300, () => sfxCrowdBoo());
             this._showShotLabel(ball, 'Contre !', '#C44B3F', 13);
+            if (this.onShotResult) this.onShotResult('contre', ball);
             this._shotCollisions = [];
             return;
         }
@@ -1265,8 +1273,10 @@ export default class PetanqueEngine {
         // Ciseau : touche 2+ boules adverses
         if (hitEnemy.length >= 2) {
             sfxCiseau();
+            this.scene.time.delayedCall(200, () => sfxCrowdCheer());
             this._showShotLabel(ball, 'CISEAU !!', '#FFD700', 16);
             this.scene.cameras.main.shake(120, 0.005);
+            if (this.onShotResult) this.onShotResult('ciseau', ball);
             this._shotCollisions = [];
             return;
         }
@@ -1288,7 +1298,9 @@ export default class PetanqueEngine {
             // Casquette : cible a a peine bouge (<8px)
             if (targetDisplacement < CASQUETTE_MAX_DISPLACEMENT) {
                 sfxCasquette();
+                this.scene.time.delayedCall(200, () => sfxCrowdGasp());
                 this._showShotLabel(ball, isTirDevant ? 'Court... Casquette' : 'Casquette...', '#888888', 12);
+                if (this.onShotResult) this.onShotResult('casquette', ball);
                 this._shotCollisions = [];
                 return;
             }
@@ -1310,7 +1322,9 @@ export default class PetanqueEngine {
 
                 if (distFromImpact > CARREAU_THRESHOLD && distFromImpact < PALET_THRESHOLD) {
                     sfxPalet();
+                    this.scene.time.delayedCall(200, () => sfxCrowdCheer());
                     this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
+                    if (this.onShotResult) this.onShotResult('palet', ball);
                     this._shotCollisions = [];
                     return;
                 }
@@ -1324,7 +1338,9 @@ export default class PetanqueEngine {
                 const projForward = dxFromImpact * ball._throwDirX + dyFromImpact * ball._throwDirY;
                 if (projForward < -RECUL_MIN_BACKWARD_PX) {
                     ball._isRecoiling = true;
+                    this.scene.time.delayedCall(200, () => sfxCrowdOoh());
                     this._showShotLabel(ball, 'Recul', '#D4A574', 12);
+                    if (this.onShotResult) this.onShotResult('recul', ball);
                     this._shotCollisions = [];
                     return;
                 }

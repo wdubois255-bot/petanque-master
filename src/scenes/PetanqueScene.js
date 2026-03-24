@@ -13,9 +13,11 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
+import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
+import Commentator from '../petanque/Commentator.js';
+import PortalSDK from '../utils/PortalSDK.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -47,6 +49,9 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     create() {
+        // Notifier le portail que le gameplay commence (no-op en standalone)
+        PortalSDK.gameplayStart();
+
         // Reset camera state (previous scene may have faded out)
         this.cameras.main.setAlpha(1);
         this.cameras.main.resetFX();
@@ -174,6 +179,43 @@ export default class PetanqueScene extends Phaser.Scene {
             self.time.delayedCall(1200, () => {
                 if (Math.random() < 0.5) self._showBark(other, 'opponent_carreau');
             });
+        };
+
+        // === COMMENTATEUR ===
+        this._commentator = new Commentator(this);
+        this._commentator.loadPhrases(this.cache);
+
+        // Hook resultats de tir → commentateur
+        this.engine.onShotResult = (resultType, ball) => {
+            const catMap = {
+                carreau: 'carreau', ciseau: 'ciseau', palet: 'palet',
+                biberon: 'biberon', contre: 'contre', trou: 'trou', recul: 'tres_pres'
+            };
+            const cat = catMap[resultType];
+            if (cat) this._commentator.say(cat);
+        };
+
+        // Hook score → commentateur (tension, match_point, fanny, comeback)
+        const _origOnScore = this.engine.onScore;
+        this.engine.onScore = (scores, winner, points) => {
+            if (_origOnScore) _origOnScore(scores, winner, points);
+            const total = scores.player + scores.opponent;
+            const maxScore = Math.max(scores.player, scores.opponent);
+            const minScore = Math.min(scores.player, scores.opponent);
+            const diff = maxScore - minScore;
+            // Fanny
+            if (scores[winner] >= 13 && scores[winner === 'player' ? 'opponent' : 'player'] === 0) {
+                this._commentator.say('fanny', true);
+            // Match point
+            } else if (scores[winner] >= 12) {
+                this._commentator.say('match_point', true);
+            // Egalite serree
+            } else if (minScore >= 10 && diff <= 2) {
+                this._commentator.say('tension');
+            // Comeback (retour de 5+ points)
+            } else if (winner === 'player' && diff >= 5 && scores.player > scores.opponent) {
+                this._commentator.say('comeback');
+            }
         };
 
         setSoundScene(this);
@@ -311,6 +353,9 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _shutdown() {
+        // Notifier le portail que le gameplay s'arrête (no-op en standalone)
+        PortalSDK.gameplayStop();
+
         if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
         this._gamePaused = false;
         this.input.keyboard.removeAllListeners();
@@ -318,6 +363,7 @@ export default class PetanqueScene extends Phaser.Scene {
         stopTerrainAmbiance();
         stopMusic();
         stopRollingSound();
+        if (this._commentator) { this._commentator.destroy(); this._commentator = null; }
         if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
         this.cameras.main.setZoom(1.0); // Reset zoom-pulse
         if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
@@ -589,6 +635,12 @@ export default class PetanqueScene extends Phaser.Scene {
             if (existingTurnChange) existingTurnChange(team);
             this._updateTurnIndicator(team);
             this._animateToCircle(team);
+            // Commentateur : premier lancer (toutes les boules encore en main)
+            const rem = this.engine.remaining;
+            const bpp = this.engine.ballsPerPlayer;
+            if (rem.player === bpp && rem.opponent === bpp) {
+                this.time.delayedCall(300, () => this._commentator?.say('premier_lancer'));
+            }
         };
 
         const existingOnThrow = this.engine.onThrow;
@@ -601,6 +653,17 @@ export default class PetanqueScene extends Phaser.Scene {
         this.engine.onAfterStop = (lastTeam) => {
             if (existingAfterStop) existingAfterStop(lastTeam);
             this._animateReaction(lastTeam);
+            // Commentateur : derniere boule de la mene
+            const rem = this.engine.remaining;
+            if (rem.player + rem.opponent === 1) {
+                this.time.delayedCall(400, () => this._commentator?.say('derniere_boule'));
+            }
+            // Commentateur : bon point (joueur tres pres du cochonnet)
+            if (lastTeam === 'player' && this.engine.lastThrownBall?.isAlive && this.engine.cochonnet?.isAlive) {
+                const dist = this.engine.lastThrownBall.distanceTo(this.engine.cochonnet);
+                if (dist < 20) this.time.delayedCall(600, () => this._commentator?.say('bon_point'));
+                else if (dist < 6) this.time.delayedCall(600, () => this._commentator?.say('tres_pres'));
+            }
             // Update AI momentum based on shot quality
             if (lastTeam === 'opponent' && this.ai && this.ai.updateMomentum) {
                 const ball = this.engine.lastThrownBall;
