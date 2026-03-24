@@ -46,8 +46,17 @@ export default class InGameTutorial {
         this._phase1_5Active = false;
         this._phase2Active = false;
         this._phase3Active = false;
+        this._terrainHintActive = false;
 
-        // If all phases already done, do nothing
+        // Safety: destroy on scene shutdown (register early, before any return)
+        this._onShutdown = () => this.destroy();
+        scene.events.once('shutdown', this._onShutdown);
+
+        // Show terrain hint before any tutorial phase (one-shot per terrain)
+        const terrainId = scene.terrainFullData?.id || null;
+        this._maybeShowTerrainHint(terrainId);
+
+        // If all phases already done, do nothing more
         if (this._phaseDone(TUTORIAL_PHASE_AIM) &&
             this._phaseDone(TUTORIAL_PHASE_LOFT) &&
             this._phaseDone(TUTORIAL_PHASE_SCORE) &&
@@ -55,10 +64,6 @@ export default class InGameTutorial {
             this.completed = true;
             return;
         }
-
-        // Safety: destroy on scene shutdown
-        this._onShutdown = () => this.destroy();
-        scene.events.once('shutdown', this._onShutdown);
 
         // Hook engine callbacks (chain with existing)
         this._origOnStateChange = this.engine.onStateChange;
@@ -103,10 +108,12 @@ export default class InGameTutorial {
         if (this.completed) return;
 
         // Phase 1 trigger: player about to throw their first boule
+        // Wait for terrain hint to dismiss first if active
         if ((state === 'FIRST_BALL' || state === 'PLAY_LOOP') &&
             this.engine.currentTeam === 'player' &&
             !this._phaseDone(TUTORIAL_PHASE_AIM) &&
-            !this._phase1Active) {
+            !this._phase1Active &&
+            !this._terrainHintActive) {
             this._showPhase1_Aim();
         }
 
@@ -401,6 +408,56 @@ export default class InGameTutorial {
         });
 
         this._elements.push(dim, panel, titleTxt, main, sub, btnBg, btnText);
+    }
+
+    // ================================================================
+    // TERRAIN HINT — one-shot, avant Phase 1
+    // ================================================================
+    _maybeShowTerrainHint(terrainId) {
+        const TERRAIN_HINTS = {
+            colline: '⛰️ Attention : ce terrain penche ! Les boules roulent vers le bas.',
+            docks:   '🧱 Les bords métalliques renvoient les boules. Utilisez les rebonds !',
+            plage:   '🏖️ Le sable freine fort. Lancez plus puissamment !',
+            parc:    '🌿 Zones mixtes : herbe (lent) et gravier (rapide). Visez stratégiquement.'
+        };
+        const msg = terrainId ? TERRAIN_HINTS[terrainId] : null;
+        if (!msg) return;
+
+        const save = loadSave();
+        if (!save.terrainHintsSeen) save.terrainHintsSeen = [];
+        if (save.terrainHintsSeen.includes(terrainId)) return;
+
+        save.terrainHintsSeen.push(terrainId);
+        saveSave(save);
+
+        this._terrainHintActive = true;
+        this._showTerrainHintOverlay(msg);
+    }
+
+    _showTerrainHintOverlay(message) {
+        const cx = GAME_WIDTH / 2;
+
+        const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        bg.fillStyle(0x1A1510, 0.5);
+        bg.fillRect(0, 0, GAME_WIDTH, 80);
+
+        const main = this.scene.add.text(cx, 40, message, {
+            ...TEXT_STYLE,
+            fontSize: '13px',
+            wordWrap: { width: 560 }
+        }).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+
+        this.scene.tweens.add({
+            targets: [bg, main], alpha: 1, duration: 350, ease: 'Sine.easeOut'
+        });
+
+        this._elements.push(bg, main);
+
+        const timer = this.scene.time.delayedCall(4000, () => {
+            this._terrainHintActive = false;
+            this._fadeOutElements();
+        });
+        this._elements.push({ destroy: () => timer.destroy() });
     }
 
     // ================================================================
