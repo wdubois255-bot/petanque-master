@@ -174,13 +174,13 @@
 ## 3. RESTE A IMPLEMENTER
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
-> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE E ✅, AXE F ✅ — AXE C+D restants)
+> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE C ✅, AXE E ✅, AXE F ✅ — AXE D restant)
 > Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
 - [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
 - [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
-- [ ] **AXE C** : Cleanup code (console.log, dead code, init() reset manquants)
+- [x] **AXE C** : Cleanup code — IntroScene dead code, leaks keyboard, SaveManager migration, flyOnly TIR, constantes extraites
 - [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
 - [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions, Commentator.js 55 phrases)
 - [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
