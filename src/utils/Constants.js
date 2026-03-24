@@ -416,7 +416,9 @@ export const CHAR_THROW_MAP = {
     'sofia': { key: 'throw_sofia', frames: 4 },
     'robineau': { key: 'throw_robineau', frames: 4 },
     'rocher': { key: 'throw_rocher', frames: 4 },
-    'rizzi': { key: 'throw_rizzi', frames: 4 }
+    'rizzi': { key: 'throw_rizzi', frames: 4 },
+    'fazzino': { key: 'throw_fazzino', frames: 4 },
+    'papi_rene': { key: 'throw_papi_rene', frames: 4 }
 };
 
 export function getCharThrowKey(charId) {

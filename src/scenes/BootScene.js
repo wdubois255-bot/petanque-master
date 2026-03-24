@@ -145,7 +145,8 @@ export default class BootScene extends Phaser.Scene {
         // Throw animation spritesheets (v2 — 4 frames 128x128 each, horizontal strip 512x128)
         const THROW_CHARS = [
             'rookie', 'la_choupe', 'ley', 'foyot', 'suchaud',
-            'mamie_josette', 'sofia', 'robineau', 'rocher', 'rizzi'
+            'mamie_josette', 'sofia', 'robineau', 'rocher', 'rizzi',
+            'fazzino', 'papi_rene'
         ];
         for (const charId of THROW_CHARS) {
             this.load.spritesheet(`throw_${charId}`, `${BASE}assets/sprites/v2_new/throw_anims/sheets/throw_${charId}.png`, {
@@ -231,7 +232,8 @@ export default class BootScene extends Phaser.Scene {
         // Greeting animation spritesheets (4 frames of 128x128, horizontal strip 512x128)
         const GREETING_CHARS = [
             'la_choupe', 'ley', 'fazzino', 'rocher', 'suchaud',
-            'rizzi', 'robineau', 'mamie_josette', 'sofia'
+            'rizzi', 'robineau', 'mamie_josette', 'sofia',
+            'rookie', 'foyot', 'papi_rene'
         ];
         for (const charName of GREETING_CHARS) {
             this.load.spritesheet(`${charName}_greeting`, `${BASE}assets/sprites/${charName}_greeting.png`, {
@@ -352,7 +354,8 @@ export default class BootScene extends Phaser.Scene {
         // Create greeting animations (4-frame loop per character)
         const GREETING_CHARS_ANIM = [
             'la_choupe', 'ley', 'fazzino', 'rocher', 'suchaud',
-            'rizzi', 'robineau', 'mamie_josette', 'sofia'
+            'rizzi', 'robineau', 'mamie_josette', 'sofia',
+            'rookie', 'foyot', 'papi_rene'
         ];
         for (const charName of GREETING_CHARS_ANIM) {
             const greetKey = `${charName}_greeting`;

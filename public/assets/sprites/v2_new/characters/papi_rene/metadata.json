@@ -1,8 +1,8 @@
 {
   "character": {
-    "id": "704106ba-1388-4675-9e82-708120f0ab3a",
-    "name": "dominant powerful petanque world champion, 58 years old man, short grey receding hair balding on top, round strong face with calm supremely confident knowing expression, wearing a classic navy blue polo shirt with white collar, beige cotton trousers, brown leather shoes, stocky thick powerful rugby-like build, standing calm commanding authoritative pose, holding a shiny metallic petanque boule with practiced ease in right hand, south of france provencal character\n",
-    "prompt": "dominant powerful petanque world champion, 58 years old man, short grey receding hair balding on top, round strong face with calm supremely confident knowing expression, wearing a classic navy blue polo shirt with white collar, beige cotton trousers, brown leather shoes, stocky thick powerful rugby-like build, standing calm commanding authoritative pose, holding a shiny metallic petanque boule with practiced ease in right hand, south of france provencal character\n",
+    "id": "cd2c39c4-90d2-45cd-a25c-33bf247d95ff",
+    "name": " dominant powerful petanque world champion, 58 years old man, short grey receding \n  hair balding on top, round strong face with calm supremely confident knowing \n  expression, wearing a classic navy blue polo shirt with white collar, beige cotton \n  trousers, brown leather shoes, stocky thick powerful rugby-like build, south of \n  france provencal character",
+    "prompt": " dominant powerful petanque world champion, 58 years old man, short grey receding \n  hair balding on top, round strong face with calm supremely confident knowing \n  expression, wearing a classic navy blue polo shirt with white collar, beige cotton \n  trousers, brown leather shoes, stocky thick powerful rugby-like build, south of \n  france provencal character",
     "size": {
       "width": 120,
       "height": 120
@@ -10,7 +10,7 @@
     "template_id": "mannequin",
     "directions": 8,
     "view": "low top-down",
-    "created_at": "2026-03-20T23:05:39.972319+00:00"
+    "created_at": "2026-03-24T11:17:42.203843+00:00"
   },
   "frames": {
     "rotations": {
@@ -23,7 +23,16 @@
       "west": "rotations/west.png",
       "south-west": "rotations/south-west.png"
     },
-    "animations": {}
+    "animations": {
+      "custom-Seen from behind, back view. Pixel art petanque pl": {
+        "north": [
+          "animations/custom-Seen from behind, back view. Pixel art petanque pl/north/frame_000.png",
+          "animations/custom-Seen from behind, back view. Pixel art petanque pl/north/frame_001.png",
+          "animations/custom-Seen from behind, back view. Pixel art petanque pl/north/frame_002.png",
+          "animations/custom-Seen from behind, back view. Pixel art petanque pl/north/frame_003.png"
+        ]
+      }
+    }
   },
   "keypoints": {
     "rotations": {
@@ -1068,8 +1077,15 @@
         ]
       ]
     },
-    "animations": {}
+    "animations": {
+      "custom-Seen from behind, back view. Pixel art petanque pl_north": [
+        null,
+        null,
+        null,
+        null
+      ]
+    }
   },
   "export_version": "1.0",
-  "export_date": "2026-03-20T23:11:08.941734"
+  "export_date": "2026-03-24T11:24:00.534231"
 }
