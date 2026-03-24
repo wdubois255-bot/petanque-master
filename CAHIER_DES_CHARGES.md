@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.15 — 24 mars 2026 (Phase 4A COMPLETE + playtest fixes — 296 tests, 12 suites)
+> Version 2.16 — 24 mars 2026 (i18n ~95% + DX setup complet — 344 tests, 16 suites, 319 commits)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
