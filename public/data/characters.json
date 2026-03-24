@@ -55,7 +55,13 @@
         "palet_success": ["Je reste la !", "Palet ! J'apprends vite.", "Pas un carreau, mais ca compte !"],
         "contre_self": ["MERDE ! C'etait le mien !", "Non non non...", "Oups... Desole les boules."],
         "fanny_win": ["0 point ?! J'y crois pas !", "FANNY ! Ma premiere victoire parfaite !"],
-        "fanny_lose": ["... Zero. Zero point.", "Fanny... c'est quoi le truc de la jupe ?"]
+        "fanny_lose": ["... Zero. Zero point.", "Fanny... c'est quoi le truc de la jupe ?"],
+        "pressure_tied": ["Allez, calme... C'est le moment.", "Focus total. Respire."],
+        "fanny_imminent_winning": ["13-0 ? C'est possible la ?!", "FANNY ! J'y crois pas !"],
+        "fanny_imminent_losing": ["... Je refuse de finir a zero.", "Non non non, pas ca."],
+        "comeback_self": ["Je reviens ! J'abandonne jamais !", "Regarde ca !"],
+        "opponent_comeback": ["Non ! Pas maintenant !", "Il remonte..."],
+        "dominant_lead": ["Ca rentre tout seul !", "J'suis pas si mauvais finalement !"]
       },
       "barks_en": {
         "good_shot": ["Yeah!", "That works!", "Not bad, right?", "Fast learner."],
@@ -76,7 +82,13 @@
         "palet_success": ["I'm staying put!", "Palet! Fast learner.", "Not a carreau, but it counts!"],
         "contre_self": ["DAMN! That was mine!", "No no no...", "Oops... Sorry, boules."],
         "fanny_win": ["0 points?! No way!", "FANNY! My first perfect win!"],
-        "fanny_lose": ["... Zero. Zero points.", "Fanny... what's that thing with the skirt?"]
+        "fanny_lose": ["... Zero. Zero points.", "Fanny... what's that thing with the skirt?"],
+        "pressure_tied": ["Easy now... This is the moment.", "Total focus. Breathe."],
+        "fanny_imminent_winning": ["13-0? Is this real?!", "FANNY! I can't believe it!"],
+        "fanny_imminent_losing": ["...I refuse to finish at zero.", "No no no, not this."],
+        "comeback_self": ["I'm back! I never give up!", "Watch this!"],
+        "opponent_comeback": ["No! Not now!", "He's coming back..."],
+        "dominant_lead": ["Everything's going in!", "Maybe I'm not so bad after all!"]
       },
       "ability": null,
       "sprite": "rookie_animated",
@@ -128,7 +140,13 @@
         "palet_success": ["PALET ! J'ai pas bouge !", "Je reste la, trop fort !", "Presque un carreau !"],
         "contre_self": ["MERDE ! J'ai torpille ma propre boule !", "NON ! PAS CELLE-LA !", "Trop de jus... ma propre boule !"],
         "fanny_win": ["FANNY ! T'as fait zero ! HAHAHA !", "Zero partout ! Enfin, zero pour toi !"],
-        "fanny_lose": ["... Zero. Je marque zero.", "FANNY ? MOI ? C'est une blague !"]
+        "fanny_lose": ["... Zero. Je marque zero.", "FANNY ? MOI ? C'est une blague !"],
+        "pressure_tied": ["C'est maintenant que ca se joue, gamin !", "ALLEZ ! On lache rien !"],
+        "fanny_imminent_winning": ["HAHA ! 13-0 ! LA FANNY !", "A genoux devant La Choupe !"],
+        "fanny_imminent_losing": ["... Ca va aller.", "La prochaine, je me reveille."],
+        "comeback_self": ["La Choupe est de retour !", "J'etais juste en echauffement !"],
+        "opponent_comeback": ["He, calme-toi la !", "T'emballe pas gamin !"],
+        "dominant_lead": ["Tu vois ca ? C'est ca, la puissance !", "Ecrase !"]
       },
       "barks_en": {
         "good_shot": ["LET'S GO!", "Now THAT'S a shot!", "BOOM!", "Bullseye!"],
@@ -149,7 +167,13 @@
         "palet_success": ["PALET! Didn't budge!", "Still here, too good!", "Almost a carreau!"],
         "contre_self": ["DAMMIT! I torpedoed my own boule!", "NO! NOT THAT ONE!", "Too much power... my own boule!"],
         "fanny_win": ["FANNY! You scored zero! HAHAHA!", "Zero all around! Well, zero for you!"],
-        "fanny_lose": ["... Zero. I score zero.", "FANNY? ME? You're kidding!"]
+        "fanny_lose": ["... Zero. I score zero.", "FANNY? ME? You're kidding!"],
+        "pressure_tied": ["This is where it counts, kid!", "COME ON! Don't give up!"],
+        "fanny_imminent_winning": ["HAHA! 13-0! THE FANNY!", "Bow before La Choupe!"],
+        "fanny_imminent_losing": ["...It'll be fine.", "Next one, I wake up."],
+        "comeback_self": ["La Choupe is back!", "I was just warming up!"],
+        "opponent_comeback": ["Hey, slow down!", "Don't get ahead of yourself kid!"],
+        "dominant_lead": ["See that? That's raw power!", "Crushed!"]
       },
       "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
       "sprite": "la_choupe_animated",
@@ -201,7 +225,13 @@
         "palet_success": ["Palet. Ca suffit.", "Je reste sur le coup.", "Efficace."],
         "contre_self": ["C'etait pas prevu.", "Ma propre boule...", "Hmm."],
         "fanny_win": ["Fanny. Logique.", "Zero pour toi. Ca resume bien."],
-        "fanny_lose": ["Zero. Ca arrive.", "Fanny... une fois dans une carriere."]
+        "fanny_lose": ["Zero. Ca arrive.", "Fanny... une fois dans une carriere."],
+        "pressure_tied": ["C'est la qu'on voit les vrais.", "Ton grand-pere aurait adore ca."],
+        "fanny_imminent_winning": ["Pas de quartier. C'est le tournoi.", "Auguste m'a appris ca."],
+        "fanny_imminent_losing": ["...Impressionnant, gamin.", "Tu m'as eu. Pour l'instant."],
+        "comeback_self": ["Ley ne meurt jamais.", "Le tireur se reveille."],
+        "opponent_comeback": ["Tu as du sang Bertolini.", "Pas mal, pas mal..."],
+        "dominant_lead": ["Tu rappelles ton grand-pere.", "Le Carreau d'Or te tend les bras."]
       },
       "barks_en": {
         "good_shot": ["Gone.", "Cleared.", "Same as always.", "Clean."],
@@ -222,7 +252,13 @@
         "palet_success": ["Palet. That'll do.", "Staying on the shot.", "Efficient."],
         "contre_self": ["Wasn't planned.", "My own boule...", "Hmm."],
         "fanny_win": ["Fanny. Makes sense.", "Zero for you. Says it all."],
-        "fanny_lose": ["Zero. Happens.", "Fanny... once in a career."]
+        "fanny_lose": ["Zero. Happens.", "Fanny... once in a career."],
+        "pressure_tied": ["This is where true players show.", "Your grandfather would've loved this."],
+        "fanny_imminent_winning": ["No quarter. This is the tournament.", "Auguste taught me this."],
+        "fanny_imminent_losing": ["...Impressive, kid.", "You got me. For now."],
+        "comeback_self": ["Ley never dies.", "The shooter awakens."],
+        "opponent_comeback": ["You've got Bertolini blood.", "Not bad, not bad..."],
+        "dominant_lead": ["You remind me of your grandfather.", "The Carreau d'Or awaits you."]
       },
       "ability": { "name": "Carreau Instinct", "charges": 1, "description": "Tir: ejection 50% plus puissante" },
       "sprite": "ley_animated",
@@ -347,7 +383,13 @@
         "palet_success": ["Palet.", "Je reste la.", "Correct."],
         "contre_self": ["Erreur.", "Ca arrive.", "Une fois par carriere."],
         "fanny_win": ["Fanny.", "Zero. C'est definitif."],
-        "fanny_lose": ["Fanny. Rare.", "Zero. Ca n'arrive pas souvent."]
+        "fanny_lose": ["Fanny. Rare.", "Zero. Ca n'arrive pas souvent."],
+        "pressure_tied": ["...", "Concentre-toi."],
+        "fanny_imminent_winning": ["...", "Pas de pitie."],
+        "fanny_imminent_losing": ["...", "..."],
+        "comeback_self": ["Je me reveille.", "La."],
+        "opponent_comeback": ["Hmm.", "..."],
+        "dominant_lead": ["Normal.", "Continue."]
       },
       "barks_en": {
         "good_shot": ["Standard.", "Clean.", "Fourteen times.", "Precision."],
@@ -368,7 +410,13 @@
         "palet_success": ["Palet.", "Staying put.", "Acceptable."],
         "contre_self": ["Mistake.", "It happens.", "Once in a career."],
         "fanny_win": ["Fanny.", "Zero. Final."],
-        "fanny_lose": ["Fanny. Rare.", "Zero. Doesn't happen often."]
+        "fanny_lose": ["Fanny. Rare.", "Zero. Doesn't happen often."],
+        "pressure_tied": ["...", "Focus."],
+        "fanny_imminent_winning": ["...", "No mercy."],
+        "fanny_imminent_losing": ["...", "..."],
+        "comeback_self": ["Waking up.", "There."],
+        "opponent_comeback": ["Hmm.", "..."],
+        "dominant_lead": ["Normal.", "Continue."]
       },
       "ability": { "name": "Tir Chirurgical", "charges": 1, "description": "Tir parfait: dispersion quasi-nulle" },
       "sprite": "suchaud_animated",
@@ -420,7 +468,13 @@
         "palet_success": ["Palet calcule.", "Je reste dans la zone prevue.", "Delta acceptable."],
         "contre_self": ["Erreur de calcul grave.", "Mauvais angle. Correction.", "Variable oubliee."],
         "fanny_win": ["Fanny. Probabilite : infime.", "Zero point. Statistiquement improbable, pourtant."],
-        "fanny_lose": ["Zero. L'analyse reprend de zero.", "Fanny. Correction du modele necessaire."]
+        "fanny_lose": ["Zero. L'analyse reprend de zero.", "Fanny. Correction du modele necessaire."],
+        "pressure_tied": ["Probabilite de victoire : 50%.", "Les variables convergent."],
+        "fanny_imminent_winning": ["Erreur systematique de ton cote.", "13-0. Statistiquement improbable."],
+        "fanny_imminent_losing": ["Revoir les hypotheses de base.", "Anomalie statistique."],
+        "comeback_self": ["Correction des parametres effectuee.", "L'algorithme s'adapte."],
+        "opponent_comeback": ["Deviation inattendue.", "Bruit dans les donnees."],
+        "dominant_lead": ["Les chiffres ne mentent pas.", "Tout est sous controle."]
       },
       "barks_en": {
         "good_shot": ["Calculated.", "Exactly there.", "As planned.", "Methodical."],
@@ -441,7 +495,13 @@
         "palet_success": ["Calculated palet.", "Remaining in predicted zone.", "Acceptable delta."],
         "contre_self": ["Critical calculation error.", "Wrong angle. Correction.", "Forgotten variable."],
         "fanny_win": ["Fanny. Probability: infinitesimal.", "Zero points. Statistically improbable, yet here we are."],
-        "fanny_lose": ["Zero. Analysis resets to zero.", "Fanny. Model correction required."]
+        "fanny_lose": ["Zero. Analysis resets to zero.", "Fanny. Model correction required."],
+        "pressure_tied": ["Win probability: 50%.", "Variables converging."],
+        "fanny_imminent_winning": ["Systematic error on your end.", "13-0. Statistically improbable."],
+        "fanny_imminent_losing": ["Revising base hypotheses.", "Statistical anomaly."],
+        "comeback_self": ["Parameter correction complete.", "The algorithm adapts."],
+        "opponent_comeback": ["Unexpected deviation.", "Noise in the data."],
+        "dominant_lead": ["Numbers don't lie.", "Everything under control."]
       },
       "ability": { "name": "Calcul Mental", "charges": 2, "description": "Affiche la distance exacte au cochonnet" },
       "sprite": "fazzino_animated",
@@ -639,7 +699,13 @@
         "palet_success": ["J'reste la, moi !", "Palet ! Comme en 82 !", "Oh, j'ai bien fait de rester."],
         "contre_self": ["Oh non ! J'ai tape la mauvaise !", "Mon Dieu...", "C'est la vieillesse..."],
         "fanny_win": ["FANNY ! Tu as honte, non ?", "Zero point ! Allez, je t'offre un gateau pour te consoler."],
-        "fanny_lose": ["Fanny... A mon age !", "Zero point. Ca fait une semaine que ca m'etait pas arrive."]
+        "fanny_lose": ["Fanny... A mon age !", "Zero point. Ca fait une semaine que ca m'etait pas arrive."],
+        "pressure_tied": ["Oh la la... Ca me rappelle la finale de 73.", "Du calme, du calme..."],
+        "fanny_imminent_winning": ["Oh mon petit... Pas de honte.", "13-0... comme le bon vieux temps."],
+        "fanny_imminent_losing": ["Hmm... j'ai oublie mes lunettes.", "Ah la jeunesse..."],
+        "comeback_self": ["L'experience, mon petit.", "Je me suis souvenue comment on fait."],
+        "opponent_comeback": ["Tiens tiens... tu te reveilles.", "Attention, il revient."],
+        "dominant_lead": ["Les biscuits portent chance.", "Comme sur des roulettes."]
       },
       "barks_en": {
         "good_shot": ["Oh, that's nice.", "Like the good old days.", "There we go.", "Easy does it."],
@@ -660,7 +726,13 @@
         "palet_success": ["I'm staying right here!", "Palet! Like in '82!", "Oh, good thing I stayed."],
         "contre_self": ["Oh no! I hit the wrong one!", "Lord have mercy...", "That's old age for you..."],
         "fanny_win": ["FANNY! Aren't you ashamed?", "Zero points! Here, I'll get you a cake to cheer up."],
-        "fanny_lose": ["Fanny... At my age!", "Zero points. That hasn't happened to me in a week."]
+        "fanny_lose": ["Fanny... At my age!", "Zero points. That hasn't happened to me in a week."],
+        "pressure_tied": ["Oh my... Reminds me of the '73 final.", "Easy now, easy..."],
+        "fanny_imminent_winning": ["Oh dear... No shame in that.", "13-0... like the good old days."],
+        "fanny_imminent_losing": ["Hmm... I forgot my glasses.", "Ah, youth..."],
+        "comeback_self": ["Experience, my dear.", "I remembered how it's done."],
+        "opponent_comeback": ["Well well... you're waking up.", "Watch out, he's coming back."],
+        "dominant_lead": ["The cookies bring good luck.", "Smooth as silk."]
       },
       "ability": { "name": "Tricot Zen", "charges": 3, "description": "Calme absolu: aucun wobble pendant 1 tour" },
       "sprite": "mamie_josette_animated",

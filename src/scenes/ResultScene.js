@@ -25,6 +25,7 @@ export default class ResultScene extends Phaser.Scene {
         this.galetsEarned = data.galetsEarned || 0;
         this.postMatchDialogue = data.postMatchDialogue || null;
         this.unlocksOnWin = data.unlocksOnWin || null;
+        this.matchChallenge = data.matchChallenge || null;
         // Reset flags — Phaser reuses scene instances!
         this._returning = false;
         this._postDialogDone = false;
@@ -209,6 +210,27 @@ export default class ResultScene extends Phaser.Scene {
                 targets: galetText, alpha: 1, scale: 1,
                 duration: 500, ease: 'Back.easeOut', delay: 800
             });
+        }
+
+        // Phase 5 D2 — Match challenge verification
+        if (this.matchChallenge && this.won) {
+            const c = this.matchChallenge;
+            const ms = this.matchStats;
+            let completed = false;
+            if (c.condition === 'carreaux >= 1' && (ms.carreaux || 0) >= 1) completed = true;
+            if (c.condition === 'shots === 0 && won' && (ms.shots || 0) === 0) completed = true;
+            if (c.condition === 'won && opponentScore <= 5' && this.scores.opponent <= 5) completed = true;
+            if (c.condition === 'won && maxDeficit >= 5' && (ms._maxDeficit || 0) >= 5) completed = true;
+            if (c.condition === 'won && opponentScore === 0' && this.scores.opponent === 0) completed = true;
+            if (completed) {
+                addGalets(c.reward);
+                const ctxt = this.add.text(GAME_WIDTH / 2, 395,
+                    I18n.t('arcade.challenge_complete', { galets: c.reward }), {
+                        fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
+                        shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+                    }).setOrigin(0.5).setAlpha(0);
+                this.tweens.add({ targets: ctxt, alpha: 1, duration: 500, delay: 1500 });
+            }
         }
 
         // === ROOKIE XP ===

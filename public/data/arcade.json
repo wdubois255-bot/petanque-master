@@ -74,6 +74,7 @@
       "round": 1,
       "opponent": "la_choupe",
       "terrain": "village",
+      "time_of_day": "matin",
       "difficulty": "easy",
       "difficulty_label": "Facile",
       "difficulty_label_en": "Easy",
@@ -100,12 +101,21 @@
       ],
       "postMatchLose_en": [
         { "speaker": "la_choupe", "text": "Ha! Come back when you've grown up, little one!" }
+      ],
+      "post_narrative": [
+        "La Choupe te tape dans le dos.",
+        "'Pas mal gamin !' Le cafe du village t'offre un pastis."
+      ],
+      "post_narrative_en": [
+        "La Choupe slaps you on the back.",
+        "'Not bad, kid!' The village cafe offers you a pastis."
       ]
     },
     {
       "round": 2,
       "opponent": "mamie_josette",
       "terrain": "parc",
+      "time_of_day": "fin_matinee",
       "difficulty": "medium",
       "difficulty_label": "Moyen",
       "difficulty_label_en": "Medium",
@@ -134,12 +144,23 @@
       ],
       "postMatchLose_en": [
         { "speaker": "mamie_josette", "text": "Patience, dear. Rome wasn't built in a day." }
+      ],
+      "post_narrative": [
+        "Mamie Josette t'offre un biscuit.",
+        "'Ton grand-pere cachait ses boules dans la meme boite.'",
+        "Les voisins commencent a se rassembler."
+      ],
+      "post_narrative_en": [
+        "Mamie Josette offers you a cookie.",
+        "'Your grandfather hid his boules in the same box.'",
+        "The neighbors start gathering."
       ]
     },
     {
       "round": 3,
       "opponent": "fazzino",
       "terrain": "colline",
+      "time_of_day": "midi",
       "difficulty": "hard",
       "difficulty_label": "Difficile",
       "difficulty_label_en": "Hard",
@@ -174,6 +195,7 @@
       "round": 4,
       "opponent": "suchaud",
       "terrain": "docks",
+      "time_of_day": "apres_midi",
       "difficulty": "hard",
       "difficulty_label": "Tres difficile",
       "difficulty_label_en": "Very Hard",
@@ -208,6 +230,7 @@
       "round": 5,
       "opponent": "ley",
       "terrain": "plage",
+      "time_of_day": "coucher_soleil",
       "difficulty": "hard",
       "difficulty_label": "Expert",
       "difficulty_label_en": "Expert",
@@ -240,6 +263,19 @@
         { "speaker": "ley", "text": "Not ready yet. Come back stronger. Auguste would have wanted you to persevere." }
       ]
     }
+  ],
+  "match_challenges": [
+    { "id": "carreau_match", "name": "Carreau !", "name_en": "Carreau!", "description": "Reussis au moins un carreau dans ce match", "description_en": "Score at least one carreau in this match", "condition": "carreaux >= 1", "reward": 25 },
+    { "id": "no_tir", "name": "Tout en finesse", "name_en": "All finesse", "description": "Gagne sans utiliser de tir", "description_en": "Win without using any shooting", "condition": "shots === 0 && won", "reward": 30 },
+    { "id": "domination", "name": "Domination", "name_en": "Domination", "description": "Gagne 13-5 ou mieux", "description_en": "Win 13-5 or better", "condition": "won && opponentScore <= 5", "reward": 20 },
+    { "id": "comeback_king", "name": "Roi du comeback", "name_en": "Comeback king", "description": "Gagne apres avoir ete mene de 5+ points", "description_en": "Win after being behind by 5+ points", "condition": "won && maxDeficit >= 5", "reward": 35 },
+    { "id": "fanny_master", "name": "Fanny !", "name_en": "Fanny!", "description": "Inflige un 13-0", "description_en": "Win 13-0", "condition": "won && opponentScore === 0", "reward": 50 }
+  ],
+  "mene_challenges": [
+    { "id": "mc_carreau", "text": "Defi : Fais un carreau !", "text_en": "Challenge: Score a carreau!", "stat": "carreaux", "target": 1, "reward": 10 },
+    { "id": "mc_3pts", "text": "Defi : Marque 3+ points !", "text_en": "Challenge: Score 3+ points!", "stat": "meneScore", "target": 3, "reward": 10 },
+    { "id": "mc_roulette", "text": "Defi : Gagne en roulette uniquement", "text_en": "Challenge: Win using only roulette", "stat": "onlyRoulette", "target": 1, "reward": 15 },
+    { "id": "mc_biberon", "text": "Defi : Fais un biberon !", "text_en": "Challenge: Score a biberon!", "stat": "biberons", "target": 1, "reward": 15 }
   ],
   "milestones": [
     { "id": "first_win", "condition": "arcadeWins >= 1", "reward": 50, "text": "Première victoire !", "text_en": "First victory!" },

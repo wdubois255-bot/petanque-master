@@ -5,7 +5,12 @@ import {
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
     CHAR_SPRITE_MAP, CHAR_THROW_MAP, CHAR_STATIC_SPRITES,
-    BARK_PROBABILITY, PAUSE_KEY
+    BARK_PROBABILITY, PAUSE_KEY,
+    MOMENTUM_INDICATOR_FIRE_COLOR, MOMENTUM_INDICATOR_TILT_COLOR,
+    MOMENTUM_INDICATOR_THRESHOLD, MOMENTUM_INDICATOR_ALPHA, MOMENTUM_INDICATOR_RADIUS,
+    PRESSURE_INDICATOR_COLOR, PRESSURE_WOBBLE_AMPLITUDE, PRESSURE_WOBBLE_SPEED,
+    CHALLENGE_BANNER_DURATION, CHALLENGE_REWARD_GALETS, CHALLENGE_PROBABILITY,
+    CROWD_INTENSITY_BY_ROUND, COMMENTATOR_COOLDOWN
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -14,7 +19,7 @@ import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmbiance, stopCrowdAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMasterVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
-import { loadSave, saveSave } from '../utils/SaveManager.js';
+import { loadSave, saveSave, addGalets } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
@@ -51,6 +56,27 @@ export default class PetanqueScene extends Phaser.Scene {
         // Game over watchdog (reset on each scene init)
         this._gameOverWatchdogStart = 0;
         this._watchdogFired = false;
+        // Phase 5 — Momentum indicator
+        this._momentumGlow = null;
+        this._momentumLabel = null;
+        this._momentumShakeTween = null;
+        this._lastMomentumValue = null;
+        // Phase 5 — Pressure indicator
+        this._pressureActive = false;
+        this._pressureBadge = null;
+        this._pressureText = null;
+        // Phase 5 — Mene challenges
+        this._currentChallenge = null;
+        this._challengeCompleted = false;
+        this._challengeBanner = null;
+        this._challengePool = null;
+        // Phase 5 — Match galets tracking
+        this._matchGaletsEarned = 0;
+        // Phase 5 — Golden zone
+        this._goldenZone = null;
+        this._goldenZoneActive = false;
+        // Phase 5 — Match challenge
+        this._matchChallenge = null;
     }
 
     create() {
@@ -227,11 +253,70 @@ export default class PetanqueScene extends Phaser.Scene {
             } else if (winner === 'player' && diff >= 5 && scores.player > scores.opponent) {
                 this._commentator.say('comeback');
             }
+
+            // === Phase 5 B2 — Pressure indicator ===
+            if (scores.player >= 10 && scores.opponent >= 10) {
+                this._showPressureIndicator();
+            }
+
+            // === Phase 5 B1 — Momentum indicator ===
+            this._updateMomentumIndicator();
+
+            // === Phase 5 D1 — Mene challenge verification ===
+            if (this._currentChallenge && !this._challengeCompleted) {
+                const c = this._currentChallenge;
+                const ms = this.engine.matchStats;
+                let completed = false;
+                if (c.stat === 'carreaux' && (ms.carreaux || 0) >= c.target) completed = true;
+                if (c.stat === 'meneScore' && winner === 'player' && points >= c.target) completed = true;
+                if (c.stat === 'biberons' && (ms.biberons || 0) >= c.target) completed = true;
+                if (c.stat === 'onlyRoulette' && winner === 'player' && !ms._usedNonRoulette) completed = true;
+                if (completed) {
+                    this._challengeCompleted = true;
+                    const reward = c.reward || CHALLENGE_REWARD_GALETS;
+                    addGalets(reward);
+                    this._matchGaletsEarned += reward;
+                    this._showChallengeResult(true, reward);
+                }
+            }
+
+            // === Phase 5 D2 — Max deficit tracking for match challenges ===
+            if (!this.engine.matchStats._maxDeficit) this.engine.matchStats._maxDeficit = 0;
+            const deficit = scores.opponent - scores.player;
+            if (deficit > this.engine.matchStats._maxDeficit) this.engine.matchStats._maxDeficit = deficit;
+
+            // === Phase 5 F3 — Golden zone check ===
+            if (this._goldenZoneActive && this._goldenZone) {
+                const gz = this._goldenZone;
+                const playerBalls = this.engine.getTeamBallsAlive?.('player') || [];
+                for (const ball of playerBalls) {
+                    const dx = ball.x - gz.x;
+                    const dy = ball.y - gz.y;
+                    if (Math.sqrt(dx * dx + dy * dy) <= 18) {
+                        const reward = 5;
+                        addGalets(reward);
+                        this._matchGaletsEarned += reward;
+                        const bonusTxt = this.add.text(gz.x, gz.y - 20,
+                            I18n.t('arcade.golden_zone_bonus', { galets: reward }), {
+                                fontFamily: 'monospace', fontSize: '10px', color: '#FFD700',
+                                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                            }).setOrigin(0.5).setDepth(96);
+                        this.tweens.add({ targets: bonusTxt, y: gz.y - 40, alpha: 0, duration: 1500,
+                            onComplete: () => bonusTxt.destroy() });
+                        break;
+                    }
+                }
+                this._clearGoldenZone();
+            }
         };
 
         setSoundScene(this);
         startTerrainAmbiance(this.terrainFullData?.id || 'village');
-        startCrowdAmbiance();
+        // Phase 5 G1: Progressive crowd intensity per arcade round
+        const crowdIntensity = this.arcadeRound
+            ? (CROWD_INTENSITY_BY_ROUND[this.arcadeRound - 1] || 0.04)
+            : 0.04;
+        startCrowdAmbiance(crowdIntensity);
         // Music per terrain (falls back to music_match if terrain-specific doesn't exist)
         const terrainMusicMap = {
             terre: 'music_village', herbe: 'music_parc', sable: 'music_plage',
@@ -345,6 +430,29 @@ export default class PetanqueScene extends Phaser.Scene {
             }).setOrigin(0.5).setDepth(92);
         }
 
+        // === Phase 5 — Mene challenges (arcade only) ===
+        if (this.arcadeState) {
+            const arcadeData = this.cache.json.get('arcade');
+            this._challengePool = arcadeData?.mene_challenges || [];
+
+            // Match challenge
+            const matchChallenges = arcadeData?.match_challenges || [];
+            if (matchChallenges.length > 0) {
+                this._matchChallenge = matchChallenges[Math.floor(Math.random() * matchChallenges.length)];
+                const cText = I18n.field(this._matchChallenge, 'name');
+                this.time.delayedCall(3000, () => {
+                    const badge = this.add.text(4, 56, 'Defi: ' + cText, {
+                        fontFamily: 'monospace', fontSize: '8px', color: '#FFD700',
+                        backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
+                    }).setDepth(92).setAlpha(0);
+                    this.tweens.add({ targets: badge, alpha: 0.8, duration: 500 });
+                    this.time.delayedCall(5000, () => {
+                        if (badge.active) this.tweens.add({ targets: badge, alpha: 0, duration: 500 });
+                    });
+                });
+            }
+        }
+
         // In-game tutorial — 3 phases (VISER, LOFT, SCORE), persistées via tutorialPhasesDone
         const tutSave = loadSave();
         const phasesDone = tutSave.tutorialPhasesDone || [];
@@ -372,10 +480,228 @@ export default class PetanqueScene extends Phaser.Scene {
         // Music tension crossfade when score >= 10
         this.events.on('match-tension', (tense) => setMusicTension(tense));
 
+        // === Phase 5 — Commentator sequencer (avoid overlap with challenge banners) ===
+        this._commentatorBusy = false;
+        this._safeCommentatorSay = (category) => {
+            if (this._commentatorBusy || !this._commentator) return;
+            this._commentatorBusy = true;
+            this._commentator.say(category);
+            this.time.delayedCall(COMMENTATOR_COOLDOWN, () => { this._commentatorBusy = false; });
+        };
+
+        // === Phase 5 D1 — onMeneStart hook for mene challenges ===
+        this.engine.onMeneStart = (meneNumber) => {
+            if (!this.arcadeState || !this._challengePool?.length) return;
+            if (meneNumber <= 1) return;
+            if (Math.random() > CHALLENGE_PROBABILITY) return;
+            const challenge = this._challengePool[Math.floor(Math.random() * this._challengePool.length)];
+            this._currentChallenge = challenge;
+            this._challengeCompleted = false;
+            this._showChallengeBanner(I18n.field(challenge, 'text'));
+        };
+
+        // === Phase 5 E2 — Commentaire terrain (une seule fois, 2s) ===
+        this.time.delayedCall(2000, () => {
+            const surface = this.terrainFullData?.surface || this.terrainType;
+            if (surface === 'sable') this._safeCommentatorSay('terrain_sable');
+            else if (surface === 'dalles') this._safeCommentatorSay('terrain_dalles');
+            else if (surface === 'herbe') this._safeCommentatorSay('terrain_herbe');
+        });
+
+        // === Phase 5 E2 — Commentaire adversaire (une seule fois, 6s) ===
+        this.time.delayedCall(6000, () => {
+            const arch = this.opponentCharacter?.archetype;
+            if (arch === 'tireur') this._safeCommentatorSay('adversaire_tireur');
+            else if (arch === 'pointeur') this._safeCommentatorSay('adversaire_pointeur');
+        });
+
+        // === Phase 5 E2 + F3 — Commentaires de mene + Golden zone (chainer avec onMeneStart) ===
+        const _origMeneStart = this.engine.onMeneStart;
+        this.engine.onMeneStart = (meneNumber) => {
+            if (_origMeneStart) _origMeneStart(meneNumber);
+            if (meneNumber === 2) this._safeCommentatorSay?.('mene_debut_2');
+            if (meneNumber === 5) this._safeCommentatorSay?.('mene_debut_5');
+            // Phase 5 F3: Golden zone (30% chance, mene 2+, arcade only)
+            if (this.arcadeState && meneNumber >= 2 && Math.random() < 0.3) {
+                this._spawnGoldenZone();
+            }
+        };
+
         // Pause button (top-left corner) + touche P
         this._createPauseButton();
 
         this.events.on('shutdown', this._shutdown, this);
+    }
+
+    // === Phase 5 F3 — Golden zone ===
+    _spawnGoldenZone() {
+        this._clearGoldenZone();
+        const x = Phaser.Math.Between(this.terrainX + 30, this.terrainX + TERRAIN_WIDTH - 30);
+        const y = Phaser.Math.Between(this.terrainY + 30, this.terrainY + TERRAIN_HEIGHT / 2);
+        const gfx = this.add.graphics().setDepth(5);
+        gfx.fillStyle(0xFFD700, 0.25);
+        gfx.fillCircle(x, y, 18);
+        gfx.lineStyle(1, 0xFFD700, 0.5);
+        gfx.strokeCircle(x, y, 18);
+        this.tweens.add({
+            targets: gfx, alpha: 0.12,
+            duration: 1000, yoyo: true, repeat: -1
+        });
+        this._goldenZone = { x, y, gfx };
+        this._goldenZoneActive = true;
+    }
+
+    _clearGoldenZone() {
+        if (this._goldenZone?.gfx) { this._goldenZone.gfx.destroy(); }
+        this._goldenZone = null;
+        this._goldenZoneActive = false;
+    }
+
+    // === Phase 5 B1 — Momentum indicator ===
+    _updateMomentumIndicator() {
+        if (!this.ai || !this.opponentSprite) return;
+        const m = this.ai._momentum;
+        const rounded = Math.round(m * 10);
+        if (rounded === this._lastMomentumValue) return;
+        this._lastMomentumValue = rounded;
+
+        if (Math.abs(m) < MOMENTUM_INDICATOR_THRESHOLD) {
+            if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
+            if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
+            if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
+            return;
+        }
+
+        const isFire = m > 0;
+        const color = isFire ? MOMENTUM_INDICATOR_FIRE_COLOR : MOMENTUM_INDICATOR_TILT_COLOR;
+        const intensity = Math.min(1, (Math.abs(m) - MOMENTUM_INDICATOR_THRESHOLD) / (1 - MOMENTUM_INDICATOR_THRESHOLD));
+
+        if (!this._momentumGlow) {
+            this._momentumGlow = this.add.graphics().setDepth(45);
+        }
+        this._momentumGlow.clear();
+        this._momentumGlow.fillStyle(color, MOMENTUM_INDICATOR_ALPHA * intensity);
+        this._momentumGlow.fillCircle(
+            this.opponentSprite.x, this.opponentSprite.y,
+            MOMENTUM_INDICATOR_RADIUS + intensity * 8
+        );
+
+        const labelText = isFire
+            ? I18n.t('arcade.momentum_fire')
+            : I18n.t('arcade.momentum_tilt');
+        if (!this._momentumLabel) {
+            this._momentumLabel = this.add.text(0, 0, '', {
+                fontFamily: 'monospace', fontSize: '8px',
+                color: isFire ? '#FF6644' : '#6688CC',
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setDepth(46);
+        }
+        this._momentumLabel.setText(labelText);
+        this._momentumLabel.setColor(isFire ? '#FF6644' : '#6688CC');
+        this._momentumLabel.setPosition(this.opponentSprite.x, this.opponentSprite.y - 28);
+
+        if (isFire && intensity > 0.5 && !this._momentumShakeTween) {
+            this._momentumShakeTween = this.tweens.add({
+                targets: this.opponentSprite,
+                x: this.opponentSprite.x + 1, duration: 80,
+                yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+            });
+        }
+        if ((!isFire || intensity <= 0.5) && this._momentumShakeTween) {
+            this._momentumShakeTween.destroy();
+            this._momentumShakeTween = null;
+        }
+    }
+
+    // === Phase 5 B2 — Pressure indicator ===
+    _showPressureIndicator() {
+        if (this._pressureActive) return;
+        this._pressureActive = true;
+
+        const cx = GAME_WIDTH / 2;
+        const y = 18;
+
+        this._pressureBadge = this.add.graphics().setDepth(92);
+        this._pressureBadge.fillStyle(PRESSURE_INDICATOR_COLOR, 0.85);
+        this._pressureBadge.fillRoundedRect(cx - 50, y - 8, 100, 18, 4);
+
+        this._pressureText = this.add.text(cx, y + 1, I18n.t('arcade.pressure_warning'), {
+            fontFamily: 'monospace', fontSize: '10px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(93);
+
+        this.tweens.add({
+            targets: [this._pressureBadge, this._pressureText],
+            x: '+=' + PRESSURE_WOBBLE_AMPLITUDE,
+            duration: PRESSURE_WOBBLE_SPEED,
+            yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+        });
+
+        this.cameras.main.flash(100, 196, 75, 63);
+    }
+
+    // === Phase 5 D1 — Challenge banner ===
+    _showChallengeBanner(text) {
+        if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
+
+        const cx = GAME_WIDTH / 2;
+        const y = 55;
+
+        const container = this.add.container(cx, y).setDepth(95).setAlpha(0);
+
+        const bg = this.add.graphics();
+        bg.fillStyle(0x3A2E28, 0.9);
+        bg.fillRoundedRect(-160, -14, 320, 28, 6);
+        bg.lineStyle(1, 0xFFD700, 0.5);
+        bg.strokeRoundedRect(-160, -14, 320, 28, 6);
+        container.add(bg);
+
+        const label = this.add.text(0, 0, text, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5);
+        container.add(label);
+
+        this._challengeBanner = container;
+
+        this.tweens.add({
+            targets: container, alpha: 1, duration: 300, ease: 'Sine.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(CHALLENGE_BANNER_DURATION, () => {
+                    if (container.active) {
+                        this.tweens.add({
+                            targets: container, alpha: 0, duration: 400,
+                            onComplete: () => { if (container.active) container.destroy(); }
+                        });
+                    }
+                });
+            }
+        });
+
+        if (this._commentator) this._commentator.say('defi', true);
+    }
+
+    // === Phase 5 D1 — Challenge result display ===
+    _showChallengeResult(success, galets) {
+        const text = success
+            ? I18n.t('arcade.challenge_complete', { galets })
+            : I18n.t('arcade.challenge_failed');
+        const color = success ? '#FFD700' : '#C44B3F';
+        const resultTxt = this.add.text(GAME_WIDTH / 2, 75, text, {
+            fontFamily: 'monospace', fontSize: '12px', color,
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(96).setAlpha(0);
+        this.tweens.add({
+            targets: resultTxt, alpha: 1, duration: 300,
+            onComplete: () => {
+                this.time.delayedCall(2000, () => {
+                    if (resultTxt.active) this.tweens.add({
+                        targets: resultTxt, alpha: 0, duration: 400,
+                        onComplete: () => { if (resultTxt.active) resultTxt.destroy(); }
+                    });
+                });
+            }
+        });
     }
 
     _shutdown() {
@@ -400,6 +726,14 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.aimingSystem) this.aimingSystem.destroy();
         if (this.scorePanel) this.scorePanel.destroy();
         if (this.engine?.renderer) this.engine.renderer.destroy();
+        // Phase 5 cleanup
+        if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
+        if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
+        if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
+        if (this._pressureBadge) { this._pressureBadge.destroy(); this._pressureBadge = null; }
+        if (this._pressureText) { this._pressureText.destroy(); this._pressureText = null; }
+        if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
+        this._clearGoldenZone();
         this.tweens.killAll();
     }
 
@@ -1035,12 +1369,46 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _triggerScoreBark(scores, winner, points) {
-        if (Math.random() > 0.5) return;
+        if (Math.random() > 0.6) return;
         const loser = winner === 'player' ? 'opponent' : 'player';
+        const diff = Math.abs(scores[winner] - scores[loser]);
+        const maxScore = Math.max(scores.player, scores.opponent);
+        const minScore = Math.min(scores.player, scores.opponent);
 
+        // Pression (10-10+)
+        if (scores.player >= 10 && scores.opponent >= 10) {
+            this._showBark(winner, 'pressure_tied');
+            return;
+        }
+        // Fanny imminente (12-0)
+        if (maxScore >= 12 && minScore === 0) {
+            const leadTeam = scores.player > scores.opponent ? 'player' : 'opponent';
+            this._showBark(leadTeam, 'fanny_imminent_winning');
+            this.time.delayedCall(1200, () => {
+                this._showBark(leadTeam === 'player' ? 'opponent' : 'player', 'fanny_imminent_losing');
+            });
+            return;
+        }
+        // Domination (8-0+)
+        if (diff >= 8 && minScore <= 2) {
+            const leadTeam = scores.player > scores.opponent ? 'player' : 'opponent';
+            this._showBark(leadTeam, 'dominant_lead');
+            return;
+        }
+        // Comeback (5+ pts remontes)
+        if (winner === 'player' && scores.player > scores.opponent && diff >= 5) {
+            this._showBark('player', 'comeback_self');
+            return;
+        }
+        if (winner === 'opponent' && scores.opponent > scores.player && diff >= 5) {
+            this._showBark('opponent', 'comeback_self');
+            this.time.delayedCall(1000, () => this._showBark('player', 'opponent_comeback'));
+            return;
+        }
+        // Fallback existants
         if (scores.player >= 11 || scores.opponent >= 11) {
             this._showBark(winner === 'player' ? 'player' : 'opponent', 'match_point');
-        } else if (scores[winner] - scores[loser] >= 6) {
+        } else if (diff >= 6) {
             this._showBark(winner, 'taking_lead');
         } else if (scores[loser] - scores[winner] >= 6) {
             this._showBark(loser, 'losing_badly');
@@ -1056,8 +1424,11 @@ export default class PetanqueScene extends Phaser.Scene {
         if (!lastBall || !lastBall.isAlive) return;
         const dist = lastBall.distanceTo(this.engine.cochonnet);
 
-        // Crowd audio reactions (60% probability)
-        if (Math.random() < 0.6) {
+        // Crowd audio reactions (Phase 5 G1: progressive probability in arcade)
+        const crowdProb = this.arcadeRound
+            ? Math.min(0.9, 0.5 + this.arcadeRound * 0.08)
+            : 0.6;
+        if (Math.random() < crowdProb) {
             if (dist < 25) {
                 // Great shot: applause
                 this.time.delayedCall(500, () => sfxCrowdApplause());
@@ -1570,9 +1941,10 @@ export default class PetanqueScene extends Phaser.Scene {
                     terrainName: this.engine.terrainType || this.terrainType,
                     returnScene: this.returnScene || 'TitleScene',
                     arcadeState: this.arcadeState,
-                    galetsEarned: 0,
+                    galetsEarned: this._matchGaletsEarned || 0,
                     postMatchDialogue: null,
                     unlocksOnWin: null,
+                    matchChallenge: this._matchChallenge || null,
                     matchStats: {
                         menes: this.engine.mene || 1,
                         fanny: false,

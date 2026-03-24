@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE } from '../utils/Constants.js';
-import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen } from '../utils/SaveManager.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE, MAP_NODE_RADIUS, MAP_PATH_COLOR, MAP_PATH_DASH, MAP_NODE_PULSE_DURATION, MAP_STAR_SIZE, MAP_PREVIEW_Y, DEFEAT_CONSOLATION_GALETS, DEFEAT_RETRY_ENABLED, SHOP_EXPRESS_MIN_GALETS } from '../utils/Constants.js';
+import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
@@ -24,6 +24,8 @@ export default class ArcadeScene extends Phaser.Scene {
         this.matchResults = data.matchResults || [];
         // After returning from a match
         this.lastMatchResult = data.lastMatchResult || null;
+        // Phase 5
+        this._mapTooltip = null;
     }
 
     create() {
@@ -98,6 +100,12 @@ export default class ArcadeScene extends Phaser.Scene {
             }
         }
 
+        // Phase 5 D3 — Defeat screen (before map)
+        if (this.lastMatchResult && !this.lastMatchResult.won) {
+            this._showDefeatScreen(this.lastMatchResult);
+            return;
+        }
+
         // Check if arcade data is valid
         if (!this.arcadeData.matches) {
             fadeToScene(this, 'TitleScene');
@@ -111,6 +119,19 @@ export default class ArcadeScene extends Phaser.Scene {
             return;
         }
 
+        // Phase 5 E1 — Post-narrative after rounds 1 and 2 (on win)
+        if (this.lastMatchResult?.won) {
+            const completedRound = this.currentRound - 1;
+            const prevMatch = this.arcadeData.matches[completedRound - 1];
+            if (prevMatch?.post_narrative) {
+                const lines = I18n.fieldArray(prevMatch, 'post_narrative') || prevMatch.post_narrative;
+                this._showNarrative(lines, () => {
+                    this._buildProgressScreen();
+                });
+                return;
+            }
+        }
+
         // Show mid-narrative after winning round 3 (before round 4)
         if (this.lastMatchResult?.won && this.currentRound === 4 && this.arcadeData.mid_narrative_after_3) {
             this._showNarrative(I18n.fieldArray(this.arcadeData, 'mid_narrative_after_3') || this.arcadeData.mid_narrative_after_3, () => {
@@ -119,10 +140,20 @@ export default class ArcadeScene extends Phaser.Scene {
             return;
         }
 
+        // Phase 5 F1 — Check milestones
+        this._checkMilestones();
+
         this._buildProgressScreen();
     }
 
     _buildProgressScreen() {
+        // Phase 5 F2 — Shop express after victory
+        const save = loadSave();
+        if (this.lastMatchResult?.won && this.currentRound <= 5
+            && save.galets >= SHOP_EXPRESS_MIN_GALETS) {
+            this._showShopExpress(() => this._showProgressScreen());
+            return;
+        }
         this._showProgressScreen();
     }
 
@@ -233,104 +264,170 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _showProgressScreen() {
-        // Background
-        const bg = this.add.graphics();
-        bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        const matches = this.arcadeData.matches;
+        const nextMatch = matches[this.currentRound - 1];
+
+        // === MAP ZONE (0-250) ===
+        const mapBg = this.add.graphics();
+        mapBg.fillGradientStyle(0x87CEEB, 0x87CEEB, 0xF5E6D0, 0xF5E6D0, 1);
+        mapBg.fillRect(0, 0, GAME_WIDTH, 250);
 
         // Title
-        this.add.text(GAME_WIDTH / 2, 30, 'MODE ARCADE', {
-            fontFamily: 'monospace', fontSize: '32px', color: '#FFD700',
-            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5);
+        this.add.text(16, 20, I18n.t('arcade.title'), {
+            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        });
+        this.add.text(16, 40, I18n.t('arcade.subtitle'), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+        });
 
-        // Player character info
-        this.add.text(80, 70, `${I18n.field(this.playerCharacter, 'name')} - ${I18n.field(this.playerCharacter, 'title')}`, {
-            fontFamily: 'monospace', fontSize: '14px', color: '#D4A574', shadow: SHADOW
-        }).setOrigin(0, 0.5);
+        // Time of day
+        if (nextMatch?.time_of_day) {
+            this.add.text(GAME_WIDTH - 16, 20, I18n.t('arcade.time_' + nextMatch.time_of_day), {
+                fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+            }).setOrigin(1, 0.5);
+        }
 
-        // Progress track (horizontal bar with nodes)
-        const trackY = 140;
-        const startX = 100;
-        const endX = GAME_WIDTH - 100;
-        const matches = this.arcadeData.matches;
+        // Stars total
+        const save = loadSave();
+        const totalStars = Object.values(save.starRatings || {}).reduce((s, v) => s + v, 0);
+        this.add.text(GAME_WIDTH - 16, 55, I18n.t('arcade.stars_total', { n: totalStars }), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(1, 0.5);
+        if (totalStars >= 15) {
+            this.add.text(GAME_WIDTH - 16, 68, I18n.t('arcade.stars_bonus', { galets: 100 }), {
+                fontFamily: 'monospace', fontSize: '9px', color: '#44CC44'
+            }).setOrigin(1, 0.5);
+        }
 
-        // Track line
-        const track = this.add.graphics();
-        track.lineStyle(3, 0x5A4A38, 0.8);
-        track.beginPath();
-        track.moveTo(startX, trackY);
-        track.lineTo(endX, trackY);
-        track.strokePath();
+        // Node positions (arc across the map)
+        const NODE_POSITIONS = [
+            { x: 130, y: 130 }, { x: 270, y: 100 }, { x: 416, y: 90 },
+            { x: 560, y: 110 }, { x: 700, y: 140 }
+        ];
 
-        // Match nodes
+        // Dashed path between nodes
+        const pathG = this.add.graphics();
+        pathG.lineStyle(2, MAP_PATH_COLOR, 0.6);
+        for (let i = 0; i < NODE_POSITIONS.length - 1; i++) {
+            const a = NODE_POSITIONS[i];
+            const b = NODE_POSITIONS[i + 1];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            const nx = dx / len;
+            const ny = dy / len;
+            let d = 0;
+            while (d < len) {
+                const sx = a.x + nx * d;
+                const sy = a.y + ny * d;
+                const ex = a.x + nx * Math.min(d + MAP_PATH_DASH, len);
+                const ey = a.y + ny * Math.min(d + MAP_PATH_DASH, len);
+                pathG.beginPath();
+                pathG.moveTo(sx, sy);
+                pathG.lineTo(ex, ey);
+                pathG.strokePath();
+                d += MAP_PATH_DASH + 4;
+            }
+        }
+
+        // Nodes
         for (let i = 0; i < matches.length; i++) {
-            const x = startX + (i / (matches.length - 1)) * (endX - startX);
+            const pos = NODE_POSITIONS[i];
             const match = matches[i];
             const result = this.matchResults.find(r => r.round === i + 1);
             const isCurrent = (i + 1 === this.currentRound);
-
-            // Node circle
             const nodeG = this.add.graphics();
+
             if (result && result.won) {
                 nodeG.fillStyle(0x44CC44, 1);
-                nodeG.fillCircle(x, trackY, 14);
-                nodeG.fillStyle(0xFFFFFF, 0.3);
-                nodeG.fillCircle(x - 3, trackY - 3, 5);
-                this.add.text(x, trackY, '\u2713', {
-                    fontFamily: 'monospace', fontSize: '16px', color: '#FFFFFF'
+                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
+                nodeG.lineStyle(1, 0xFFD700, 1);
+                nodeG.strokeCircle(pos.x, pos.y, MAP_NODE_RADIUS);
+                this.add.text(pos.x, pos.y, '\u2713', {
+                    fontFamily: 'monospace', fontSize: '14px', color: '#FFFFFF'
                 }).setOrigin(0.5);
+
+                // Stars under won node
+                const oppId = match.opponent;
+                const stars = save.starRatings?.[oppId] || 0;
+                if (stars > 0) {
+                    for (let s = 0; s < 3; s++) {
+                        const sx = pos.x - 12 + s * 12;
+                        const sy = pos.y + MAP_NODE_RADIUS + 16;
+                        this.add.text(sx, sy, '\u2605', {
+                            fontFamily: 'monospace', fontSize: `${MAP_STAR_SIZE}px`,
+                            color: s < stars ? '#FFD700' : '#5A4A38'
+                        }).setOrigin(0.5);
+                    }
+                }
+
+                // Hover tooltip on won nodes
+                const zone = this.add.zone(pos.x, pos.y, 30, 30).setInteractive();
+                zone.on('pointerover', () => {
+                    if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
+                    const oppChar = this._getCharById(match.opponent);
+                    const tooltipText = oppChar ? I18n.field(oppChar, 'name') + ' - V' : 'Victoire';
+                    this._mapTooltip = this.add.text(pos.x, pos.y - 28, tooltipText, {
+                        fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0',
+                        backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
+                    }).setOrigin(0.5).setDepth(60);
+                });
+                zone.on('pointerout', () => {
+                    if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
+                });
+            } else if (result && !result.won) {
+                nodeG.fillStyle(0x5A4A38, 1);
+                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
+                nodeG.lineStyle(1, 0xC44B3F, 1);
+                nodeG.strokeCircle(pos.x, pos.y, MAP_NODE_RADIUS);
             } else if (isCurrent) {
                 nodeG.fillStyle(0xFFD700, 1);
-                nodeG.fillCircle(x, trackY, 14);
+                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
                 this.tweens.add({
                     targets: nodeG, alpha: 0.5,
-                    duration: 500, yoyo: true, repeat: -1
+                    duration: MAP_NODE_PULSE_DURATION, yoyo: true, repeat: -1
                 });
             } else {
-                nodeG.fillStyle(0x5A4A38, 0.8);
-                nodeG.fillCircle(x, trackY, 12);
+                nodeG.fillStyle(0x5A4A38, 0.5);
+                nodeG.fillCircle(pos.x, pos.y, 12);
             }
 
-            // Round number
-            this.add.text(x, trackY + 26, `${i + 1}`, {
-                fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+            // Terrain name under each node
+            const terrain = this._getTerrainById(match.terrain);
+            this.add.text(pos.x, pos.y + 26, terrain ? I18n.field(terrain, 'name') : match.terrain, {
+                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
             }).setOrigin(0.5);
 
-            // Opponent name below
-            const oppChar = this._getCharById(match.opponent);
-            this.add.text(x, trackY + 42, oppChar ? I18n.field(oppChar, 'name') : '???', {
-                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(0.5);
+            // Opponent name under current node
+            if (isCurrent) {
+                const oppChar = this._getCharById(match.opponent);
+                this.add.text(pos.x, pos.y + 42, oppChar ? I18n.field(oppChar, 'name') : '???', {
+                    fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0'
+                }).setOrigin(0.5);
+            }
         }
 
-        // Next match info panel
-        const panelY = 200;
-        const nextMatch = this.arcadeData.matches[this.currentRound - 1];
+        // Decorations
+        this._drawMapDecorations();
+
+        // === PREVIEW ZONE (270+) ===
+        const panelY = MAP_PREVIEW_Y;
         const nextOpponent = this._getCharById(nextMatch.opponent);
         const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
-        if (nextOpponent) {
-            // Panel bg (v2 asset or fallback)
-            if (this.textures.exists('v2_panel_bolted')) {
-                this.add.nineslice(GAME_WIDTH / 2, panelY + 90, 'v2_panel_bolted', 0, 560, 180, 16, 16, 16, 16)
-                    .setOrigin(0.5).setAlpha(0.92);
-            } else {
-                const panel = this.add.graphics();
-                panel.fillStyle(0x3A2E28, 0.85);
-                panel.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
-                panel.lineStyle(2, 0xD4A574, 0.4);
-                panel.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
-                UIFactory.addPanelShadow(panel);
-            }
+        // Panel background
+        const panelBg = this.add.graphics();
+        panelBg.fillStyle(0x3A2E28, 0.85);
+        panelBg.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+        panelBg.lineStyle(2, 0xD4A574, 0.4);
+        panelBg.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
 
-            // "PROCHAIN COMBAT" header
-            this.add.text(GAME_WIDTH / 2, panelY + 18, 'PROCHAIN COMBAT', {
-                fontFamily: 'monospace', fontSize: '18px',
-                color: '#FFD700', shadow: SHADOW
+        if (nextOpponent) {
+            this.add.text(GAME_WIDTH / 2, panelY + 18, I18n.t('arcade.next_fight'), {
+                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
 
-            // Opponent info
             const spriteKey = this._getSpriteKey(nextOpponent);
             if (this.textures.exists(spriteKey)) {
                 this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(CHAR_SCALE_ARCADE).setOrigin(0.5);
@@ -339,33 +436,29 @@ export default class ArcadeScene extends Phaser.Scene {
             this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, I18n.field(nextOpponent, 'name').toUpperCase(), {
                 fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', shadow: SHADOW
             }).setOrigin(0, 0.5);
-
             this.add.text(GAME_WIDTH / 2 - 100, panelY + 80, I18n.field(nextOpponent, 'title'), {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
             }).setOrigin(0, 0.5);
-
             this.add.text(GAME_WIDTH / 2 - 100, panelY + 105, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW,
                 wordWrap: { width: 300 }
             }).setOrigin(0, 0.5);
 
-            // Terrain + difficulty
             if (nextTerrain) {
-                this.add.text(GAME_WIDTH / 2 - 100, panelY + 135, `Terrain : ${I18n.field(nextTerrain, 'name')}`, {
+                this.add.text(GAME_WIDTH / 2 - 100, panelY + 135, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
                     fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
                 });
             }
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 155, `Difficulte : ${nextMatch.difficulty_label}`, {
+            this.add.text(GAME_WIDTH / 2 - 100, panelY + 155, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
             });
 
-            // Stats preview (small bars)
+            // Stats preview
             const statsX = GAME_WIDTH / 2 + 140;
             const statsY = panelY + 50;
             const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
             const statLabels = ['PRE', 'PUI', 'EFF', 'S-F'];
-            const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB]; // ocre, terracotta, lavande, ciel
-
+            const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB];
             for (let i = 0; i < statNames.length; i++) {
                 const sy = statsY + i * 22;
                 this.add.text(statsX, sy, statLabels[i], {
@@ -380,33 +473,52 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // COMBATTRE button
-        const btnY = panelY + 200;
+        const btnY = panelY + 190;
         const btnBg = this.add.graphics();
         btnBg.fillStyle(0xC44B3F, 0.9);
         btnBg.fillRoundedRect(GAME_WIDTH / 2 - 100, btnY, 200, 44, 8);
-
-        const btnText = this.add.text(GAME_WIDTH / 2, btnY + 22, 'COMBATTRE !', {
+        const btnText = this.add.text(GAME_WIDTH / 2, btnY + 22, I18n.t('arcade.fight_btn'), {
             fontFamily: 'monospace', fontSize: '22px', color: '#FFFFFF',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-        // Pulse button
         this.tweens.add({
             targets: [btnBg, btnText], scaleX: 1.03, scaleY: 1.03,
             duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
-
         btnText.on('pointerdown', () => this._launchNextMatch());
 
-        // Keyboard
         this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
 
-        // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Combattre     Echap Menu', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('arcade.controls'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
+    }
+
+    _drawMapDecorations() {
+        const deco = this.add.graphics().setDepth(1);
+        const olives = [
+            { x: 200, y: 125, s: 5 }, { x: 340, y: 80, s: 4 },
+            { x: 480, y: 95, s: 6 }, { x: 620, y: 120, s: 4 }
+        ];
+        for (const o of olives) {
+            deco.fillStyle(0x6B8E4E, 0.4);
+            deco.fillCircle(o.x, o.y, o.s);
+            deco.fillStyle(0x4A6B3A, 0.3);
+            deco.fillCircle(o.x - 1, o.y + 1, o.s * 0.7);
+        }
+        deco.lineStyle(1, 0x87CEEB, 0.25);
+        for (let w = 0; w < 3; w++) {
+            deco.beginPath();
+            const baseY = 160 + w * 12;
+            for (let x = 20; x < 110; x += 4) {
+                const y = baseY + Math.sin(x * 0.08 + w) * 4;
+                if (x === 20) deco.moveTo(x, y);
+                else deco.lineTo(x, y);
+            }
+            deco.strokePath();
+        }
     }
 
     _processRoundUnlocks(round) {
@@ -575,8 +687,253 @@ export default class ArcadeScene extends Phaser.Scene {
         return getCharSpriteKey(char);
     }
 
+    // === Phase 5 F2 — Shop express ===
+    _showShopExpress(onComplete) {
+        const shopData = this.cache.json.get('shop');
+        if (!shopData?.categories) { onComplete(); return; }
+        const save = loadSave();
+        const purchases = save.purchases || [];
+
+        // Collect all unpurchased items
+        const allItems = [];
+        for (const cat of shopData.categories) {
+            for (const item of (cat.items || [])) {
+                if (!purchases.includes(item.id)) {
+                    allItems.push(item);
+                }
+            }
+        }
+        if (allItems.length === 0) { onComplete(); return; }
+
+        // Pick 2 cheapest after discount
+        const discount = 0.2;
+        allItems.sort((a, b) => a.price - b.price);
+        const offered = allItems.slice(0, 2);
+
+        const shopElements = [];
+        const cx = GAME_WIDTH / 2;
+
+        const bg = this.add.graphics().setDepth(50);
+        bg.fillStyle(0x1A1510, 0.85);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        shopElements.push(bg);
+
+        const title = this.add.text(cx, 80, I18n.t('arcade.shop_express_title'), {
+            fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(51);
+        shopElements.push(title);
+
+        const subtitle = this.add.text(cx, 110, I18n.t('arcade.shop_express_subtitle'), {
+            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574'
+        }).setOrigin(0.5).setDepth(51);
+        shopElements.push(subtitle);
+
+        let currentSave = loadSave();
+        const galetsLabel = this.add.text(cx, 135, `${currentSave.galets} Galets`, {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
+        }).setOrigin(0.5).setDepth(51);
+        shopElements.push(galetsLabel);
+
+        // Item cards
+        const cardW = 200;
+        const gap = 30;
+        const startX = cx - (offered.length * cardW + (offered.length - 1) * gap) / 2;
+
+        for (let i = 0; i < offered.length; i++) {
+            const item = offered[i];
+            const cardX = startX + i * (cardW + gap);
+            const cardY = 170;
+            const discountPrice = Math.floor(item.price * (1 - discount));
+            const canBuy = currentSave.galets >= discountPrice;
+
+            const cardBg = this.add.graphics().setDepth(51);
+            cardBg.fillStyle(0x3A2E28, 0.9);
+            cardBg.fillRoundedRect(cardX, cardY, cardW, 120, 8);
+            cardBg.lineStyle(1, canBuy ? 0xFFD700 : 0x5A4A38, 0.6);
+            cardBg.strokeRoundedRect(cardX, cardY, cardW, 120, 8);
+            shopElements.push(cardBg);
+
+            const nameText = this.add.text(cardX + cardW / 2, cardY + 20, I18n.field(item, 'name'), {
+                fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0'
+            }).setOrigin(0.5).setDepth(52);
+            shopElements.push(nameText);
+
+            const oldPrice = this.add.text(cardX + cardW / 2 - 20, cardY + 50, `${item.price}`, {
+                fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E'
+            }).setOrigin(0.5).setDepth(52);
+            shopElements.push(oldPrice);
+
+            const newPrice = this.add.text(cardX + cardW / 2 + 20, cardY + 50, `${discountPrice}`, {
+                fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
+            }).setOrigin(0.5).setDepth(52);
+            shopElements.push(newPrice);
+
+            if (canBuy) {
+                const buyBtn = this.add.text(cardX + cardW / 2, cardY + 90, 'ACHETER', {
+                    fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0',
+                    backgroundColor: '#6B8E4E', padding: { x: 8, y: 4 }
+                }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
+                shopElements.push(buyBtn);
+
+                buyBtn.on('pointerdown', () => {
+                    const s = loadSave();
+                    if (s.galets >= discountPrice) {
+                        s.galets -= discountPrice;
+                        s.purchases.push(item.id);
+                        saveSave(s);
+                        buyBtn.setText('ACHETE !').setColor('#44CC44').removeInteractive();
+                        currentSave = s;
+                        galetsLabel.setText(`${s.galets} Galets`);
+                    }
+                });
+            }
+        }
+
+        // PASSER button
+        const passBtn = this.add.text(cx, 320, 'PASSER', {
+            fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: { x: 12, y: 6 }
+        }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
+        shopElements.push(passBtn);
+
+        const cleanup = () => {
+            shopElements.forEach(el => { if (el?.active) el.destroy(); });
+            onComplete();
+        };
+        passBtn.on('pointerdown', cleanup);
+        this.input.keyboard.on('keydown-SPACE', cleanup);
+        this.input.keyboard.on('keydown-ESC', cleanup);
+    }
+
+    // === Phase 5 D3 — Defeat screen ===
+    _showDefeatScreen(result) {
+        const cx = GAME_WIDTH / 2;
+
+        const bg = this.add.graphics().setDepth(50);
+        bg.fillStyle(0x1A1510, 0.9);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        this.add.text(cx, 80, I18n.t('arcade.defeat_title'), {
+            fontFamily: 'monospace', fontSize: '28px', color: '#C44B3F',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(51);
+
+        const matchGalets = result.galetsEarned || 0;
+        if (matchGalets > 0) {
+            this.add.text(cx, 130, I18n.t('arcade.defeat_earned', { galets: matchGalets }), {
+                fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
+            }).setOrigin(0.5).setDepth(51);
+        }
+
+        if (DEFEAT_CONSOLATION_GALETS > 0) {
+            addGalets(DEFEAT_CONSOLATION_GALETS);
+            this.add.text(cx, 165, I18n.t('arcade.defeat_consolation', { galets: DEFEAT_CONSOLATION_GALETS }), {
+                fontFamily: 'monospace', fontSize: '12px', color: '#D4A574'
+            }).setOrigin(0.5).setDepth(51);
+        }
+
+        const oppMatch = this.arcadeData.matches[this.currentRound - 2];
+        if (oppMatch) {
+            const oppChar = this._getCharById(oppMatch.opponent);
+            if (oppChar) {
+                this.add.text(cx, 210, I18n.field(oppChar, 'name'), {
+                    fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0'
+                }).setOrigin(0.5).setDepth(51);
+            }
+        }
+
+        let retryBtn = null;
+        if (DEFEAT_RETRY_ENABLED) {
+            retryBtn = this.add.text(cx, 280, I18n.t('arcade.defeat_retry'), {
+                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
+                backgroundColor: '#C44B3F', padding: { x: 16, y: 8 }
+            }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
+
+            retryBtn.on('pointerdown', () => {
+                this.losses = Math.max(0, this.losses - 1);
+                const lostIdx = this.matchResults.findIndex(r => !r.won && r.round === this.currentRound - 1);
+                if (lostIdx >= 0) this.matchResults.splice(lostIdx, 1);
+                this.children.list.filter(c => c.depth >= 50 && c.depth <= 52).forEach(c => c.destroy());
+                this._buildProgressScreen();
+            });
+        }
+
+        const continueBtn = this.add.text(cx, 340, I18n.t('arcade.defeat_continue'), {
+            fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: { x: 14, y: 6 }
+        }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
+
+        continueBtn.on('pointerdown', () => {
+            this.children.list.filter(c => c.depth >= 50 && c.depth <= 52).forEach(c => c.destroy());
+            this._buildProgressScreen();
+        });
+
+        this.input.keyboard.on('keydown-SPACE', () => { if (retryBtn) retryBtn.emit('pointerdown'); });
+        this.input.keyboard.on('keydown-ESC', () => continueBtn.emit('pointerdown'));
+    }
+
+    // === Phase 5 F1 — Milestones check ===
+    _checkMilestones() {
+        const save = loadSave();
+        const milestones = this.arcadeData.milestones || [];
+        for (const m of milestones) {
+            if (isMilestoneUnlocked(m.id)) continue;
+            let unlocked = false;
+            if (m.condition === 'arcadeWins >= 1' && this.wins >= 1) unlocked = true;
+            if (m.condition === 'arcadeWins >= 3' && this.wins >= 3) unlocked = true;
+            if (m.condition === 'arcade_complete' && this.wins >= 5) unlocked = true;
+            if (m.condition === 'arcade_perfect' && this.wins >= 5 && this.losses === 0) unlocked = true;
+            if (m.condition === 'carreaux >= 1' && (save.cumulativeStats?.carreaux || 0) >= 1) unlocked = true;
+            if (m.condition === 'match_fanny') {
+                const lastResult = this.matchResults[this.matchResults.length - 1];
+                if (lastResult?.won && lastResult?.opponentScore === 0) unlocked = true;
+            }
+            if (unlocked) {
+                const isNew = unlockMilestone(m.id);
+                if (isNew) {
+                    addGalets(m.reward);
+                    this._showMilestonePopup(m);
+                }
+            }
+        }
+    }
+
+    _showMilestonePopup(milestone) {
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const overlay = this.add.graphics().setDepth(100);
+        overlay.fillStyle(0x1A1510, 0.6);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        const panel = this.add.graphics().setDepth(101);
+        panel.fillStyle(0x3A2E28, 0.95);
+        panel.fillRoundedRect(cx - 180, cy - 50, 360, 100, 10);
+        panel.lineStyle(2, 0xFFD700, 0.6);
+        panel.strokeRoundedRect(cx - 180, cy - 50, 360, 100, 10);
+        const title = this.add.text(cx, cy - 25, I18n.t('arcade.milestone_unlocked'), {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(102);
+        const name = this.add.text(cx, cy + 5, I18n.field(milestone, 'text'), {
+            fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(102);
+        const reward = this.add.text(cx, cy + 30, `+${milestone.reward} Galets`, {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
+        }).setOrigin(0.5).setDepth(102);
+
+        this.time.delayedCall(3000, () => {
+            this.tweens.add({
+                targets: [overlay, panel, title, name, reward],
+                alpha: 0, duration: 500,
+                onComplete: () => {
+                    overlay.destroy(); panel.destroy(); title.destroy();
+                    name.destroy(); reward.destroy();
+                }
+            });
+        });
+    }
+
     _shutdown() {
         this.input.keyboard.removeAllListeners();
+        if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
         this.tweens.killAll();
     }
 }

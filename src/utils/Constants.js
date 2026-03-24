@@ -492,3 +492,62 @@ export const TOUCH_BUTTON_SIZE = 56;  // Zone tap minimale WCAG (px)
 export const TOUCH_PADDING = 8;       // Padding invisible autour des boutons interactifs (px)
 export const DUST_MAX_SIMULTANEOUS_DESKTOP = 5;  // Limite groupes dust simultanés (desktop)
 export const DUST_MAX_SIMULTANEOUS_MOBILE = 4;   // Limite groupes dust simultanés (mobile)
+
+// === PHASE 5 — Arcade Vivante ===
+
+// Momentum indicator (visible on AI sprite)
+export const MOMENTUM_INDICATOR_FIRE_COLOR = 0xFF6644;   // halo rouge-orange
+export const MOMENTUM_INDICATOR_TILT_COLOR = 0x6688CC;   // halo bleu froid
+export const MOMENTUM_INDICATOR_THRESHOLD = 0.3;          // |momentum| > 0.3 = visible
+export const MOMENTUM_INDICATOR_ALPHA = 0.4;
+export const MOMENTUM_INDICATOR_RADIUS = 24;              // px autour du sprite
+
+// Pressure indicator (10-10+)
+export const PRESSURE_INDICATOR_COLOR = 0xC44B3F;        // accent rouge
+export const PRESSURE_WOBBLE_AMPLITUDE = 3;               // px de tremblement icone
+export const PRESSURE_WOBBLE_SPEED = 200;                 // ms par cycle
+
+// AI Tell (flash bref avant tir IA)
+export const AI_TELL_DURATION = 400;                      // ms de l'indicateur
+export const AI_TELL_POINTER_COLOR = 0x87CEEB;           // ciel = va pointer
+export const AI_TELL_SHOOTER_COLOR = 0xC44B3F;           // accent = va tirer
+export const AI_TELL_ALPHA = 0.6;
+
+// Map progression (ArcadeScene)
+export const MAP_NODE_RADIUS = 14;                        // px rayon noeud
+export const MAP_NODE_SPACING_X = 140;                    // px entre noeuds
+export const MAP_PATH_COLOR = 0xD4A574;                   // ocre
+export const MAP_PATH_DASH = 6;                           // px longueur tiret
+export const MAP_NODE_PULSE_DURATION = 800;               // ms
+export const MAP_STAR_SIZE = 12;                          // px taille etoile (lisible a 832x480)
+export const MAP_ZONE_TOP = 60;                           // px debut map
+export const MAP_ZONE_BOTTOM = 240;                       // px fin map
+export const MAP_PREVIEW_Y = 270;                         // px debut panel preview
+
+// Defi de mene
+export const CHALLENGE_BANNER_DURATION = 2500;            // ms affichage
+export const CHALLENGE_REWARD_GALETS = 10;                // galets par defi reussi
+export const CHALLENGE_PROBABILITY = 0.6;                 // 60% chance qu'un defi apparaisse
+
+// Zone doree
+export const GOLDEN_ZONE_RADIUS = 18;                    // px
+export const GOLDEN_ZONE_COLOR = 0xFFD700;
+export const GOLDEN_ZONE_ALPHA = 0.25;
+export const GOLDEN_ZONE_REWARD = 5;                      // galets bonus
+
+// Shop express
+export const SHOP_EXPRESS_ITEMS = 2;                      // nb items proposes
+export const SHOP_EXPRESS_DISCOUNT = 0.2;                 // 20% reduction
+
+// Crowd intensity per arcade round (1-5)
+export const CROWD_INTENSITY_BY_ROUND = [0.03, 0.04, 0.05, 0.07, 0.10];
+
+// Shop express budget gate
+export const SHOP_EXPRESS_MIN_GALETS = 40;                // ne pas afficher si budget < ce seuil
+
+// Defeat safety valve
+export const DEFEAT_CONSOLATION_GALETS = 15;              // galets de consolation apres defaite
+export const DEFEAT_RETRY_ENABLED = true;                 // autoriser le retry du meme match
+
+// Commentator sequencing
+export const COMMENTATOR_COOLDOWN = 3000;                 // ms minimum entre deux messages textuels

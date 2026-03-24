@@ -1174,14 +1174,14 @@ let _crowdAmbianceGain = null;
 let _crowdAmbianceNodes = [];
 let _crowdAmbianceSched = [];
 
-export function startCrowdAmbiance() {
+export function startCrowdAmbiance(intensity = 0.04) {
     stopCrowdAmbiance();
     const c = getCtx();
     if (!c) return { stop() {} };
 
     // Master gain — very low so crowd is subliminal
     const gainNode = c.createGain();
-    gainNode.gain.setValueAtTime(_effectiveVol(0.04), c.currentTime);
+    gainNode.gain.setValueAtTime(_effectiveVol(intensity), c.currentTime);
     gainNode.connect(c.destination);
     _crowdAmbianceGain = gainNode;
 

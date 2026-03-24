@@ -6,7 +6,8 @@ import {
     AI_PERSONALITY_MODIFIERS,
     AI_MOMENTUM_SENSITIVITY,
     puissanceMultiplier,
-    LOFT_RAFLE, LATERAL_SPIN_MIN_EFFET
+    LOFT_RAFLE, LATERAL_SPIN_MIN_EFFET,
+    AI_TELL_DURATION, AI_TELL_POINTER_COLOR, AI_TELL_SHOOTER_COLOR, AI_TELL_ALPHA
 } from '../utils/Constants.js';
 
 import PointeurStrategy from './ai/PointeurStrategy.js';
@@ -248,6 +249,21 @@ export default class PetanqueAI {
         g.moveTo(originX, originY);
         g.lineTo(endX, endY);
         g.strokePath();
+
+        // Phase 5 B3: Visual tell - brief color flash on opponent sprite
+        const opSprite = this.scene.opponentSprite;
+        if (opSprite) {
+            const isTir = color === 0xFF6644;
+            const tellColor = isTir ? AI_TELL_SHOOTER_COLOR : AI_TELL_POINTER_COLOR;
+            const tellGfx = this.scene.add.graphics().setDepth(46);
+            tellGfx.fillStyle(tellColor, AI_TELL_ALPHA);
+            tellGfx.fillCircle(opSprite.x, opSprite.y, 18);
+            this.scene.tweens.add({
+                targets: tellGfx, alpha: 0, duration: AI_TELL_DURATION,
+                ease: 'Sine.easeOut',
+                onComplete: () => tellGfx.destroy()
+            });
+        }
 
         this.scene.time.delayedCall(400, () => {
             g.destroy();

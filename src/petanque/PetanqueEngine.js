@@ -74,6 +74,7 @@ export default class PetanqueEngine {
         // Callbacks
         this.onStateChange = null;
         this.onScore = null;
+        this.onMeneStart = null;
         this.onTurnChange = null;
         this.onAfterStop = null;
         this.onShotResult = null; // (resultType: string, ball: Ball) => void
@@ -141,6 +142,8 @@ export default class PetanqueEngine {
     }
 
     startMene() {
+        // Phase 5: notify mene start
+        if (this.onMeneStart) { try { this.onMeneStart(this.mene); } catch(e) { /* safe */ } }
         // Clear old balls
         this.balls.forEach(b => b.destroy());
         this.balls = [];

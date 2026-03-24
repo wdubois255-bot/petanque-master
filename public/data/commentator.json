@@ -168,5 +168,21 @@
     "Victory! Well played!",
     "Match over! Congratulations!",
     "VICTORY!"
-  ]
+  ],
+  "defi": ["Un defi est lance !", "Objectif bonus en vue !", "Defi accepte ?"],
+  "defi_en": ["A challenge appears!", "Bonus objective ahead!", "Challenge accepted?"],
+  "terrain_sable": ["Le sable est lourd ici...", "Attention, ca freine !"],
+  "terrain_sable_en": ["Heavy sand here...", "Watch out, it slows down!"],
+  "terrain_dalles": ["Les dalles, ca glisse !", "Terrain rapide, attention !"],
+  "terrain_dalles_en": ["Slippery tiles!", "Fast surface, watch out!"],
+  "terrain_herbe": ["L'herbe est traitre.", "Terrain mixte, adaptez-vous."],
+  "terrain_herbe_en": ["Tricky grass.", "Mixed terrain, adapt!"],
+  "adversaire_tireur": ["Attention, c'est un tireur !", "Il va viser vos boules !"],
+  "adversaire_tireur_en": ["Watch out, he's a shooter!", "He'll target your boules!"],
+  "adversaire_pointeur": ["Un pointeur de precision...", "Il va se coller au cochonnet."],
+  "adversaire_pointeur_en": ["A precision pointer...", "He'll stick close to the jack."],
+  "mene_debut_2": ["La partie s'installe...", "Les choses serieuses commencent."],
+  "mene_debut_2_en": ["The game settles in...", "Things get serious."],
+  "mene_debut_5": ["Cinquieme mene ! On entre dans le vif.", "Ca chauffe !"],
+  "mene_debut_5_en": ["Fifth round! Getting intense.", "Heating up!"]
 }
