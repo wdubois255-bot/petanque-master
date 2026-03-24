@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
@@ -128,7 +129,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._inputEnabled = false;
         this.cameras.main.fadeOut(400, 26, 21, 16);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start('TitleScene');
+            fadeToScene(this, 'TitleScene');
         });
     }
 

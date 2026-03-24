@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE } from '../utils/Constants.js';
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -51,7 +52,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 rookie.isRookie = true;
                 this.playerCharacter = rookie;
             } else {
-                this.scene.start('CharSelectScene', { mode: 'arcade' });
+                fadeToScene(this, 'CharSelectScene', { mode: 'arcade' });
                 return;
             }
         }
@@ -393,7 +394,7 @@ export default class ArcadeScene extends Phaser.Scene {
         // Keyboard
         this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
 
         // Controls hint
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Combattre     Echap Menu', {
@@ -424,7 +425,7 @@ export default class ArcadeScene extends Phaser.Scene {
         const bouleType = save.selectedBoule || 'acier';
         const cochonnetType = save.selectedCochonnet || 'classique';
 
-        this.scene.start('VSIntroScene', {
+        fadeToScene(this, 'VSIntroScene', {
             playerCharacter: this.playerCharacter,
             opponentCharacter: opponent,
             terrain: terrain ? terrain.surface : 'terre',
@@ -549,9 +550,9 @@ export default class ArcadeScene extends Phaser.Scene {
             backgroundColor: '#C44B3F', padding: { x: 20, y: 10 }, shadow: SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        btn.on('pointerdown', () => this.scene.start('TitleScene'));
-        this.input.keyboard.on('keydown-SPACE', () => this.scene.start('TitleScene'));
-        this.input.keyboard.on('keydown-ENTER', () => this.scene.start('TitleScene'));
+        btn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+        this.input.keyboard.on('keydown-SPACE', () => fadeToScene(this, 'TitleScene'));
+        this.input.keyboard.on('keydown-ENTER', () => fadeToScene(this, 'TitleScene'));
     }
 
     _getCharById(id) {

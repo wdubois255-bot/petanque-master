@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_VS, DIFFICULTY_COLORS } from '../utils/Constants.js';
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = UIFactory.SHADOW_HEAVY;
 
@@ -489,6 +490,6 @@ export default class VSIntroScene extends Phaser.Scene {
             ...this.matchData
         };
 
-        this.scene.start('PetanqueScene', sceneData);
+        fadeToScene(this, 'PetanqueScene', sceneData);
     }
 }

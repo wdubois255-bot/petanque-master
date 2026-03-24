@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT, STA
 import { setRookieStats, addRookiePoints } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -183,7 +184,7 @@ export default class LevelUpScene extends Phaser.Scene {
             this.input.keyboard.on(`keydown-${def.hotkey}`, () => this._addPoint(i));
         }
         this.input.keyboard.on('keydown-ENTER', () => this._confirm());
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start(this.returnScene || 'TitleScene', this.returnData));
+        this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, this.returnScene || 'TitleScene', this.returnData));
     }
 
     _subtitleString() {
@@ -448,7 +449,7 @@ export default class LevelUpScene extends Phaser.Scene {
         // Flash feedback then direct transition
         this.cameras.main.flash(150, 255, 215, 0);
         this.time.delayedCall(200, () => {
-            this.scene.start(this.returnScene, this.returnData);
+            fadeToScene(this, this.returnScene, this.returnData);
         });
     }
 

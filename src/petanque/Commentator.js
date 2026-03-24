@@ -62,26 +62,27 @@ export default class Commentator {
         const scene = this.scene;
         const w = scene.scale.width;
 
-        // Fond semi-transparent (style commentaire TV)
-        this._bgObj = scene.add.graphics().setDepth(98);
+        // Fond semi-transparent (style commentaire TV) — positionne bas-centre
+        // depth 97 : au-dessus du panel loft/tir (95) mais sous les overlays (100+)
+        this._bgObj = scene.add.graphics().setDepth(97);
         const padding = { x: 14, y: 7 };
-        // On dessine le fond apres avoir cree le texte pour connaitre ses dimensions
-        // Donc on cree le texte d'abord avec alpha 0
+        // Cree le texte d'abord (alpha 0) pour connaitre ses dimensions
+        const h = scene.scale.height;
 
-        this._textObj = scene.add.text(w / 2, 14, text, {
+        this._textObj = scene.add.text(w / 2, h - 130, text, {
             fontFamily: 'monospace',
             fontSize: '16px',
             color: '#FFD700',
             align: 'center',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5, 0).setDepth(99).setAlpha(0);
+        }).setOrigin(0.5, 0).setDepth(97).setAlpha(0);
 
         // Dessiner le fond maintenant qu'on connait la taille du texte
         const tw = this._textObj.width + padding.x * 2;
         const th = this._textObj.height + padding.y * 2;
         const tx = w / 2 - tw / 2;
-        const ty = 12;
-        this._bgObj.fillStyle(0x1A1510, 0.72);
+        const ty = h - 132;
+        this._bgObj.fillStyle(0x1A1510, 0.82);
         this._bgObj.fillRoundedRect(tx, ty, tw, th, 4);
         this._bgObj.setAlpha(0);
 

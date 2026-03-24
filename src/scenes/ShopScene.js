@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH }
 import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -601,7 +602,7 @@ export default class ShopScene extends Phaser.Scene {
     // INPUT
     // ================================================================
     _setupInput() {
-        this.input.keyboard.on('keydown-ESC', () => { sfxUIClick(); this.scene.start('TitleScene'); });
+        this.input.keyboard.on('keydown-ESC', () => { sfxUIClick(); fadeToScene(this, 'TitleScene'); });
         this.input.keyboard.on('keydown-ONE', () => { sfxUIClick(); this._switchTab(0); });
         this.input.keyboard.on('keydown-TWO', () => { sfxUIClick(); this._switchTab(1); });
         this.input.keyboard.on('keydown-THREE', () => { sfxUIClick(); this._switchTab(2); });

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_STATIC_SPRITES, COLORS, TERRAIN_FRICTION } from '../utils/Constants.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -78,9 +79,9 @@ export default class DevTestScene extends Phaser.Scene {
         this.add.text(50, GAME_HEIGHT - 20, '< RETOUR', {
             fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => this.scene.start('TitleScene'));
+            .on('pointerdown', () => fadeToScene(this, 'TitleScene'));
 
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
 
         // Content container
         this._contentContainer = this.add.container(0, 0);

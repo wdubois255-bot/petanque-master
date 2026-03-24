@@ -405,7 +405,8 @@ export default class EngineRenderer {
 
     showBark(text, isGood) {
         const x = this.scene.scale.width - 80;
-        const y = 60;
+        // y=100 : sous le score compact (h=50, y=6 → bas=56), 44px de marge
+        const y = 100;
         const color = isGood ? '#6B8E4E' : '#C44B3F';
         const bgColor = isGood ? 0x6B8E4E : 0xC44B3F;
 

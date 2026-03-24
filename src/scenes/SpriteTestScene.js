@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 /**
  * Prototype: modular sprite animation for pétanque throwing.
@@ -83,7 +84,7 @@ export default class SpriteTestScene extends Phaser.Scene {
         // Input
         this.input.keyboard.on('keydown-SPACE', () => this._startThrowCycle());
         this.input.keyboard.on('keydown-R', () => this.scene.restart());
-        this.input.keyboard.on('keydown-ESCAPE', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESCAPE', () => fadeToScene(this, 'TitleScene'));
 
         // Auto-start first cycle after 1s
         this.time.delayedCall(1000, () => this._startThrowCycle());

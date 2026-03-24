@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PI
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -1024,7 +1025,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-ENTER', () => this._launchGame());
         this.input.keyboard.on('keydown-SPACE', () => this._launchGame());
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
     }
 
     _shutdown() {
