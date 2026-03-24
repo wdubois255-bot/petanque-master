@@ -149,13 +149,18 @@
 - [x] Stats persistantes (totalMatches, winsPerTerrain, bestScore, carreaux, etc.)
 - **Fichier** : `src/utils/SaveManager.js`
 
-### 2.11 Game Feel (implemente 18 mars 2026)
+### 2.11 Game Feel (implemente 18 mars 2026 + 24 mars 2026)
 - [x] Slow-mo pres du cochonnet (< 40px, 0.3x) + vignette
 - [x] Son de roulement continu (pink noise dynamique)
 - [x] Pause dramatique 1.5s avant score de mene
 - [x] Reactions foule audio (applaudissements, cheer, groan)
 - [x] Ambiance par terrain (cigales, vagues, oiseaux, vent)
 - [x] "+X pts" floating text on score (texte flottant anime a chaque gain de points)
+- [x] **D1** : Murmure ambiant de foule (crowd ambiance, bruit rose bandpass 200-800Hz, swells 4-8s)
+- [x] **D2** : Badge "Match X/Y" en mode Arcade (haut-gauche, depth 92)
+- [x] **D3** : Teaser "prochain unlock" en fin de match (Galets + ability Rookie)
+- [x] **D4** : Menu pause enrichi (400x320, controles, volume 3 boutons, Abandonner + confirmation)
+- [x] **D5** : Hints terrain one-shot (colline/docks/plage/parc, overlay strip, auto-dismiss 4s)
 
 ### 2.12 Progression (implemente 18 mars 2026)
 - [x] Le Rookie dans characters.json (10/40 pts, 3 abilities)
