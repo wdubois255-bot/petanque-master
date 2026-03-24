@@ -151,12 +151,12 @@ export default class ResultScene extends Phaser.Scene {
         const tirRatio = totalThrows > 0 ? `${Math.round((ms.shots || 0) / totalThrows * 100)}%` : '-';
 
         const stats = [
-            { label: 'Menes', value: ms.menes || '?', col: 0 },
-            { label: 'Meilleur score', value: ms.bestMene || '0', col: 1 },
-            { label: 'Carreaux', value: ms.carreaux || 0, col: 2 },
-            { label: 'Biberons', value: ms.biberons || 0, col: 0 },
-            { label: 'Meilleure boule', value: bestDist, col: 1 },
-            { label: 'Taux de tir', value: tirRatio, col: 2 },
+            { label: I18n.t('result.stats.menes'), value: ms.menes || '?', col: 0 },
+            { label: I18n.t('result.stats.best_score'), value: ms.bestMene || '0', col: 1 },
+            { label: I18n.t('result.stats.carreaux'), value: ms.carreaux || 0, col: 2 },
+            { label: I18n.t('result.stats.biberons'), value: ms.biberons || 0, col: 0 },
+            { label: I18n.t('result.stats.best_ball'), value: bestDist, col: 1 },
+            { label: I18n.t('result.stats.hit_rate'), value: tirRatio, col: 2 },
         ];
 
         for (let i = 0; i < stats.length; i++) {
@@ -175,7 +175,7 @@ export default class ResultScene extends Phaser.Scene {
 
         // Fanny badge
         if (ms.fanny) {
-            this.add.text(panelX, panelY + panelH + 8, 'FANNY !', {
+            this.add.text(panelX, panelY + panelH + 8, I18n.t('result.fanny'), {
                 fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
             }).setOrigin(0.5);
         }
@@ -270,7 +270,7 @@ export default class ResultScene extends Phaser.Scene {
         const btnY = 310;
 
         if (this.arcadeState) {
-            const continueLabel = this.won ? 'CONTINUER' : 'REESSAYER';
+            const continueLabel = this.won ? I18n.t('result.continue') : I18n.t('arcade.retry');
             const continueBtn = this.add.text(GAME_WIDTH / 2, btnY, `[ ${continueLabel} ]`, {
                 fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0',
                 backgroundColor: this.won ? '#44CC44' : '#C44B3F',
@@ -279,7 +279,7 @@ export default class ResultScene extends Phaser.Scene {
 
             continueBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
 
-            const menuBtn = this.add.text(GAME_WIDTH / 2, btnY + 50, '[ MENU ]', {
+            const menuBtn = this.add.text(GAME_WIDTH / 2, btnY + 50, `[ ${I18n.t('result.menu')} ]`, {
                 fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
                 backgroundColor: '#3A2E28', padding: { x: 14, y: 6 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -287,14 +287,14 @@ export default class ResultScene extends Phaser.Scene {
             menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         } else {
             // Quick Play / other modes
-            const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, '[ REJOUER ]', {
+            const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, `[ ${I18n.t('result.replay')} ]`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
                 backgroundColor: this.won ? '#44CC44' : '#C44B3F', padding: { x: 14, y: 8 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             replayBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
 
-            const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, '[ MENU ]', {
+            const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, `[ ${I18n.t('result.menu')} ]`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
                 backgroundColor: '#3A2E28', padding: { x: 14, y: 8 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -302,7 +302,7 @@ export default class ResultScene extends Phaser.Scene {
             menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         }
 
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('result.controls'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
 
@@ -380,8 +380,15 @@ export default class ResultScene extends Phaser.Scene {
         container.setAlpha(0);
         this.tweens.add({ targets: container, alpha: 1, duration: 300, ease: 'Quad.easeOut' });
 
+        let dialogDone = false;
         const showLine = (index) => {
             if (index >= dialogues.length) {
+                if (dialogDone) return;
+                dialogDone = true;
+                // Remove listeners to prevent double onDone calls
+                this.input.keyboard.off('keydown-SPACE');
+                this.input.keyboard.off('keydown-ENTER');
+                this.input.off('pointerdown');
                 this.tweens.add({
                     targets: container, alpha: 0, duration: 300, ease: 'Quad.easeIn',
                     onComplete: () => { container.destroy(true); onDone(); }

@@ -708,33 +708,37 @@ export default class PetanqueScene extends Phaser.Scene {
         // Notifier le portail que le gameplay s'arrête (no-op en standalone)
         PortalSDK.gameplayStop();
 
-        if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
-        this._gamePaused = false;
-        this.input.keyboard.removeAllListeners();
-        this.input.removeAllListeners();
-        stopTerrainAmbiance();
-        stopCrowdAmbiance();
-        stopMusic();
-        stopRollingSound();
-        if (this._commentator) { this._commentator.destroy(); this._commentator = null; }
-        if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
-        this.cameras.main.setZoom(1.0); // Reset zoom-pulse
-        if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
-        if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
-        if (this._activeThrowSprite) { this._activeThrowSprite.destroy(); this._activeThrowSprite = null; }
-        if (this._inGameTutorial) { this._inGameTutorial.destroy(); this._inGameTutorial = null; }
-        if (this.aimingSystem) this.aimingSystem.destroy();
-        if (this.scorePanel) this.scorePanel.destroy();
-        if (this.engine?.renderer) this.engine.renderer.destroy();
-        // Phase 5 cleanup
-        if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
-        if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
-        if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
-        if (this._pressureBadge) { this._pressureBadge.destroy(); this._pressureBadge = null; }
-        if (this._pressureText) { this._pressureText.destroy(); this._pressureText = null; }
-        if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
-        this._clearGoldenZone();
-        this.tweens.killAll();
+        try {
+            if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
+            this._gamePaused = false;
+            if (this.input?.keyboard) this.input.keyboard.removeAllListeners();
+            if (this.input) this.input.removeAllListeners();
+            stopTerrainAmbiance();
+            stopCrowdAmbiance();
+            stopMusic();
+            stopRollingSound();
+            if (this._commentator) { this._commentator.destroy(); this._commentator = null; }
+            if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
+            if (this.cameras?.main) this.cameras.main.setZoom(1.0); // Reset zoom-pulse
+            if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
+            if (this._barkText) { this._barkText.destroy(); this._barkText = null; }
+            if (this._activeThrowSprite) { this._activeThrowSprite.destroy(); this._activeThrowSprite = null; }
+            if (this._inGameTutorial) { this._inGameTutorial.destroy(); this._inGameTutorial = null; }
+            if (this.aimingSystem) this.aimingSystem.destroy();
+            if (this.scorePanel) this.scorePanel.destroy();
+            if (this.engine?.renderer) this.engine.renderer.destroy();
+            // Phase 5 cleanup
+            if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
+            if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
+            if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
+            if (this._pressureBadge) { this._pressureBadge.destroy(); this._pressureBadge = null; }
+            if (this._pressureText) { this._pressureText.destroy(); this._pressureText = null; }
+            if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
+            this._clearGoldenZone();
+            if (this.tweens) this.tweens.killAll();
+        } catch (e) {
+            // Shutdown must never crash — Phaser 4 RC6 may destroy subsystems before this runs
+        }
     }
 
     _checkTutorial() {
@@ -1065,12 +1069,12 @@ export default class PetanqueScene extends Phaser.Scene {
             this._activeThrowSprite = null;
         }
 
-        // Reset both sprites to clean, visible state
-        this.playerSprite.setVisible(true);
+        // Reset both sprites to clean, visible state (defensive: alpha + depth)
+        this.playerSprite.setVisible(true).setAlpha(1).setDepth(20);
         this.playerSprite.scaleX = s;
         this.playerSprite.scaleY = s;
         this.playerSprite.angle = 0;
-        this.opponentSprite.setVisible(true);
+        this.opponentSprite.setVisible(true).setAlpha(1).setDepth(20);
         this.opponentSprite.scaleX = s;
         this.opponentSprite.scaleY = s;
         this.opponentSprite.angle = 0;
@@ -1162,7 +1166,7 @@ export default class PetanqueScene extends Phaser.Scene {
                     // Animation done — destroy throw sprite, show main sprite at idle
                     throwSprite.destroy();
                     if (this._activeThrowSprite === throwSprite) this._activeThrowSprite = null;
-                    sprite.setVisible(true);
+                    sprite.setVisible(true).setAlpha(1).setDepth(20);
                     sprite.setFrame(idleFrame);
                     sprite.scaleX = s;
                     sprite.scaleY = s;

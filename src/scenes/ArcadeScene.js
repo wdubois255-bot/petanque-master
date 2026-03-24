@@ -151,7 +151,9 @@ export default class ArcadeScene extends Phaser.Scene {
         const save = loadSave();
         if (this.lastMatchResult?.won && this.currentRound <= 5
             && save.galets >= SHOP_EXPRESS_MIN_GALETS) {
-            this._showShopExpress(() => this._showProgressScreen());
+            this._showShopExpress(() => {
+                this._showProgressScreen();
+            });
             return;
         }
         this._showProgressScreen();
@@ -232,6 +234,22 @@ export default class ArcadeScene extends Phaser.Scene {
         let canSkip = false;
         this.time.delayedCall(1200, () => { canSkip = true; });
 
+        let narrativeComplete = false;
+        const cleanupNarrative = () => {
+            if (narrativeComplete) return;
+            narrativeComplete = true;
+            // Remove listeners to prevent leaks into subsequent UI
+            this.input.keyboard.off('keydown-SPACE', proceed);
+            this.input.keyboard.off('keydown-ENTER', proceed);
+            this.input.off('pointerdown', proceed);
+            bg.destroy();
+            lineObjects.forEach(t => t.destroy());
+            skipHint.destroy();
+            this.cameras.main.resetFX();
+            this.cameras.main.setAlpha(1);
+            if (onComplete) onComplete();
+        };
+
         const proceed = () => {
             if (!canSkip) return;
 
@@ -250,12 +268,11 @@ export default class ArcadeScene extends Phaser.Scene {
             canSkip = false;
             this.cameras.main.fadeOut(400);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                bg.destroy();
-                lineObjects.forEach(t => t.destroy());
-                skipHint.destroy();
                 this.cameras.main.fadeIn(300);
-                if (onComplete) onComplete();
+                cleanupNarrative();
             });
+            // Safety: force transition if camerafadeoutcomplete never fires (Phaser 4 RC6)
+            this.time.delayedCall(900, cleanupNarrative);
         };
 
         this.input.keyboard.on('keydown-SPACE', proceed);
@@ -753,23 +770,34 @@ export default class ArcadeScene extends Phaser.Scene {
             cardBg.strokeRoundedRect(cardX, cardY, cardW, 120, 8);
             shopElements.push(cardBg);
 
-            const nameText = this.add.text(cardX + cardW / 2, cardY + 20, I18n.field(item, 'name'), {
-                fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0'
+            // Item icon (if available)
+            if (item.icon && this.textures.exists(item.icon)) {
+                const tex = this.textures.get(item.icon);
+                const isSheet = tex.frameTotal > 2;
+                const icon = isSheet
+                    ? this.add.sprite(cardX + cardW / 2, cardY + 35, item.icon, 0).setScale(0.7)
+                    : this.add.image(cardX + cardW / 2, cardY + 35, item.icon).setScale(1.2);
+                icon.setOrigin(0.5).setDepth(52);
+                shopElements.push(icon);
+            }
+
+            const nameText = this.add.text(cardX + cardW / 2, cardY + 60, I18n.field(item, 'name'), {
+                fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0'
             }).setOrigin(0.5).setDepth(52);
             shopElements.push(nameText);
 
-            const oldPrice = this.add.text(cardX + cardW / 2 - 20, cardY + 50, `${item.price}`, {
+            const oldPrice = this.add.text(cardX + cardW / 2 - 20, cardY + 78, `${item.price}`, {
                 fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E'
             }).setOrigin(0.5).setDepth(52);
             shopElements.push(oldPrice);
 
-            const newPrice = this.add.text(cardX + cardW / 2 + 20, cardY + 50, `${discountPrice}`, {
+            const newPrice = this.add.text(cardX + cardW / 2 + 20, cardY + 78, `${discountPrice}`, {
                 fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
             }).setOrigin(0.5).setDepth(52);
             shopElements.push(newPrice);
 
             if (canBuy) {
-                const buyBtn = this.add.text(cardX + cardW / 2, cardY + 90, 'ACHETER', {
+                const buyBtn = this.add.text(cardX + cardW / 2, cardY + 100, I18n.t('shop.buy'), {
                     fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0',
                     backgroundColor: '#6B8E4E', padding: { x: 8, y: 4 }
                 }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
@@ -781,7 +809,7 @@ export default class ArcadeScene extends Phaser.Scene {
                         s.galets -= discountPrice;
                         s.purchases.push(item.id);
                         saveSave(s);
-                        buyBtn.setText('ACHETE !').setColor('#44CC44').removeInteractive();
+                        buyBtn.setText(I18n.t('shop.owned')).setColor('#44CC44').removeInteractive();
                         currentSave = s;
                         galetsLabel.setText(`${s.galets} Galets`);
                     }
@@ -790,13 +818,19 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // PASSER button
-        const passBtn = this.add.text(cx, 320, 'PASSER', {
+        const passBtn = this.add.text(cx, 340, I18n.t('arcade.continue'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
             backgroundColor: '#3A2E28', padding: { x: 12, y: 6 }
         }).setOrigin(0.5).setDepth(52).setInteractive({ useHandCursor: true });
         shopElements.push(passBtn);
 
+        let shopClosed = false;
         const cleanup = () => {
+            if (shopClosed) return;
+            shopClosed = true;
+            // Remove listeners to prevent leaks into map UI
+            this.input.keyboard.off('keydown-SPACE', cleanup);
+            this.input.keyboard.off('keydown-ESC', cleanup);
             shopElements.forEach(el => { if (el?.active) el.destroy(); });
             onComplete();
         };

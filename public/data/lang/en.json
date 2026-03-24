@@ -75,8 +75,20 @@
   "result": {
     "victory": "VICTORY!",
     "defeat": "DEFEAT...",
-    "stats": { "menes": "Ends", "carreaux": "Carreaux" },
-    "galets": "+{amount} Galets"
+    "stats": {
+      "menes": "Ends",
+      "carreaux": "Carreaux",
+      "best_score": "Best score",
+      "biberons": "Biberons",
+      "best_ball": "Best ball",
+      "hit_rate": "Hit rate"
+    },
+    "galets": "+{amount} Galets",
+    "fanny": "FANNY!",
+    "continue": "CONTINUE",
+    "replay": "REPLAY",
+    "menu": "MENU",
+    "controls": "Space Continue     Esc Menu"
   },
   "ingame": {
     "score": "SCORE",
@@ -84,7 +96,26 @@
     "opponent": "OPP.",
     "mene": "END {n}",
     "tab_hint": "[TAB] Score detail",
-    "pause": "PAUSE"
+    "pause": "PAUSE",
+    "your_turn": "Your turn!",
+    "opp_turn": "{name}'s turn",
+    "throw_cochonnet": "Throw the jack!",
+    "opp_throws_cochonnet": "{name} throws the jack",
+    "first_ball": "First ball!",
+    "opp_first_ball": "{name}: first ball",
+    "tie_no_points": "Tie! No points.",
+    "win_points": "{name} {verb} {n} point{s}!",
+    "mene_dead_player": "Dead end! You score {n} point(s)!",
+    "mene_dead_opp": "Dead end! Opponent scores {n} point(s)!",
+    "mene_dead_zero": "Dead end! 0 points.",
+    "you_name": "You",
+    "opp_name": "Opponent",
+    "win_verb": "score",
+    "opp_verb": "scores",
+    "yes": "Yes",
+    "no": "No",
+    "controls_label": "CONTROLS",
+    "volume_label": "VOLUME"
   },
   "shop": {
     "buy": "BUY",

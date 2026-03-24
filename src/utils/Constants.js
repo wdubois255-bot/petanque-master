@@ -336,7 +336,7 @@ export const TERRAIN_COLORS = {
 export const TERRAIN_FRICTION = {
     terre: 1.0,
     herbe: 1.8,
-    sable: 3.0,
+    sable: 2.0,
     dalles: 0.7
 };
 

@@ -1,6 +1,7 @@
 import Ball from './Ball.js';
 import Cochonnet from './Cochonnet.js';
 import EngineRenderer from './EngineRenderer.js';
+import I18n from '../utils/I18n.js';
 import {
     VICTORY_SCORE, BALL_COLORS,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
@@ -182,10 +183,10 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam || 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage(`${this._teamName('player')} : lancez le cochonnet !`);
+                    this._showMessage(I18n.t('ingame.throw_cochonnet'));
                     this._showAimHint();
                 } else {
-                    this._showMessage(`${this._teamName('opponent')} lance le cochonnet`);
+                    this._showMessage(I18n.t('ingame.opp_throws_cochonnet', { name: this._teamName('opponent') }));
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -196,9 +197,9 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam || 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage(`${this._teamName('player')} : premiere boule !`);
+                    this._showMessage(I18n.t('ingame.first_ball'));
                 } else {
-                    this._showMessage(`${this._teamName('opponent')} : premiere boule`);
+                    this._showMessage(I18n.t('ingame.opp_first_ball', { name: this._teamName('opponent') }));
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -209,9 +210,9 @@ export default class PetanqueEngine {
                 this.currentTeam = this._cochonnetTeam === 'player' ? 'opponent' : 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
-                    this._showMessage(`${this._teamName('player')} : a vous !`);
+                    this._showMessage(I18n.t('ingame.your_turn'));
                 } else {
-                    this._showMessage(`Tour de ${this._teamName('opponent')}`);
+                    this._showMessage(I18n.t('ingame.opp_turn', { name: this._teamName('opponent') }));
                     this._triggerAI();
                 }
                 if (this.onTurnChange) this.onTurnChange(this.currentTeam);
@@ -269,9 +270,9 @@ export default class PetanqueEngine {
 
         if (this.currentTeam === 'player') {
             this.aimingEnabled = true;
-            this._showMessage(`${this._teamName('player')} : a vous !`);
+            this._showMessage(I18n.t('ingame.your_turn'));
         } else {
-            this._showMessage(`Tour de ${this._teamName('opponent')}`);
+            this._showMessage(I18n.t('ingame.opp_turn', { name: this._teamName('opponent') }));
             this._triggerAI();
         }
 
@@ -279,10 +280,7 @@ export default class PetanqueEngine {
     }
 
     _teamName(team) {
-        if (this.scene.localMultiplayer) {
-            return team === 'player' ? 'Joueur 1' : 'Joueur 2';
-        }
-        return team === 'player' ? 'Vous' : 'L\'adversaire';
+        return team === 'player' ? I18n.t('ingame.you_name') : I18n.t('ingame.opp_name');
     }
 
     _getMinDistance(team) {
@@ -617,6 +615,14 @@ export default class PetanqueEngine {
                 const traceRadius = isPlombee ? ball.radius + 4 : isTir ? ball.radius + 3 : ball.radius;
                 this._drawImpactTrace(targetX, targetY, traceRadius);
 
+                // flyOnly miss safety: if tir missed everything, give minimal residual roll
+                // (in real petanque a missed tir still bounces forward a little)
+                if (isTir && Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
+                    const landAngle = Math.atan2(targetY - startY, targetX - startX);
+                    rollVx = Math.cos(landAngle) * MIN_IMPACT_SPEED * 0.5;
+                    rollVy = Math.sin(landAngle) * MIN_IMPACT_SPEED * 0.5;
+                }
+
                 ball.launch(rollVx, rollVy);
 
                 // Spin lateral post-atterrissage (actif uniquement apres contact sol)
@@ -667,7 +673,7 @@ export default class PetanqueEngine {
             loserDist = playerDist;
         } else {
             // Exact tie: no points, same team relaunches
-            this._showMessage('Egalite ! Aucun point.');
+            this._showMessage(I18n.t('ingame.tie_no_points'));
             this.scene.time.delayedCall(2000, () => {
                 this.mene++;
                 this.startMene();
@@ -706,7 +712,8 @@ export default class PetanqueEngine {
         }
 
         const winnerName = this._teamName(winner);
-        this._showMessage(`${winnerName} ${winner === 'player' ? 'gagnez' : 'gagne'} ${points} point${points > 1 ? 's' : ''} !`);
+        const verb = winner === 'player' ? I18n.t('ingame.win_verb') : I18n.t('ingame.opp_verb');
+        this._showMessage(I18n.t('ingame.win_points', { name: winnerName, verb, n: points, s: points > 1 ? 's' : '' }));
 
         // Floating "+X" text above cochonnet
         if (this.cochonnet && this.cochonnet.isAlive) {
@@ -758,15 +765,15 @@ export default class PetanqueEngine {
         if (playerRemaining > 0 && opponentRemaining === 0) {
             this.scores.player += playerRemaining;
             this.meneWinner = 'player';
-            this._showMessage(`Mene morte ! Vous gagnez ${playerRemaining} point(s) !`);
+            this._showMessage(I18n.t('ingame.mene_dead_player', { n: playerRemaining }));
         } else if (opponentRemaining > 0 && playerRemaining === 0) {
             this.scores.opponent += opponentRemaining;
             this.meneWinner = 'opponent';
-            this._showMessage(`Mene morte ! L'adversaire gagne ${opponentRemaining} point(s) !`);
+            this._showMessage(I18n.t('ingame.mene_dead_opp', { n: opponentRemaining }));
         } else {
             // Mene morte sans points : meme equipe relance
             this.meneWinner = this._cochonnetTeam;
-            this._showMessage('Mene morte ! 0 points.');
+            this._showMessage(I18n.t('ingame.mene_dead_zero'));
         }
 
         try {
@@ -810,6 +817,7 @@ export default class PetanqueEngine {
             galetsEarned,
             postMatchDialogue,
             unlocksOnWin: isVictory ? (this.scene.unlocksOnWin || null) : null,
+            matchChallenge: this.scene._matchChallenge || null,
             matchStats: {
                 menes: this.matchStats?.menesPlayed || this.mene,
                 fanny: isFanny,

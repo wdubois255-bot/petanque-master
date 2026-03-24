@@ -85,7 +85,7 @@ describe('Terrain friction — all 4 surfaces', () => {
             if (!sable.isMoving && !dalles.isMoving) break;
         }
         expect(sableFrames).toBeLessThan(dallesFrames);
-        expect(dallesFrames).toBeGreaterThan(sableFrames * 3); // sable ~4x more friction than dalles
+        expect(dallesFrames).toBeGreaterThan(sableFrames * 2); // sable ~2.86x more friction than dalles
     });
 
     it('herbe ball travels less than terre ball', () => {

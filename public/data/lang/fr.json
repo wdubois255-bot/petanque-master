@@ -75,16 +75,47 @@
   "result": {
     "victory": "VICTOIRE !",
     "defeat": "DEFAITE...",
-    "stats": { "menes": "Menes", "carreaux": "Carreaux" },
-    "galets": "+{amount} Galets"
+    "stats": {
+      "menes": "Menes",
+      "carreaux": "Carreaux",
+      "best_score": "Meilleur score",
+      "biberons": "Biberons",
+      "best_ball": "Meilleure boule",
+      "hit_rate": "Taux de tir"
+    },
+    "galets": "+{amount} Galets",
+    "fanny": "FANNY !",
+    "continue": "CONTINUER",
+    "replay": "REJOUER",
+    "menu": "MENU",
+    "controls": "Espace Continuer     Echap Menu"
   },
   "ingame": {
     "score": "SCORE",
     "you": "VOUS",
     "opponent": "ADV.",
     "mene": "MENE {n}",
-    "tab_hint": "[TAB] Détail score",
-    "pause": "PAUSE"
+    "tab_hint": "[TAB] Detail score",
+    "pause": "PAUSE",
+    "your_turn": "A vous !",
+    "opp_turn": "Tour de {name}",
+    "throw_cochonnet": "Lancez le cochonnet !",
+    "opp_throws_cochonnet": "{name} lance le cochonnet",
+    "first_ball": "Premiere boule !",
+    "opp_first_ball": "{name} : premiere boule",
+    "tie_no_points": "Egalite ! Aucun point.",
+    "win_points": "{name} {verb} {n} point{s} !",
+    "mene_dead_player": "Mene morte ! Vous gagnez {n} point(s) !",
+    "mene_dead_opp": "Mene morte ! L'adversaire gagne {n} point(s) !",
+    "mene_dead_zero": "Mene morte ! 0 points.",
+    "you_name": "Vous",
+    "opp_name": "L'adversaire",
+    "win_verb": "gagnez",
+    "opp_verb": "gagne",
+    "yes": "Oui",
+    "no": "Non",
+    "controls_label": "CONTROLES",
+    "volume_label": "VOLUME"
   },
   "shop": {
     "buy": "ACHETER",

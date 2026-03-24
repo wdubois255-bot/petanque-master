@@ -41,7 +41,8 @@ export default class TitleScene extends Phaser.Scene {
         this._createVersionTag();
         this._playIntroSequence();
 
-        // Keyboard
+        // Keyboard — reset key states to prevent stuck keys from previous scene
+        this.input.keyboard.resetKeys();
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enterKey = this.input.keyboard.addKey('ENTER');
         this.spaceKey = this.input.keyboard.addKey('SPACE');

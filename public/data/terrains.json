@@ -31,7 +31,7 @@
       "description": "Sable fin, parasols et embruns. Les boules s'enfoncent et s'arretent vite. Avantage aux tireurs.",
       "description_en": "Fine sand, parasols and sea spray. Balls sink and stop fast. Advantage to shooters.",
       "surface": "sable",
-      "friction": 3.0,
+      "friction": 2.0,
       "zones": [],
       "slope": null,
       "walls": false,
