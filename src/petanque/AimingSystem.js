@@ -53,6 +53,11 @@ export default class AimingSystem {
         // Spin lateral [E] : 0 = off, -1 = gauche, +1 = droite
         this._lateralSpin = 0;
 
+        // Unified toggle panel (C3)
+        this._togglePanelGfx = null;
+        this._togglePanelRows = [];
+        this._toggleRowDefs = null;
+
         // === FOCUS (Respire) system: reduces wobble by 80% for one throw ===
         this._focusCharges = FOCUS_CHARGES_PER_MATCH;
         this._focusActive = false;        // active this throw?
@@ -166,8 +171,8 @@ export default class AimingSystem {
         const cx = this.scene.scale.width / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
 
-        // Panneau 2 rangees : Pointer (haut) + Tirer (bas)
-        const panelW = 520, panelH = 86;
+        // Panneau 2 rangees : Pointer (haut) + Tirer (bas) — hauteur 96 pour accomoder labels 13px (C4)
+        const panelW = 520, panelH = 96;
         const bg = this.scene.add.graphics().setDepth(95);
         bg.fillStyle(0x3A2E28, 0.88);
         bg.fillRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
@@ -225,17 +230,17 @@ export default class AimingSystem {
             this._modeUI.push(arcGfx);
             this._combinedGfx.push(arcGfx);
 
-            // Label
+            // Label (C4 : 10 → 13px)
             const label = this.scene.add.text(ox, opt.oy + 10, `[${opt.label}] ${opt.sublabel}`, {
-                fontFamily: 'monospace', fontSize: '10px',
+                fontFamily: 'monospace', fontSize: '13px',
                 color: '#' + opt.color.toString(16).padStart(6, '0'),
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
             this._modeUI.push(label);
 
-            // Sous-description (9px, gris neutre)
-            const subDesc = this.scene.add.text(ox, opt.oy + 20, opt.desc, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E'
+            // Sous-description (C4 : 9px → 12px)
+            const subDesc = this.scene.add.text(ox, opt.oy + 24, opt.desc, {
+                fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E'
             }).setOrigin(0.5).setDepth(97).setAlpha(0.7);
             this._modeUI.push(subDesc);
 
@@ -332,73 +337,160 @@ export default class AimingSystem {
         const opt = this._allOptions[index];
         this._clearModeUI();
 
+        const effetStat = this.charStats.effet || 6;
+        const spinAvail = effetStat >= LATERAL_SPIN_MIN_EFFET;
+
         if (opt.mode === 'tirer') {
             this.shotMode = 'tirer';
             this.loftPreset = opt.loftObj;
             this._highlightOpponentBalls();
-            if (opt.loftObj.retroAllowed) this._showRetroToggle();
-            this._showCochonnetToggle();
-            this._showSpinLateralToggle();
+            this._showTogglePanel({ retro: !!opt.loftObj.retroAllowed, cochonnet: true, spin: spinAvail });
             this.engine._showMessage(`${opt.loftObj.label} - Visez une boule adverse !`);
         } else {
             this.shotMode = 'pointer';
             this.loftPreset = opt.loftObj;
-            if (this.loftPreset.retroAllowed) this._showRetroToggle();
-            this._showSpinLateralToggle();
+            this._showTogglePanel({ retro: !!this.loftPreset.retroAllowed, cochonnet: false, spin: spinAvail });
             this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
         }
         this.engine.aimingEnabled = true;
     }
 
-    // Retro toggle: slim indicator bottom-right, toggled with [R]
-    _showRetroToggle() {
-        this._clearRetroUI();
-        this._retroUI = [];
+    // === UNIFIED TOGGLE PANEL (Retro [R], Cochonnet [B], Spin [E]) ===
 
-        const effetStat = this.charStats.effet || 6;
-        const x = this.scene.scale.width - 90;
-        const y = this.scene.scale.height - 32;
+    _showTogglePanel(opts = { retro: false, cochonnet: false, spin: false }) {
+        this._clearTogglePanel();
 
-        const retroLabel = this.scene.add.text(x, y, '[R] Retro', {
-            fontFamily: 'monospace', fontSize: '11px',
-            color: '#9B7BB8', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
-            .setInteractive({ useHandCursor: true });
-        this._retroUI.push(retroLabel);
-        this._retroLabel = retroLabel;
+        const W = this.scene.scale.width;
+        const H = this.scene.scale.height;
+        const loftPanelTop = H - AIMING_UI_BOTTOM_OFFSET - 43; // top edge of loft panel
+        const panelW = 102, panelH = 3 * 22 + 16;
+        const panelX = W - panelW - 6;
+        const panelY = loftPanelTop - 6 - panelH;
 
-        // Effet stat indicator (small dots)
-        const dotGfx = this.scene.add.graphics().setDepth(96);
-        for (let d = 0; d < 5; d++) {
-            const filled = d < Math.ceil(effetStat / 2);
-            dotGfx.fillStyle(filled ? 0x9B7BB8 : 0x3A2E28, filled ? 0.7 : 0.3);
-            dotGfx.fillCircle(x - 20 + d * 10, y + 12, 3);
+        const gfx = this.scene.add.graphics().setDepth(96);
+        gfx.fillStyle(0x3A2E28, 0.88);
+        gfx.fillRoundedRect(panelX, panelY, panelW, panelH, 6);
+        gfx.lineStyle(1, 0xD4A574, 0.3);
+        gfx.strokeRoundedRect(panelX, panelY, panelW, panelH, 6);
+        this._togglePanelGfx = gfx;
+
+        const rowDefs = [
+            { key: 'R', label: 'Retro',      color: '#9B7BB8', dotColor: 0x9B7BB8, avail: opts.retro },
+            { key: 'B', label: 'Cochonnet',  color: '#FFD700', dotColor: 0xFFD700, avail: opts.cochonnet },
+            { key: 'E', label: 'Spin',       color: '#9E9E8E', dotColor: 0x9E9E8E, avail: opts.spin },
+        ];
+
+        this._togglePanelRows = [];
+        for (let i = 0; i < rowDefs.length; i++) {
+            const row = rowDefs[i];
+            const rowCY = panelY + 8 + i * 22 + 11;
+            const dotX = panelX + 10;
+
+            const dotGfx = this.scene.add.graphics().setDepth(97);
+            dotGfx.fillStyle(row.avail ? row.dotColor : 0x5A5050, row.avail ? 0.6 : 0.25);
+            dotGfx.fillCircle(dotX, rowCY, 4);
+
+            const labelText = this.scene.add.text(
+                panelX + 20, rowCY,
+                `[${row.key}] ${row.label}`,
+                { fontFamily: 'monospace', fontSize: '11px', color: row.avail ? row.color : '#5A5050', shadow: SHADOW }
+            ).setOrigin(0, 0.5).setDepth(97).setAlpha(row.avail ? 0.55 : 0.3);
+
+            if (row.avail) labelText.setInteractive({ useHandCursor: true });
+
+            row.dotGfx = dotGfx;
+            row.labelText = labelText;
+            row.rowCY = rowCY;
+            row.dotX = dotX;
+
+            this._togglePanelRows.push(dotGfx, labelText);
         }
-        this._retroUI.push(dotGfx);
+        this._toggleRowDefs = rowDefs;
 
-        retroLabel.on('pointerdown', (pointer) => {
-            pointer.event.stopPropagation();
-            this._toggleRetro();
-        });
-
+        // Key bindings
         this._keyR = this.scene.input.keyboard.addKey('R');
+        if (opts.cochonnet) {
+            this._keyB = this.scene.input.keyboard.addKey('B');
+            this._keyB.on('down', () => this._toggleCochonnet());
+        }
+        if (opts.spin) {
+            this._keyE = this.scene.input.keyboard.addKey('E');
+            this._keyE.on('down', () => this._toggleSpinLateral());
+        }
+
+        // Pointer callbacks
+        const [, retroLabel, , cochLabel, , spinLabel] = this._togglePanelRows;
+        if (opts.retro) retroLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleRetro(); });
+        if (opts.cochonnet) cochLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleCochonnet(); });
+        if (opts.spin) spinLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleSpinLateral(); });
     }
+
+    _refreshTogglePanel() {
+        if (!this._toggleRowDefs) return;
+        const defs = this._toggleRowDefs;
+        const spinKey = String(this._lateralSpin);
+        const spinColors = { '0': '#9E9E8E', '-1': '#87CEEB', '1': '#C44B3F' };
+        const spinDots  = { '0': 0x9E9E8E,  '-1': 0x87CEEB,  '1': 0xC44B3F };
+        const spinLabels = { '0': 'Spin', '-1': '← Gauche !', '1': '→ Droite !' };
+
+        const states = [
+            {
+                active: this.retroActive,
+                activeText: '[R] RETRO !', inactiveText: '[R] Retro',
+                activeColor: '#D4A574', inactiveColor: '#9B7BB8',
+                activeDot: 0xD4A574,    inactiveDot: 0x9B7BB8
+            },
+            {
+                active: this._targetCochonnet,
+                activeText: '[B] COCHONNET !', inactiveText: '[B] Cochonnet',
+                activeColor: '#FFD700', inactiveColor: '#FFD700',
+                activeDot: 0xFFD700,   inactiveDot: 0xFFD700
+            },
+            {
+                active: this._lateralSpin !== 0,
+                activeText: `[E] ${spinLabels[spinKey]}`, inactiveText: '[E] Spin',
+                activeColor: spinColors[spinKey], inactiveColor: '#9E9E8E',
+                activeDot: spinDots[spinKey],    inactiveDot: 0x9E9E8E
+            },
+        ];
+
+        for (let i = 0; i < defs.length; i++) {
+            const row = defs[i];
+            if (!row.avail) continue;
+            const st = states[i];
+            const dotC = st.active ? st.activeDot : st.inactiveDot;
+            row.dotGfx.clear();
+            row.dotGfx.fillStyle(dotC, st.active ? 1 : 0.6);
+            row.dotGfx.fillCircle(row.dotX, row.rowCY, 4);
+            row.labelText.setText(st.active ? st.activeText : st.inactiveText);
+            row.labelText.setColor(st.active ? st.activeColor : st.inactiveColor);
+            row.labelText.setAlpha(st.active ? 1 : 0.55);
+        }
+    }
+
+    _clearTogglePanel() {
+        if (this._togglePanelGfx) { this._togglePanelGfx.destroy(); this._togglePanelGfx = null; }
+        if (this._togglePanelRows) {
+            this._togglePanelRows.forEach(e => { try { e.destroy(); } catch (_) {} });
+            this._togglePanelRows = [];
+        }
+        this._toggleRowDefs = null;
+    }
+
+    // Stubs kept for backward-compat (called from state handlers, destroy, etc.)
+    _showRetroToggle() {}
+    _showCochonnetToggle() {}
+    _showSpinLateralToggle() {}
 
     _toggleRetro() {
         this.retroActive = !this.retroActive;
         sfxUIClick();
-        if (this._retroLabel) {
-            this._retroLabel.setAlpha(this.retroActive ? 1 : 0.5);
-            this._retroLabel.setColor(this.retroActive ? '#D4A574' : '#9B7BB8');
-            this._retroLabel.setText(this.retroActive ? '[R] RETRO !' : '[R] Retro');
-        }
+        this._refreshTogglePanel();
     }
 
     _clearRetroUI() {
-        if (this._retroUI) {
-            this._retroUI.forEach(e => e.destroy());
-            this._retroUI = [];
-        }
+        // Panel destroyed here (state changes / throw / destroy paths)
+        this._clearTogglePanel();
         this._retroLabel = null;
         if (this._keyR) { this._keyR.removeAllListeners(); this._keyR = null; }
     }
@@ -458,107 +550,26 @@ export default class AimingSystem {
         if (this._keyD) { this._keyD.removeAllListeners(); this._keyD = null; }
     }
 
-    // === Ciblage cochonnet [B] — disponible en mode tirer ===
-
-    _showCochonnetToggle() {
-        this._clearCochonnetUI();
-        this._cochonnetUI = [];
-
-        const x = this.scene.scale.width - 90;
-        const y = this.scene.scale.height - 54;
-
-        const label = this.scene.add.text(x, y, '[B] Cochonnet', {
-            fontFamily: 'monospace', fontSize: '10px',
-            color: '#FFD700', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
-            .setInteractive({ useHandCursor: true });
-        this._cochonnetUI.push(label);
-        this._cochonnetLabel = label;
-
-        label.on('pointerdown', (pointer) => {
-            pointer.event.stopPropagation();
-            this._toggleCochonnet();
-        });
-
-        this._keyB = this.scene.input.keyboard.addKey('B');
-        this._keyB.on('down', () => this._toggleCochonnet());
-    }
-
     _toggleCochonnet() {
         this._targetCochonnet = !this._targetCochonnet;
         sfxUIClick();
-        if (this._cochonnetLabel) {
-            this._cochonnetLabel.setAlpha(this._targetCochonnet ? 1 : 0.5);
-            this._cochonnetLabel.setText(this._targetCochonnet ? '[B] COCHONNET !' : '[B] Cochonnet');
-        }
+        this._refreshTogglePanel();
     }
 
     _clearCochonnetUI() {
-        if (this._cochonnetUI) {
-            this._cochonnetUI.forEach(e => e.destroy());
-            this._cochonnetUI = [];
-        }
         this._cochonnetLabel = null;
         if (this._keyB) { this._keyB.removeAllListeners(); this._keyB = null; }
     }
 
-    // === Spin lateral [E] : off → gauche → droite → off ===
-
-    _showSpinLateralToggle() {
-        this._clearSpinLateralUI();
-        this._spinLateralUI = [];
-
-        const effetStat = this.charStats.effet || 6;
-        if (effetStat < LATERAL_SPIN_MIN_EFFET) return; // Stat insuffisante
-
-        const x = this.scene.scale.width - 90;
-        // Position : juste sous le toggle retro (retro = -32, spin = -54 si retro present, sinon -32)
-        const hasRetro = this._retroLabel != null;
-        const y = this.scene.scale.height - (hasRetro ? 76 : 54);
-
-        const spinLabels = { 0: '[E] Spin', '-1': '[E] ← Gauche !', '1': '[E] → Droite !' };
-        const spinColors = { 0: '#9E9E8E', '-1': '#87CEEB', '1': '#C44B3F' };
-
-        const label = this.scene.add.text(x, y, spinLabels[0], {
-            fontFamily: 'monospace', fontSize: '10px',
-            color: spinColors[0], shadow: SHADOW
-        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
-            .setInteractive({ useHandCursor: true });
-        this._spinLateralUI.push(label);
-        this._spinLateralLabel = label;
-
-        label.on('pointerdown', (pointer) => {
-            pointer.event.stopPropagation();
-            this._toggleSpinLateral();
-        });
-
-        this._keyE = this.scene.input.keyboard.addKey('E');
-        this._keyE.on('down', () => this._toggleSpinLateral());
-
-        this._spinLabelMap = spinLabels;
-        this._spinColorMap = spinColors;
-    }
-
     _toggleSpinLateral() {
-        // Cycle : 0 → -1 → +1 → 0
         if (this._lateralSpin === 0) this._lateralSpin = -1;
         else if (this._lateralSpin === -1) this._lateralSpin = 1;
         else this._lateralSpin = 0;
-
         sfxUIClick();
-        if (this._spinLateralLabel) {
-            const key = String(this._lateralSpin);
-            this._spinLateralLabel.setText(this._spinLabelMap[key]);
-            this._spinLateralLabel.setColor(this._spinColorMap[key]);
-            this._spinLateralLabel.setAlpha(this._lateralSpin !== 0 ? 1 : 0.5);
-        }
+        this._refreshTogglePanel();
     }
 
     _clearSpinLateralUI() {
-        if (this._spinLateralUI) {
-            this._spinLateralUI.forEach(e => e.destroy());
-            this._spinLateralUI = [];
-        }
         this._spinLateralLabel = null;
         if (this._keyE) { this._keyE.removeAllListeners(); this._keyE = null; }
     }

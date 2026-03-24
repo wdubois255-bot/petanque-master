@@ -477,6 +477,10 @@ export const DIALOG_BOX_HEIGHT = 110;
 export const AIMING_UI_BOTTOM_OFFSET = 52;
 export const FOCUS_UI_STACK_OFFSET = 50; // 28 + 22 = espace au-dessus du mode UI
 
+// ScorePanel compact mode
+export const SCORE_PANEL_COMPACT_W = 94;
+export const SCORE_PANEL_COMPACT_H = 50;
+
 // Mobile detection & touch UX
 export const IS_MOBILE = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
 export const TOUCH_BUTTON_SIZE = 56;  // Zone tap minimale WCAG (px)
