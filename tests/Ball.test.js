@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
-    COCHONNET_MASS
+    COCHONNET_MASS, MAX_THROW_SPEED
 } from '../src/utils/Constants.js';
 
 // We test Ball physics logic without rendering (mock scene)
@@ -324,5 +324,61 @@ describe('Ball - kill', () => {
         expect(ball.isMoving).toBe(false);
         expect(ball.vx).toBe(0);
         expect(ball.vy).toBe(0);
+    });
+});
+
+// ─── AXE D — Collision edge cases ────────────────────────────────────────────
+
+describe('Ball - Collision edge cases (AXE D)', () => {
+    it('triple collision: A hits B, B hits C (chain resolveCollision)', () => {
+        const a = new Ball(mockScene, 100, 200, { mass: BALL_MASS });
+        const b = new Ball(mockScene, 100 + BALL_RADIUS * 2 - 2, 200, { mass: BALL_MASS });
+        const c = new Ball(mockScene, 100 + BALL_RADIUS * 4 - 4, 200, { mass: BALL_MASS });
+        a.launch(8, 0);
+
+        Ball.resolveCollision(a, b); // A → B: B is now moving
+        Ball.resolveCollision(b, c); // B → C: C is now moving
+
+        expect(c.isMoving).toBe(true);
+        expect(c.vx).toBeGreaterThan(0); // C received momentum via chain
+    });
+
+    it('dead ball does not move during update() (isAlive check at top of update)', () => {
+        const ball = new Ball(mockScene, 100, 200);
+        ball.launch(5, 0);
+        ball.kill(); // isAlive = false, isMoving = false
+        const xBefore = ball.x;
+
+        ball.update(16); // should return early — guard: if (!isAlive || !isMoving) return
+
+        expect(ball.x).toBe(xBefore); // position unchanged
+        expect(ball.isAlive).toBe(false);
+    });
+
+    it('collision at MAX_THROW_SPEED produces no NaN velocities', () => {
+        const a = new Ball(mockScene, 100, 200, { mass: BALL_MASS });
+        const b = new Ball(mockScene, 100 + BALL_RADIUS * 2 - 1, 200, { mass: BALL_MASS });
+        a.launch(MAX_THROW_SPEED, 0); // extreme speed (12 px/frame)
+
+        Ball.resolveCollision(a, b);
+
+        expect(Number.isFinite(a.vx)).toBe(true);
+        expect(Number.isFinite(a.vy)).toBe(true);
+        expect(Number.isFinite(b.vx)).toBe(true);
+        expect(Number.isFinite(b.vy)).toBe(true);
+    });
+
+    it('collision near terrain edge: velocities remain physically valid', () => {
+        // Ball A just inside bounds, B next to it — simulates edge-of-terrain collision
+        const a = new Ball(mockScene, 52, 200, { mass: BALL_MASS }); // near left edge
+        const b = new Ball(mockScene, 52 + BALL_RADIUS * 2 - 1, 200, { mass: BALL_MASS });
+        a.launch(6, 0);
+
+        Ball.resolveCollision(a, b);
+
+        expect(b.vx).toBeGreaterThan(0);
+        // Post-collision speed should not exceed plausible physical maximum
+        expect(Math.abs(b.vx)).toBeLessThan(MAX_THROW_SPEED * 2);
+        expect(Math.abs(b.vy)).toBeLessThan(MAX_THROW_SPEED * 2);
     });
 });

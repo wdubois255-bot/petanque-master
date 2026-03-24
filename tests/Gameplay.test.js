@@ -887,6 +887,146 @@ describe('LOFT_RAFLE — preset validation', () => {
     });
 });
 
+// =====================================================
+//  D1. SLOPE PHYSICS (slope_zones) — Format terrain réel Colline
+//  Tests using slope_zones format (not legacy terrain.slope)
+// =====================================================
+
+describe('Slope Physics (slope_zones format)', () => {
+    const bounds = { x: 50, y: 50, w: 600, h: 600 };
+
+    it('ball gains downward velocity when in a slope_zone (direction: down)', () => {
+        const terrain = {
+            slope_zones: [{ direction: 'down', gravity_component: 0.06, rect: { x: 0, y: 0, w: 1, h: 1 } }]
+        };
+        const ball = new Ball(mockScene, 300, 300, { frictionMult: 1.0, terrain, bounds });
+        ball.launch(3, 0); // Moving right with vy=0
+        const vyBefore = ball.vy; // 0
+        for (let i = 0; i < 10; i++) ball.update(16);
+        // slope_zone 'down' adds positive vy each frame
+        expect(ball.vy).toBeGreaterThan(vyBefore);
+    });
+
+    it('ball moving upward decelerates faster on downward slope_zone', () => {
+        const terrain = {
+            slope_zones: [{ direction: 'down', gravity_component: 0.06, rect: { x: 0, y: 0, w: 1, h: 1 } }]
+        };
+        const flat = new Ball(mockScene, 300, 300, { frictionMult: 1.0, terrain: {}, bounds });
+        const sloped = new Ball(mockScene, 300, 300, { frictionMult: 1.0, terrain, bounds });
+        flat.launch(0, -5);   // Moving up, no slope
+        sloped.launch(0, -5); // Moving up, slope opposes (adds +vy against -vy motion)
+        for (let i = 0; i < 30; i++) { flat.update(16); sloped.update(16); }
+        // Sloped ball went less far upward (higher y = less upward travel)
+        expect(sloped.y).toBeGreaterThan(flat.y);
+    });
+
+    it('slope_zones: ball stops after 120 low-speed frames timeout', () => {
+        // gravity_component 0.1: activeSlopeForce 6 > frictionForce*0.5=4.5 → slope keeps rolling
+        // Pre-set _lowSpeedFrames near the 120 limit to test the timeout mechanism directly
+        const terrain = {
+            slope_zones: [{ direction: 'down', gravity_component: 0.1, rect: { x: 0, y: 0, w: 1, h: 1 } }]
+        };
+        const ball = new Ball(mockScene, 300, 300, {
+            frictionMult: 1.0, terrain, bounds: { x: 50, y: 50, w: 800, h: 800 }
+        });
+        ball.vx = 0; ball.vy = 0.05; ball.isMoving = true; // below SPEED_THRESHOLD (0.3)
+        ball._lowSpeedFrames = 118; // 2 more low-speed frames → counter reaches 120 → stop
+
+        // With vy=0.05, each frame: slope adds vy=+0.096 → stays below 0.3 → else branch
+        // Frame 1: _lowSpeedFrames=119, 119<120 → return. Frame 2: _lowSpeedFrames=120, 120<120=FALSE → stop
+        for (let i = 0; i < 20; i++) ball.update(16);
+        expect(ball.isMoving).toBe(false);
+    });
+
+    it('Colline terrain: 3 slope_zones with different gravity_components affect balls differently', () => {
+        const collineTerrain = {
+            slope_zones: [
+                { direction: 'down',  gravity_component: 0.06, rect: { x: 0,   y: 0,   w: 0.5, h: 0.5 } },
+                { direction: 'down',  gravity_component: 0.05, rect: { x: 0.5, y: 0.5, w: 0.5, h: 0.5 } },
+                { direction: 'right', gravity_component: 0.04, rect: { x: 0,   y: 0.5, w: 0.5, h: 0.5 } }
+            ]
+        };
+        const b = { x: 50, y: 50, w: 400, h: 400 };
+
+        // Ball in zone 1 (0.06 down) — at (150,150)
+        const ball1 = new Ball(mockScene, 150, 150, { frictionMult: 1.0, terrain: collineTerrain, bounds: b });
+        ball1.launch(3, 0); ball1.update(16);
+
+        // Ball in zone 2 (0.05 down) — at (350,350)
+        const ball2 = new Ball(mockScene, 350, 350, { frictionMult: 1.0, terrain: collineTerrain, bounds: b });
+        ball2.launch(3, 0); ball2.update(16);
+
+        // Ball in zone 3 (0.04 right) — at (150,350)
+        const ball3 = new Ball(mockScene, 150, 350, { frictionMult: 1.0, terrain: collineTerrain, bounds: b });
+        ball3.launch(0, -3); ball3.update(16);
+
+        // Zone 1 stronger slope → more vy than zone 2
+        expect(ball1.vy).toBeGreaterThan(ball2.vy);
+        // Zone 3 lateral → gained positive vx
+        expect(ball3.vx).toBeGreaterThan(0);
+    });
+
+    it('ball outside slope_zone rect is not affected by slope (flat zone)', () => {
+        // Slope covers only left half (x < 50 + 0.5*400 = 250)
+        const terrain = {
+            slope_zones: [{ direction: 'down', gravity_component: 0.06, rect: { x: 0, y: 0, w: 0.5, h: 1 } }]
+        };
+        const b = { x: 50, y: 50, w: 400, h: 400 };
+
+        // Ball in zone (x=150)
+        const inZone = new Ball(mockScene, 150, 200, { frictionMult: 1.0, terrain, bounds: b });
+        inZone.launch(3, 0); inZone.update(16);
+
+        // Ball outside zone (x=360 > 250)
+        const outZone = new Ball(mockScene, 360, 200, { frictionMult: 1.0, terrain, bounds: b });
+        outZone.launch(3, 0); outZone.update(16);
+
+        // In-zone ball gains vy from slope, out-of-zone ball does not
+        expect(inZone.vy).toBeGreaterThan(outZone.vy);
+    });
+});
+
+// =====================================================
+//  D2. WALL REBOUNDS — Physics constants verified
+// =====================================================
+
+describe('Wall Rebounds — WALL_RESTITUTION and dead ball', () => {
+    const docksTerrain = { walls: true };
+    const bounds = { x: 100, y: 50, w: 200, h: 400 };
+
+    it('right wall bounce: vx becomes negative (direction reversed)', () => {
+        const ball = new Ball(mockScene, 290, 200, { frictionMult: 0.4, terrain: docksTerrain, bounds });
+        ball.launch(10, 0); // strong launch toward right wall (100 + 200 = 300)
+        for (let i = 0; i < 5; i++) ball.update(16);
+        expect(ball.vx).toBeLessThan(0); // bounced left
+    });
+
+    it('left wall bounce: vx becomes positive (direction reversed)', () => {
+        const ball = new Ball(mockScene, 110, 200, { frictionMult: 0.4, terrain: docksTerrain, bounds });
+        ball.launch(-10, 0); // strong launch toward left wall (100)
+        for (let i = 0; i < 5; i++) ball.update(16);
+        expect(ball.vx).toBeGreaterThan(0); // bounced right
+    });
+
+    it('WALL_RESTITUTION (0.7) reduces speed on bounce', () => {
+        const ball = new Ball(mockScene, 110, 200, { frictionMult: 0.4, terrain: docksTerrain, bounds });
+        const initSpeed = 10;
+        ball.launch(-initSpeed, 0);
+        ball.update(16); // hits left wall, vx = Math.abs(vx) * WALL_RESTITUTION
+        // Post-bounce speed ≤ initial * WALL_RESTITUTION (plus small friction loss)
+        expect(Math.abs(ball.vx)).toBeLessThan(initSpeed * WALL_RESTITUTION + 0.5);
+    });
+
+    it('dead ball does not bounce off walls (update() returns early)', () => {
+        const ball = new Ball(mockScene, 110, 200, { frictionMult: 0.4, terrain: docksTerrain, bounds });
+        ball.kill(); // isAlive = false
+        const xBefore = ball.x;
+        ball.update(16); // should return immediately — isAlive check at top of update()
+        expect(ball.x).toBe(xBefore); // position unchanged
+        expect(ball.isAlive).toBe(false);
+    });
+});
+
 describe('Spin lateral — Ball.activateLateralSpin()', () => {
     it('spin gauche (-1) devie la balle vers la gauche', async () => {
         const ball = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });

@@ -1,9 +1,13 @@
+/**
+ * SceneReuse.test.js — Scene init() safety tests (AXE D)
+ * Phaser reuses scenes — init() MUST reset all flags to prevent state leaks.
+ * CLAUDE.md critical rule: "TOUJOURS définir init() avec reset de tous les flags"
+ */
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { resolve, join } from 'path';
 
-// Test that ALL scenes have an init() method (CLAUDE.md critical rule)
-// Phaser reuses scenes — init() MUST reset all flags to prevent state leaks
+// ─── D5.1 — Every scene file must declare an init() method ───────────────────
 
 describe('Scene reuse safety (init method)', () => {
     const scenesDir = resolve(__dirname, '../src/scenes');
@@ -16,37 +20,55 @@ describe('Scene reuse safety (init method)', () => {
     for (const file of sceneFiles) {
         it(`${file} must have an init() method`, () => {
             const content = readFileSync(join(scenesDir, file), 'utf-8');
-            // Match init() or init(data) method definition in a class
             const hasInit = /\binit\s*\(/.test(content);
-            expect(hasInit, `${file} is missing init() method — CLAUDE.md requires all scenes to define init() with flag resets`).toBe(true);
+            expect(
+                hasInit,
+                `${file} is missing init() — CLAUDE.md requires all scenes to define init() with flag resets`
+            ).toBe(true);
         });
     }
 });
 
-describe('Scene init() flag resets', () => {
+// ─── D5.2 — Functional flag-reset checks (specific scenes) ───────────────────
+
+describe('Scene init() flag resets (functional)', () => {
     const scenesDir = resolve(__dirname, '../src/scenes');
 
-    it('QuickPlayScene.init() should reset key flags', () => {
-        const content = readFileSync(join(scenesDir, 'QuickPlayScene.js'), 'utf-8');
-        // Extract init method content (between init() { and next method)
-        const initMatch = content.match(/init\s*\([^)]*\)\s*\{([\s\S]*?)^\s{4}\}/m);
-        expect(initMatch, 'Could not find init() method body').toBeTruthy();
-        if (initMatch) {
-            const initBody = initMatch[1];
-            // Should reset some flags
-            expect(initBody.length).toBeGreaterThan(10);
-        }
-    });
-
-    it('PetanqueScene.init() should accept data parameter', () => {
+    it('PetanqueScene.init(data) resets _gamePaused to false', () => {
         const content = readFileSync(join(scenesDir, 'PetanqueScene.js'), 'utf-8');
-        const hasInitData = /init\s*\(\s*data\s*\)/.test(content);
-        expect(hasInitData, 'PetanqueScene.init() must accept data parameter for match config').toBe(true);
+        // init() must accept a data parameter
+        expect(content).toMatch(/init\s*\(\s*data\s*\)/);
+        // _gamePaused = false must appear in the source (set in init)
+        expect(content).toMatch(/_gamePaused\s*=\s*false/);
+        // Verify init() comes before the first _gamePaused assignment
+        const initIdx = content.indexOf('init(data)');
+        const pausedIdx = content.indexOf('_gamePaused = false');
+        expect(initIdx).toBeGreaterThan(-1);
+        expect(pausedIdx).toBeGreaterThan(initIdx);
     });
 
-    it('TitleScene.init() should exist for menu reset', () => {
-        const content = readFileSync(join(scenesDir, 'TitleScene.js'), 'utf-8');
-        const hasInit = /init\s*\(/.test(content);
-        expect(hasInit).toBe(true);
+    it('QuickPlayScene.init() resets _activeTab to 0 and _transitioning to false', () => {
+        const content = readFileSync(join(scenesDir, 'QuickPlayScene.js'), 'utf-8');
+        // init() exists (no parameter)
+        expect(content).toMatch(/init\s*\(\s*\)/);
+        // _activeTab = 0 reset
+        expect(content).toMatch(/_activeTab\s*=\s*0/);
+        // _transitioning = false reset
+        expect(content).toMatch(/_transitioning\s*=\s*false/);
+    });
+
+    it('ShopScene.init() resets _purchasing to false', () => {
+        const content = readFileSync(join(scenesDir, 'ShopScene.js'), 'utf-8');
+        // init() exists
+        expect(content).toMatch(/init\s*\(\s*\)/);
+        // _purchasing = false reset (prevents double-purchase bug on scene reuse)
+        expect(content).toMatch(/_purchasing\s*=\s*false/);
+    });
+
+    it('IntroScene is not registered in game config (removed from scene list)', () => {
+        const configContent = readFileSync(resolve(__dirname, '../src/config.js'), 'utf-8');
+        // IntroScene was removed — must NOT appear as a standalone import
+        // Note: VSIntroScene (VS lobby) is different and IS included — check word boundary
+        expect(configContent).not.toMatch(/^import IntroScene\b/m);
     });
 });
