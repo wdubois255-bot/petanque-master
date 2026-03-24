@@ -39,7 +39,7 @@
 
 ### 2.2 Systeme de visee
 - [x] Drag-and-release (direction + puissance)
-- [x] **Selection mode 2 rangees** : Pointer [1][2][3] (Roulette/Demi/Plombee) + Tirer [4][T][D] (Rafle/Fer/Devant)
+- [x] **Selecteur a onglets [P]/[T]** : Pointer (Roulette/Demi/Plombee) + Tirer (Rafle/Fer/Devant), suggestion tactique, retour ESC
 - [x] Focus (Respire) : 5 charges, -80% wobble
 - [x] Capacites uniques par personnage
 - [x] Tremblement sous pression (sang_froid stat)
