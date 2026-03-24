@@ -10,7 +10,7 @@ const BORDER_WIDTH = 16; // Match PixelLab tile size (16x16)
 // Config visuelle par terrain ID
 const TERRAIN_VISUALS = {
     village: {
-        sky: ['#6BB8E0', '#A8D8EA', '#D4E8D0', '#C4B090'],
+        bgColor: '#C4B090',     // Mur provencal chaud
         groundColor: '#9B8D6A',
         surfaceBase: '#C4854A',
         surfaceGravel: ['#B07840', '#D49560', '#A87040', '#C4954A', '#B88850', '#9A6A30'],
@@ -20,7 +20,7 @@ const TERRAIN_VISUALS = {
         deadLineStyle: 'chalk',
     },
     plage: {
-        sky: ['#4A9ED5', '#7EC8E8', '#E8D890', '#F0C870'],
+        bgColor: '#7EC8E8',     // Ciel bleu littoral
         groundColor: '#D4C0A0',
         surfaceBase: '#E8D5B7',
         surfaceGravel: ['#D4C0A0', '#F0E0C8', '#C4B090', '#E8D0B0', '#DDD4B8', '#F5E8D0'],
@@ -30,7 +30,7 @@ const TERRAIN_VISUALS = {
         deadLineStyle: 'driftwood',
     },
     parc: {
-        sky: ['#78C0E8', '#A0D8F0', '#C0E8D0', '#B0D8A0'],
+        bgColor: '#A0C888',     // Vert jardin doux
         groundColor: '#5A7A3A',
         surfaceBase: '#6B8E4E',
         surfaceGravel: ['#5E8A44', '#7BA65E', '#4A7A3A', '#6B9E4E', '#5A9040', '#82B068'],
@@ -40,7 +40,7 @@ const TERRAIN_VISUALS = {
         deadLineStyle: 'painted',
     },
     colline: {
-        sky: ['#D4A060', '#E8C080', '#F0D8A0', '#C49050'],
+        bgColor: '#D4B080',     // Ocre colline doree
         groundColor: '#8B7D5A',
         surfaceBase: '#C4954A',
         surfaceGravel: ['#B08540', '#D4A560', '#A88040', '#C4A54A', '#9A7530', '#B89050'],
@@ -50,7 +50,7 @@ const TERRAIN_VISUALS = {
         deadLineStyle: 'stones',
     },
     docks: {
-        sky: ['#1A2A4A', '#2A3A5A', '#3A3A50', '#4A3A40'],
+        bgColor: '#2A3A4A',     // Nuit portuaire sombre
         groundColor: '#3A3A30',
         surfaceBase: '#7A7A70',
         surfaceGravel: ['#8E8E7E', '#B0A090', '#808070', '#A09888', '#989080', '#6A6A60'],
@@ -213,7 +213,6 @@ export default class TerrainRenderer {
 
     render() {
         this._drawSky();
-        this._drawGround();
         this._drawBackgroundDecor();
         this._drawTerrainShadow();
         this._drawSurface();
@@ -223,7 +222,7 @@ export default class TerrainRenderer {
     }
 
     // ============================================================
-    // SKY - Gradient unique par terrain
+    // SKY - Fond uni par terrain (pas de paysage)
     // ============================================================
     _drawSky() {
         const key = `sky_${this.terrainId}`;
@@ -231,90 +230,23 @@ export default class TerrainRenderer {
         const tex = this.scene.textures.createCanvas(key, GAME_WIDTH, GAME_HEIGHT);
         const ctx = tex.getContext();
 
-        const colors = this.vis.sky;
-        const grad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-        grad.addColorStop(0, colors[0]);
-        grad.addColorStop(0.35, colors[1]);
-        grad.addColorStop(0.6, colors[2]);
-        grad.addColorStop(1, colors[3]);
-        ctx.fillStyle = grad;
+        ctx.fillStyle = this.vis.bgColor;
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        // Clouds (skip for docks - night scene)
-        if (this.terrainId !== 'docks') {
-            this._drawClouds(ctx);
-        } else {
-            this._drawStars(ctx);
-        }
 
         tex.refresh();
         this.scene.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, key).setDepth(0);
     }
 
-    _drawClouds(ctx) {
-        const cloudSets = [
-            { x: 120, y: 35, r: [35, 28, 22], alpha: 0.25 },
-            { x: 550, y: 50, r: [40, 30, 25], alpha: 0.18 },
-            { x: 350, y: 22, r: [20, 15], alpha: 0.15 },
-        ];
-        for (const cs of cloudSets) {
-            ctx.fillStyle = `rgba(255,255,255,${cs.alpha})`;
-            for (let i = 0; i < cs.r.length; i++) {
-                ctx.beginPath();
-                ctx.arc(cs.x + i * 30 - 15, cs.y + (i % 2) * 8, cs.r[i], 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-    }
-
-    _drawStars(ctx) {
-        ctx.fillStyle = 'rgba(255,255,200,0.4)';
-        for (let i = 0; i < 40; i++) {
-            const sx = this._rng() * GAME_WIDTH;
-            const sy = this._rng() * GAME_HEIGHT * 0.5;
-            const sr = 0.5 + this._rng() * 1.5;
-            ctx.beginPath();
-            ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        // Moon for docks
-        ctx.fillStyle = 'rgba(255,255,220,0.15)';
-        ctx.beginPath(); ctx.arc(700, 40, 25, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,230,0.25)';
-        ctx.beginPath(); ctx.arc(700, 40, 18, 0, Math.PI * 2); ctx.fill();
-    }
+    // GROUND supprime — fond uni unique (bgColor couvre tout)
 
     // ============================================================
-    // GROUND - Sol hors terrain
-    // ============================================================
-    _drawGround() {
-        const g = this.scene.add.graphics().setDepth(0);
-        const gc = parseInt(this.vis.groundColor.replace('#', ''), 16);
-        g.fillStyle(gc, 1);
-        g.fillRect(0, GAME_HEIGHT * 0.50, GAME_WIDTH, GAME_HEIGHT * 0.50);
-
-        // Subtle ground texture
-        g.fillStyle(gc, 0.3);
-        g.fillRect(0, GAME_HEIGHT * 0.53, GAME_WIDTH, GAME_HEIGHT * 0.04);
-    }
-
-    // ============================================================
-    // BACKGROUND DECOR - Unique par terrain
+    // BACKGROUND DECOR - Sprites PixelLab uniquement (pas de paysage procedural)
     // ============================================================
     _drawBackgroundDecor() {
-        const d = this.scene.add.graphics().setDepth(0.5);
         const tx = this.tx;
         const tw = TERRAIN_WIDTH;
 
-        switch (this.terrainId) {
-            case 'village': this._decorVillage(d, tx, tw); break;
-            case 'plage':   this._decorPlage(d, tx, tw); break;
-            case 'parc':    this._decorParc(d, tx, tw); break;
-            case 'colline': this._decorColline(d, tx, tw); break;
-            case 'docks':   this._decorDocks(d, tx, tw); break;
-        }
-
-        // Overlay pixel art sprite decors where available
+        // Sprites PixelLab curates autour du terrain
         this._placeDecorSprites(tx, tw);
     }
 
@@ -365,253 +297,7 @@ export default class TerrainRenderer {
         }
     }
 
-    _decorVillage(d, tx, tw) {
-        const hy = GAME_HEIGHT * 0.48;
-
-        // Provencal buildings
-        d.fillStyle(0xD4A574, 0.7); d.fillRect(60, hy, 65, 35);
-        d.fillStyle(0xC4854A, 0.6); d.fillRect(60, hy - 12, 65, 14); // roof
-        d.fillStyle(0xD4A574, 0.6); d.fillRect(180, hy + 5, 50, 30);
-        d.fillStyle(0xC4854A, 0.5); d.fillRect(180, hy - 5, 50, 12);
-
-        // Church tower
-        d.fillStyle(0xD4C4A0, 0.6); d.fillRect(680, hy - 25, 22, 55);
-        d.fillStyle(0xC4854A, 0.5); d.fillRect(675, hy - 30, 32, 8);
-        // Cross
-        d.fillStyle(0x3A2E28, 0.5);
-        d.fillRect(689, hy - 38, 4, 10);
-        d.fillRect(685, hy - 35, 12, 3);
-
-        // Trees, bench, fountain replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
-
-        // Stone wall right
-        d.fillStyle(0xD4C4A0, 1); d.fillRect(tx + tw + 18, 260, 30, 140);
-        d.fillStyle(0xC0B090, 0.4);
-        for (let my = 260; my < 400; my += 16) {
-            d.fillRect(tx + tw + 18, my, 30, 1);
-            if (my % 32 === 0) d.fillRect(tx + tw + 33, my, 1, 16);
-        }
-
-        // Flower pot
-        d.fillStyle(0xA05A2A, 1); d.fillRect(tx + tw + 24, 402, 14, 12);
-        d.fillStyle(0xCC4444, 0.8); d.fillCircle(tx + tw + 31, 399, 6);
-
-        // Score tableau (left)
-        d.fillStyle(0x2A4A2A, 1); d.fillRect(tx - 32, 180, 22, 32);
-        d.fillStyle(0xFFFFFF, 0.6);
-        d.fillRect(tx - 29, 185, 7, 9); d.fillRect(tx - 18, 185, 7, 9);
-        d.fillStyle(0x6B5038, 1); d.fillRect(tx - 24, 212, 8, 22);
-    }
-
-    _decorPlage(d, tx, tw) {
-        const hy = GAME_HEIGHT * 0.46;
-
-        // Sea horizon
-        d.fillStyle(0x3A8AC0, 0.5); d.fillRect(0, hy - 20, GAME_WIDTH, 30);
-        d.fillStyle(0x4A9AD0, 0.3); d.fillRect(0, hy - 10, GAME_WIDTH, 15);
-        // Waves
-        d.fillStyle(0xFFFFFF, 0.15);
-        for (let wx = 0; wx < GAME_WIDTH; wx += 40) {
-            d.fillRect(wx + this._rng() * 20, hy + 5, 25, 2);
-        }
-
-        // Sailboat
-        d.fillStyle(0xFFFFFF, 0.5);
-        d.beginPath(); d.moveTo(200, hy - 15); d.lineTo(210, hy - 40);
-        d.lineTo(220, hy - 15); d.closePath(); d.fillPath();
-        d.fillStyle(0x8B4A2A, 0.5); d.fillRect(195, hy - 12, 30, 5);
-
-        // Parasol left
-        d.fillStyle(0xCC4444, 0.7);
-        d.beginPath();
-        d.arc(tx - 50, 200, 30, Math.PI, Math.PI * 2);
-        d.fillPath();
-        d.fillStyle(0xFFFFFF, 0.4);
-        d.beginPath();
-        d.arc(tx - 50, 200, 30, Math.PI + 0.5, Math.PI + 1.5);
-        d.fillPath();
-        d.fillStyle(0x8B6B4A, 1); d.fillRect(tx - 52, 200, 4, 60);
-
-        // Parasol right
-        d.fillStyle(0x4488CC, 0.6);
-        d.beginPath();
-        d.arc(tx + tw + 55, 220, 28, Math.PI, Math.PI * 2);
-        d.fillPath();
-        d.fillStyle(0x8B6B4A, 1); d.fillRect(tx + tw + 53, 220, 4, 55);
-
-        // Palm frond (left corner)
-        d.fillStyle(0x4A8A3A, 0.5);
-        for (let a = 0; a < 5; a++) {
-            const angle = -0.3 + a * 0.35;
-            d.fillRect(0, 0, 3, 60);
-            // Simplified frond
-        }
-        d.fillStyle(0x7B5B3A, 0.8); d.fillRect(-5, 0, 14, 80);
-        d.fillStyle(0x4A8A3A, 0.7);
-        d.fillCircle(2, 60, 35);
-        d.fillStyle(0x3A7A2A, 0.5);
-        d.fillCircle(10, 50, 28);
-        d.fillCircle(-10, 65, 25);
-
-        // Beach towel (right)
-        d.fillStyle(0xE07040, 0.4); d.fillRect(tx + tw + 30, 300, 25, 40);
-        d.fillStyle(0xFFFFFF, 0.2); d.fillRect(tx + tw + 30, 310, 25, 4);
-        d.fillRect(tx + tw + 30, 320, 25, 4);
-
-        // Sand castle (bottom left)
-        d.fillStyle(0xD4B88A, 0.5);
-        d.fillRect(tx - 60, 380, 20, 25);
-        d.fillRect(tx - 45, 385, 15, 20);
-        d.fillStyle(0xD4B88A, 0.5);
-        d.fillCircle(tx - 50, 378, 10);
-        d.fillCircle(tx - 38, 383, 7);
-    }
-
-    _decorParc(d, tx, tw) {
-        const hy = GAME_HEIGHT * 0.48;
-
-        // Distant tree line
-        d.fillStyle(0x4A7A3A, 0.4);
-        for (let i = 0; i < 12; i++) {
-            const bx = i * 75 + 20;
-            d.fillCircle(bx, hy - 5, 18 + this._rng() * 12);
-        }
-
-        // Bench replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
-
-        // Duck pond (right)
-        d.fillStyle(0x5A9AC0, 0.4);
-        d.fillCircle(tx + tw + 55, 300, 35);
-        d.fillStyle(0x6AAAD0, 0.3);
-        d.fillCircle(tx + tw + 50, 296, 28);
-        // Duck
-        d.fillStyle(0xFFFFFF, 0.6);
-        d.fillCircle(tx + tw + 45, 292, 5);
-        d.fillStyle(0xDDA030, 0.7);
-        d.fillRect(tx + tw + 41, 291, 4, 2);
-
-        // Flower beds (left bottom)
-        d.fillStyle(0x6B4030, 0.5); d.fillRect(tx - 80, 350, 55, 12);
-        const flowerColors = [0xCC4444, 0xFFAA44, 0xCC44CC, 0xFFFF44, 0xFF6688];
-        for (let i = 0; i < 8; i++) {
-            d.fillStyle(flowerColors[i % flowerColors.length], 0.7);
-            d.fillCircle(tx - 75 + i * 7, 348, 3 + this._rng() * 2);
-        }
-
-        // Kiosque / bandstand (right far)
-        d.fillStyle(0xC44B3F, 0.4);
-        d.beginPath();
-        d.arc(tx + tw + 70, 170, 25, Math.PI, Math.PI * 2);
-        d.fillPath();
-        d.fillStyle(0xD4C4A0, 0.5);
-        d.fillRect(tx + tw + 48, 170, 4, 30);
-        d.fillRect(tx + tw + 88, 170, 4, 30);
-        d.fillRect(tx + tw + 46, 198, 50, 5);
-
-        // Lamp post (left)
-        d.fillStyle(0x3A3A3A, 0.7); d.fillRect(tx - 30, 130, 4, 70);
-        d.fillStyle(0xFFDD66, 0.3); d.fillCircle(tx - 28, 128, 7);
-        d.fillStyle(0x3A3A3A, 0.8);
-        d.fillRect(tx - 36, 126, 20, 4);
-    }
-
-    _decorColline(d, tx, tw) {
-        const hy = GAME_HEIGHT * 0.45;
-
-        // Rolling hills silhouettes
-        d.fillStyle(0x8A7A50, 0.5);
-        d.beginPath();
-        d.moveTo(0, hy + 30);
-        for (let x = 0; x <= GAME_WIDTH; x += 10) {
-            d.lineTo(x, hy + 10 + Math.sin(x * 0.008) * 20 + Math.sin(x * 0.02) * 8);
-        }
-        d.lineTo(GAME_WIDTH, GAME_HEIGHT); d.lineTo(0, GAME_HEIGHT); d.closePath(); d.fillPath();
-
-        d.fillStyle(0x9A8A5A, 0.4);
-        d.beginPath();
-        d.moveTo(0, hy + 40);
-        for (let x = 0; x <= GAME_WIDTH; x += 10) {
-            d.lineTo(x, hy + 25 + Math.sin(x * 0.012 + 1) * 15);
-        }
-        d.lineTo(GAME_WIDTH, GAME_HEIGHT); d.lineTo(0, GAME_HEIGHT); d.closePath(); d.fillPath();
-
-        // Olive trees replaced by sprite grids (DECOR_FRAMES/TERRAIN_DECOR)
-
-        // Dry stone wall (muret) in background
-        d.fillStyle(0xB0A888, 0.6);
-        d.fillRect(400, hy + 15, 120, 14);
-        d.fillStyle(0x9A9070, 0.4);
-        for (let sx = 400; sx < 520; sx += 12) {
-            d.fillRect(sx, hy + 15, 1, 14);
-        }
-
-        // Lavender field hint (bottom right)
-        d.fillStyle(0x9B7BB8, 0.3);
-        for (let i = 0; i < 15; i++) {
-            const lx = tx + tw + 20 + i * 6;
-            d.fillRect(lx, 370 + (i % 3) * 3, 3, 10);
-        }
-    }
-
-    _decorDocks(d, tx, tw) {
-        const hy = GAME_HEIGHT * 0.50;
-
-        // Industrial ground
-        d.fillStyle(0x4A4A40, 0.8); d.fillRect(0, hy, GAME_WIDTH, GAME_HEIGHT - hy);
-
-        // Shipping containers (left stack)
-        const containerColors = [0xCC4444, 0x4488CC, 0x44AA44, 0xCCAA22];
-        let cy = 130;
-        for (let i = 0; i < 3; i++) {
-            d.fillStyle(containerColors[i], 0.6);
-            d.fillRect(tx - 100, cy, 60, 28);
-            d.fillStyle(0x1A1510, 0.25);
-            d.fillRect(tx - 100, cy + 26, 60, 2);
-            // Container ridges
-            d.fillStyle(containerColors[i], 0.4);
-            for (let rx = tx - 95; rx < tx - 45; rx += 8) {
-                d.fillRect(rx, cy + 2, 1, 24);
-            }
-            cy += 32;
-        }
-
-        // Crane silhouette (right)
-        d.fillStyle(0x2A2A28, 0.7);
-        d.fillRect(tx + tw + 80, 0, 8, 250);
-        d.fillRect(tx + tw + 50, 40, 70, 6);
-        d.fillRect(tx + tw + 50, 40, 4, 20);
-        // Crane cable
-        d.lineStyle(1, 0x3A3A38, 0.5);
-        d.lineBetween(tx + tw + 54, 60, tx + tw + 54, 120);
-
-        // Harbor water (bottom)
-        d.fillStyle(0x2A3A4A, 0.5);
-        d.fillRect(0, GAME_HEIGHT - 40, GAME_WIDTH, 40);
-        d.fillStyle(0x3A4A5A, 0.3);
-        for (let wx = 0; wx < GAME_WIDTH; wx += 30) {
-            d.fillRect(wx, GAME_HEIGHT - 35 + this._rng() * 10, 20, 2);
-        }
-
-        // Harbor lights
-        const lightPositions = [tx - 40, tx + tw + 40, tx + tw / 2 - 80, tx + tw / 2 + 80];
-        for (const lx of lightPositions) {
-            d.fillStyle(0x3A3A38, 0.8); d.fillRect(lx - 2, 320, 4, 60);
-            d.fillStyle(0xFFAA44, 0.5); d.fillCircle(lx, 318, 5);
-            // Light glow
-            d.fillStyle(0xFFAA44, 0.08); d.fillCircle(lx, 340, 25);
-        }
-
-        // Bollard (dock post)
-        d.fillStyle(0x5A5A50, 0.8);
-        d.fillRect(tx - 20, 350, 12, 20);
-        d.fillStyle(0xFFAA44, 0.3);
-        d.fillRect(tx - 22, 348, 16, 4);
-
-        // Chain-link fence hint (right)
-        d.fillStyle(0x5A5A58, 0.4);
-        d.fillRect(tx + tw + 15, 260, 3, 100);
-        d.fillRect(tx + tw + 15, 258, 12, 3);
-    }
+    // Decors proceduraux supprimes — fond uni + sprites PixelLab uniquement
 
     // ============================================================
     // TERRAIN SHADOW
