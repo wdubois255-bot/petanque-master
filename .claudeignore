@@ -1,0 +1,10 @@
+# Recherche historique (59 fichiers) — lire manuellement si besoin
+# Ex: Read research/04_petanque_physics.md avant de toucher Ball.js
+research/
+
+# Archives (scripts et docs termines)
+scripts/archive/
+docs/archive/
+
+# Snapshots visuels E2E (binaires)
+tests/e2e/snapshots/
