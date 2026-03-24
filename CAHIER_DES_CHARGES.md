@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.13 — 24 mars 2026 (Phase 3 COMPLETE + AXE I i18n UI — 273 tests)
+> Version 2.14 — 24 mars 2026 (Phase 4A COMPLETE — audit + i18n data cablé — 273 tests)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -239,8 +239,18 @@
 - [x] **InGameTutorial** : 4 phases + terrain hints via `I18n.t('terrain_hints.{id}')`
 - [x] **EngineRenderer** : aim hint
 - [x] **ScorePanel** : SCORE / VOUS / ADV. / MENE {n} / tab hint
-- **Sprint F restant** : characters.json, arcade.json, shop.json, barks (noms/descriptions JSON)
+- [x] **Sprint F — I18n.field() + fieldArray()** : résolution localisée des champs JSON (locale → fallback FR)
+- [x] **Sprint F — données _en** : characters.json (12 persos × name/title/description/catchphrase/barks_en), terrains, shop, arcade, commentator
+- [x] **Sprint F — câblage scenes** : I18n.field() branché dans CharSelect, VSIntro, Petanque (barks), Result, Arcade, ScorePanel, Commentator
+- [x] **Clé dupliquée** : ingame.aim_hint supprimée, unifié sur tutorial.aim
 - **Fichiers** : `src/utils/I18n.js`, `public/data/lang/fr.json`, `public/data/lang/en.json`
+
+### 2.14 Audit Phase 4A + corrections (session 12 — 24 mars 2026)
+- [x] **Audit complet** : 30+ points vérifiés, 68 actions joueur inventoriées
+- [x] **C6 — Confirmation achat** : modal OUI/NON dans ShopScene avant spendGalets()
+- [x] **Match Chai retiré** : round 6 arcade retiré (personnage pas dans roster — gardé pour futur Tournoi International)
+- [x] **Tests ajustés** : arcade validation flexible (3+ matches, expert dans difficultyOrder)
+- **Fichiers** : `src/scenes/ShopScene.js`, `public/data/arcade.json`, `tests/TerrainValidation.test.js`
 
 ---
 
