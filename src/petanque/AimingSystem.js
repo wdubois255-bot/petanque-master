@@ -200,13 +200,13 @@ export default class AimingSystem {
         const rowY2 = baseY + 21;
         const allOptions = [
             // Pointer row
-            { label: '1', sublabel: 'Roulette',   mode: 'pointer', loftObj: LOFT_PRESETS[0], color: 0x87CEEB, arcH: 0.08, oy: rowY1 },
-            { label: '2', sublabel: 'Demi',        mode: 'pointer', loftObj: LOFT_PRESETS[1], color: 0x6B8E4E, arcH: 0.35, oy: rowY1 },
-            { label: '3', sublabel: 'Plombee',     mode: 'pointer', loftObj: LOFT_PRESETS[2], color: 0x9B7BB8, arcH: 0.75, oy: rowY1 },
+            { label: '1', sublabel: 'Roulette',   desc: 'Roule au sol',         mode: 'pointer', loftObj: LOFT_PRESETS[0], color: 0x87CEEB, arcH: 0.08, oy: rowY1 },
+            { label: '2', sublabel: 'Demi',        desc: 'Arc moyen',            mode: 'pointer', loftObj: LOFT_PRESETS[1], color: 0x6B8E4E, arcH: 0.35, oy: rowY1 },
+            { label: '3', sublabel: 'Plombee',     desc: "Arc haut, s'arrête",   mode: 'pointer', loftObj: LOFT_PRESETS[2], color: 0x9B7BB8, arcH: 0.75, oy: rowY1 },
             // Tirer row
-            { label: '4', sublabel: 'Rafle',       mode: 'tirer', loftObj: LOFT_RAFLE,       color: 0xC4854A, arcH: 0.03, oy: rowY2 },
-            { label: 'T', sublabel: 'Tir au Fer',  mode: 'tirer', loftObj: LOFT_TIR,         color: 0xC44B3F, arcH: 0.55, oy: rowY2 },
-            { label: 'D', sublabel: 'Tir Devant',  mode: 'tirer', loftObj: LOFT_TIR_DEVANT,  color: 0xAA8866, arcH: 0.42, oy: rowY2 },
+            { label: '4', sublabel: 'Rafle',       desc: 'Rase le sol, déplace', mode: 'tirer', loftObj: LOFT_RAFLE,       color: 0xC4854A, arcH: 0.03, oy: rowY2 },
+            { label: 'T', sublabel: 'Tir au Fer',  desc: 'Frappe directe',       mode: 'tirer', loftObj: LOFT_TIR,         color: 0xC44B3F, arcH: 0.55, oy: rowY2 },
+            { label: 'D', sublabel: 'Tir Devant',  desc: 'Rebond avant cible',   mode: 'tirer', loftObj: LOFT_TIR_DEVANT,  color: 0xAA8866, arcH: 0.42, oy: rowY2 },
         ];
         const spacing = 150;
         const startX = cx - spacing;
@@ -232,6 +232,12 @@ export default class AimingSystem {
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
             this._modeUI.push(label);
+
+            // Sous-description (9px, gris neutre)
+            const subDesc = this.scene.add.text(ox, opt.oy + 20, opt.desc, {
+                fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E'
+            }).setOrigin(0.5).setDepth(97).setAlpha(0.7);
+            this._modeUI.push(subDesc);
 
             // Hit zone — agrandie sur mobile pour respecter 44px min (WCAG)
             const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : spacing - 8;

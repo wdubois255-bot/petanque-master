@@ -7,10 +7,10 @@ import UIFactory from '../ui/UIFactory.js';
 const SHADOW = UIFactory.SHADOW;
 
 const STAT_DEFS = [
-    { key: 'precision',   label: 'PRE', fullLabel: 'Precision',   color: COLORS.STAT_PRECISION,    hotkey: 'ONE' },
-    { key: 'puissance',   label: 'PUI', fullLabel: 'Puissance',   color: COLORS.STAT_PUISSANCE,    hotkey: 'TWO' },
-    { key: 'effet',       label: 'EFF', fullLabel: 'Effet',       color: COLORS.STAT_EFFET,        hotkey: 'THREE' },
-    { key: 'sang_froid',  label: 'S-F', fullLabel: 'Sang-froid',  color: COLORS.STAT_ADAPTABILITE, hotkey: 'FOUR' }
+    { key: 'precision',  label: 'PRE', fullLabel: 'Precision',  color: COLORS.STAT_PRECISION,    hotkey: 'ONE',   tooltip: 'Réduit la zone de dispersion au lâcher' },
+    { key: 'puissance',  label: 'PUI', fullLabel: 'Puissance',  color: COLORS.STAT_PUISSANCE,    hotkey: 'TWO',   tooltip: 'Force max du tir et portée' },
+    { key: 'effet',      label: 'EFF', fullLabel: 'Effet',      color: COLORS.STAT_EFFET,        hotkey: 'THREE', tooltip: 'Contrôle du spin et des courbes' },
+    { key: 'sang_froid', label: 'S-F', fullLabel: 'Sang-froid', color: COLORS.STAT_ADAPTABILITE, hotkey: 'FOUR',  tooltip: 'Stabilité de la visée sous pression' }
 ];
 
 const BAR_WIDTH = STAT_BAR_WIDTH;
@@ -155,6 +155,13 @@ export default class LevelUpScene extends Phaser.Scene {
         this.statRows = [];
         this.barGraphics = this.add.graphics();
 
+        // Tooltip (shared, repositioned on hover)
+        this._tooltipGfx = this.add.graphics().setDepth(150).setAlpha(0);
+        this._tooltipText = this.add.text(0, 0, '', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+            padding: { x: 8, y: 6 }, wordWrap: { width: 200 }
+        }).setDepth(151).setAlpha(0);
+
         for (let i = 0; i < STAT_DEFS.length; i++) {
             const def = STAT_DEFS[i];
             const rowY = startY + i * ROW_HEIGHT;
@@ -209,6 +216,11 @@ export default class LevelUpScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '9px', color: CSS.GRIS,
             shadow: SHADOW
         }).setOrigin(0, 0.5);
+
+        // Zone hover pour tooltip
+        const tipZone = this.add.zone(labelX + 40, y, 100, 36).setInteractive({ useHandCursor: false });
+        tipZone.on('pointerover', () => this._showTooltip(def.tooltip, labelX + 110, y));
+        tipZone.on('pointerout', () => this._hideTooltip());
 
         // Current value text
         const valueText = this.add.text(valueX, y, `${this.newStats[def.key]}`, {
@@ -438,6 +450,32 @@ export default class LevelUpScene extends Phaser.Scene {
         this.time.delayedCall(200, () => {
             this.scene.start(this.returnScene, this.returnData);
         });
+    }
+
+    // ================================================================
+    // TOOLTIPS
+    // ================================================================
+
+    _showTooltip(text, x, y) {
+        if (!this._tooltipGfx || !this._tooltipText) return;
+        this._tooltipText.setText(text);
+        this._tooltipText.setPosition(x + 10, y - 14);
+
+        const tw = this._tooltipText.width + 16;
+        const th = this._tooltipText.height + 12;
+        this._tooltipGfx.clear();
+        this._tooltipGfx.fillStyle(0x3A2E28, 0.95);
+        this._tooltipGfx.fillRoundedRect(x + 8, y - 16, tw, th, 4);
+        this._tooltipGfx.lineStyle(1, 0xD4A574, 0.4);
+        this._tooltipGfx.strokeRoundedRect(x + 8, y - 16, tw, th, 4);
+
+        this._tooltipGfx.setAlpha(1);
+        this._tooltipText.setAlpha(1);
+    }
+
+    _hideTooltip() {
+        if (this._tooltipGfx) this._tooltipGfx.setAlpha(0);
+        if (this._tooltipText) this._tooltipText.setAlpha(0);
     }
 
     // ================================================================
