@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.14 — 24 mars 2026 (Phase 4A COMPLETE — audit + i18n data cablé — 273 tests)
+> Version 2.15 — 24 mars 2026 (Phase 4A COMPLETE + playtest fixes — 296 tests, 12 suites)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -251,6 +251,17 @@
 - [x] **Match Chai retiré** : round 6 arcade retiré (personnage pas dans roster — gardé pour futur Tournoi International)
 - [x] **Tests ajustés** : arcade validation flexible (3+ matches, expert dans difficultyOrder)
 - **Fichiers** : `src/scenes/ShopScene.js`, `public/data/arcade.json`, `tests/TerrainValidation.test.js`
+
+### 2.15 Fix Playtest Bugs — Robustesse & Conformite (session 13 — 24 mars 2026)
+- [x] **I18n.js CLAUDE.md compliance** : supprime console.warn, remplace localStorage direct par SaveManager (lang persiste)
+- [x] **SaveManager lang** : champ `lang: 'fr'` dans defaultSaveData (retro-compat via spread)
+- [x] **Defensive JSON** : guards `|| {}` sur cache.json.get() dans ArcadeScene, CharSelectScene, ShopScene, QuickPlayScene
+- [x] **ArcadeScene robustesse** : early return si arcadeData.matches absent, `?.` sur _getCharById/_getTerrainById
+- [x] **ShopScene i18n tabs** : import I18n, tabs localises via I18n.t(shop.tab_*), controls hint i18n
+- [x] **TitleScene fade FTUE** : premiere visite utilise fadeToScene au lieu de scene.start
+- [x] **fr.json/en.json** : +4 cles shop (tab_balls, tab_jacks, tab_abilities, controls_hint)
+- [x] **Tests** : I18n.test.js (12 tests), SaveManager lang (3 tests), TerrainValidation i18n keys (3 tests) — total 296/296
+- **Fichiers** : `src/utils/I18n.js`, `src/utils/SaveManager.js`, 5 scenes, 2 lang JSON, 3 fichiers test
 
 ---
 

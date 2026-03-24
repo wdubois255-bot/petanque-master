@@ -60,7 +60,7 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 
 ---
 
-## AXE I — LOCALISATION ANGLAIS ✅ SPRINT E COMPLET (UI), SPRINT F RESTANT (JSON data)
+## AXE I — LOCALISATION ANGLAIS ✅ COMPLET (UI + data + shop tabs + conformite CLAUDE.md)
 
 ### I1. Systeme i18n ✅
 - `src/utils/I18n.js` : singleton 68 lignes, `t()` / `ta()` / `detect()` / `setLocale()`, fallback FR
@@ -74,14 +74,20 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 - Galets et Carreau conservés (couleur locale)
 
 ### I4. Detection langue + toggle ✅
-- `detect()` : localStorage 'petanque_lang' → navigator.language → 'en'
+- `detect()` : SaveManager.loadSave().lang → navigator.language → 'en' (session 13 : migré de localStorage vers SaveManager)
 - Toggle `[FR|en]` dans TitleScene (bas-droite), restart scène sans rechargement page
 
-### I5. Sprint F — JSON data (RESTE A FAIRE)
-- [ ] characters.json : noms abilities, descriptions, barks (sans traduire les noms propres)
-- [ ] arcade.json : textes narratifs intro/ending
-- [ ] shop.json : noms et descriptions items
-- [ ] commentator.json : phrases commentateur
+### I5. Sprint F — JSON data ✅ (session 12)
+- [x] characters.json : noms abilities, descriptions, barks _en (12 persos)
+- [x] arcade.json : textes narratifs intro/ending _en
+- [x] shop.json : noms et descriptions items _en
+- [x] commentator.json : phrases commentateur _en
+
+### I6. Conformite CLAUDE.md + shop tabs ✅ (session 13)
+- [x] I18n.js : supprime console.warn, remplace localStorage par SaveManager
+- [x] SaveManager : champ lang:'fr' dans defaultSaveData
+- [x] ShopScene : tabs localises (shop.tab_balls/tab_jacks/tab_abilities), controls hint i18n
+- [x] fr.json/en.json : +4 cles shop
 
 ---
 
