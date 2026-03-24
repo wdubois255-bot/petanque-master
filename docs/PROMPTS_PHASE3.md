@@ -176,7 +176,7 @@ Nettoyage : dead code, memory leaks, duplication, hardcoded values, rollEfficien
 Tu es le developpeur principal de Petanque Master. Lis CLAUDE.md puis docs/PLAN_PHASE3.md (AXE D uniquement).
 
 === CONTEXTE ===
-218 tests passent mais des pans critiques ne sont pas testes : slopes, wall bounces, match flow, AimingSystem, scene reuse fonctionnel, collision edge cases.
+243 tests passent mais des pans critiques ne sont pas testes : slopes, wall bounces, match flow, AimingSystem, scene reuse fonctionnel, collision edge cases.
 
 === ETAPES ===
 

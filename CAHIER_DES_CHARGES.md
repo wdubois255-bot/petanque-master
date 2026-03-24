@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.8 — 24 mars 2026 (Phase 3 AXE A+B+E+F termines : tirs, feedback, audio enrichi, mobile)
+> Version 2.10 — 24 mars 2026 (Phase 3 COMPLETE : AXE A+B+C+D+E+F — 273 tests)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -174,14 +174,14 @@
 ## 3. RESTE A IMPLEMENTER
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
-> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE C ✅, AXE E ✅, AXE F ✅ — AXE D restant)
+> **Phase 3 terminee** : `docs/PLAN_PHASE3.md` (AXE A ✅ AXE B ✅ AXE C ✅ AXE D ✅ AXE E ✅ AXE F ✅)
 > Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
 - [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
 - [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
 - [x] **AXE C** : Cleanup code — IntroScene dead code, leaks keyboard, SaveManager migration, flyOnly TIR, constantes extraites
-- [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
+- [x] **AXE D** : Tests complementaires — slopes, walls, match flow, AimingSystem, SceneReuse, edge cases (+30 tests, 273/273)
 - [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions, Commentator.js 55 phrases)
 - [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
 
@@ -201,7 +201,7 @@
 - [ ] Traces d'impact (verifier RenderTexture)
 
 ### 3.4 Tests automatises
-- [x] Vitest : 232 tests unitaires (physique, collisions, IA, terrains, retro, loft, rafle, spin lateral) — **232/232 PASS**
+- [x] Vitest : 273 tests unitaires (physique, collisions, IA, terrains, slopes, walls, match flow, aiming, scene reuse) — **273/273 PASS**
 - [x] Playwright e2e : 85 tests (navigation, health, performance, stress, visual regression)
   - **67/67 tests fonctionnels PASS** (game, health, performance, stress)
   - **18 tests visual regression** : baselines a regenerer apres chaque changement visuel
