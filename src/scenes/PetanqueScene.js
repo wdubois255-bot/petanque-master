@@ -13,11 +13,12 @@ import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
-import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
+import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmbiance, stopCrowdAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMasterVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -226,6 +227,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
         setSoundScene(this);
         startTerrainAmbiance(this.terrainFullData?.id || 'village');
+        startCrowdAmbiance();
         // Music per terrain (falls back to music_match if terrain-specific doesn't exist)
         const terrainMusicMap = {
             terre: 'music_village', herbe: 'music_parc', sable: 'music_plage',
@@ -325,6 +327,20 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.engine.startGame();
 
+        // === ARCADE BADGE "Match X/Y" ===
+        if (this.arcadeRound) {
+            const arcadeData = this.cache.json.get('arcade');
+            const totalMatches = arcadeData?.matches?.length ?? '?';
+            const badgeText = `Match ${this.arcadeRound}/${totalMatches}`;
+            const badgeW = badgeText.length * 6 + 10;
+            const badgeBg = this.add.graphics().setDepth(92);
+            badgeBg.fillStyle(0x3A2E28, 0.7);
+            badgeBg.fillRoundedRect(4, 36, badgeW, 16, 3);
+            this.add.text(4 + badgeW / 2, 44, badgeText, {
+                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574'
+            }).setOrigin(0.5).setDepth(92);
+        }
+
         // In-game tutorial — 3 phases (VISER, LOFT, SCORE), persistées via tutorialPhasesDone
         const tutSave = loadSave();
         const phasesDone = tutSave.tutorialPhasesDone || [];
@@ -367,6 +383,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.input.keyboard.removeAllListeners();
         this.input.removeAllListeners();
         stopTerrainAmbiance();
+        stopCrowdAmbiance();
         stopMusic();
         stopRollingSound();
         if (this._commentator) { this._commentator.destroy(); this._commentator = null; }
@@ -1227,91 +1244,258 @@ export default class PetanqueScene extends Phaser.Scene {
     _openPauseMenu() {
         if (this._gamePaused) return;
         this._gamePaused = true;
-        // Annuler tout tir en cours
         if (this.aimingSystem) this.aimingSystem.cancel();
 
         const CX = GAME_WIDTH / 2;
         const CY = GAME_HEIGHT / 2;
-        const pw = 240, ph = 210;
-        const btnW = pw - 32, btnH = 36;
+        const pw = 400, ph = 320;
+        const px = CX - pw / 2, py = CY - ph / 2;
 
-        const container = this.add.container(0, 0).setDepth(300);
+        const container = this.add.container(0, 0).setDepth(250);
         this._pauseContainer = container;
 
-        // Overlay sombre
+        // === Overlay sombre plein écran ===
         const overlay = this.add.graphics();
-        overlay.fillStyle(0x1A1510, 0.78);
+        overlay.fillStyle(0x1A1510, 0.7);
         overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         container.add(overlay);
 
-        // Panel principal
+        // === Panel principal ===
         const panelGfx = this.add.graphics();
-        panelGfx.fillStyle(0x5A3E28, 0.97);
-        panelGfx.fillRoundedRect(CX - pw / 2, CY - ph / 2, pw, ph, 14);
-        panelGfx.fillStyle(0x8B6B3D, 0.45);
-        panelGfx.fillRoundedRect(CX - pw / 2, CY - ph / 2, pw, 52, { tl: 14, tr: 14, bl: 0, br: 0 });
+        panelGfx.fillStyle(0x3A2E28, 0.98);
+        panelGfx.fillRoundedRect(px, py, pw, ph, 12);
+        panelGfx.fillStyle(0x5A3E28, 0.5);
+        panelGfx.fillRoundedRect(px, py, pw, 46, { tl: 12, tr: 12, bl: 0, br: 0 });
         panelGfx.lineStyle(2, 0xD4A574, 0.85);
-        panelGfx.strokeRoundedRect(CX - pw / 2, CY - ph / 2, pw, ph, 14);
+        panelGfx.strokeRoundedRect(px, py, pw, ph, 12);
         container.add(panelGfx);
 
-        // Titre
-        container.add(this.add.text(CX, CY - ph / 2 + 27, 'PAUSE', {
+        // === Titre PAUSE ===
+        container.add(this.add.text(CX, py + 24, 'PAUSE', {
             fontFamily: 'monospace', fontSize: '20px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5));
 
-        // Séparateur
-        const sepGfx = this.add.graphics();
-        sepGfx.lineStyle(1, 0xD4A574, 0.3);
-        sepGfx.lineBetween(CX - pw / 2 + 20, CY - ph / 2 + 54, CX + pw / 2 - 20, CY - ph / 2 + 54);
-        container.add(sepGfx);
+        // Séparateur haut
+        const sep = this.add.graphics();
+        sep.lineStyle(1, 0xD4A574, 0.3);
+        sep.lineBetween(px + 16, py + 48, px + pw - 16, py + 48);
+        container.add(sep);
 
-        // Usine à bouton (label dynamique via labelFn)
-        const makeBtn = (labelFn, y, callback) => {
+        // === Rappel des contrôles (colonne gauche) ===
+        const controls = [
+            'Clic/Drag : Viser et lancer',
+            '1-3 : Mode de lancer',
+            'T : Tir au fer',
+            'F : Focus (slow-mo)',
+            'R : Retro | E : Spin',
+            'TAB : Classement boules',
+        ];
+        const ctrlX = px + 16;
+        container.add(this.add.text(ctrlX, py + 56, 'CONTROLES', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
+        }));
+        controls.forEach((line, i) => {
+            container.add(this.add.text(ctrlX, py + 68 + i * 13, line, {
+                fontFamily: 'monospace', fontSize: '9px', color: '#A09080'
+            }));
+        });
+
+        // Séparateur vertical
+        const sepV = this.add.graphics();
+        sepV.lineStyle(1, 0xD4A574, 0.2);
+        sepV.lineBetween(CX + 4, py + 54, CX + 4, py + ph - 8);
+        container.add(sepV);
+
+        // === Colonne droite : volume + boutons ===
+        const rx = CX + 16;
+        const btnW = pw / 2 - 28, btnH = 30;
+
+        const makeBtn = (label, y, color, hoverColor, borderColor, callback) => {
+            const bgCol = Phaser.Display.Color.HexStringToColor(color).color;
+            const bgHov = Phaser.Display.Color.HexStringToColor(hoverColor).color;
+            const borCol = Phaser.Display.Color.HexStringToColor(borderColor).color;
             const btnGfx = this.add.graphics();
-            const lbl = this.add.text(CX, y, labelFn(), {
-                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0'
-            }).setOrigin(0.5);
-            const zone = this.add.zone(CX, y, btnW, btnH)
-                .setInteractive({ useHandCursor: true });
             const drawN = () => {
                 btnGfx.clear();
-                btnGfx.fillStyle(0x3A2818, 0.85);
-                btnGfx.fillRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
-                btnGfx.lineStyle(1, 0x6B4F2D, 0.6);
-                btnGfx.strokeRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+                btnGfx.fillStyle(bgCol, 0.85);
+                btnGfx.fillRoundedRect(rx, y - btnH / 2, btnW, btnH, 6);
+                btnGfx.lineStyle(1, borCol, 0.7);
+                btnGfx.strokeRoundedRect(rx, y - btnH / 2, btnW, btnH, 6);
             };
             const drawH = () => {
                 btnGfx.clear();
-                btnGfx.fillStyle(0x6B4F2D, 1);
-                btnGfx.fillRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
-                btnGfx.lineStyle(1, 0xD4A574, 0.9);
-                btnGfx.strokeRoundedRect(CX - btnW / 2, y - btnH / 2, btnW, btnH, 7);
+                btnGfx.fillStyle(bgHov, 1);
+                btnGfx.fillRoundedRect(rx, y - btnH / 2, btnW, btnH, 6);
+                btnGfx.lineStyle(1, borCol, 1);
+                btnGfx.strokeRoundedRect(rx, y - btnH / 2, btnW, btnH, 6);
             };
             drawN();
+            const lbl = this.add.text(rx + btnW / 2, y, label, {
+                fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0'
+            }).setOrigin(0.5);
+            const zone = this.add.zone(rx + btnW / 2, y, btnW, btnH)
+                .setInteractive({ useHandCursor: true });
             zone.on('pointerover', () => { drawH(); lbl.setColor('#FFD700'); sfxUIHover(); });
             zone.on('pointerout', () => { drawN(); lbl.setColor('#F5E6D0'); });
-            zone.on('pointerup', () => {
-                sfxUIClick();
-                callback();
-                if (this._pauseContainer) lbl.setText(labelFn());
-            });
+            zone.on('pointerup', () => { sfxUIClick(); callback(lbl); });
             container.add([btnGfx, lbl, zone]);
+            return lbl;
         };
 
-        const BTN_Y1 = CY - ph / 2 + 86;
-        const BTN_Y2 = CY - ph / 2 + 132;
-        const BTN_Y3 = CY - ph / 2 + 178;
+        // Volume row
+        container.add(this.add.text(rx, py + 58, 'VOLUME', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
+        }));
+        const audioSettings = getAudioSettings();
+        const muteLbl = this.add.text(rx, py + 78,
+            audioSettings.muted ? '[ SON : OFF ]' : '[ SON : ON  ]', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0'
+        });
+        const volBar = this.add.text(rx, py + 92,
+            `Vol: ${'█'.repeat(Math.round(audioSettings.masterVolume * 10))}${'░'.repeat(10 - Math.round(audioSettings.masterVolume * 10))}`, {
+            fontFamily: 'monospace', fontSize: '9px', color: '#87CEEB'
+        });
+        container.add([muteLbl, volBar]);
 
-        makeBtn(() => '> Reprendre', BTN_Y1, () => this._closePauseMenu());
-        makeBtn(
-            () => `Son: ${getAudioSettings().muted ? 'OFF' : 'ON '}`,
-            BTN_Y2,
-            () => toggleMute()
-        );
-        makeBtn(() => '< Quitter', BTN_Y3, () => {
+        // Mute button
+        makeBtn('Muet ON/OFF', py + 118, '#3A3020', '#5A4A30', '#C4954A', () => {
+            toggleMute();
+            const s = getAudioSettings();
+            muteLbl.setText(s.muted ? '[ SON : OFF ]' : '[ SON : ON  ]');
+        });
+        // Vol- button
+        makeBtn('Volume -', py + 156, '#2A2020', '#4A3030', '#8A6050', () => {
+            const s = getAudioSettings();
+            const nv = Math.max(0, s.masterVolume - 0.1);
+            setMasterVolume(nv);
+            volBar.setText(`Vol: ${'█'.repeat(Math.round(nv * 10))}${'░'.repeat(10 - Math.round(nv * 10))}`);
+        });
+        // Vol+ button
+        makeBtn('Volume +', py + 192, '#2A2020', '#4A3030', '#8A6050', () => {
+            const s = getAudioSettings();
+            const nv = Math.min(1, s.masterVolume + 0.1);
+            setMasterVolume(nv);
+            volBar.setText(`Vol: ${'█'.repeat(Math.round(nv * 10))}${'░'.repeat(10 - Math.round(nv * 10))}`);
+        });
+
+        // Séparateur avant boutons principaux
+        const sep2 = this.add.graphics();
+        sep2.lineStyle(1, 0xD4A574, 0.2);
+        sep2.lineBetween(px + 16, py + ph - 74, px + pw - 16, py + ph - 74);
+        container.add(sep2);
+
+        // === Reprendre (vert) ===
+        const rpW = pw - 32;
+        const rpX = px + 16;
+        const rpY = py + ph - 52;
+        const rpGfx = this.add.graphics();
+        const drawRpN = () => {
+            rpGfx.clear();
+            rpGfx.fillStyle(0x2A5A2A, 0.9);
+            rpGfx.fillRoundedRect(rpX, rpY - 14, rpW, 28, 6);
+            rpGfx.lineStyle(1, 0x44CC44, 0.7);
+            rpGfx.strokeRoundedRect(rpX, rpY - 14, rpW, 28, 6);
+        };
+        const drawRpH = () => {
+            rpGfx.clear();
+            rpGfx.fillStyle(0x3A7A3A, 1);
+            rpGfx.fillRoundedRect(rpX, rpY - 14, rpW, 28, 6);
+            rpGfx.lineStyle(1, 0x44CC44, 1);
+            rpGfx.strokeRoundedRect(rpX, rpY - 14, rpW, 28, 6);
+        };
+        drawRpN();
+        const rpLbl = this.add.text(CX, rpY, '▶  Reprendre', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#44FF44'
+        }).setOrigin(0.5);
+        const rpZone = this.add.zone(CX, rpY, rpW, 28).setInteractive({ useHandCursor: true });
+        rpZone.on('pointerover', () => { drawRpH(); sfxUIHover(); });
+        rpZone.on('pointerout', drawRpN);
+        rpZone.on('pointerup', () => { sfxUIClick(); this._closePauseMenu(); });
+        container.add([rpGfx, rpLbl, rpZone]);
+
+        // === Abandonner (rouge) ===
+        const abY = py + ph - 18;
+        const abGfx = this.add.graphics();
+        const drawAbN = () => {
+            abGfx.clear();
+            abGfx.fillStyle(0x5A1A1A, 0.85);
+            abGfx.fillRoundedRect(rpX, abY - 12, rpW, 24, 5);
+            abGfx.lineStyle(1, 0xCC4444, 0.6);
+            abGfx.strokeRoundedRect(rpX, abY - 12, rpW, 24, 5);
+        };
+        const drawAbH = () => {
+            abGfx.clear();
+            abGfx.fillStyle(0x7A2A2A, 1);
+            abGfx.fillRoundedRect(rpX, abY - 12, rpW, 24, 5);
+            abGfx.lineStyle(1, 0xCC4444, 1);
+            abGfx.strokeRoundedRect(rpX, abY - 12, rpW, 24, 5);
+        };
+        drawAbN();
+        const abLbl = this.add.text(CX, abY, '✕  Abandonner', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#CC4444'
+        }).setOrigin(0.5);
+        const abZone = this.add.zone(CX, abY, rpW, 24).setInteractive({ useHandCursor: true });
+        abZone.on('pointerover', () => { drawAbH(); sfxUIHover(); });
+        abZone.on('pointerout', drawAbN);
+        abZone.on('pointerup', () => {
+            sfxUIClick();
+            this._showAbandonConfirm(container);
+        });
+        container.add([abGfx, abLbl, abZone]);
+    }
+
+    _showAbandonConfirm(pauseContainer) {
+        // Overlay de confirmation par-dessus le menu pause
+        const CX = GAME_WIDTH / 2;
+        const CY = GAME_HEIGHT / 2;
+        const cw = 280, ch = 100;
+        const cx = CX - cw / 2, cy = CY - ch / 2;
+
+        const confGfx = this.add.graphics().setDepth(260);
+        confGfx.fillStyle(0x1A1510, 0.92);
+        confGfx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        confGfx.fillStyle(0x3A2E28, 1);
+        confGfx.fillRoundedRect(cx, cy, cw, ch, 10);
+        confGfx.lineStyle(2, 0xCC4444, 0.8);
+        confGfx.strokeRoundedRect(cx, cy, cw, ch, 10);
+
+        const qTxt = this.add.text(CX, cy + 28, 'Vraiment abandonner ?', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0'
+        }).setOrigin(0.5).setDepth(261);
+
+        const bw = 100, bh = 28;
+        // Non
+        const noGfx = this.add.graphics().setDepth(260);
+        noGfx.fillStyle(0x2A5A2A, 0.9);
+        noGfx.fillRoundedRect(CX - bw - 8, cy + 56, bw, bh, 5);
+        const noTxt = this.add.text(CX - bw / 2 - 8, cy + 70, 'Non', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#44FF44'
+        }).setOrigin(0.5).setDepth(261).setInteractive({ useHandCursor: true });
+        noTxt.on('pointerover', () => sfxUIHover());
+        noTxt.on('pointerup', () => {
+            sfxUIClick();
+            confGfx.destroy(); qTxt.destroy(); noGfx.destroy(); noTxt.destroy();
+            oui.destroy(); ouiGfx.destroy();
+        });
+
+        // Oui
+        const ouiGfx = this.add.graphics().setDepth(260);
+        ouiGfx.fillStyle(0x5A1A1A, 0.9);
+        ouiGfx.fillRoundedRect(CX + 8, cy + 56, bw, bh, 5);
+        const oui = this.add.text(CX + bw / 2 + 8, cy + 70, 'Oui', {
+            fontFamily: 'monospace', fontSize: '12px', color: '#CC4444'
+        }).setOrigin(0.5).setDepth(261).setInteractive({ useHandCursor: true });
+        oui.on('pointerover', () => sfxUIHover());
+        oui.on('pointerup', () => {
+            sfxUIClick();
+            // Cleanup propre avant de quitter
+            stopTerrainAmbiance();
+            stopCrowdAmbiance();
+            stopMusic();
+            stopRollingSound();
             this._closePauseMenu();
-            this.scene.start(this.returnScene || 'TitleScene');
+            fadeToScene(this, this.returnScene || 'TitleScene');
         });
     }
 

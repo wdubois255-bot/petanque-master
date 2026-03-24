@@ -1168,6 +1168,104 @@ export function stopCigales() {
     cigalesSource = null;
 }
 
+// === CROWD AMBIANCE ===
+
+let _crowdAmbianceGain = null;
+let _crowdAmbianceNodes = [];
+let _crowdAmbianceSched = [];
+
+export function startCrowdAmbiance() {
+    stopCrowdAmbiance();
+    const c = getCtx();
+    if (!c) return { stop() {} };
+
+    // Master gain — very low so crowd is subliminal
+    const gainNode = c.createGain();
+    gainNode.gain.setValueAtTime(_effectiveVol(0.04), c.currentTime);
+    gainNode.connect(c.destination);
+    _crowdAmbianceGain = gainNode;
+
+    // Pink noise source looped → bandpass 200–800 Hz (crowd murmur freq band)
+    const buf = _makePinkNoiseBufferCrowd(c, 4);
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const bpf = c.createBiquadFilter();
+    bpf.type = 'bandpass';
+    bpf.frequency.value = 450;
+    bpf.Q.value = 0.6;
+    src.connect(bpf);
+    bpf.connect(gainNode);
+    src.start();
+    _crowdAmbianceNodes.push(src);
+
+    // Random swells every 4–8 s: gain 0.04 → 0.08 → 0.04 over 1.5 s
+    const _sched = () => {
+        if (!_crowdAmbianceGain) return;
+        const cc = getCtx();
+        if (!cc) return;
+        const now = cc.currentTime;
+        const base = _effectiveVol(0.04);
+        const peak = _effectiveVol(0.08);
+        _crowdAmbianceGain.gain.cancelScheduledValues(now);
+        _crowdAmbianceGain.gain.setValueAtTime(base, now);
+        _crowdAmbianceGain.gain.linearRampToValueAtTime(peak, now + 0.75);
+        _crowdAmbianceGain.gain.linearRampToValueAtTime(base, now + 1.5);
+        const id = setTimeout(_sched, 4000 + Math.random() * 4000);
+        _crowdAmbianceSched.push(id);
+    };
+    const initId = setTimeout(_sched, 4000 + Math.random() * 4000);
+    _crowdAmbianceSched.push(initId);
+
+    return { stop() { stopCrowdAmbiance(); } };
+}
+
+export function stopCrowdAmbiance() {
+    for (const id of _crowdAmbianceSched) clearTimeout(id);
+    _crowdAmbianceSched = [];
+
+    if (_crowdAmbianceGain) {
+        const c = getCtx();
+        if (c) {
+            _crowdAmbianceGain.gain.setTargetAtTime(0, c.currentTime, 0.15);
+        }
+        const gn = _crowdAmbianceGain;
+        _crowdAmbianceGain = null;
+        setTimeout(() => {
+            for (const node of _crowdAmbianceNodes) {
+                try { node.stop(); } catch (_) {}
+            }
+            _crowdAmbianceNodes = [];
+            try { gn.disconnect(); } catch (_) {}
+        }, 600);
+    } else {
+        for (const node of _crowdAmbianceNodes) {
+            try { node.stop(); } catch (_) {}
+        }
+        _crowdAmbianceNodes = [];
+    }
+}
+
+// Internal: pink noise tuned for crowd (slightly different than terrain version)
+function _makePinkNoiseBufferCrowd(c, duration) {
+    const bufSize = Math.floor(c.sampleRate * duration);
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const d = buf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufSize; i++) {
+        const w = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + w * 0.0555179;
+        b1 = 0.99332 * b1 + w * 0.0750759;
+        b2 = 0.96900 * b2 + w * 0.1538520;
+        b3 = 0.86650 * b3 + w * 0.3104856;
+        b4 = 0.55000 * b4 + w * 0.5329522;
+        b5 = -0.7616 * b5 - w * 0.0168980;
+        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.05;
+        b6 = w * 0.115926;
+    }
+    return buf;
+}
+
 // === PER-TERRAIN AMBIANCE ===
 
 let _ambianceSounds = [];
