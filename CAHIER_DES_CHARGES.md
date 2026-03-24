@@ -224,6 +224,18 @@
 - [x] **Bug window.__PHASER_GAME__** : supprime (interdit par convention, utiliser this.registry)
 - [x] **Bug BootScene shutdown** : cleanup propre des ressources au shutdown
 
+### 3.7 Polish UX (session 8 — 24 mars 2026)
+- [x] **VSIntroScene** : catchphrase joueur + adversaire (italic, #D4A574, fade-in 200ms)
+- [x] **InGameTutorial** : Phase 1.5 regle du tour ("l'equipe la plus loin rejoue", 4s, TUTORIAL_PHASE_TURN_RULE=4)
+- [x] **InGameTutorial** : LOFT timer 5s → 8s + bouton OK dismiss immediat
+- [x] **BootScene** : +8 tips lore/gameplay (La Ciotat, Fanny, terrains, strategie pointeur)
+- [x] **EngineRenderer** : hint visee unifie avec InGameTutorial ("Glissez vers le bas pour viser...")
+- [x] **AimingSystem** : sous-descriptions 9px #9E9E8E sous chaque mode (Roulette, Demi, Plombee, Rafle, Tir Fer, Tir Devant)
+- [x] **PetanqueScene** : VS label fade-out alpha 0 apres 5s (Sine.easeIn 1000ms)
+- [x] **LevelUpScene** : tooltips hover sur chaque stat (Precision/Puissance/Effet/Sang-froid, depth 150)
+- [x] **CharSelectScene** : section CAPACITES Rookie avec seuils, noms, descriptions + checkmarks vert si debloquees
+- [x] **Regle projet** : pas de noms de joueurs reels — remplace par generique (droits image)
+
 ---
 
 ## 4. REGLES DE PETANQUE (FIPJP)
