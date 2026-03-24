@@ -394,7 +394,7 @@ export default class AimingSystem {
             this._retroUI = [];
         }
         this._retroLabel = null;
-        this._keyR = null;
+        if (this._keyR) { this._keyR.removeAllListeners(); this._keyR = null; }
     }
 
     // Tir devant toggle: [D] switches between TIR and TIR DEVANT
@@ -449,7 +449,7 @@ export default class AimingSystem {
             this._tirDevantUI = [];
         }
         this._tirDevantLabel = null;
-        this._keyD = null;
+        if (this._keyD) { this._keyD.removeAllListeners(); this._keyD = null; }
     }
 
     // === Ciblage cochonnet [B] — disponible en mode tirer ===
@@ -978,12 +978,13 @@ export default class AimingSystem {
         if (this._keyT) { this._keyT.destroy(); this._keyT = null; }
         if (this._key4) { this._key4.destroy(); this._key4 = null; }
         if (this._key6) { this._key6.destroy(); this._key6 = null; }
-        // Also clean Focus/Ability/Cochonnet/Spin UI
+        // Also clean Focus/Ability/Cochonnet/Spin/Retro/TirDevant UI
         this._clearFocusUI();
         this._clearAbilityUI();
         this._clearCochonnetUI();
         this._clearSpinLateralUI();
         this._clearRetroUI();
+        this._clearTirDevantUI();
     }
 
     // --- POINTER EVENTS ---

@@ -56,19 +56,16 @@ describe('PetanqueEngine.computeThrowParams', () => {
         expect(rouletteRollSpeed).toBeGreaterThan(plombeeRollSpeed);
     });
 
-    it('tir should have the highest rolling efficiency (momentum transfer)', () => {
+    it('tir flyOnly: ball stops where it lands (rollVx/rollVy = 0)', () => {
         const tir = PetanqueEngine.computeThrowParams(
             angle, 0.7, originX, originY, bounds, LOFT_TIR, frictionMult
         );
-        const demi = PetanqueEngine.computeThrowParams(
-            angle, 0.7, originX, originY, bounds, LOFT_DEMI_PORTEE, frictionMult
-        );
 
         const tirRoll = Math.sqrt(tir.rollVx ** 2 + tir.rollVy ** 2);
-        const demiRoll = Math.sqrt(demi.rollVx ** 2 + demi.rollVy ** 2);
 
-        // Tir has rollEfficiency: 14.0 (massive momentum) vs demi 0.6
-        expect(tirRoll).toBeGreaterThan(demiRoll);
+        // LOFT_TIR.flyOnly = true → ball barely rolls after landing (carreau naturel via collision)
+        expect(tirRoll).toBe(0);
+        expect(LOFT_TIR.flyOnly).toBe(true);
     });
 
     it('puissance stat should affect max distance', () => {

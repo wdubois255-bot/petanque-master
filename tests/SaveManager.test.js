@@ -51,6 +51,18 @@ describe('SaveManager', () => {
             expect(save.ecus).toBeUndefined();
         });
 
+        it('migrates root totalWins/totalLosses/totalCarreaux → stats.*', () => {
+            const oldData = { version: 2, galets: 100, totalWins: 5, totalLosses: 3, totalCarreaux: 2 };
+            localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(oldData));
+            const save = loadSave();
+            expect(save.totalWins).toBeUndefined();
+            expect(save.totalLosses).toBeUndefined();
+            expect(save.totalCarreaux).toBeUndefined();
+            expect(save.stats.totalWins).toBe(5);
+            expect(save.stats.totalLosses).toBe(3);
+            expect(save.stats.totalCarreaux).toBe(2);
+        });
+
         it('migrates v1 data to v2', () => {
             const v1Data = { version: 1, badges: ['test_badge'], bouleType: 'bronze' };
             localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(v1Data));

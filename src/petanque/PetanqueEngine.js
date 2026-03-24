@@ -376,7 +376,10 @@ export default class PetanqueEngine {
         const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + BALL_CLAMP_MARGIN, bounds.y + bounds.h - BALL_CLAMP_MARGIN);
 
         const perFrameFriction = FRICTION_BASE * frictionMult;
-        const rollingSpeed = Math.sqrt(2 * perFrameFriction * rollDist * loftPreset.rollEfficiency);
+        // flyOnly: ball stops where it lands (tir au fer — carreau naturel via collision physics)
+        const rollingSpeed = loftPreset.flyOnly
+            ? 0
+            : Math.sqrt(2 * perFrameFriction * rollDist * loftPreset.rollEfficiency);
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 

@@ -529,9 +529,10 @@ describe('Loft presets physics', () => {
         expect(LOFT_PLOMBEE.precisionPenalty).toBe(2.0);
     });
 
-    it('tir: 95% fly, high roll efficiency for energy transfer', () => {
+    it('tir: 95% fly, flyOnly flag for carreau naturel', () => {
         expect(LOFT_TIR.landingFactor).toBe(0.95);
-        expect(LOFT_TIR.rollEfficiency).toBe(16.0);
+        expect(LOFT_TIR.flyOnly).toBe(true);
+        expect(LOFT_TIR.rollEfficiency).toBe(0.3);
         expect(LOFT_TIR.retroAllowed).toBe(true);
     });
 

@@ -70,7 +70,7 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 16.0,
+    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 0.3, flyOnly: true,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
 };
 // Tir devant : atterrit 20-30cm avant la cible, rebondit dedans
@@ -236,6 +236,16 @@ export const CAMERA_LERP = 0.1;
 
 // Dialogue
 export const TYPEWRITER_SPEED = 30;
+
+// UI layout constants (source unique — scenes importent ces valeurs)
+export const STAT_BAR_WIDTH = 200;
+export const SHOP_CARD_WIDTH = 138;
+export const DIFFICULTY_COLORS = {
+    easy: '#6B8E4E',
+    medium: '#D4A574',
+    hard: '#C44B3F',
+    expert: '#9B7BB8'
+};
 
 // Palette provencale
 export const COLORS = {

@@ -185,6 +185,5 @@
     { "id": "jungle", "name": "Cochonnet Jungle", "description": "Camouflage tropical.", "textureKey": "ball_cochonnet_jungle", "color": "#4A8A3A", "unlocked": false },
     { "id": "multicolor", "name": "Cochonnet Multicolor", "description": "Arc-en-ciel psychedelique.", "textureKey": "ball_cochonnet_multicolor", "color": "#FF69B4", "unlocked": false }
   ],
-  "cochonnet": { "masse": 16, "rayon": 4, "color": "#FFD700", "sprite": "cochonnet" },
   "note": "Les valeurs physiques sont dans src/utils/Constants.js (source unique de verite)"
 }

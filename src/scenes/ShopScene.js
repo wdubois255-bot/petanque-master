@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH } from '../utils/Constants.js';
 import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -16,7 +16,7 @@ const TABS = [
 const PREVIEW_W = 200;
 const GRID_X = PREVIEW_W + 15;
 const GRID_COLS = 4;
-const CARD_W = 138;
+const CARD_W = SHOP_CARD_WIDTH;
 const CARD_H = 82;
 const CARD_GAP_X = 8;
 const CARD_GAP_Y = 8;

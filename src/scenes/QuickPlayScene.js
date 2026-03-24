@@ -129,6 +129,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Navigation
         UIFactory.addBackButton(this, 'TitleScene');
         this._setupKeyboard();
+        this.events.on('shutdown', this._shutdown, this);
 
         UIFactory.fadeIn(this);
     }
@@ -1023,6 +1024,11 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-ENTER', () => this._launchGame());
         this.input.keyboard.on('keydown-SPACE', () => this._launchGame());
+        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+    }
+
+    _shutdown() {
+        this.input.keyboard.removeAllListeners();
     }
 
     _handleArrowKey(dir) {

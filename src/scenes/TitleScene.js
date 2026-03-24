@@ -176,8 +176,8 @@ export default class TitleScene extends Phaser.Scene {
             this._titleText.setInteractive({ useHandCursor: false });
             this._titleText.on('pointerdown', () => {
                 this._logoClickCount++;
-                if (this._logoClickTimer) clearTimeout(this._logoClickTimer);
-                this._logoClickTimer = setTimeout(() => { this._logoClickCount = 0; }, 600);
+                if (this._logoClickTimer) { this._logoClickTimer.remove(); this._logoClickTimer = null; }
+                this._logoClickTimer = this.time.delayedCall(600, () => { this._logoClickCount = 0; this._logoClickTimer = null; });
                 if (this._logoClickCount >= 3) {
                     this._logoClickCount = 0;
                     this.scene.start('DevTestScene');
@@ -934,7 +934,7 @@ export default class TitleScene extends Phaser.Scene {
             scoreTotal: 0,
             playtime: 0
         });
-        this._transitionTo(() => this.scene.start('IntroScene'));
+        this._transitionTo(() => this.scene.start('CharSelectScene'));
     }
 
     _continueGame(slot, data) {

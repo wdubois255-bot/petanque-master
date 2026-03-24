@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT, STAT_BAR_WIDTH } from '../utils/Constants.js';
 import { setRookieStats, addRookiePoints } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -13,7 +13,7 @@ const STAT_DEFS = [
     { key: 'sang_froid',  label: 'S-F', fullLabel: 'Sang-froid',  color: COLORS.STAT_ADAPTABILITE, hotkey: 'FOUR' }
 ];
 
-const BAR_WIDTH = 200;
+const BAR_WIDTH = STAT_BAR_WIDTH;
 const BAR_HEIGHT = 16;
 const ROW_HEIGHT = 52;
 
@@ -176,7 +176,7 @@ export default class LevelUpScene extends Phaser.Scene {
             this.input.keyboard.on(`keydown-${def.hotkey}`, () => this._addPoint(i));
         }
         this.input.keyboard.on('keydown-ENTER', () => this._confirm());
-        this.input.keyboard.on('keydown-ESC', () => this.scene.start('TitleScene'));
+        this.input.keyboard.on('keydown-ESC', () => this.scene.start(this.returnScene || 'TitleScene', this.returnData));
     }
 
     _subtitleString() {

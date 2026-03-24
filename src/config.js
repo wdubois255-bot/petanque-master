@@ -8,7 +8,6 @@ import QuickPlayScene from './scenes/QuickPlayScene.js';
 import ArcadeScene from './scenes/ArcadeScene.js';
 import VSIntroScene from './scenes/VSIntroScene.js';
 import ResultScene from './scenes/ResultScene.js';
-import IntroScene from './scenes/IntroScene.js';
 import OverworldScene from './scenes/OverworldScene.js';
 import PetanqueScene from './scenes/PetanqueScene.js';
 import LevelUpScene from './scenes/LevelUpScene.js';
@@ -37,7 +36,7 @@ const config = {
             debug: false
         }
     },
-    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, IntroScene, OverworldScene, PetanqueScene, LevelUpScene, ShopScene, TutorialScene, PlayerScene, DevTestScene]
+    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, OverworldScene, PetanqueScene, LevelUpScene, ShopScene, TutorialScene, PlayerScene, DevTestScene]
 };
 
 export default config;

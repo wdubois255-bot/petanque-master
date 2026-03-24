@@ -16,9 +16,6 @@ function defaultSaveData() {
         unlockedCochonnets: ["classique"],
         badges: [],
         titles: [],
-        totalWins: 0,
-        totalLosses: 0,
-        totalCarreaux: 0,
         arcadeProgress: 0,
         arcadePerfect: false,
         arcadeIntroSeen: false,
@@ -40,6 +37,7 @@ function defaultSaveData() {
         stats: {
             totalMatches: 0,
             totalWins: 0,
+            totalLosses: 0,
             totalCarreaux: 0,
             totalBiberons: 0,
             totalGaletsEarned: 0,
@@ -72,6 +70,13 @@ export function loadSave() {
         if (data.ecus !== undefined && data.galets === undefined) {
             data.galets = data.ecus;
             delete data.ecus;
+        }
+        // Migrate root totalWins/totalLosses/totalCarreaux → stats.* (cleanup v2)
+        if (data.totalWins !== undefined || data.totalLosses !== undefined || data.totalCarreaux !== undefined) {
+            if (!data.stats) data.stats = {};
+            if (data.totalWins !== undefined) { data.stats.totalWins = Math.max(data.stats.totalWins || 0, data.totalWins); delete data.totalWins; }
+            if (data.totalLosses !== undefined) { data.stats.totalLosses = Math.max(data.stats.totalLosses || 0, data.totalLosses); delete data.totalLosses; }
+            if (data.totalCarreaux !== undefined) { data.stats.totalCarreaux = Math.max(data.stats.totalCarreaux || 0, data.totalCarreaux); delete data.totalCarreaux; }
         }
         return { ...defaultSaveData(), ...data };
     } catch {
@@ -184,22 +189,25 @@ export function setRookieStats(stats) {
 
 export function recordWin() {
     const save = loadSave();
-    save.totalWins++;
+    if (!save.stats) save.stats = {};
+    save.stats.totalWins = (save.stats.totalWins || 0) + 1;
     saveSave(save);
-    return save.totalWins;
+    return save.stats.totalWins;
 }
 
 export function recordLoss() {
     const save = loadSave();
-    save.totalLosses++;
+    if (!save.stats) save.stats = {};
+    save.stats.totalLosses = (save.stats.totalLosses || 0) + 1;
     saveSave(save);
 }
 
 export function recordCarreau() {
     const save = loadSave();
-    save.totalCarreaux++;
+    if (!save.stats) save.stats = {};
+    save.stats.totalCarreaux = (save.stats.totalCarreaux || 0) + 1;
     saveSave(save);
-    return save.totalCarreaux;
+    return save.stats.totalCarreaux;
 }
 
 export function setArcadeProgress(round) {

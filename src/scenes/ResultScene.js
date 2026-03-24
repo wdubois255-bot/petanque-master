@@ -302,6 +302,14 @@ export default class ResultScene extends Phaser.Scene {
             });
         }
 
+        // Safety: if dialogue fails to complete, unblock input after 10s
+        this.time.delayedCall(10000, () => {
+            if (!this._postDialogDone) {
+                this._postDialogDone = true;
+                this._addInputHandlers();
+            }
+        });
+
         this.events.on('shutdown', this._shutdown, this);
     }
 
@@ -540,7 +548,7 @@ export default class ResultScene extends Phaser.Scene {
         if (!arcadeData?.milestones) return;
 
         const save = loadSave();
-        const arcadeWins = save.totalWins || 0;
+        const arcadeWins = save.stats?.totalWins || 0;
         const totalCarreaux = (save.stats?.totalCarreaux || 0) + (this.matchStats?.carreaux || 0);
         const arcadeComplete = (save.arcadeProgress || 0) >= 5;
         const arcadePerfect = save.arcadePerfect || false;

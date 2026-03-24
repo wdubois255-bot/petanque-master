@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_VS } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_VS, DIFFICULTY_COLORS } from '../utils/Constants.js';
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -320,10 +320,9 @@ export default class VSIntroScene extends Phaser.Scene {
 
         // Difficulty label
         const diffMap = { easy: 'FACILE', medium: 'MOYEN', hard: 'DIFFICILE', expert: 'EXPERT' };
-        const diffColors = { easy: '#6B8E4E', medium: '#D4A574', hard: '#C44B3F', expert: '#9B7BB8' };
         const diff = this.matchData.difficulty || 'medium';
         const diffLabel = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 45, diffMap[diff] || diff.toUpperCase(), {
-            fontFamily: 'monospace', fontSize: '12px', color: diffColors[diff] || '#D4A574', shadow: SHADOW
+            fontFamily: 'monospace', fontSize: '12px', color: DIFFICULTY_COLORS[diff] || '#D4A574', shadow: SHADOW
         }).setOrigin(0.5).setAlpha(0);
 
         // Intro text (arcade hint)

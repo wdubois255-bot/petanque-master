@@ -678,16 +678,18 @@ export default class PlayerScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL, fontSize: '10px', color: CSS.OR, shadow: SHADOW
         }).setDepth(5));
 
-        const totalMatches = save.totalWins + save.totalLosses;
-        const winRate = totalMatches > 0 ? Math.round(save.totalWins / totalMatches * 100) : 0;
+        const statsWins = save.stats?.totalWins || 0;
+        const statsLosses = save.stats?.totalLosses || 0;
+        const totalMatches = save.stats?.totalMatches || (statsWins + statsLosses);
+        const winRate = totalMatches > 0 ? Math.round(statsWins / totalMatches * 100) : 0;
 
         // Win/Loss cards
         const cardW = 130;
         const cardH = 70;
         const statsCards = [
-            { label: 'VICTOIRES', value: `${save.totalWins}`, sub: `${winRate}%`, color: 0x44CC44 },
-            { label: 'DEFAITES', value: `${save.totalLosses}`, sub: `${100 - winRate}%`, color: 0xCC4444 },
-            { label: 'CARREAUX', value: `${save.totalCarreaux || 0}`, sub: 'Tirs parfaits', color: 0xFFD700 },
+            { label: 'VICTOIRES', value: `${statsWins}`, sub: `${winRate}%`, color: 0x44CC44 },
+            { label: 'DEFAITES', value: `${statsLosses}`, sub: `${100 - winRate}%`, color: 0xCC4444 },
+            { label: 'CARREAUX', value: `${save.stats?.totalCarreaux || 0}`, sub: 'Tirs parfaits', color: 0xFFD700 },
             { label: 'TEMPS', value: formatPlaytime(save.playtime || 0), sub: 'de jeu total', color: 0x87CEEB }
         ];
 
