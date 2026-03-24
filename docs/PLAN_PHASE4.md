@@ -60,21 +60,28 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 
 ---
 
-## AXE I — LOCALISATION ANGLAIS (~6h)
+## AXE I — LOCALISATION ANGLAIS ✅ SPRINT E COMPLET (UI), SPRINT F RESTANT (JSON data)
 
-### I1. Systeme i18n (nouveau src/utils/I18n.js)
-- `I18n.t(key, params)` avec interpolation {param}
-- Charge `public/data/lang/{locale}.json`
+### I1. Systeme i18n ✅
+- `src/utils/I18n.js` : singleton 68 lignes, `t()` / `ta()` / `detect()` / `setLocale()`, fallback FR
 
-### I2. Extraction textes FR → public/data/lang/fr.json
-- Grep toutes les strings francaises du code
-- Categories : menu, gameplay, results, tutorial, shop, dialogues, barks
+### I2. Extraction textes FR → public/data/lang/fr.json ✅ (UI uniquement)
+- BootScene (tips, loading), TitleScene (menus, slots, settings), InGameTutorial (4 phases),
+  EngineRenderer (aim hint), ScorePanel (score/mene/labels), terrain hints
 
-### I3. Traduction EN → public/data/lang/en.json
-- Traduction complete (adapter l'humour, pas mot a mot)
-- Noms techniques : Roulette, Half-Lob, Lob, Skim Shot, Iron Shot, Front Shot
+### I3. Traduction EN → public/data/lang/en.json ✅ (UI uniquement)
+- Jack/End/Iron Shot/Rolling/Half-Lob/Lob/Skim Shot/Front Shot/Composure
+- Galets et Carreau conservés (couleur locale)
 
-### I4. Detection langue + toggle dans settings
+### I4. Detection langue + toggle ✅
+- `detect()` : localStorage 'petanque_lang' → navigator.language → 'en'
+- Toggle `[FR|en]` dans TitleScene (bas-droite), restart scène sans rechargement page
+
+### I5. Sprint F — JSON data (RESTE A FAIRE)
+- [ ] characters.json : noms abilities, descriptions, barks (sans traduire les noms propres)
+- [ ] arcade.json : textes narratifs intro/ending
+- [ ] shop.json : noms et descriptions items
+- [ ] commentator.json : phrases commentateur
 
 ---
 

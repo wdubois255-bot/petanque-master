@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.10 — 24 mars 2026 (Phase 3 COMPLETE : AXE A+B+C+D+E+F — 273 tests)
+> Version 2.13 — 24 mars 2026 (Phase 3 COMPLETE + AXE I i18n UI — 273 tests)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -228,6 +228,21 @@
 - [x] **Bug _rollFrames** : correction edge case (frames de roulement)
 - [x] **Bug window.__PHASER_GAME__** : supprime (interdit par convention, utiliser this.registry)
 - [x] **Bug BootScene shutdown** : cleanup propre des ressources au shutdown
+
+### 2.13 Localisation FR/EN (session 11 — 24 mars 2026)
+- [x] **I18n.js** : singleton 68 lignes, `t()` / `ta()` / `detect()` / `setLocale()`, fallback FR
+- [x] **fr.json** : 16 tips boot, menus titre, tuto 4 phases, ingame panel, terrain hints, loft, shop, levelup, result
+- [x] **en.json** : même structure EN (Jack/End/Iron Shot/Lob/Rolling, Galets/Carreau conservés)
+- [x] **main.js** : top-level `await I18n.load()` avant Phaser (I18n prête dès le preload)
+- [x] **BootScene** : titre, loading text, tips via `I18n.ta()`
+- [x] **TitleScene** : 6 boutons menu, subtitle, press_start, controls, saves, slots, settings + toggle `[FR|en]`
+- [x] **InGameTutorial** : 4 phases + terrain hints via `I18n.t('terrain_hints.{id}')`
+- [x] **EngineRenderer** : aim hint
+- [x] **ScorePanel** : SCORE / VOUS / ADV. / MENE {n} / tab hint
+- **Sprint F restant** : characters.json, arcade.json, shop.json, barks (noms/descriptions JSON)
+- **Fichiers** : `src/utils/I18n.js`, `public/data/lang/fr.json`, `public/data/lang/en.json`
+
+---
 
 ### 3.7 Polish UX (session 8 — 24 mars 2026)
 - [x] **VSIntroScene** : catchphrase joueur + adversaire (italic, #D4A574, fade-in 200ms)
