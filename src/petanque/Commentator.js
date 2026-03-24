@@ -1,3 +1,5 @@
+import I18n from '../utils/I18n.js';
+
 /**
  * Commentator — Affiche des phrases de commentaire TV en haut de l'ecran.
  * Texte uniquement (pas de synthese vocale). Fond semi-transparent, 3s visible.
@@ -40,7 +42,8 @@ export default class Commentator {
      */
     say(category, force = false) {
         if (!this._phrases) return;
-        const pool = this._phrases[category];
+        // Localized pool: check for category_en etc., fallback to FR
+        const pool = I18n.fieldArray(this._phrases, category);
         if (!pool || pool.length === 0) return;
 
         const now = Date.now();

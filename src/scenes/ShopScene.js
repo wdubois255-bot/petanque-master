@@ -563,6 +563,83 @@ export default class ShopScene extends Phaser.Scene {
         this._purchasing = true;
         sfxUIClick();
 
+        // Confirmation overlay
+        this._showPurchaseConfirm(item);
+    }
+
+    _showPurchaseConfirm(item) {
+        const CX = GAME_WIDTH / 2;
+        const CY = GAME_HEIGHT / 2;
+        const pw = 320, ph = 130;
+        const px = CX - pw / 2, py = CY - ph / 2;
+
+        // Overlay sombre
+        const overlay = this.add.graphics().setDepth(200);
+        overlay.fillStyle(0x1A1510, 0.7);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // Panel
+        const panel = this.add.graphics().setDepth(201);
+        panel.fillStyle(0x3A2E28, 0.98);
+        panel.fillRoundedRect(px, py, pw, ph, 10);
+        panel.lineStyle(2, 0xD4A574, 0.85);
+        panel.strokeRoundedRect(px, py, pw, ph, 10);
+
+        const itemName = item.name || item.id;
+        const qTxt = this.add.text(CX, py + 30, `Acheter ${itemName}\npour ${item.price} Galets ?`, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0',
+            align: 'center', lineSpacing: 4
+        }).setOrigin(0.5).setDepth(202);
+
+        const bw = 100, bh = 30;
+        const btnY = py + 90;
+
+        // Bouton OUI (vert)
+        const ouiGfx = this.add.graphics().setDepth(201);
+        ouiGfx.fillStyle(0x2A5A2A, 0.9);
+        ouiGfx.fillRoundedRect(CX - bw - 10, btnY - bh / 2, bw, bh, 6);
+        ouiGfx.lineStyle(1, 0x44CC44, 0.7);
+        ouiGfx.strokeRoundedRect(CX - bw - 10, btnY - bh / 2, bw, bh, 6);
+
+        const ouiTxt = this.add.text(CX - bw / 2 - 10, btnY, 'OUI', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#44CC44'
+        }).setOrigin(0.5).setDepth(202).setInteractive({ useHandCursor: true });
+
+        // Bouton NON (rouge)
+        const nonGfx = this.add.graphics().setDepth(201);
+        nonGfx.fillStyle(0x5A1A1A, 0.9);
+        nonGfx.fillRoundedRect(CX + 10, btnY - bh / 2, bw, bh, 6);
+        nonGfx.lineStyle(1, 0xCC4444, 0.7);
+        nonGfx.strokeRoundedRect(CX + 10, btnY - bh / 2, bw, bh, 6);
+
+        const nonTxt = this.add.text(CX + bw / 2 + 10, btnY, 'NON', {
+            fontFamily: 'monospace', fontSize: '13px', color: '#CC4444'
+        }).setOrigin(0.5).setDepth(202).setInteractive({ useHandCursor: true });
+
+        const cleanup = () => {
+            overlay.destroy(); panel.destroy(); qTxt.destroy();
+            ouiGfx.destroy(); ouiTxt.destroy();
+            nonGfx.destroy(); nonTxt.destroy();
+        };
+
+        ouiTxt.on('pointerover', () => { ouiTxt.setColor('#66FF66'); sfxUIHover(); });
+        ouiTxt.on('pointerout', () => ouiTxt.setColor('#44CC44'));
+        ouiTxt.on('pointerup', () => {
+            sfxUIClick();
+            cleanup();
+            this._executePurchase(item);
+        });
+
+        nonTxt.on('pointerover', () => { nonTxt.setColor('#FF6666'); sfxUIHover(); });
+        nonTxt.on('pointerout', () => nonTxt.setColor('#CC4444'));
+        nonTxt.on('pointerup', () => {
+            sfxUIClick();
+            cleanup();
+            this._purchasing = false;
+        });
+    }
+
+    _executePurchase(item) {
         const success = spendGalets(item.price);
         if (!success) { this._purchasing = false; return; }
 

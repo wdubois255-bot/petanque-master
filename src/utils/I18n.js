@@ -62,6 +62,25 @@ const I18n = {
     setLocale(locale) {
         localStorage.setItem('petanque_lang', locale);
         this._locale = locale;
+    },
+
+    // Résout un champ localisé dans un objet de données JSON
+    // Ex: I18n.field(character, 'name') → character.name_en si locale=en, sinon character.name
+    field(obj, fieldName) {
+        if (this._locale !== 'fr') {
+            const localized = obj[`${fieldName}_${this._locale}`];
+            if (localized !== undefined && localized !== null && localized !== '') return localized;
+        }
+        return obj[fieldName];
+    },
+
+    // Pour les tableaux (barks, narratives)
+    fieldArray(obj, fieldName) {
+        if (this._locale !== 'fr') {
+            const localized = obj[`${fieldName}_${this._locale}`];
+            if (Array.isArray(localized) && localized.length > 0) return localized;
+        }
+        return obj[fieldName];
     }
 };
 

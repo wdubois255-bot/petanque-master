@@ -79,7 +79,6 @@
     "galets": "+{amount} Galets"
   },
   "ingame": {
-    "aim_hint": "Glissez vers le bas pour viser, relâchez pour lancer !",
     "score": "SCORE",
     "you": "VOUS",
     "opponent": "ADV.",

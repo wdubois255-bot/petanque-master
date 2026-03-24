@@ -19,6 +19,7 @@ import InGameTutorial from '../ui/InGameTutorial.js';
 import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -147,7 +148,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
         const vsLabel = this.add.text(
             GAME_WIDTH / 2, this.terrainY - 12,
-            `VS ${this.opponentName}`,
+            `VS ${this.opponentCharacter ? I18n.field(this.opponentCharacter, 'name') : this.opponentName}`,
             { fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center', shadow }
         ).setOrigin(0.5, 1).setDepth(5);
         this.time.delayedCall(5000, () => {
@@ -953,7 +954,9 @@ export default class PetanqueScene extends Phaser.Scene {
         const charData = team === 'player' ? this.playerCharacter : this.opponentCharacter;
         if (!charData?.barks?.[barkType]) return;
 
-        const barks = charData.barks[barkType];
+        const localizedBarks = I18n.fieldArray(charData, 'barks');
+        const barks = localizedBarks?.[barkType] || charData.barks[barkType];
+        if (!barks || barks.length === 0) return;
         const text = barks[Math.floor(Math.random() * barks.length)];
 
         const sprite = team === 'player' ? this.playerSprite : this.opponentSprite;

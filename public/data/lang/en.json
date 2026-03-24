@@ -79,7 +79,6 @@
     "galets": "+{amount} Galets"
   },
   "ingame": {
-    "aim_hint": "Swipe down to aim, release to throw!",
     "score": "SCORE",
     "you": "YOU",
     "opponent": "OPP.",

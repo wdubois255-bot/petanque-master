@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCA
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 
@@ -70,7 +71,7 @@ export default class ArcadeScene extends Phaser.Scene {
         const save = loadSave();
         if (this.currentRound === 1 && !this.lastMatchResult && this.arcadeData.intro_narrative && !save.arcadeIntroSeen) {
             setArcadeIntroSeen();
-            this._showNarrative(this.arcadeData.intro_narrative, () => {
+            this._showNarrative(I18n.fieldArray(this.arcadeData, 'intro_narrative') || this.arcadeData.intro_narrative, () => {
                 this._buildProgressScreen();
             });
             return;
@@ -106,7 +107,7 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Show mid-narrative after winning round 3 (before round 4)
         if (this.lastMatchResult?.won && this.currentRound === 4 && this.arcadeData.mid_narrative_after_3) {
-            this._showNarrative(this.arcadeData.mid_narrative_after_3, () => {
+            this._showNarrative(I18n.fieldArray(this.arcadeData, 'mid_narrative_after_3') || this.arcadeData.mid_narrative_after_3, () => {
                 this._buildProgressScreen();
             });
             return;
@@ -238,7 +239,7 @@ export default class ArcadeScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Player character info
-        this.add.text(80, 70, `${this.playerCharacter.name} - ${this.playerCharacter.title}`, {
+        this.add.text(80, 70, `${I18n.field(this.playerCharacter, 'name')} - ${I18n.field(this.playerCharacter, 'title')}`, {
             fontFamily: 'monospace', fontSize: '14px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0, 0.5);
 
@@ -292,7 +293,7 @@ export default class ArcadeScene extends Phaser.Scene {
 
             // Opponent name below
             const oppChar = this._getCharById(match.opponent);
-            this.add.text(x, trackY + 42, oppChar ? oppChar.name : '???', {
+            this.add.text(x, trackY + 42, oppChar ? I18n.field(oppChar, 'name') : '???', {
                 fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
             }).setOrigin(0.5);
         }
@@ -329,22 +330,22 @@ export default class ArcadeScene extends Phaser.Scene {
                 this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(CHAR_SCALE_ARCADE).setOrigin(0.5);
             }
 
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, nextOpponent.name.toUpperCase(), {
+            this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, I18n.field(nextOpponent, 'name').toUpperCase(), {
                 fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', shadow: SHADOW
             }).setOrigin(0, 0.5);
 
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 80, nextOpponent.title, {
+            this.add.text(GAME_WIDTH / 2 - 100, panelY + 80, I18n.field(nextOpponent, 'title'), {
                 fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
             }).setOrigin(0, 0.5);
 
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 105, `"${nextOpponent.catchphrase}"`, {
+            this.add.text(GAME_WIDTH / 2 - 100, panelY + 105, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW,
                 wordWrap: { width: 300 }
             }).setOrigin(0, 0.5);
 
             // Terrain + difficulty
             if (nextTerrain) {
-                this.add.text(GAME_WIDTH / 2 - 100, panelY + 135, `Terrain : ${nextTerrain.name}`, {
+                this.add.text(GAME_WIDTH / 2 - 100, panelY + 135, `Terrain : ${I18n.field(nextTerrain, 'name')}`, {
                     fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
                 });
             }
@@ -429,7 +430,7 @@ export default class ArcadeScene extends Phaser.Scene {
             playerCharacter: this.playerCharacter,
             opponentCharacter: opponent,
             terrain: terrain ? terrain.surface : 'terre',
-            terrainName: terrain ? terrain.name : 'Place du Village',
+            terrainName: terrain ? I18n.field(terrain, 'name') : 'Place du Village',
             roundNumber: this.currentRound,
             introText: match.intro_text || '',
             preMatchDialogue: match.preMatchDialogue || null,
@@ -476,8 +477,9 @@ export default class ArcadeScene extends Phaser.Scene {
         // Show ending narrative first, then the completion screen
         if (this.arcadeData.ending_narrative && !this._endingShown) {
             this._endingShown = true;
-            const playerName = this.playerCharacter?.name || 'Le Champion';
-            const lines = this.arcadeData.ending_narrative.map(
+            const playerName = this.playerCharacter ? I18n.field(this.playerCharacter, 'name') : 'Le Champion';
+            const endingNarrative = I18n.fieldArray(this.arcadeData, 'ending_narrative') || this.arcadeData.ending_narrative;
+            const lines = endingNarrative.map(
                 l => l.replace('[Personnage]', playerName)
             );
             this._showNarrative(lines, () => this._showArcadeCompleteScreen());
@@ -523,7 +525,7 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 240, `Champion : ${this.playerCharacter.name}`, {
+        this.add.text(GAME_WIDTH / 2, 240, `Champion : ${I18n.field(this.playerCharacter, 'name')}`, {
             fontFamily: 'monospace', fontSize: '18px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
 

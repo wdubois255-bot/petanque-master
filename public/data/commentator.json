@@ -5,6 +5,12 @@
     "A vous de jouer !",
     "On y va !"
   ],
+  "premier_lancer_en": [
+    "First throw of the end!",
+    "Here we go!",
+    "Play away!",
+    "Let's go!"
+  ],
   "bon_point": [
     "Joli point !",
     "Bien place !",
@@ -12,11 +18,24 @@
     "Belle boule !",
     "Propre !"
   ],
+  "bon_point_en": [
+    "Nice point!",
+    "Well placed!",
+    "Now that's fine play!",
+    "Beautiful shot!",
+    "Clean!"
+  ],
   "tres_pres": [
     "C'est serre !",
     "On va devoir mesurer...",
     "Impossible a departager a l'oeil !",
     "Au millimetre !"
+  ],
+  "tres_pres_en": [
+    "It's tight!",
+    "We'll need to measure...",
+    "Impossible to call by eye!",
+    "Down to the millimeter!"
   ],
   "carreau": [
     "CARREAU ! Magnifique !",
@@ -24,20 +43,41 @@
     "CLAC ! Carreau sur place !",
     "Un carreau de maitre !"
   ],
+  "carreau_en": [
+    "CARREAU! Magnificent!",
+    "And it's a carreau! Perfect!",
+    "CLACK! Carreau in place!",
+    "A master's carreau!"
+  ],
   "ciseau": [
     "CISEAU ! Deux d'un coup !",
     "Le ciseau ! Exceptionnel !",
     "Deux boules ejectees ! Le ciseau !"
+  ],
+  "ciseau_en": [
+    "SCISSOR SHOT! Two at once!",
+    "The scissor! Exceptional!",
+    "Two balls cleared! The scissor!"
   ],
   "palet": [
     "Palet ! Il prend la place !",
     "Et il chasse pour se placer !",
     "Tire et remplace ! Le palet !"
   ],
+  "palet_en": [
+    "Palet! Takes the spot!",
+    "And he fires to position himself!",
+    "Shot and replace! The palet!"
+  ],
   "biberon": [
     "Biberon ! Le cochonnet bouge !",
     "Oh ! Il a touche le but !",
     "Biberon ! Tout change !"
+  ],
+  "biberon_en": [
+    "Biberon! The jack moves!",
+    "Oh! He touched the jack!",
+    "Biberon! Everything changes!"
   ],
   "contre": [
     "Oh non ! Il touche sa propre boule !",
@@ -45,11 +85,23 @@
     "Aie ! Erreur de tir !",
     "Contre ! C'est la tuile..."
   ],
+  "contre_en": [
+    "Oh no! He hits his own ball!",
+    "The contre! That hurts...",
+    "Ouch! Misfire!",
+    "Contre! What a disaster..."
+  ],
   "trou": [
     "Et... c'est le trou.",
     "Completement a cote !",
     "Le trou. On oublie et on passe.",
     "Ca arrive aux meilleurs..."
+  ],
+  "trou_en": [
+    "And... that's a miss.",
+    "Completely off target!",
+    "The miss. Forget it and move on.",
+    "It happens to the best..."
   ],
   "match_point": [
     "Match point !",
@@ -57,31 +109,64 @@
     "On y est presque ! Match point !",
     "La balle de match !"
   ],
+  "match_point_en": [
+    "Match point!",
+    "One point from victory!",
+    "Almost there! Match point!",
+    "Match ball!"
+  ],
   "tension": [
     "Egalite ! La tension monte !",
     "Score serre ! Tout se joue maintenant !",
     "Rien n'est fait ! Egalite !",
     "Les deux equipes au coude a coude !"
   ],
+  "tension_en": [
+    "Tied! The tension rises!",
+    "It's close! Everything's on the line!",
+    "Nothing's decided! Tied!",
+    "Both players neck and neck!"
+  ],
   "fanny": [
     "13-0 ! La fanny !",
     "Fanny ! Ca c'est de l'humiliation !",
     "La fanny est consommee !"
+  ],
+  "fanny_en": [
+    "13-0! La fanny!",
+    "Fanny! Now THAT'S humiliation!",
+    "The fanny is served!"
   ],
   "comeback": [
     "Quel retournement !",
     "Il revient de loin !",
     "Le comeback ! On y croit !"
   ],
+  "comeback_en": [
+    "What a turnaround!",
+    "Coming back from behind!",
+    "The comeback! Believe it!"
+  ],
   "derniere_boule": [
     "Derniere boule de la mene !",
     "Tout se joue sur ce lancer !",
     "La derniere ! Concentration !"
+  ],
+  "derniere_boule_en": [
+    "Last ball of the end!",
+    "Everything rides on this throw!",
+    "The last one! Full focus!"
   ],
   "victoire": [
     "Et c'est gagne !",
     "Victoire ! Bravo !",
     "Le match est plie ! Felicitations !",
     "VICTOIRE !"
+  ],
+  "victoire_en": [
+    "And it's over!",
+    "Victory! Well played!",
+    "Match over! Congratulations!",
+    "VICTORY!"
   ]
 }

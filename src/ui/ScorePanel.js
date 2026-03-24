@@ -65,8 +65,8 @@ export default class ScorePanel {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91).setAlpha(0);
 
-        const playerName = scene.playerCharacter?.name
-            ? scene.playerCharacter.name.toUpperCase().substring(0, 10)
+        const playerName = scene.playerCharacter
+            ? I18n.field(scene.playerCharacter, 'name').toUpperCase().substring(0, 10)
             : I18n.t('ingame.you');
         this.playerLabel = scene.add.text(cx - 24, this.panelY + 40, playerName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', align: 'center', shadow: SHADOW
@@ -80,8 +80,8 @@ export default class ScorePanel {
             fontFamily: 'monospace', fontSize: '14px', color: '#6B8E4E', shadow: SHADOW
         }).setOrigin(0, 0).setDepth(91).setAlpha(0).setVisible(false);
 
-        const opponentName = scene.opponentCharacter?.name
-            ? scene.opponentCharacter.name.toUpperCase().substring(0, 10)
+        const opponentName = scene.opponentCharacter
+            ? I18n.field(scene.opponentCharacter, 'name').toUpperCase().substring(0, 10)
             : I18n.t('ingame.opponent');
         this.opponentLabel = scene.add.text(cx - 24, this.panelY + 98, opponentName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', align: 'center', shadow: SHADOW

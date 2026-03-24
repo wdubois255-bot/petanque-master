@@ -95,7 +95,7 @@ export default class EngineRenderer {
 
         const hint = this.scene.add.text(
             this.scene.scale.width / 2, this.scene.scale.height - 28,
-            I18n.t('ingame.aim_hint'),
+            I18n.t('tutorial.aim'),
             {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
                 align: 'center', backgroundColor: '#3A2E28',

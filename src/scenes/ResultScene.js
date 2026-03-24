@@ -4,6 +4,7 @@ import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundMa
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -104,7 +105,7 @@ export default class ResultScene extends Phaser.Scene {
                     targets: winSprite, y: 193, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
             }
-            this.add.text(GAME_WIDTH / 2 - 200, 240, winner.name, {
+            this.add.text(GAME_WIDTH / 2 - 200, 240, I18n.field(winner, 'name'), {
                 fontFamily: 'monospace', fontSize: '16px',
                 color: this.won ? '#87CEEB' : '#C44B3F', shadow: SHADOW
             }).setOrigin(0.5);
@@ -113,7 +114,8 @@ export default class ResultScene extends Phaser.Scene {
             const opponent = this.opponentCharacter;
             if (opponent?.barks) {
                 const barkKey = this.won ? 'post_match_lose' : 'post_match_win';
-                const barks = opponent.barks[barkKey];
+                const localizedBarks = I18n.fieldArray(opponent, 'barks');
+                const barks = localizedBarks?.[barkKey] || opponent.barks[barkKey];
                 if (barks?.length) {
                     const bark = barks[Math.floor(Math.random() * barks.length)];
                     this.add.text(GAME_WIDTH / 2 - 200, 258, `"${bark}"`, {
@@ -431,8 +433,8 @@ export default class ResultScene extends Phaser.Scene {
 
     _getSpeakerDisplayName(speakerId) {
         if (speakerId === 'narrator') return null;
-        if (speakerId === 'rookie') return this.playerCharacter?.name || 'Rookie';
-        if (this.opponentCharacter?.id === speakerId) return this.opponentCharacter.name;
+        if (speakerId === 'rookie') return (this.playerCharacter ? I18n.field(this.playerCharacter, 'name') : null) || 'Rookie';
+        if (this.opponentCharacter?.id === speakerId) return I18n.field(this.opponentCharacter, 'name');
         return speakerId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
@@ -487,13 +489,13 @@ export default class ResultScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(303).setScale(0);
         this.tweens.add({ targets: unlockLabel, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
 
-        const charName = this.add.text(GAME_WIDTH / 2, panelY + 60, char.name, {
+        const charName = this.add.text(GAME_WIDTH / 2, panelY + 60, I18n.field(char, 'name'), {
             fontFamily: 'monospace', fontSize: '28px', color: '#F5E6D0',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: charName, alpha: 1, y: panelY + 58, duration: 400, ease: 'Quad.easeOut', delay: 300 });
 
-        const charTitle = this.add.text(GAME_WIDTH / 2, panelY + 90, char.title || '', {
+        const charTitle = this.add.text(GAME_WIDTH / 2, panelY + 90, I18n.field(char, 'title') || '', {
             fontFamily: 'monospace', fontSize: '13px', color: '#D4A574',
             shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);

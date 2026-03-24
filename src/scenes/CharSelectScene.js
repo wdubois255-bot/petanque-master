@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SC
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -311,18 +312,18 @@ export default class CharSelectScene extends Phaser.Scene {
             cell.w - 4, cell.h - 4, 6
         );
 
-        // Update preview
-        this._previewName.setText(char.name);
-        this._previewTitle.setText(char.title);
-        this._previewCatchphrase.setText(`"${char.catchphrase}"`);
+        // Update preview (localized)
+        this._previewName.setText(I18n.field(char, 'name'));
+        this._previewTitle.setText(I18n.field(char, 'title'));
+        this._previewCatchphrase.setText(`"${I18n.field(char, 'catchphrase')}"`);
 
         if (char.isRookie && char.abilities_unlock?.length) {
             // Truncate description to leave room for abilities
-            const desc = char.description;
+            const desc = I18n.field(char, 'description');
             this._previewDesc.setText(desc.length > 92 ? desc.substring(0, 92) + '...' : desc);
             this._updateRookieAbilities(char);
         } else {
-            this._previewDesc.setText(char.description);
+            this._previewDesc.setText(I18n.field(char, 'description'));
             this._clearAbilitiesSection();
         }
 

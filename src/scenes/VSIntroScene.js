@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SC
 import { setSoundScene, sfxVSSlam } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = UIFactory.SHADOW_HEAVY;
 
@@ -252,11 +253,11 @@ export default class VSIntroScene extends Phaser.Scene {
 
         // Player side (left)
         const playerX = GAME_WIDTH * 0.22;
-        const playerNameText = this.add.text(playerX, GAME_HEIGHT / 2 - 60, player.name.toUpperCase(), {
+        const playerNameText = this.add.text(playerX, GAME_HEIGHT / 2 - 60, I18n.field(player, 'name').toUpperCase(), {
             fontFamily: 'monospace', fontSize: '28px', color: '#87CEEB', shadow: SHADOW
         }).setOrigin(0.5).setX(-200);
 
-        const playerTitleText = this.add.text(playerX, GAME_HEIGHT / 2 - 30, player.title, {
+        const playerTitleText = this.add.text(playerX, GAME_HEIGHT / 2 - 30, I18n.field(player, 'title'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#A8B5C2', shadow: SHADOW
         }).setOrigin(0.5).setX(-200);
 
@@ -276,11 +277,11 @@ export default class VSIntroScene extends Phaser.Scene {
 
         // Opponent side (right)
         const opponentX = GAME_WIDTH * 0.78;
-        const opponentNameText = this.add.text(opponentX, GAME_HEIGHT / 2 - 60, opponent.name.toUpperCase(), {
+        const opponentNameText = this.add.text(opponentX, GAME_HEIGHT / 2 - 60, I18n.field(opponent, 'name').toUpperCase(), {
             fontFamily: 'monospace', fontSize: '28px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5).setX(GAME_WIDTH + 200);
 
-        const opponentTitleText = this.add.text(opponentX, GAME_HEIGHT / 2 - 30, opponent.title, {
+        const opponentTitleText = this.add.text(opponentX, GAME_HEIGHT / 2 - 30, I18n.field(opponent, 'title'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5).setX(GAME_WIDTH + 200);
 
@@ -299,9 +300,9 @@ export default class VSIntroScene extends Phaser.Scene {
         }
 
         // Opponent pre-match bark (from character data)
-        const opponentBark = opponent.barks?.pre_match;
-        if (opponentBark) {
-            const bark = opponentBark[Math.floor(Math.random() * opponentBark.length)];
+        const opponentBarkArr = I18n.fieldArray(opponent, 'barks')?.pre_match;
+        if (opponentBarkArr) {
+            const bark = opponentBarkArr[Math.floor(Math.random() * opponentBarkArr.length)];
             const barkText = this.add.text(opponentX, GAME_HEIGHT / 2 + 90, `"${bark}"`, {
                 fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
                 shadow: SHADOW, wordWrap: { width: 200 }, align: 'center',
@@ -318,7 +319,7 @@ export default class VSIntroScene extends Phaser.Scene {
         let opponentCatchphraseText = null;
         if (opponent.catchphrase) {
             opponentCatchphraseText = this.add.text(opponentX, GAME_HEIGHT / 2 - 8,
-                `"${opponent.catchphrase}"`, {
+                `"${I18n.field(opponent, 'catchphrase')}"`, {
                     fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
                     shadow: SHADOW, fontStyle: 'italic',
                     wordWrap: { width: 200 }, align: 'center'
@@ -362,7 +363,7 @@ export default class VSIntroScene extends Phaser.Scene {
             targets: [playerNameText, playerTitleText, ...(playerSprite ? [playerSprite] : [])],
             x: playerX, duration: 500, ease: 'Back.easeOut', delay: 100,
             onComplete: () => {
-                const catchphrase = this.playerCharacter.catchphrase;
+                const catchphrase = I18n.field(this.playerCharacter, 'catchphrase');
                 if (catchphrase) {
                     const catchphraseText = this.add.text(playerX, GAME_HEIGHT / 2 - 8,
                         `"${catchphrase}"`, {

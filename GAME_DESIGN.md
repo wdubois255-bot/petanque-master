@@ -1,7 +1,7 @@
 # GAME DESIGN - Petanque Master
 
 > **ATTENTION** : Ce fichier est la bible de design du jeu.
-> Le roster actuel compte 12 personnages : Rookie, La Choupe, Ley, Foyot, Suchaud, Fazzino, Mamie Josette, Papi Rene, Robineau, Rocher, Sofia, Rizzi.
+> Le roster actuel compte 14 personnages : Rookie, La Choupe, Ley, Foyot, Suchaud, Fazzino, Mamie Josette, Papi Rene, Robineau, Rocher, Sofia, Rizzi, Chai (boss secret), La Loutre.
 > Pour les stats et donnees reelles : **public/data/characters.json** (source de verite).
 > Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.3.
 
@@ -80,6 +80,8 @@ Chaque personnage a **4 stats** (echelle 1-10) :
 | 10 | rocher | **Rocher** | Puissance brute | Force physique impressionnante, controle limite. |
 | 11 | sofia | **Sofia** | Technique | Technique et creative, maitrise des effets. |
 | 12 | rizzi | **Rizzi** | Wild Card | Flambeur, tout ou rien. Tres fort mais craque sous pression. |
+| 13 | chai | **Chai** | Boss secret | Maitre thaïlandais venu de Bangkok. Precision et sang-froid absolus. Debloque apres l'Arcade. |
+| 14 | la_loutre | **La Loutre** | Glisseur | Fluide et technique, roi des courbes. Ses boules s'insinuent partout. |
 
 **Visuels** (voir section "Direction Artistique" pour le detail complet) :
 - Sprite in-game 32x32 pixel art (4 directions, idle + throw + celebrate + lose)

@@ -3,7 +3,9 @@
     {
       "id": "village",
       "name": "Place du Village",
+      "name_en": "Village Square",
       "description": "La place provencale classique. Platanes, fontaine, cigales. Le terrain d'apprentissage, pur skill.",
+      "description_en": "The classic Provençal square. Plane trees, fountain, cicadas. The learning court — pure skill.",
       "surface": "terre",
       "friction": 1.0,
       "zones": [],
@@ -25,7 +27,9 @@
     {
       "id": "plage",
       "name": "Plage de la Ciotat",
+      "name_en": "La Ciotat Beach",
       "description": "Sable fin, parasols et embruns. Les boules s'enfoncent et s'arretent vite. Avantage aux tireurs.",
+      "description_en": "Fine sand, parasols and sea spray. Balls sink and stop fast. Advantage to shooters.",
       "surface": "sable",
       "friction": 3.0,
       "zones": [],
@@ -47,7 +51,9 @@
     {
       "id": "parc",
       "name": "Parc Municipal",
+      "name_en": "Municipal Park",
       "description": "Pelouse et allees de gravier. Les zones mixtes creent des trajectoires imprevisibles. Avantage aux strateges.",
+      "description_en": "Lawn and gravel paths. Mixed zones create unpredictable trajectories. Advantage to strategists.",
       "surface": "herbe",
       "friction": 1.8,
       "zones": [
@@ -82,7 +88,9 @@
     {
       "id": "colline",
       "name": "Colline aux Oliviers",
+      "name_en": "Olive Hill",
       "description": "Terrain en devers ! Certaines zones penchent legerement, les boules derivent. Il faut lire le terrain.",
+      "description_en": "Sloping court! Some zones tilt slightly, balls drift. You need to read the terrain.",
       "surface": "terre",
       "friction": 1.0,
       "zones": [],
@@ -124,7 +132,9 @@
     {
       "id": "docks",
       "name": "Les Docks",
+      "name_en": "The Docks",
       "description": "Beton lisse avec murs metalliques ! Les boules rebondissent sur les bords. Chaos garanti.",
+      "description_en": "Smooth concrete with metal walls! Balls bounce off the edges. Chaos guaranteed.",
       "surface": "dalles",
       "friction": 0.7,
       "zones": [],

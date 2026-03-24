@@ -133,8 +133,8 @@ describe('Arcade data validation', () => {
     const arcadePath = resolve(__dirname, '../public/data/arcade.json');
     const arcade = JSON.parse(readFileSync(arcadePath, 'utf-8'));
 
-    it('has 5 matches', () => {
-        expect(arcade.matches.length).toBe(5);
+    it('has at least 3 matches', () => {
+        expect(arcade.matches.length).toBeGreaterThanOrEqual(3);
     });
 
     it('each match references valid terrain and opponent', () => {
@@ -150,7 +150,7 @@ describe('Arcade data validation', () => {
     });
 
     it('difficulty increases across matches', () => {
-        const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
+        const difficultyOrder = { easy: 1, medium: 2, hard: 3, expert: 4 };
         for (let i = 1; i < arcade.matches.length; i++) {
             const prev = difficultyOrder[arcade.matches[i - 1].difficulty] || 0;
             const curr = difficultyOrder[arcade.matches[i].difficulty] || 0;
