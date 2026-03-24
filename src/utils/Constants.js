@@ -452,6 +452,7 @@ export const SAVE_VERSION = 2;
 export const TUTORIAL_PHASE_AIM = 1;
 export const TUTORIAL_PHASE_LOFT = 2;
 export const TUTORIAL_PHASE_SCORE = 3;
+export const TUTORIAL_PHASE_TURN_RULE = 4; // "l'équipe la plus loin rejoue"
 
 // Daily challenge
 export const GALET_DAILY_REWARD = 75;

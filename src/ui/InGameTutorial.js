@@ -1,7 +1,8 @@
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import {
     GAME_WIDTH, GAME_HEIGHT,
-    TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE
+    TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
+    TUTORIAL_PHASE_TURN_RULE
 } from '../utils/Constants.js';
 
 const DEPTH = 200;
@@ -42,13 +43,15 @@ export default class InGameTutorial {
         this._elements = [];
         this._tweens = [];
         this._phase1Active = false;
+        this._phase1_5Active = false;
         this._phase2Active = false;
         this._phase3Active = false;
 
-        // If all 3 phases already done, do nothing
+        // If all phases already done, do nothing
         if (this._phaseDone(TUTORIAL_PHASE_AIM) &&
             this._phaseDone(TUTORIAL_PHASE_LOFT) &&
-            this._phaseDone(TUTORIAL_PHASE_SCORE)) {
+            this._phaseDone(TUTORIAL_PHASE_SCORE) &&
+            this._phaseDone(TUTORIAL_PHASE_TURN_RULE)) {
             this.completed = true;
             return;
         }
@@ -68,6 +71,11 @@ export default class InGameTutorial {
 
         this.engine.onTurnChange = (team) => {
             if (this._origOnTurnChange) this._origOnTurnChange(team);
+            if (team === 'opponent' &&
+                !this._phaseDone(TUTORIAL_PHASE_TURN_RULE) &&
+                !this._phase1_5Active) {
+                this._showPhase1_5_TurnRule();
+            }
         };
     }
 
@@ -171,6 +179,44 @@ export default class InGameTutorial {
     }
 
     // ================================================================
+    // PHASE 1.5: TURN RULE — l'équipe la plus loin rejoue (non-bloquant)
+    // ================================================================
+    _showPhase1_5_TurnRule() {
+        if (this._phase1_5Active) return;
+        this._phase1_5Active = true;
+        this._clearElements();
+
+        const cx = GAME_WIDTH / 2;
+
+        const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        bg.fillStyle(0x1A1510, 0.5);
+        bg.fillRect(0, 0, GAME_WIDTH, 76);
+
+        const main = this.scene.add.text(cx, 34,
+            "L'équipe la plus éloignée du cochonnet rejoue toujours.",
+            TEXT_STYLE
+        ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+
+        const sub = this.scene.add.text(cx, 58,
+            "Vous menez ? C'est à l'adversaire !",
+            { ...HINT_STYLE, fontSize: '11px', color: '#FFD700' }
+        ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+
+        this.scene.tweens.add({
+            targets: [bg, main, sub], alpha: 1, duration: 350, ease: 'Sine.easeOut'
+        });
+
+        this._elements.push(bg, main, sub);
+
+        const timer = this.scene.time.delayedCall(4000, () => {
+            this._markPhaseDone(TUTORIAL_PHASE_TURN_RULE);
+            this._phase1_5Active = false;
+            this._fadeOutElements();
+        });
+        this._elements.push({ destroy: () => timer.destroy() });
+    }
+
+    // ================================================================
     // PHASE 2: LOFT — mini overlay trajectoires (non-bloquant)
     // ================================================================
     _showPhase2_Loft() {
@@ -222,8 +268,45 @@ export default class InGameTutorial {
 
         this._elements.push(bg, title, ...modeEls);
 
-        // Auto-dismiss after 5s
-        const timer = this.scene.time.delayedCall(5000, () => {
+        // Bouton OK (60×24) — dismiss immédiat
+        const btnW = 60, btnH = 24;
+        const btnX = cx + 200, btnY = y + 16;
+        const btnBg = this.scene.add.graphics().setDepth(DEPTH + 1).setAlpha(0);
+        btnBg.fillStyle(0xC4854A, 1);
+        btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        btnBg.lineStyle(1, 0xFFD700, 0.5);
+        btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+
+        const btnText = this.scene.add.text(btnX, btnY, 'OK', {
+            fontFamily: 'monospace', fontSize: '11px',
+            color: '#F5E6D0', stroke: '#1A1510', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(DEPTH + 2).setAlpha(0)
+          .setInteractive({ useHandCursor: true });
+
+        btnText.on('pointerover', () => {
+            btnBg.clear();
+            btnBg.fillStyle(0xD4954A, 1);
+            btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        });
+        btnText.on('pointerout', () => {
+            btnBg.clear();
+            btnBg.fillStyle(0xC4854A, 1);
+            btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        });
+        btnText.on('pointerdown', () => {
+            timer.remove();
+            this._markPhaseDone(TUTORIAL_PHASE_LOFT);
+            this._phase2Active = false;
+            this._fadeOutElements();
+        });
+
+        this.scene.tweens.add({
+            targets: [btnBg, btnText], alpha: 1, duration: 300, delay: 200
+        });
+        this._elements.push(btnBg, btnText);
+
+        // Auto-dismiss after 8s
+        const timer = this.scene.time.delayedCall(8000, () => {
             this._markPhaseDone(TUTORIAL_PHASE_LOFT);
             this._phase2Active = false;
             this._fadeOutElements();
