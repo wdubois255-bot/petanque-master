@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.5 — 24 mars 2026 (terrains redessinés dans éditeur, nouveaux sprites, depth bordure)
+> Version 2.6 — 24 mars 2026 (AXE A Phase 3 : rafle, spin lateral, ciblage cochonnet, UI 2 rangees)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -29,14 +29,17 @@
 - [x] Rebonds murs (terrain Docks)
 - [x] Zones de friction mixte (Parc : herbe + gravier)
 - [x] Zones de pente (Colline : gravity_component)
-- [x] Loft : roulette, demi-portee, plombee, tir
-- [x] Retro (backspin) toggle
+- [x] Loft : roulette, demi-portee, plombee, tir au fer, tir devant
+- [x] **Tir a la rafle** (rasant, landingFactor 0.20, arc minimal)
+- [x] Retro (backspin) toggle [R]
+- [x] **Spin lateral** [E] : off → ← gauche → → droite → off (stat Effet >= 4, force 0.045 * effetStat/10)
+- [x] Ciblage cochonnet [B] (angle auto-oriente vers cochonnet)
 - **Fichiers** : `src/petanque/Ball.js`, `src/petanque/Cochonnet.js`, `src/petanque/PetanqueEngine.js`
-- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*)
+- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*, LOFT_RAFLE, LATERAL_SPIN_*)
 
 ### 2.2 Systeme de visee
 - [x] Drag-and-release (direction + puissance)
-- [x] Selection mode : pointer / tirer / loft
+- [x] **Selection mode 2 rangees** : Pointer [1][2][3] (Roulette/Demi/Plombee) + Tirer [4][T][D] (Rafle/Fer/Devant)
 - [x] Focus (Respire) : 5 charges, -80% wobble
 - [x] Capacites uniques par personnage
 - [x] Tremblement sous pression (sang_froid stat)
@@ -53,6 +56,8 @@
 - [x] Systeme de momentum (+/- precision selon confiance)
 - [x] Decision strategique : pointer vs tirer selon distance et situation
 - [x] Pression sous score (sang_froid interaction)
+- [x] **IA utilise la rafle** (frictionMult < 1.5, 35% chance en mode tir)
+- [x] **IA utilise spin lateral** (effet >= 6, probabilite proportionnelle)
 - **Fichiers** : `src/petanque/PetanqueAI.js`, `src/petanque/ai/`
 
 ### 2.4 Personnages (12 : Rookie + 11 adversaires)
@@ -169,7 +174,16 @@
 ## 3. RESTE A IMPLEMENTER
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
-> Reste a implementer = Phase D (narrative overworld) ou polish cosmétique
+> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B-F en attente)
+> Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
+
+### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
+- [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
+- [ ] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
+- [ ] **AXE C** : Cleanup code (console.log, dead code, init() reset manquants)
+- [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
+- [ ] **AXE E** : Audio (SFX spin, rafle, cochonnet)
+- [ ] **AXE F** : Mobile (touch fallback TAB, keybindings E/B sur ecran)
 
 ### 3.1 Sprite Rookie
 - [ ] Sprite de base via PixelLab (128x128, 4 directions, animations)
@@ -187,7 +201,7 @@
 - [ ] Traces d'impact (verifier RenderTexture)
 
 ### 3.4 Tests automatises
-- [x] Vitest : 218 tests unitaires (physique, collisions, IA, terrains, retro, loft) — **218/218 PASS**
+- [x] Vitest : 232 tests unitaires (physique, collisions, IA, terrains, retro, loft, rafle, spin lateral) — **232/232 PASS**
 - [x] Playwright e2e : 85 tests (navigation, health, performance, stress, visual regression)
   - **67/67 tests fonctionnels PASS** (game, health, performance, stress)
   - **18 tests visual regression** : baselines a regenerer apres chaque changement visuel
