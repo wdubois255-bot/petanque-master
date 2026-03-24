@@ -224,7 +224,7 @@ export default class AimingSystem {
             this._tirerAvailable = true;
             // If player doesn't have the point, suggest tirer (but don't force)
             if (!this._activeFamily) {
-                this._activeFamily = this._terrainState.iHavePoint ? 'pointer' : 'pointer';
+                this._activeFamily = this._terrainState.iHavePoint ? 'pointer' : 'tirer';
             }
         }
 

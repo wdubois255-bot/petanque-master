@@ -14,7 +14,9 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 | Game design (concept, flow) | `GAME_DESIGN.md` | Bible du design, ne pas contredire. |
 | Etat du projet | `CAHIER_DES_CHARGES.md` | Ce qui est fait, ce qui reste. |
 | Plan d'action | `docs/PLAN_100.md` | Plan initial (5 axes, termine). |
-| Plan phase 2 | `docs/PLAN_PHASE2.md` | Polish post-playtest : physique, visuels, coherence. |
+| Plan phase 2 | `docs/PLAN_PHASE2.md` | Polish post-playtest (3 axes, termine). |
+| Plan phase 3 | `docs/PLAN_PHASE3.md` | Profondeur technique (6 axes). |
+| Plan phase 4 | `docs/PLAN_PHASE4.md` | Completude pre-publication (8 axes). |
 
 ## Interdictions absolues
 
@@ -39,8 +41,8 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 
 ## Stack
 
-- Phaser 4.0.0-rc.6, JavaScript ES6+, Vite 6.3+
-- Physique petanque custom (~380 lignes Ball.js, PAS de Matter.js)
+- Phaser 4.0.0-rc.6, JavaScript ES6+, Vite 8+
+- Physique petanque custom (~500 lignes Ball.js, PAS de Matter.js)
 - MCP : PixelLab (sprites/tilesets) + ElevenLabs (audio)
 - Tests : Vitest (unit) + Playwright (E2E)
 - Hebergement : GitHub Pages (CI/CD)
@@ -62,8 +64,6 @@ npx vitest run    # Tests unitaires
 | `/sprite [nom]` | Generer un sprite pixel art via PixelLab |
 | `/tileset [nom] [biome]` | Generer un tileset via PixelLab |
 | `/sfx [description]` | Generer un effet sonore via ElevenLabs |
-| `/playtest` | Lancer le serveur de dev et ouvrir le navigateur |
-| `/build-assets` | Optimiser tous les assets pour la production |
 | `/pre-feature [nom]` | Planifier une feature avant de coder |
 | `/post-feature` | Verifier apres implementation (tests, coherence, doc) |
 | `/session-end` | Terminer proprement (commit, etat, priorites) |
@@ -83,20 +83,22 @@ npx vitest run    # Tests unitaires
     /archive               # Documents historiques et plans termines
   /src
     main.js, config.js
-    /scenes/               # 16 scenes (Boot, Title, CharSelect, QuickPlay, Arcade,
+    /scenes/               # 15 scenes (Boot, Title, CharSelect, QuickPlay, Arcade,
                            #   VSIntro, Petanque, Result, LevelUp, Shop, Tutorial,
-                           #   Player, Intro, Overworld, SpriteTest, DevTest)
+                           #   Player, Overworld, SpriteTest, DevTest)
     /petanque/             # Ball, Cochonnet, PetanqueEngine, PetanqueAI,
-                           #   AimingSystem, EngineRenderer, TerrainRenderer, ai/
-    /ui/                   # ScorePanel, DialogBox, UIFactory
-    /utils/                # Constants, SaveManager, SoundManager, PortraitGenerator
-    /world/                # MapManager, NPCManager, SpriteGenerator
+                           #   AimingSystem, EngineRenderer, TerrainRenderer,
+                           #   Commentator, CharacterTextures, ModularCharacter, ai/
+    /ui/                   # UIFactory, ScorePanel, DialogBox, InGameTutorial
+    /utils/                # Constants, SaveManager, SoundManager, I18n,
+                           #   SceneTransition, PortraitGenerator, PortalSDK
+    /world/                # MapManager, NPCManager, SpriteGenerator, TilesetGenerator
     /entities/             # Player, NPC
   /public
-    /data/                 # characters.json, terrains.json, boules.json,
-                           #   arcade.json, shop.json, progression.json
+    /data/                 # characters.json, terrains.json, boules.json, arcade.json,
+                           #   shop.json, progression.json, commentator.json, npcs.json, lang/
     /assets/               # sprites/, portraits/, audio/sfx/, audio/music/
-  /research/               # 56 fichiers (index: research/00_synthese_etat_projet.md)
+  /research/               # 59 fichiers (index: research/00_synthese_etat_projet.md)
   /tests/                  # Vitest (unit) + Playwright (e2e)
   /scripts/                # Utilitaires generation assets
 ```

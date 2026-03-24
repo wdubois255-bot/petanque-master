@@ -731,15 +731,14 @@ export default class ResultScene extends Phaser.Scene {
 
         const bouleUnlocks = [
             { id: 'boule_bronze', cond: stats.matches >= 3, msg: 'Boules Bronze debloquees ! (3 matchs)' },
-            { id: 'boule_chrome', cond: stats.victories >= 5, msg: 'Boules Chrome debloquees ! (5 victoires)' },
             { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
             { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
-            { id: 'boule_chrome_prestige', cond: stats.victories >= 10, msg: 'Boule Chrome Prestige ! (10 victoires)' },
+            { id: 'boule_doree', cond: stats.victories >= 50, msg: 'Boules Dorees debloquees ! (50 victoires)' },
         ];
         const cochUnlocks = [
             { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: 'Cochonnet Bleu debloque ! (5 victoires)' },
             { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
-            { id: 'cochonnet_dore', cond: stats.victories >= 50, msg: 'Cochonnet Dore debloque ! (50 victoires)' },
+            { id: 'cochonnet_jungle', cond: stats.victories >= 50, msg: 'Cochonnet Jungle debloque ! (50 victoires)' },
         ];
         const titleUnlocks = [
             { id: 'title_artilleur', cond: stats.victories >= 20, msg: "Titre \"L'Artilleur\" debloque ! (20 victoires)" },
@@ -750,8 +749,8 @@ export default class ResultScene extends Phaser.Scene {
             if (u.cond && !unlocked.includes(u.id)) {
                 unlocked.push(u.id);
                 newUnlocks.push(u.msg);
-                if (u.id.startsWith('boule_')) unlockBoule(u.id);
-                if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id);
+                if (u.id.startsWith('boule_')) unlockBoule(u.id.replace(/^boule_/, ''));
+                if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id.replace(/^cochonnet_/, ''));
                 if (u.id.startsWith('title_') || u.id.startsWith('badge_')) {
                     if (!save.badges.includes(u.id)) {
                         save.badges.push(u.id);
