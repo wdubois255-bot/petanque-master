@@ -128,8 +128,12 @@ export const CARREAU_THRESHOLD = 28;
 export const CARREAU_DISPLACED_MIN = 32;
 
 // Petanque - shot result detection (tir labels)
-export const CASQUETTE_MAX_SPEED = 0.5;   // Target barely moved
-export const BLESSER_MAX_SPEED = 1.5;     // Target moved a little
+export const CASQUETTE_MAX_SPEED = 0.5;   // DEPRECATED — kept for compat, use CASQUETTE_MAX_DISPLACEMENT
+export const BLESSER_MAX_SPEED = 1.5;     // DEPRECATED — kept for compat, use BLESSEE_MAX_DISPLACEMENT
+// Displacement-based detection (corrected — vitesse au repos est toujours ~0)
+export const CASQUETTE_MAX_DISPLACEMENT = 8;   // px — cible a peine bougee (<8px ≈ 0.29m)
+export const BLESSEE_MAX_DISPLACEMENT = 32;    // px — cible bougee mais pas assez (< 1 rayon de terrain)
+export const RECUL_MIN_BACKWARD_PX = 5;        // px — seuil minimal de recul arriere (COR 0.62 → ~5-6px naturel)
 
 // Petanque - lisibilite
 export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)

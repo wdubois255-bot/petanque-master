@@ -20,14 +20,15 @@ import {
     SPEED_THRESHOLD,
     GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
     PALET_THRESHOLD,
-    CASQUETTE_MAX_SPEED, BLESSER_MAX_SPEED,
+    CASQUETTE_MAX_DISPLACEMENT, BLESSEE_MAX_DISPLACEMENT, RECUL_MIN_BACKWARD_PX,
     CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY,
     puissanceMultiplier
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
     sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore,
-    startRollingSound, updateRollingSound, stopRollingSound
+    startRollingSound, updateRollingSound, stopRollingSound,
+    sfxPalet, sfxCasquette, sfxCiseau, sfxBiberon, sfxContre, sfxTrou
 } from '../utils/SoundManager.js';
 
 const STATES = {
@@ -89,6 +90,7 @@ export default class PetanqueEngine {
         // Shot result tracking
         this._shotCollisions = []; // balls hit by lastThrownBall this throw
         this._lastImpactPoint = null; // {x, y} position of target ball at moment of collision
+        this._carreauDetected = false; // set by _celebrateCarreau, read by _detectShotResult to avoid double label
 
         // Point indicator
         this._lastBestBallId = null;
@@ -436,6 +438,7 @@ export default class PetanqueEngine {
         this._pendingCarreauChecks = [];
         this._shotCollisions = [];
         this._lastImpactPoint = null;
+        this._carreauDetected = false;
 
         // Store throw direction for recul detection
         ball._throwDirX = Math.cos(angle);
@@ -1166,6 +1169,8 @@ export default class PetanqueEngine {
     }
 
     _celebrateCarreau(ball) {
+        this._carreauDetected = true; // prevent _detectShotResult from adding a second label
+
         // Track carreau stat
         if (this.matchStats && ball.team) {
             this.matchStats.carreaux[ball.team]++;
@@ -1186,6 +1191,13 @@ export default class PetanqueEngine {
         if (!this.lastThrownBall || !this.lastThrownBall.isAlive) return;
         if (!this.cochonnet || !this.cochonnet.isAlive) return;
 
+        // Guard : carreau detecte avant nous par _checkCarreau — pas de double label
+        if (this._carreauDetected) {
+            this._carreauDetected = false;
+            this._shotCollisions = [];
+            return;
+        }
+
         const ball = this.lastThrownBall;
         const isTir = this.lastShotWasTir;
         const hitBalls = this._shotCollisions || [];
@@ -1203,6 +1215,7 @@ export default class PetanqueEngine {
             const distToCoch = ball.distanceTo(this.cochonnet);
             if (distToCoch <= ball.radius + this.cochonnet.radius + 2) {
                 if (this.matchStats && ball.team) this.matchStats.biberons[ball.team]++;
+                sfxBiberon();
                 this._showShotLabel(ball, 'BIBERON !', '#FFD700', 14);
             }
             this._shotCollisions = [];
@@ -1213,26 +1226,27 @@ export default class PetanqueEngine {
 
         // Tir rate — distinguer "Sautee" (passe tres pres) de "Trou" (rate loin)
         if (hitBalls.length === 0) {
-            // Chercher la boule adverse la plus proche pour savoir si c'etait une "sautee"
             const enemyBalls = this.balls.filter(b => b.isAlive && b.team !== ball.team && b.team !== 'cochonnet');
             let minDist = Infinity;
             for (const eb of enemyBalls) {
                 const d = ball.distanceTo(eb);
                 if (d < minDist) minDist = d;
             }
-            // Sautee : la boule est passee a moins de 3 rayons d'une cible sans la toucher
+            // Sautee : passe a moins de 6 rayons d'une cible
             if (minDist < ball.radius * 6) {
                 this._showShotLabel(ball, 'Sautee !', '#C4854A', 13);
             } else {
+                sfxTrou();
                 this._showShotLabel(ball, 'Trou...', '#888888', 12);
             }
             this._shotCollisions = [];
             return;
         }
 
-        // Contre : touche une boule alliee
+        // Contre : touche une boule alliee (priorite absolue)
         const hitAllied = hitBalls.filter(b => b.team === ball.team && b.team !== 'cochonnet');
         if (hitAllied.length > 0) {
+            sfxContre();
             this._showShotLabel(ball, 'Contre !', '#C44B3F', 13);
             this._shotCollisions = [];
             return;
@@ -1250,6 +1264,7 @@ export default class PetanqueEngine {
 
         // Ciseau : touche 2+ boules adverses
         if (hitEnemy.length >= 2) {
+            sfxCiseau();
             this._showShotLabel(ball, 'CISEAU !!', '#FFD700', 16);
             this.scene.cameras.main.shake(120, 0.005);
             this._shotCollisions = [];
@@ -1260,48 +1275,54 @@ export default class PetanqueEngine {
         const isTirDevant = this.lastShotLoft?.id === 'tir_devant';
         if (hitEnemy.length === 1) {
             const target = hitEnemy[0];
-            const targetSpeed = Math.sqrt(target.vx ** 2 + target.vy ** 2);
-            const throwerSpeed = Math.sqrt(ball.vx ** 2 + ball.vy ** 2);
 
-            // Casquette : cible a a peine bouge
-            if (targetSpeed < CASQUETTE_MAX_SPEED) {
+            // Casquette / Blessee : mesure par DEPLACEMENT (pas vitesse au repos)
+            // _lastImpactPoint = position de la cible au moment de la collision
+            const impactPt = this._lastImpactPoint;
+            const targetOrigX = impactPt?.x ?? target.x;
+            const targetOrigY = impactPt?.y ?? target.y;
+            const targetDisplacement = Math.sqrt(
+                (target.x - targetOrigX) ** 2 + (target.y - targetOrigY) ** 2
+            );
+
+            // Casquette : cible a a peine bouge (<8px)
+            if (targetDisplacement < CASQUETTE_MAX_DISPLACEMENT) {
+                sfxCasquette();
                 this._showShotLabel(ball, isTirDevant ? 'Court... Casquette' : 'Casquette...', '#888888', 12);
                 this._shotCollisions = [];
                 return;
             }
 
-            // Blessee : cible a un peu bouge mais pas assez
-            if (targetSpeed < BLESSER_MAX_SPEED) {
+            // Blessee : cible a un peu bouge mais pas assez (<32px)
+            if (targetDisplacement < BLESSEE_MAX_DISPLACEMENT) {
                 this._showShotLabel(ball, isTirDevant ? 'Court... Blessee' : 'Blessee...', '#AA8866', 12);
                 this._shotCollisions = [];
                 return;
             }
 
-            // Carreau est deja detecte separement dans _checkCarreau/_celebrateCarreau
+            // Carreau est detecte avant nous par _checkCarreau/_celebrateCarreau (guard en haut)
 
-            // Palet CORRIGE : boule tiree reste pres du POINT D'IMPACT (pas du cochonnet)
-            const impactPoint = this._lastImpactPoint;
-            if (impactPoint) {
-                const dxImpact = ball.x - impactPoint.x;
-                const dyImpact = ball.y - impactPoint.y;
+            // Palet : boule tiree reste pres du POINT D'IMPACT
+            if (impactPt) {
+                const dxImpact = ball.x - impactPt.x;
+                const dyImpact = ball.y - impactPt.y;
                 const distFromImpact = Math.sqrt(dxImpact * dxImpact + dyImpact * dyImpact);
 
                 if (distFromImpact > CARREAU_THRESHOLD && distFromImpact < PALET_THRESHOLD) {
+                    sfxPalet();
                     this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
                     this._shotCollisions = [];
                     return;
                 }
             }
 
-            // Recul CORRIGE : detection basee sur la direction, PAS d'amplification de vitesse
-            // Le recul existe naturellement grace au COR 0.62 — on le detecte et le nomme, c'est tout
-            if (throwerSpeed > 0.3) {
-                const dx = target.x - ball.x;
-                const dy = target.y - ball.y;
-                const dot = ball.vx * dx + ball.vy * dy;
-                if (dot < 0) {
-                    // Thrower moving backward = recul naturel
-                    // Mark ball as recoiling for backspin interaction
+            // Recul CORRIGE : boule tiree a fini DERRIERE le point d'impact
+            // (mesure par position finale vs direction du tir — vitesse est ~0 au repos)
+            if (impactPt && ball._throwDirX !== undefined) {
+                const dxFromImpact = ball.x - impactPt.x;
+                const dyFromImpact = ball.y - impactPt.y;
+                const projForward = dxFromImpact * ball._throwDirX + dyFromImpact * ball._throwDirY;
+                if (projForward < -RECUL_MIN_BACKWARD_PX) {
                     ball._isRecoiling = true;
                     this._showShotLabel(ball, 'Recul', '#D4A574', 12);
                     this._shotCollisions = [];

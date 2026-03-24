@@ -473,6 +473,306 @@ export function sfxVSSlam() {
     playNoise(0.15, 0.25, 1200);
 }
 
+// === SHOT RESULT SFX (procedural, AXE B Phase 3) ===
+
+/** Palet — impact metallique + grattement court (~250ms) */
+export function sfxPalet() {
+    if (playFile('sfx_palet', { volume: 0.6 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1 — Impact metallique
+    const osc1 = c.createOscillator();
+    const gain1 = c.createGain();
+    const filter1 = c.createBiquadFilter();
+    osc1.type = 'square';
+    osc1.frequency.setValueAtTime(750, now);
+    osc1.frequency.exponentialRampToValueAtTime(300, now + 0.06);
+    filter1.type = 'bandpass';
+    filter1.frequency.setValueAtTime(1500, now);
+    filter1.Q.setValueAtTime(2, now);
+    gain1.gain.setValueAtTime(_effectiveVol(0.20), now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc1.connect(filter1); filter1.connect(gain1); gain1.connect(c.destination);
+    osc1.start(now); osc1.stop(now + 0.08);
+
+    // Layer 2 — Grattement (white noise scrape)
+    const bufSize = Math.floor(c.sampleRate * 0.2);
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+    const noiseFilter = c.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(3500, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
+    noiseFilter.Q.setValueAtTime(1.5, now);
+    const gainNoise = c.createGain();
+    gainNoise.gain.setValueAtTime(_effectiveVol(0.08), now);
+    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    noise.connect(noiseFilter); noiseFilter.connect(gainNoise); gainNoise.connect(c.destination);
+    noise.start(now);
+
+    // Layer 3 — Thud sourd (sub)
+    const osc3 = c.createOscillator();
+    const gain3 = c.createGain();
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(120, now);
+    osc3.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+    gain3.gain.setValueAtTime(_effectiveVol(0.06), now);
+    gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc3.connect(gain3); gain3.connect(c.destination);
+    osc3.start(now); osc3.stop(now + 0.1);
+}
+
+/** Casquette — petit "tic" sec et decevant (~50ms) */
+export function sfxCasquette() {
+    if (playFile('sfx_casquette', { volume: 0.5 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1 — Tap leger triangle
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1100, now);
+    gain.gain.setValueAtTime(_effectiveVol(0.10), now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    osc.connect(gain); gain.connect(c.destination);
+    osc.start(now); osc.stop(now + 0.04);
+
+    // Layer 2 — Click HF (snap)
+    const bufSize = Math.floor(c.sampleRate * 0.015);
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+    const hpf = c.createBiquadFilter();
+    hpf.type = 'highpass';
+    hpf.frequency.setValueAtTime(3000, now);
+    const gainN = c.createGain();
+    gainN.gain.setValueAtTime(_effectiveVol(0.04), now);
+    gainN.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+    noise.connect(hpf); hpf.connect(gainN); gainN.connect(c.destination);
+    noise.start(now);
+}
+
+/** Ciseau — double impact metallique rapide "TAC-TAC" (~500ms) */
+export function sfxCiseau() {
+    if (playFile('sfx_ciseau', { volume: 0.7 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1a — Premier impact
+    const osc1a = c.createOscillator();
+    const gain1a = c.createGain();
+    const filter1a = c.createBiquadFilter();
+    osc1a.type = 'square';
+    osc1a.frequency.setValueAtTime(850, now);
+    osc1a.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+    filter1a.type = 'bandpass';
+    filter1a.frequency.setValueAtTime(1800, now);
+    filter1a.Q.setValueAtTime(2.5, now);
+    gain1a.gain.setValueAtTime(_effectiveVol(0.22), now);
+    gain1a.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc1a.connect(filter1a); filter1a.connect(gain1a); gain1a.connect(c.destination);
+    osc1a.start(now); osc1a.stop(now + 0.1);
+
+    // Layer 1b — Deuxieme impact (+80ms, pitch legerement plus haut)
+    const osc1b = c.createOscillator();
+    const gain1b = c.createGain();
+    const filter1b = c.createBiquadFilter();
+    osc1b.type = 'square';
+    osc1b.frequency.setValueAtTime(950, now + 0.08);
+    osc1b.frequency.exponentialRampToValueAtTime(450, now + 0.13);
+    filter1b.type = 'bandpass';
+    filter1b.frequency.setValueAtTime(2000, now + 0.08);
+    filter1b.Q.setValueAtTime(2.5, now + 0.08);
+    gain1b.gain.setValueAtTime(_effectiveVol(0.18), now + 0.08);
+    gain1b.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc1b.connect(filter1b); filter1b.connect(gain1b); gain1b.connect(c.destination);
+    osc1b.start(now + 0.08); osc1b.stop(now + 0.18);
+
+    // Layer 2 — Resonance metallique combinee (+30ms)
+    const osc2 = c.createOscillator();
+    const gain2 = c.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(500, now + 0.03);
+    osc2.frequency.exponentialRampToValueAtTime(350, now + 0.43);
+    gain2.gain.setValueAtTime(_effectiveVol(0.06), now + 0.03);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.43);
+    osc2.connect(gain2); gain2.connect(c.destination);
+    osc2.start(now + 0.03); osc2.stop(now + 0.43);
+
+    // Layer 3 — Noise burst eclat
+    const bufSize = Math.floor(c.sampleRate * 0.03);
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+    const noiseFilter = c.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(3000, now);
+    noiseFilter.Q.setValueAtTime(2, now);
+    const gainN = c.createGain();
+    gainN.gain.setValueAtTime(_effectiveVol(0.05), now);
+    gainN.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+    noise.connect(noiseFilter); noiseFilter.connect(gainN); gainN.connect(c.destination);
+    noise.start(now);
+}
+
+/** Biberon — "toc" bois (cochonnet) + foule surprise (~750ms) */
+export function sfxBiberon() {
+    if (playFile('sfx_biberon', { volume: 0.55 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1 — Wood hit (cochonnet)
+    const osc1 = c.createOscillator();
+    const gain1 = c.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(600, now);
+    osc1.frequency.exponentialRampToValueAtTime(400, now + 0.06);
+    gain1.gain.setValueAtTime(_effectiveVol(0.12), now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc1.connect(gain1); gain1.connect(c.destination);
+    osc1.start(now); osc1.stop(now + 0.08);
+
+    // Layer 2 — Resonance bois
+    const osc2 = c.createOscillator();
+    const gain2 = c.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(900, now + 0.005);
+    gain2.gain.setValueAtTime(_effectiveVol(0.04), now + 0.005);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+    osc2.connect(gain2); gain2.connect(c.destination);
+    osc2.start(now + 0.005); osc2.stop(now + 0.055);
+
+    // Layer 3 — Crowd "ooh" surprise (+200ms)
+    const osc3 = c.createOscillator();
+    const gain3 = c.createGain();
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(250, now + 0.2);
+    osc3.frequency.linearRampToValueAtTime(350, now + 0.35);
+    osc3.frequency.linearRampToValueAtTime(250, now + 0.65);
+    gain3.gain.setValueAtTime(0, now + 0.2);
+    gain3.gain.linearRampToValueAtTime(_effectiveVol(0.05), now + 0.3);
+    gain3.gain.linearRampToValueAtTime(_effectiveVol(0.03), now + 0.5);
+    gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+    osc3.connect(gain3); gain3.connect(c.destination);
+    osc3.start(now + 0.2); osc3.stop(now + 0.7);
+
+    const osc4 = c.createOscillator();
+    const gain4 = c.createGain();
+    osc4.type = 'sine';
+    osc4.frequency.setValueAtTime(200, now + 0.22);
+    osc4.frequency.linearRampToValueAtTime(300, now + 0.37);
+    osc4.frequency.linearRampToValueAtTime(200, now + 0.67);
+    gain4.gain.setValueAtTime(0, now + 0.22);
+    gain4.gain.linearRampToValueAtTime(_effectiveVol(0.03), now + 0.32);
+    gain4.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+    osc4.connect(gain4); gain4.connect(c.destination);
+    osc4.start(now + 0.22); osc4.stop(now + 0.72);
+}
+
+/** Contre — impact sourd + foule qui grimace (~800ms) */
+export function sfxContre() {
+    if (playFile('sfx_contre', { volume: 0.6 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1 — Thud sourd decevant
+    const osc1 = c.createOscillator();
+    const gain1 = c.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(200, now);
+    osc1.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+    gain1.gain.setValueAtTime(_effectiveVol(0.15), now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc1.connect(gain1); gain1.connect(c.destination);
+    osc1.start(now); osc1.stop(now + 0.15);
+
+    // Layer 2 — Buzz desagreable (sawtooth grave)
+    const osc2 = c.createOscillator();
+    const gain2 = c.createGain();
+    const filter2 = c.createBiquadFilter();
+    osc2.type = 'sawtooth';
+    osc2.frequency.setValueAtTime(120, now);
+    filter2.type = 'lowpass';
+    filter2.frequency.setValueAtTime(300, now);
+    gain2.gain.setValueAtTime(_effectiveVol(0.04), now);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc2.connect(filter2); filter2.connect(gain2); gain2.connect(c.destination);
+    osc2.start(now); osc2.stop(now + 0.1);
+
+    // Layer 3 — Crowd groan (+150ms)
+    const osc3 = c.createOscillator();
+    const gain3 = c.createGain();
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(300, now + 0.15);
+    osc3.frequency.linearRampToValueAtTime(150, now + 0.75);
+    gain3.gain.setValueAtTime(0, now + 0.15);
+    gain3.gain.linearRampToValueAtTime(_effectiveVol(0.05), now + 0.25);
+    gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+    osc3.connect(gain3); gain3.connect(c.destination);
+    osc3.start(now + 0.15); osc3.stop(now + 0.85);
+
+    const osc4 = c.createOscillator();
+    const gain4 = c.createGain();
+    osc4.type = 'triangle';
+    osc4.frequency.setValueAtTime(250, now + 0.2);
+    osc4.frequency.linearRampToValueAtTime(120, now + 0.8);
+    gain4.gain.setValueAtTime(0, now + 0.2);
+    gain4.gain.linearRampToValueAtTime(_effectiveVol(0.03), now + 0.3);
+    gain4.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    osc4.connect(gain4); gain4.connect(c.destination);
+    osc4.start(now + 0.2); osc4.stop(now + 0.8);
+}
+
+/** Trou — impact mat dans la terre + silence pesant (~100ms actif) */
+export function sfxTrou() {
+    if (playFile('sfx_trou', { volume: 0.5 })) return;
+    let c;
+    try { c = getCtx(); if (!c) return; } catch { return; }
+    const now = c.currentTime;
+
+    // Layer 1 — Ground impact (terre)
+    const bufSize = Math.floor(c.sampleRate * 0.1);
+    const buf = c.createBuffer(1, bufSize, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+    const lpf = c.createBiquadFilter();
+    lpf.type = 'lowpass';
+    lpf.frequency.setValueAtTime(800, now);
+    const gainN = c.createGain();
+    gainN.gain.setValueAtTime(_effectiveVol(0.10), now);
+    gainN.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    noise.connect(lpf); lpf.connect(gainN); gainN.connect(c.destination);
+    noise.start(now);
+
+    // Layer 2 — Thud very low
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(100, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.08);
+    gain.gain.setValueAtTime(_effectiveVol(0.08), now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc.connect(gain); gain.connect(c.destination);
+    osc.start(now); osc.stop(now + 0.08);
+    // Le silence qui suit EST le son du trou
+}
+
 // === CONTINUOUS ROLLING SOUND (Web Audio pink noise) ===
 
 let _rollingSource = null;

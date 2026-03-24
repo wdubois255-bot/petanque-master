@@ -46,7 +46,12 @@
         "defeat": ["Bien joue. J'apprendrai.", "La prochaine...", "Je reviens plus fort."],
         "pre_match": ["J'suis pret !", "On va voir ce que ca donne.", "J'apprends vite."],
         "post_match_win": ["C'est que le debut !", "Merci, c'etait bien.", "A la prochaine !"],
-        "post_match_lose": ["GG. J'ai encore a apprendre.", "La prochaine sera differente.", "Pas grave, je progresse."]
+        "post_match_lose": ["GG. J'ai encore a apprendre.", "La prochaine sera differente.", "Pas grave, je progresse."],
+        "carreau_victim": ["Aie !", "T'as pris ma place !", "Wow... impressionnant quand meme."],
+        "palet_success": ["Je reste la !", "Palet ! J'apprends vite.", "Pas un carreau, mais ca compte !"],
+        "contre_self": ["MERDE ! C'etait le mien !", "Non non non...", "Oups... Desole les boules."],
+        "fanny_win": ["0 point ?! J'y crois pas !", "FANNY ! Ma premiere victoire parfaite !"],
+        "fanny_lose": ["... Zero. Zero point.", "Fanny... c'est quoi le truc de la jupe ?"]
       },
       "ability": null,
       "sprite": "rookie_animated",
@@ -89,7 +94,12 @@
         "defeat": ["Bien joue... J'reviendrai !", "Pas grave, j'ai du muscle !", "T'as eu de la chance."],
         "pre_match": ["ENVOIE !", "Pret ? Moi oui !", "Tu vas voir ce que tu vas voir !"],
         "post_match_win": ["Trop fort ! Comme d'hab !", "La puissance, y'a que ca !", "Qui veut la suite ?"],
-        "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"]
+        "post_match_lose": ["T'es costaud ! Respect.", "La prochaine, j'envoie PLUS fort !", "C'est pas fini !"],
+        "carreau_victim": ["OH LA SALE BOULE !", "BOUGE PAS !", "Eh, c'est la mienne ca !"],
+        "palet_success": ["PALET ! J'ai pas bouge !", "Je reste la, trop fort !", "Presque un carreau !"],
+        "contre_self": ["MERDE ! J'ai torpille ma propre boule !", "NON ! PAS CELLE-LA !", "Trop de jus... ma propre boule !"],
+        "fanny_win": ["FANNY ! T'as fait zero ! HAHAHA !", "Zero partout ! Enfin, zero pour toi !"],
+        "fanny_lose": ["... Zero. Je marque zero.", "FANNY ? MOI ? C'est une blague !"]
       },
       "ability": { "name": "Coup de Canon", "charges": 2, "description": "Puissance +30%, precision -20%" },
       "sprite": "la_choupe_animated",
@@ -132,7 +142,12 @@
         "defeat": ["T'es fort. Respect.", "La prochaine, j'envoie plus fort.", "Bien joue, mais ca me plait pas."],
         "pre_match": ["Pret ? Parce que moi, j'suis chaud.", "Quand je tire, ca degage.", "Tes boules vont voler."],
         "post_match_win": ["C'etait serre ? Non.", "Reviens quand tu veux, meme resultat.", "Merci pour l'echauffement."],
-        "post_match_lose": ["Bien joue. T'as gere.", "Faudra que j'ajuste mon tir.", "La prochaine, tu verras."]
+        "post_match_lose": ["Bien joue. T'as gere.", "Faudra que j'ajuste mon tir.", "La prochaine, tu verras."],
+        "carreau_victim": ["... Bien tire.", "T'as pris ma place. Bien.", "Je notais ca."],
+        "palet_success": ["Palet. Ca suffit.", "Je reste sur le coup.", "Efficace."],
+        "contre_self": ["C'etait pas prevu.", "Ma propre boule...", "Hmm."],
+        "fanny_win": ["Fanny. Logique.", "Zero pour toi. Ca resume bien."],
+        "fanny_lose": ["Zero. Ca arrive.", "Fanny... une fois dans une carriere."]
       },
       "ability": { "name": "Carreau Instinct", "charges": 1, "description": "Tir: ejection 50% plus puissante" },
       "sprite": "ley_animated",
@@ -170,7 +185,12 @@
         "defeat": ["Bravo. Tu m'as vole la vedette.", "Respect.", "La prochaine, c'est mon show."],
         "pre_match": ["Installez-vous, le show commence.", "Pret pour le spectacle ?", "Foyot entre en scene."],
         "post_match_win": ["Comme au bon vieux temps.", "Le public en veut encore.", "A la prochaine !"],
-        "post_match_lose": ["Bien joue. Vraiment.", "Le show reprendra.", "T'as du merite."]
+        "post_match_lose": ["Bien joue. Vraiment.", "Le show reprendra.", "T'as du merite."],
+        "carreau_victim": ["Magnifique ! Meme sur moi !", "Le public adore !", "Un coup de theatre !"],
+        "palet_success": ["Palet avec style !", "Je reste, et j'ai la classe !", "Quelle position !"],
+        "contre_self": ["Le coup de theatre rate...", "Le public retient son souffle.", "Pas mon meilleur acte."],
+        "fanny_win": ["FANNY ! Le show total !", "Zero point, adversaire ! C'est du grand Foyot !"],
+        "fanny_lose": ["La chute dramatique... le public adore quand meme.", "Fanny. Au moins c'est spectaculaire."]
       },
       "ability": { "name": "Le Show", "charges": 2, "description": "Intimide: +15% wobble adverse" },
       "sprite": "foyot_animated",
@@ -208,7 +228,12 @@
         "defeat": ["Bien joue.", "Tu merites.", "La prochaine."],
         "pre_match": ["Pret.", "Quatorze fois champion.", "On y va."],
         "post_match_win": ["Routine.", "A la prochaine.", "Toujours le meme resultat."],
-        "post_match_lose": ["T'es fort. Respect.", "Bon match.", "Je reviendrai."]
+        "post_match_lose": ["T'es fort. Respect.", "Bon match.", "Je reviendrai."],
+        "carreau_victim": ["Bien tire.", "Respect.", "Propre."],
+        "palet_success": ["Palet.", "Je reste la.", "Correct."],
+        "contre_self": ["Erreur.", "Ca arrive.", "Une fois par carriere."],
+        "fanny_win": ["Fanny.", "Zero. C'est definitif."],
+        "fanny_lose": ["Fanny. Rare.", "Zero. Ca n'arrive pas souvent."]
       },
       "ability": { "name": "Tir Chirurgical", "charges": 1, "description": "Tir parfait: dispersion quasi-nulle" },
       "sprite": "suchaud_animated",
@@ -246,7 +271,12 @@
         "defeat": ["Bien joue. Tu m'as surpris.", "Rare.", "La prochaine, j'ajuste."],
         "pre_match": ["Chaque boule est un calcul.", "Analysons le terrain.", "Pret pour la methode ?"],
         "post_match_win": ["Methode imparable.", "Logique pure.", "A la prochaine analyse."],
-        "post_match_lose": ["Tu as trouve la faille. Bravo.", "Je corrigerai.", "Bien joue."]
+        "post_match_lose": ["Tu as trouve la faille. Bravo.", "Je corrigerai.", "Bien joue."],
+        "carreau_victim": ["Calcul reussi... le sien.", "Variable non anticipee.", "Erreur dans mon estimation."],
+        "palet_success": ["Palet calcule.", "Je reste dans la zone prevue.", "Delta acceptable."],
+        "contre_self": ["Erreur de calcul grave.", "Mauvais angle. Correction.", "Variable oubliee."],
+        "fanny_win": ["Fanny. Probabilite : infime.", "Zero point. Statistiquement improbable, pourtant."],
+        "fanny_lose": ["Zero. L'analyse reprend de zero.", "Fanny. Correction du modele necessaire."]
       },
       "ability": { "name": "Calcul Mental", "charges": 2, "description": "Affiche la distance exacte au cochonnet" },
       "sprite": "fazzino_animated",
@@ -284,7 +314,12 @@
         "defeat": ["Bien joue. T'es fort.", "Respect.", "La prochaine."],
         "pre_match": ["Pret ?", "Neuf titres. Et toi ?", "Let's go."],
         "post_match_win": ["Facile.", "Next.", "La releve est la."],
-        "post_match_lose": ["T'es costaud.", "Bien joue.", "On se reverra."]
+        "post_match_lose": ["T'es costaud.", "Bien joue.", "On se reverra."],
+        "carreau_victim": ["Ouch.", "Ok, respect.", "GG pour le carreau."],
+        "palet_success": ["Palet !", "Je reste la, easy.", "Neuf titres, j'sais me placer."],
+        "contre_self": ["Lol. Non.", "Ma propre boule... sigh.", "C'est pas arrive."],
+        "fanny_win": ["FANNY ! Trop marrant.", "Zero ! La releve elle punit."],
+        "fanny_lose": ["Fanny... ca arrive.", "Zero point. Mince."]
       },
       "ability": { "name": "Prodige", "charges": 2, "description": "Boost: +1 a toutes les stats pendant 1 tour" },
       "sprite": "rocher_animated",
@@ -322,7 +357,12 @@
         "defeat": ["Bien joue.", "T'as gere.", "La prochaine."],
         "pre_match": ["Pret.", "Un tir, une boule en moins.", "On y va."],
         "post_match_win": ["Comme prevu.", "Efficace.", "A la prochaine."],
-        "post_match_lose": ["Respect.", "Bien joue.", "Je reviendrai."]
+        "post_match_lose": ["Respect.", "Bien joue.", "Je reviendrai."],
+        "carreau_victim": ["Bien.", "Tir correct.", "OK."],
+        "palet_success": ["Palet.", "Je tiens.", "La."],
+        "contre_self": ["Erreur.", "Non.", "Mauvais angle."],
+        "fanny_win": ["Fanny.", "Zero pour toi."],
+        "fanny_lose": ["Fanny.", "Zero. Ca recommence."]
       },
       "ability": { "name": "Tir Instinctif", "charges": 2, "description": "Tir auto-ajuste: -50% dispersion" },
       "sprite": "robineau_animated",
@@ -360,7 +400,12 @@
         "defeat": ["Bien joue, mon petit.", "Tu me rappelles quelqu'un.", "La prochaine, mamie sera en forme."],
         "pre_match": ["Un petit pastis avant ?", "Allez, montre-moi ce que tu sais faire.", "Mamie est prete."],
         "post_match_win": ["Ah, ca fait du bien !", "Qui veut un gateau ?", "Mamie reste numero 1."],
-        "post_match_lose": ["Bien joue. Viens gouter.", "T'es fort, mon petit.", "A la prochaine !"]
+        "post_match_lose": ["Bien joue. Viens gouter.", "T'es fort, mon petit.", "A la prochaine !"],
+        "carreau_victim": ["Oh la la la !", "T'as renvoye ma boule, le vilain !", "C'est pas poli ca."],
+        "palet_success": ["J'reste la, moi !", "Palet ! Comme en 82 !", "Oh, j'ai bien fait de rester."],
+        "contre_self": ["Oh non ! J'ai tape la mauvaise !", "Mon Dieu...", "C'est la vieillesse..."],
+        "fanny_win": ["FANNY ! Tu as honte, non ?", "Zero point ! Allez, je t'offre un gateau pour te consoler."],
+        "fanny_lose": ["Fanny... A mon age !", "Zero point. Ca fait une semaine que ca m'etait pas arrive."]
       },
       "ability": { "name": "Tricot Zen", "charges": 3, "description": "Calme absolu: aucun wobble pendant 1 tour" },
       "sprite": "mamie_josette_animated",
@@ -398,7 +443,12 @@
         "defeat": ["Bien joue. Tu m'as surprise.", "Rare.", "Je corrigerai ma strategie."],
         "pre_match": ["J'ai deja trois coups d'avance.", "Analysons.", "Prete."],
         "post_match_win": ["Partie maitrisee.", "A la prochaine strategie.", "Merci pour le defi."],
-        "post_match_lose": ["Tu m'as surprise. Respect.", "Belle lecture de jeu.", "La revanche sera calculee."]
+        "post_match_lose": ["Tu m'as surprise. Respect.", "Belle lecture de jeu.", "La revanche sera calculee."],
+        "carreau_victim": ["Bonne execution.", "Dans mes calculs.", "Bien joue."],
+        "palet_success": ["Palet prevu.", "Je reste dans la zone.", "Exactement la."],
+        "contre_self": ["Variable non anticipee.", "L'angle.", "Repositionnement du plan."],
+        "fanny_win": ["Fanny. Une partie en trois coups d'avance.", "Zero. Comme prevu depuis le debut."],
+        "fanny_lose": ["Fanny... Le plan avait une faille.", "Zero point. Correction totale du plan."]
       },
       "ability": { "name": "Strategie", "charges": 2, "description": "Voit la trajectoire complete 3s" },
       "sprite": "sofia_animated",
@@ -436,7 +486,12 @@
         "defeat": ["Bien joue, fiston.", "La jeunesse...", "Reviens me voir."],
         "pre_match": ["La petanque, c'est la vie.", "Pret, fiston ?", "On va prendre notre temps."],
         "post_match_win": ["Comme au bon vieux temps.", "La sagesse, toujours.", "Un pastis pour feter ca."],
-        "post_match_lose": ["T'es bon, fiston.", "J'ai perdu avec le sourire.", "A la prochaine, si Dieu veut."]
+        "post_match_lose": ["T'es bon, fiston.", "J'ai perdu avec le sourire.", "A la prochaine, si Dieu veut."],
+        "carreau_victim": ["Oh la belle boule !", "Bien tire, fiston.", "C'est comme en 62, ca."],
+        "palet_success": ["Palet ! Ca, c'est du jeu de boules.", "Je suis reste la, comme un sage.", "Tranquillement."],
+        "contre_self": ["Ah ben dis donc.", "J'ai tape la mauvaise...", "L'age, fiston, l'age."],
+        "fanny_win": ["Fanny ! Ca fait longtemps que j'en avais pas fait !", "Zero point ! Reste humble, fiston."],
+        "fanny_lose": ["Fanny... A 82 ans. La honte.", "Zero. Le dos, peut-etre."]
       },
       "ability": { "name": "Sagesse", "charges": 3, "description": "Annule totalement le tremblement de pression" },
       "sprite": "papi_rene_animated",
@@ -474,7 +529,12 @@
         "defeat": ["Bravo. Rispetto.", "Bella partita.", "La prochaine sera italienne."],
         "pre_match": ["Eleganza, sempre.", "Buongiorno.", "Pret pour la danse ?"],
         "post_match_win": ["Perfetto.", "Grazie.", "L'Italie en forme."],
-        "post_match_lose": ["Bel match.", "Bravo.", "Arrivederci."]
+        "post_match_lose": ["Bel match.", "Bravo.", "Arrivederci."],
+        "carreau_victim": ["Bellissimo !", "Magnifico il carreau !", "Eleganza... ma non per me."],
+        "palet_success": ["Palet con stile !", "Resto li ! Eleganza !", "Magnifico."],
+        "contre_self": ["Madonna !", "La mia propria boule !", "Mamma mia, che errore."],
+        "fanny_win": ["FANNY ! Vittoria totale !", "Zero ! Italia sempre !"],
+        "fanny_lose": ["Fanny... Madonna.", "Zero. L'Italie peut mieux faire."]
       },
       "ability": { "name": "Eleganza", "charges": 2, "description": "Effet x2: courbe amplifiee" },
       "sprite": "rizzi_animated",
