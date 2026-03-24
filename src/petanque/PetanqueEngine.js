@@ -7,7 +7,7 @@ import {
     FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
     TERRAIN_HEIGHT,
-    LOFT_DEMI_PORTEE, LOFT_TIR,
+    LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_RAFLE,
     CARREAU_THRESHOLD,
     HITSTOP_BOULE_MS, HITSTOP_CARREAU_MS,
     SCORE_MENE_DELAY, GAME_OVER_REDIRECT_DELAY,
@@ -384,6 +384,11 @@ export default class PetanqueEngine {
 
         const cx = this.scene.throwCircleX;
         const cy = this.scene.throwCircleY;
+
+        // Ciblage cochonnet : override de l'angle si le flag est actif
+        if (throwMeta.targetCochonnet && this.cochonnet?.isAlive) {
+            angle = Math.atan2(this.cochonnet.y - cy, this.cochonnet.x - cx);
+        }
         const color = team === 'player' ? BALL_COLORS.player : BALL_COLORS.opponent;
 
         // Use boule stats from game state if player
@@ -601,6 +606,13 @@ export default class PetanqueEngine {
                 this._drawImpactTrace(targetX, targetY, traceRadius);
 
                 ball.launch(rollVx, rollVy);
+
+                // Spin lateral post-atterrissage (actif uniquement apres contact sol)
+                if (ball.throwMeta?.lateralSpin && ball.throwMeta.lateralSpin !== 0) {
+                    const effetStat = ball.throwMeta.effetStat || 6;
+                    ball.activateLateralSpin(ball.throwMeta.lateralSpin, effetStat, this.terrainType);
+                }
+
                 if (callback) callback();
             }
         });

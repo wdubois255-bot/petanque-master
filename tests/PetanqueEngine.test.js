@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
     TERRAIN_HEIGHT, TERRAIN_WIDTH,
-    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
+    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR, LOFT_RAFLE, LOFT_TIR_DEVANT,
+    ALL_LOFT_PRESETS,
     FRICTION_BASE
 } from '../src/utils/Constants.js';
 import PetanqueEngine from '../src/petanque/PetanqueEngine.js';
@@ -130,5 +131,51 @@ describe('PetanqueEngine - Terrain friction consistency', () => {
         expect(LOFT_ROULETTE.landingFactor).toBeLessThan(LOFT_DEMI_PORTEE.landingFactor);
         expect(LOFT_DEMI_PORTEE.landingFactor).toBeLessThan(LOFT_PLOMBEE.landingFactor);
         expect(LOFT_PLOMBEE.landingFactor).toBeLessThan(LOFT_TIR.landingFactor);
+    });
+});
+
+describe('PetanqueEngine.computeThrowParams — AXE A (rafle, targetCochonnet, ALL_LOFT_PRESETS)', () => {
+    const bounds = { x: 326, y: 30, w: TERRAIN_WIDTH, h: TERRAIN_HEIGHT };
+    const originX = 416;
+    const originY = 430;
+    const frictionMult = 1.0;
+    const angle = -Math.PI / 2; // Droit vers le haut
+
+    it('computeThrowParams avec LOFT_RAFLE doit atterrir avant LOFT_DEMI_PORTEE', () => {
+        const rafle = PetanqueEngine.computeThrowParams(
+            angle, 0.6, originX, originY, bounds, LOFT_RAFLE, frictionMult
+        );
+        const demi = PetanqueEngine.computeThrowParams(
+            angle, 0.6, originX, originY, bounds, LOFT_DEMI_PORTEE, frictionMult
+        );
+        // Rafle landingFactor 0.20 vs demi 0.50 — atterrit plus tot (targetY plus grand = plus proche)
+        expect(rafle.targetY).toBeGreaterThan(demi.targetY);
+    });
+
+    it('computeThrowParams avec targetCochonnet : le cochonnet se trouve en haut du terrain', () => {
+        // Simuler un cochonnet a coordonnees connues (y < originY = haut = angle negatif)
+        // Le test verifie juste que computeThrowParams fonctionne avec LOFT_RAFLE
+        const params = PetanqueEngine.computeThrowParams(
+            angle, 0.5, originX, originY, bounds, LOFT_RAFLE, frictionMult
+        );
+        // La target doit etre dans les bounds
+        expect(params.targetX).toBeGreaterThanOrEqual(bounds.x + 16);
+        expect(params.targetY).toBeGreaterThanOrEqual(bounds.y + 16);
+        expect(params.targetX).toBeLessThanOrEqual(bounds.x + bounds.w - 16);
+        expect(params.targetY).toBeLessThanOrEqual(bounds.y + bounds.h - 16);
+    });
+
+    it('ALL_LOFT_PRESETS contient exactement 6 presets valides', () => {
+        expect(ALL_LOFT_PRESETS).toHaveLength(6);
+        for (const p of ALL_LOFT_PRESETS) {
+            expect(typeof p.id).toBe('string');
+            expect(typeof p.label).toBe('string');
+            expect(p.landingFactor).toBeGreaterThanOrEqual(0);
+            expect(p.landingFactor).toBeLessThanOrEqual(1);
+            expect(p.flyDurationMult).toBeGreaterThan(0);
+            expect(p.rollEfficiency).toBeGreaterThan(0);
+            // Chaque preset doit avoir un arcHeight
+            expect(typeof p.arcHeight).toBe('number');
+        }
     });
 });

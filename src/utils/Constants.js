@@ -80,6 +80,26 @@ export const LOFT_TIR_DEVANT = {
     landingFactor: 0.85, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 10.0,
     precisionPenalty: 0.7, retroAllowed: true, isTir: true
 };
+// Tir a la rafle : balle rase le sol (arc quasi nul), atterrit tot et roule loin
+// Ideal sur sable/herbe (friction amplifie l'effet)
+export const LOFT_RAFLE = {
+    id: 'rafle', label: 'RAFLE',
+    landingFactor: 0.20, arcHeight: -5, flyDurationMult: 0.3, rollEfficiency: 0.85,
+    precisionPenalty: 0.5, retroAllowed: false, isTir: true
+};
+
+// Spin lateral (effet gauche/droite) — actif apres atterrissage uniquement
+// Force = LATERAL_SPIN_FORCE * (effetStat / 10) * spinIntensity * terrainMult
+export const LATERAL_SPIN_FORCE = 0.045;
+export const LATERAL_SPIN_FRAMES = 25;
+export const LATERAL_SPIN_MIN_SPEED = 0.5;  // Arrete le spin quand la boule est quasi immobile
+export const LATERAL_SPIN_MIN_EFFET = 4;    // Stat Effet minimum pour activer le spin
+export const LATERAL_SPIN_TERRAIN_MULT = {
+    terre:  1.0,
+    herbe:  1.3,
+    sable:  1.8,
+    dalles: 0.3
+};
 
 // Retro (backspin) physics — 2-phase model
 // Phase 1: high friction (sliding), Phase 2: transition back to normal
@@ -95,6 +115,8 @@ export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
 // Palet detection
 export const PALET_THRESHOLD = 50;
 export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
+// Tous les presets valides (pointer + tir) — pour validation et tests
+export const ALL_LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_RAFLE, LOFT_TIR, LOFT_TIR_DEVANT];
 
 // Petanque - prediction trajectoire
 export const PREDICTION_STEPS = 120;

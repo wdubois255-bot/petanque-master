@@ -10,7 +10,9 @@ import {
     BALL_RADIUS, BALL_MASS, COCHONNET_MASS,
     TERRAIN_FRICTION, WALL_RESTITUTION,
     RETRO_FRICTION_MULT,
-    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
+    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR, LOFT_TIR_DEVANT, LOFT_RAFLE,
+    ALL_LOFT_PRESETS,
+    LATERAL_SPIN_FRAMES, LATERAL_SPIN_FORCE, LATERAL_SPIN_TERRAIN_MULT,
     TERRAIN_HEIGHT, BALL_CLAMP_MARGIN,
     COCHONNET_MAX_COLLISION_SPEED, puissanceMultiplier
 } from '../src/utils/Constants.js';
@@ -834,5 +836,103 @@ describe('Slope timeout', () => {
         }
         expect(framesStopped).toBeGreaterThan(0);          // ball actually stopped
         expect(framesStopped).toBeLessThanOrEqual(121);    // stopped within ~120 frames
+    });
+});
+
+// =====================================================
+//  AXE A — RAFLE, TIR DEVANT, SPIN LATERAL
+// =====================================================
+
+describe('LOFT_RAFLE — preset validation', () => {
+    it('rafle landingFactor should be < demi-portee landingFactor', () => {
+        expect(LOFT_RAFLE.landingFactor).toBeLessThan(LOFT_DEMI_PORTEE.landingFactor);
+    });
+
+    it('rafle landingFactor should be 0.20 (rase le sol)', () => {
+        expect(LOFT_RAFLE.landingFactor).toBe(0.20);
+    });
+
+    it('rafle rollDistance fraction (1-landingFactor) should be > plombee (roule plus loin)', () => {
+        // La rafle atterrit tot (landingFactor 0.20) donc 80% de la distance en roulement
+        // La plombee atterrit tard (landingFactor 0.88) donc seulement 12% en roulement
+        const raflRoll = 1 - LOFT_RAFLE.landingFactor;
+        const plombeeRoll = 1 - LOFT_PLOMBEE.landingFactor;
+        expect(raflRoll).toBeGreaterThan(plombeeRoll);
+    });
+
+    it('rafle arcHeight should be minimal (arc quasi nul)', () => {
+        expect(Math.abs(LOFT_RAFLE.arcHeight)).toBeLessThan(Math.abs(LOFT_DEMI_PORTEE.arcHeight));
+    });
+
+    it('rafle retro should be disallowed', () => {
+        expect(LOFT_RAFLE.retroAllowed).toBeFalsy();
+    });
+
+    it('tir devant landingFactor should be between demi and plombee', () => {
+        expect(LOFT_TIR_DEVANT.landingFactor).toBeGreaterThan(LOFT_DEMI_PORTEE.landingFactor);
+        expect(LOFT_TIR_DEVANT.landingFactor).toBeLessThan(LOFT_TIR.landingFactor);
+    });
+
+    it('all 6 loft presets (ALL_LOFT_PRESETS) should have valid structure', () => {
+        expect(ALL_LOFT_PRESETS).toHaveLength(6);
+        for (const p of ALL_LOFT_PRESETS) {
+            expect(p.id).toBeTruthy();
+            expect(p.label).toBeTruthy();
+            expect(p.landingFactor).toBeGreaterThanOrEqual(0);
+            expect(p.landingFactor).toBeLessThanOrEqual(1);
+            expect(p.flyDurationMult).toBeGreaterThan(0);
+            expect(p.rollEfficiency).toBeGreaterThan(0);
+        }
+    });
+});
+
+describe('Spin lateral — Ball.activateLateralSpin()', () => {
+    it('spin gauche (-1) devie la balle vers la gauche', async () => {
+        const ball = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });
+        ball.launch(0, -3); // balle va vers le haut
+        ball.activateLateralSpin(-1, 8, 'terre'); // gauche, effet 8
+
+        const startX = ball.x;
+        simulate(ball, 30);
+        // Spin gauche = déviation vers la gauche (x diminue quand va vers le haut)
+        expect(ball.x).toBeLessThan(startX);
+    });
+
+    it('spin droite (+1) devie la balle vers la droite', async () => {
+        const ball = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });
+        ball.launch(0, -3); // balle va vers le haut
+        ball.activateLateralSpin(1, 8, 'terre'); // droite, effet 8
+
+        const startX = ball.x;
+        simulate(ball, 30);
+        expect(ball.x).toBeGreaterThan(startX);
+    });
+
+    it('intensite proportionnelle au stat Effet (effet 10 > effet 4)', async () => {
+        // Effet 10 — plus de deviation
+        const ball10 = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });
+        ball10.launch(0, -3);
+        ball10.activateLateralSpin(1, 10, 'terre');
+        simulate(ball10, 25);
+        const dev10 = ball10.x - 100;
+
+        // Effet 4 — moins de deviation
+        const ball4 = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });
+        ball4.launch(0, -3);
+        ball4.activateLateralSpin(1, 4, 'terre');
+        simulate(ball4, 25);
+        const dev4 = ball4.x - 100;
+
+        expect(Math.abs(dev10)).toBeGreaterThan(Math.abs(dev4));
+    });
+
+    it('spin off (0) = aucune deviation laterale', async () => {
+        const ballSpin = new Ball(mockScene, 100, 200, { frictionMult: 1.0 });
+        ballSpin.launch(0, -3);
+        ballSpin.activateLateralSpin(0, 8, 'terre'); // off
+        simulate(ballSpin, 25);
+
+        // Sans spin, la balle va tout droit (x ne change pas)
+        expect(Math.abs(ballSpin.x - 100)).toBeLessThan(0.5);
     });
 });

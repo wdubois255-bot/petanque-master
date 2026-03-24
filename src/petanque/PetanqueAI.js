@@ -5,7 +5,8 @@ import {
     TERRAIN_HEIGHT,
     AI_PERSONALITY_MODIFIERS,
     AI_MOMENTUM_SENSITIVITY,
-    puissanceMultiplier
+    puissanceMultiplier,
+    LOFT_RAFLE, LATERAL_SPIN_MIN_EFFET
 } from '../utils/Constants.js';
 
 import PointeurStrategy from './ai/PointeurStrategy.js';
@@ -188,9 +189,16 @@ export default class PetanqueAI {
         if (isTir) { this._consecutiveShots++; this._consecutivePoints = 0; }
         else { this._consecutivePoints++; this._consecutiveShots = 0; }
 
+        // Rafle : utiliser sur terrain peu friction (dalles/terre), en mode tir
+        // La rafle rase le sol — efficace quand la friction est faible
+        let finalLoftPreset = loftPreset;
+        if (isTir && this.engine.frictionMult < 1.5 && Math.random() < 0.35) {
+            finalLoftPreset = LOFT_RAFLE;
+        }
+
         // AI retro decision: use retro on plombee/tir when effet stat is decent
         let retroIntensity = 0;
-        if (loftPreset.retroAllowed && this._charStats.effet >= 4) {
+        if (finalLoftPreset.retroAllowed && this._charStats.effet >= 4) {
             const effetStat = this._charStats.effet;
             const retroChance = (effetStat - 3) / 7;
             if (Math.random() < retroChance) {
@@ -198,10 +206,23 @@ export default class PetanqueAI {
             }
         }
 
+        // Spin lateral : si effet >= 6, chance proportionnelle au stat
+        let lateralSpin = 0;
+        const effetStat = this._charStats.effet;
+        if (effetStat >= LATERAL_SPIN_MIN_EFFET && effetStat >= 6) {
+            const spinChance = (effetStat - 5) / 5; // effet 6 = 20%, effet 10 = 100%
+            if (Math.random() < spinChance * 0.4) { // Max 40% de chance pour garder IA lisible
+                lateralSpin = Math.random() < 0.5 ? -1 : 1;
+            }
+        }
+
         const arrowColor = isTir ? 0xFF6644 : 0xC44B3F;
         const retro = retroIntensity;
         this._showAimingArrow(angle, power, arrowColor, () => {
-            this.engine.throwBall(angle, power, 'opponent', shotMode, loftPreset, retro, {});
+            this.engine.throwBall(angle, power, 'opponent', shotMode, finalLoftPreset, retro, {
+                lateralSpin,
+                effetStat,
+            });
         });
     }
 

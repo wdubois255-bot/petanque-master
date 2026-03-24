@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import {
     DEAD_ZONE_PX,
-    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT,
+    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT, LOFT_RAFLE,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
-    FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET
+    FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
+    LATERAL_SPIN_MIN_EFFET
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
@@ -44,6 +45,12 @@ export default class AimingSystem {
 
         // Retro (backspin) toggle
         this.retroActive = false;
+
+        // Ciblage cochonnet [B]
+        this._targetCochonnet = false;
+
+        // Spin lateral [E] : 0 = off, -1 = gauche, +1 = droite
+        this._lateralSpin = 0;
 
         // === FOCUS (Respire) system: reduces wobble by 80% for one throw ===
         this._focusCharges = FOCUS_CHARGES_PER_MATCH;
@@ -152,28 +159,56 @@ export default class AimingSystem {
         this._clearLoftUI();
         this.engine.aimingEnabled = false;
         this.retroActive = false;
+        this._targetCochonnet = false;
+        this._lateralSpin = 0;
 
         const cx = this.scene.scale.width / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
 
-        // Slim background panel
-        const panelW = 520, panelH = 56;
+        // Panneau 2 rangees : Pointer (haut) + Tirer (bas)
+        const panelW = 520, panelH = 86;
         const bg = this.scene.add.graphics().setDepth(95);
         bg.fillStyle(0x3A2E28, 0.88);
         bg.fillRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
         bg.lineStyle(1, 0xD4A574, 0.35);
         bg.strokeRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
+        // Separateur horizontal entre les deux rangees
+        bg.lineStyle(1, 0xD4A574, 0.15);
+        bg.beginPath();
+        bg.moveTo(cx - panelW / 2 + 8, baseY);
+        bg.lineTo(cx + panelW / 2 - 8, baseY);
+        bg.strokePath();
         this._modeUI.push(bg);
 
-        // Options with mini arc data (arcPts for visual curve)
+        // Label rangee Pointer
+        const lblPointer = this.scene.add.text(cx - panelW / 2 + 12, baseY - panelH / 2 + 10,
+            'POINTER', { fontFamily: 'monospace', fontSize: '8px', color: '#87CEEB' }
+        ).setDepth(97).setAlpha(0.6);
+        this._modeUI.push(lblPointer);
+
+        // Label rangee Tirer
+        const lblTirer = this.scene.add.text(cx - panelW / 2 + 12, baseY + 4,
+            'TIRER', { fontFamily: 'monospace', fontSize: '8px', color: '#C44B3F' }
+        ).setDepth(97).setAlpha(0.6);
+        this._modeUI.push(lblTirer);
+
+        // Options 2 rangees
+        // Rangee 1 : Pointer (y = baseY - 21)
+        // Rangee 2 : Tirer  (y = baseY + 21)
+        const rowY1 = baseY - 21;
+        const rowY2 = baseY + 21;
         const allOptions = [
-            { label: '1', sublabel: 'Roulette', mode: 'pointer', loft: 0, color: 0x87CEEB, arcH: 0.08 },
-            { label: '2', sublabel: 'Demi-portee', mode: 'pointer', loft: 1, color: 0x6B8E4E, arcH: 0.35 },
-            { label: '3', sublabel: 'Plombee', mode: 'pointer', loft: 2, color: 0x9B7BB8, arcH: 0.75 },
-            { label: 'T', sublabel: 'Tirer', mode: 'tirer', loft: -1, color: 0xC44B3F, arcH: 0.55 }
+            // Pointer row
+            { label: '1', sublabel: 'Roulette',   mode: 'pointer', loftObj: LOFT_PRESETS[0], color: 0x87CEEB, arcH: 0.08, oy: rowY1 },
+            { label: '2', sublabel: 'Demi',        mode: 'pointer', loftObj: LOFT_PRESETS[1], color: 0x6B8E4E, arcH: 0.35, oy: rowY1 },
+            { label: '3', sublabel: 'Plombee',     mode: 'pointer', loftObj: LOFT_PRESETS[2], color: 0x9B7BB8, arcH: 0.75, oy: rowY1 },
+            // Tirer row
+            { label: '4', sublabel: 'Rafle',       mode: 'tirer', loftObj: LOFT_RAFLE,       color: 0xC4854A, arcH: 0.03, oy: rowY2 },
+            { label: 'T', sublabel: 'Tir au Fer',  mode: 'tirer', loftObj: LOFT_TIR,         color: 0xC44B3F, arcH: 0.55, oy: rowY2 },
+            { label: 'D', sublabel: 'Tir Devant',  mode: 'tirer', loftObj: LOFT_TIR_DEVANT,  color: 0xAA8866, arcH: 0.42, oy: rowY2 },
         ];
-        const spacing = 120;
-        const startX = cx - (allOptions.length - 1) * spacing / 2;
+        const spacing = 150;
+        const startX = cx - spacing;
 
         this._combinedBtns = [];
         this._combinedGfx = [];
@@ -181,24 +216,24 @@ export default class AimingSystem {
 
         for (let i = 0; i < allOptions.length; i++) {
             const opt = allOptions[i];
-            const ox = startX + i * spacing;
+            const ox = startX + (i % 3) * spacing;
 
-            // Mini trajectory arc icon
+            // Mini arc icon
             const arcGfx = this.scene.add.graphics().setDepth(97);
-            this._drawMiniArc(arcGfx, ox, baseY - 10, opt.arcH, opt.color, false);
+            this._drawMiniArc(arcGfx, ox, opt.oy - 10, opt.arcH, opt.color, false);
             this._modeUI.push(arcGfx);
             this._combinedGfx.push(arcGfx);
 
-            // Key hint + label
-            const label = this.scene.add.text(ox, baseY + 12, `[${opt.label}] ${opt.sublabel}`, {
-                fontFamily: 'monospace', fontSize: '11px',
+            // Label
+            const label = this.scene.add.text(ox, opt.oy + 10, `[${opt.label}] ${opt.sublabel}`, {
+                fontFamily: 'monospace', fontSize: '10px',
                 color: '#' + opt.color.toString(16).padStart(6, '0'),
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
             this._modeUI.push(label);
 
-            // Invisible hit area
-            const hitZone = this.scene.add.zone(ox, baseY, spacing - 8, panelH)
+            // Hit zone
+            const hitZone = this.scene.add.zone(ox, opt.oy, spacing - 8, 38)
                 .setDepth(98).setInteractive({ useHandCursor: true });
             this._modeUI.push(hitZone);
             this._combinedBtns.push({ hitZone, label, arcGfx, opt });
@@ -222,10 +257,15 @@ export default class AimingSystem {
         this._key3 = this.scene.input.keyboard.addKey('THREE');
         this._keyT = this.scene.input.keyboard.addKey('T');
 
+        // Touches tirer row
+        this._key4 = this.scene.input.keyboard.addKey('FOUR');
+        this._key5 = null; // T couvre Fer
+        this._key6 = this.scene.input.keyboard.addKey('D');
+
         this._allOptions = allOptions;
         this._updateCombinedHighlight();
 
-        // === FOCUS indicator (top of panel) ===
+        // === FOCUS indicator ===
         this._showFocusUI(cx, baseY - panelH / 2 - 22);
 
         // === UNIQUE ABILITY indicator ===
@@ -273,8 +313,8 @@ export default class AimingSystem {
             const { label, arcGfx, opt } = this._combinedBtns[i];
             const selected = i === this._combinedSelected;
             label.setAlpha(selected ? 1 : 0.6);
-            label.setFontSize(selected ? '12px' : '11px');
-            this._drawMiniArc(arcGfx, label.x, label.y - 22, opt.arcH, opt.color, selected);
+            label.setFontSize(selected ? '11px' : '10px');
+            this._drawMiniArc(arcGfx, label.x, label.y - 20, opt.arcH, opt.color, selected);
         }
     }
 
@@ -285,17 +325,17 @@ export default class AimingSystem {
 
         if (opt.mode === 'tirer') {
             this.shotMode = 'tirer';
-            this._tirDevant = false;
-            this.loftPreset = LOFT_TIR;
+            this.loftPreset = opt.loftObj;
             this._highlightOpponentBalls();
-            this._showRetroToggle();
-            this._showTirDevantToggle();
-            this.engine._showMessage('Visez une boule adverse ! [D] Tir Devant');
+            if (opt.loftObj.retroAllowed) this._showRetroToggle();
+            this._showCochonnetToggle();
+            this._showSpinLateralToggle();
+            this.engine._showMessage(`${opt.loftObj.label} - Visez une boule adverse !`);
         } else {
             this.shotMode = 'pointer';
-            this.loftIndex = opt.loft;
-            this.loftPreset = LOFT_PRESETS[opt.loft];
+            this.loftPreset = opt.loftObj;
             if (this.loftPreset.retroAllowed) this._showRetroToggle();
+            this._showSpinLateralToggle();
             this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
         }
         this.engine.aimingEnabled = true;
@@ -407,6 +447,111 @@ export default class AimingSystem {
         }
         this._tirDevantLabel = null;
         this._keyD = null;
+    }
+
+    // === Ciblage cochonnet [B] — disponible en mode tirer ===
+
+    _showCochonnetToggle() {
+        this._clearCochonnetUI();
+        this._cochonnetUI = [];
+
+        const x = this.scene.scale.width - 90;
+        const y = this.scene.scale.height - 54;
+
+        const label = this.scene.add.text(x, y, '[B] Cochonnet', {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
+            .setInteractive({ useHandCursor: true });
+        this._cochonnetUI.push(label);
+        this._cochonnetLabel = label;
+
+        label.on('pointerdown', (pointer) => {
+            pointer.event.stopPropagation();
+            this._toggleCochonnet();
+        });
+
+        this._keyB = this.scene.input.keyboard.addKey('B');
+        this._keyB.on('down', () => this._toggleCochonnet());
+    }
+
+    _toggleCochonnet() {
+        this._targetCochonnet = !this._targetCochonnet;
+        sfxUIClick();
+        if (this._cochonnetLabel) {
+            this._cochonnetLabel.setAlpha(this._targetCochonnet ? 1 : 0.5);
+            this._cochonnetLabel.setText(this._targetCochonnet ? '[B] COCHONNET !' : '[B] Cochonnet');
+        }
+    }
+
+    _clearCochonnetUI() {
+        if (this._cochonnetUI) {
+            this._cochonnetUI.forEach(e => e.destroy());
+            this._cochonnetUI = [];
+        }
+        this._cochonnetLabel = null;
+        if (this._keyB) { this._keyB.removeAllListeners(); this._keyB = null; }
+    }
+
+    // === Spin lateral [E] : off → gauche → droite → off ===
+
+    _showSpinLateralToggle() {
+        this._clearSpinLateralUI();
+        this._spinLateralUI = [];
+
+        const effetStat = this.charStats.effet || 6;
+        if (effetStat < LATERAL_SPIN_MIN_EFFET) return; // Stat insuffisante
+
+        const x = this.scene.scale.width - 90;
+        // Position : juste sous le toggle retro (retro = -32, spin = -54 si retro present, sinon -32)
+        const hasRetro = this._retroLabel != null;
+        const y = this.scene.scale.height - (hasRetro ? 76 : 54);
+
+        const spinLabels = { 0: '[E] Spin', '-1': '[E] ← Gauche !', '1': '[E] → Droite !' };
+        const spinColors = { 0: '#9E9E8E', '-1': '#87CEEB', '1': '#C44B3F' };
+
+        const label = this.scene.add.text(x, y, spinLabels[0], {
+            fontFamily: 'monospace', fontSize: '10px',
+            color: spinColors[0], shadow: SHADOW
+        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
+            .setInteractive({ useHandCursor: true });
+        this._spinLateralUI.push(label);
+        this._spinLateralLabel = label;
+
+        label.on('pointerdown', (pointer) => {
+            pointer.event.stopPropagation();
+            this._toggleSpinLateral();
+        });
+
+        this._keyE = this.scene.input.keyboard.addKey('E');
+        this._keyE.on('down', () => this._toggleSpinLateral());
+
+        this._spinLabelMap = spinLabels;
+        this._spinColorMap = spinColors;
+    }
+
+    _toggleSpinLateral() {
+        // Cycle : 0 → -1 → +1 → 0
+        if (this._lateralSpin === 0) this._lateralSpin = -1;
+        else if (this._lateralSpin === -1) this._lateralSpin = 1;
+        else this._lateralSpin = 0;
+
+        sfxUIClick();
+        if (this._spinLateralLabel) {
+            const key = String(this._lateralSpin);
+            this._spinLateralLabel.setText(this._spinLabelMap[key]);
+            this._spinLateralLabel.setColor(this._spinColorMap[key]);
+            this._spinLateralLabel.setAlpha(this._lateralSpin !== 0 ? 1 : 0.5);
+        }
+    }
+
+    _clearSpinLateralUI() {
+        if (this._spinLateralUI) {
+            this._spinLateralUI.forEach(e => e.destroy());
+            this._spinLateralUI = [];
+        }
+        this._spinLateralLabel = null;
+        if (this._keyE) { this._keyE.removeAllListeners(); this._keyE = null; }
     }
 
     // === FOCUS (Respire) UI & Logic ===
@@ -828,9 +973,14 @@ export default class AimingSystem {
         if (this._key2) { this._key2.destroy(); this._key2 = null; }
         if (this._key3) { this._key3.destroy(); this._key3 = null; }
         if (this._keyT) { this._keyT.destroy(); this._keyT = null; }
-        // Also clean Focus/Ability UI (they're in _modeUI but keys need explicit cleanup)
+        if (this._key4) { this._key4.destroy(); this._key4 = null; }
+        if (this._key6) { this._key6.destroy(); this._key6 = null; }
+        // Also clean Focus/Ability/Cochonnet/Spin UI
         this._clearFocusUI();
         this._clearAbilityUI();
+        this._clearCochonnetUI();
+        this._clearSpinLateralUI();
+        this._clearRetroUI();
     }
 
     // --- POINTER EVENTS ---
@@ -921,6 +1071,9 @@ export default class AimingSystem {
                 carreauInstinct: this.isAbilityActive('carreau_instinct'),
                 leMur: this.isAbilityActive('le_mur'),
                 lectureTerrainActive: this.isAbilityActive('lecture_terrain'),
+                targetCochonnet: this._targetCochonnet,
+                lateralSpin: this._lateralSpin,
+                effetStat: this.charStats.effet || 6,
             };
 
             this.engine.throwBall(angle, finalPower, team, this.shotMode || 'pointer', this.loftPreset, retroIntensity, throwMeta);
@@ -930,6 +1083,8 @@ export default class AimingSystem {
         this._focusActive = false;
         this._abilityActive = false;
         this.retroActive = false;
+        this._targetCochonnet = false;
+        this._lateralSpin = 0;
     }
 
     cancel() {
@@ -1031,19 +1186,27 @@ export default class AimingSystem {
             this._clearLoftUI();
         }
 
-        // Handle keyboard for combined mode+loft selection
+        // Handle keyboard for combined mode+loft selection (grille 2x3)
         if (this._modeUI.length > 0 && this._combinedBtns) {
             if (this._keyLeft && Phaser.Input.Keyboard.JustDown(this._keyLeft)) {
-                this._combinedSelected = Math.max(0, this._combinedSelected - 1);
+                // Navigation dans la rangee courante
+                const row = this._combinedSelected < 3 ? 0 : 1;
+                const col = this._combinedSelected % 3;
+                const newCol = Math.max(0, col - 1);
+                this._combinedSelected = row * 3 + newCol;
                 this._updateCombinedHighlight();
             }
             if (this._keyRight && Phaser.Input.Keyboard.JustDown(this._keyRight)) {
-                this._combinedSelected = Math.min(3, this._combinedSelected + 1);
+                const row = this._combinedSelected < 3 ? 0 : 1;
+                const col = this._combinedSelected % 3;
+                const newCol = Math.min(2, col + 1);
+                this._combinedSelected = row * 3 + newCol;
                 this._updateCombinedHighlight();
             }
             if (this._keySpace && Phaser.Input.Keyboard.JustDown(this._keySpace)) {
                 this._selectCombined(this._combinedSelected);
             }
+            // Pointer row shortcuts
             if (this._key1 && Phaser.Input.Keyboard.JustDown(this._key1)) {
                 this._selectCombined(0); return;
             }
@@ -1053,8 +1216,15 @@ export default class AimingSystem {
             if (this._key3 && Phaser.Input.Keyboard.JustDown(this._key3)) {
                 this._selectCombined(2); return;
             }
+            // Tirer row shortcuts
+            if (this._key4 && Phaser.Input.Keyboard.JustDown(this._key4)) {
+                this._selectCombined(3); return; // Rafle
+            }
             if (this._keyT && Phaser.Input.Keyboard.JustDown(this._keyT)) {
-                this._selectCombined(3); return;
+                this._selectCombined(4); return; // Tir au Fer
+            }
+            if (this._key6 && Phaser.Input.Keyboard.JustDown(this._key6)) {
+                this._selectCombined(5); return; // Tir Devant
             }
             return;
         }
@@ -1089,11 +1259,6 @@ export default class AimingSystem {
         // Handle retro toggle [R] during aiming phase
         if (this._keyR && Phaser.Input.Keyboard.JustDown(this._keyR)) {
             this._toggleRetro();
-        }
-
-        // Handle tir devant toggle [D] during tir mode
-        if (this._keyD && Phaser.Input.Keyboard.JustDown(this._keyD) && this.shotMode === 'tirer') {
-            this._toggleTirDevant();
         }
 
         // Update pressure tremble + precision wobble

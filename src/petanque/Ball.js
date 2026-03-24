@@ -8,7 +8,8 @@ import {
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
     BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE, COCHONNET_MAX_COLLISION_SPEED,
-    puissanceMultiplier
+    puissanceMultiplier,
+    LATERAL_SPIN_FORCE, LATERAL_SPIN_FRAMES, LATERAL_SPIN_MIN_SPEED, LATERAL_SPIN_TERRAIN_MULT
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -42,6 +43,13 @@ export default class Ball {
         this._retroTerrainEff = 1.0; // terrain efficiency multiplier
         this._retroIntensity = 0;   // stored intensity for phase calculations
         this._isRecoiling = false;  // true when ball moves backward after collision
+
+        // Spin lateral (gauche/droite) — actif apres atterrissage
+        this._lateralSpin = 0;        // -1 = gauche, 0 = off, +1 = droite
+        this._lateralFrames = 0;      // frames restantes
+        this._lateralIntensity = 0;   // intensite courante (1.0 → 0.0 lineaire)
+        this._lateralTerrainMult = 1.0;
+        this._effetStat = 6;          // stat Effet du personnage (affecte la force)
 
         // Determine texture key based on team/color
         this.textureKey = this._resolveTextureKey(options.textureKey);
@@ -163,6 +171,21 @@ export default class Ball {
         this._isRecoiling = false;
     }
 
+    /**
+     * Activer le spin lateral apres atterrissage.
+     * @param {number} spinDir  -1 = gauche, +1 = droite
+     * @param {number} effetStat  stat Effet du personnage (1-10)
+     * @param {string} terrainType  'terre' | 'herbe' | 'sable' | 'dalles'
+     */
+    activateLateralSpin(spinDir, effetStat, terrainType) {
+        if (spinDir === 0) return;
+        this._lateralSpin = spinDir;
+        this._effetStat = effetStat;
+        this._lateralFrames = LATERAL_SPIN_FRAMES;
+        this._lateralIntensity = 1.0;
+        this._lateralTerrainMult = LATERAL_SPIN_TERRAIN_MULT[terrainType] ?? 1.0;
+    }
+
     update(dt) {
         if (!this.isAlive || !this.isMoving) return;
 
@@ -258,6 +281,27 @@ export default class Ball {
 
             // Accumulate rolling distance for frame animation
             this._rollDist += speed * cappedDt * 60;
+
+            // --- Spin lateral (post-friction pour que la deviation s'accumule) ---
+            if (this._lateralSpin !== 0 && this._lateralFrames > 0 && speed > LATERAL_SPIN_MIN_SPEED) {
+                // Decroissance lineaire de l'intensite
+                this._lateralFrames--;
+                this._lateralIntensity = this._lateralFrames / LATERAL_SPIN_FRAMES;
+                // Force perpendiculaire au vecteur vitesse courant
+                const curSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (curSpeed > 0) {
+                    const perpX = -this.vy / curSpeed;
+                    const perpY =  this.vx / curSpeed;
+                    const force = LATERAL_SPIN_FORCE * (this._effetStat / 10)
+                        * this._lateralIntensity * this._lateralTerrainMult;
+                    this.vx += perpX * force * this._lateralSpin * cappedDt * 60;
+                    this.vy += perpY * force * this._lateralSpin * cappedDt * 60;
+                }
+                if (this._lateralFrames <= 0) {
+                    this._lateralSpin = 0;
+                    this._lateralIntensity = 0;
+                }
+            }
         } else {
             // On slopes, don't stop if gravity is still pushing the ball
             // BUT cap at ~2 seconds (120 frames) to prevent infinite roll
