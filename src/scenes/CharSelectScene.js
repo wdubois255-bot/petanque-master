@@ -275,6 +275,22 @@ export default class CharSelectScene extends Phaser.Scene {
 
         this._previewSprite = null;
         this._portraitImage = null;
+
+        // Rookie abilities section (sprite area, y≈368-424)
+        const abY = py + 304; // 368
+        this._abilitiesLabel = this.add.text(px, abY, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(0.5, 0).setDepth(10);
+
+        this._abilityTexts = [];
+        for (let i = 0; i < 3; i++) {
+            const lineY = abY + 14 + i * 22;
+            const t = this.add.text(px - 88, lineY, '', {
+                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
+                wordWrap: { width: 168 }, lineSpacing: 1
+            }).setOrigin(0, 0).setDepth(10);
+            this._abilityTexts.push(t);
+        }
     }
 
     _updateSelection() {
@@ -299,7 +315,16 @@ export default class CharSelectScene extends Phaser.Scene {
         this._previewName.setText(char.name);
         this._previewTitle.setText(char.title);
         this._previewCatchphrase.setText(`"${char.catchphrase}"`);
-        this._previewDesc.setText(char.description);
+
+        if (char.isRookie && char.abilities_unlock?.length) {
+            // Truncate description to leave room for abilities
+            const desc = char.description;
+            this._previewDesc.setText(desc.length > 92 ? desc.substring(0, 92) + '...' : desc);
+            this._updateRookieAbilities(char);
+        } else {
+            this._previewDesc.setText(char.description);
+            this._clearAbilitiesSection();
+        }
 
         // Stat bars
         const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
@@ -328,10 +353,12 @@ export default class CharSelectScene extends Phaser.Scene {
             bar.num.setText(value.toString());
         }
 
-        // Preview sprite
+        // Preview sprite (skip for Rookie — abilities section uses that space)
         if (this._portraitImage) { this._portraitImage.destroy(); this._portraitImage = null; }
         if (this._previewSprite) { this._previewSprite.destroy(); this._previewSprite = null; }
         if (this._previewShadow) { this._previewShadow.destroy(); this._previewShadow = null; }
+
+        if (char.isRookie && char.abilities_unlock?.length) return;
 
         const spriteKey = this._getCharSpriteKey(char);
         const isStatic = CHAR_STATIC_SPRITES.includes(char.id);
@@ -412,6 +439,24 @@ export default class CharSelectScene extends Phaser.Scene {
                 cell.w - 4, cell.h - 4, 6
             );
         }
+    }
+
+    _updateRookieAbilities(char) {
+        const unlockedIds = this._save?.rookie?.abilitiesUnlocked || [];
+        this._abilitiesLabel.setText('— CAPACITÉS —');
+        char.abilities_unlock.forEach((unlock, i) => {
+            if (!this._abilityTexts[i]) return;
+            const isUnlocked = unlockedIds.includes(unlock.id);
+            this._abilityTexts[i].setColor(isUnlocked ? '#6B8E4E' : '#D4A574');
+            this._abilityTexts[i].setText(
+                `${isUnlocked ? '✓' : '•'} ${unlock.threshold}pts — ${unlock.ability.name}\n  ${unlock.ability.description}`
+            );
+        });
+    }
+
+    _clearAbilitiesSection() {
+        if (this._abilitiesLabel) this._abilitiesLabel.setText('');
+        if (this._abilityTexts) this._abilityTexts.forEach(t => t.setText(''));
     }
 
     _confirmSelection() {

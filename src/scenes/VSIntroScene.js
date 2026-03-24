@@ -313,6 +313,18 @@ export default class VSIntroScene extends Phaser.Scene {
             });
         }
 
+        // Opponent catchphrase (italic, gold, under title)
+        let opponentCatchphraseText = null;
+        if (opponent.catchphrase) {
+            opponentCatchphraseText = this.add.text(opponentX, GAME_HEIGHT / 2 - 8,
+                `"${opponent.catchphrase}"`, {
+                    fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
+                    shadow: SHADOW, fontStyle: 'italic',
+                    wordWrap: { width: 200 }, align: 'center'
+                }
+            ).setOrigin(0.5).setX(GAME_WIDTH + 200).setAlpha(0);
+        }
+
         // Terrain name at bottom
         const terrainText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 65, this.terrainName, {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
@@ -342,6 +354,7 @@ export default class VSIntroScene extends Phaser.Scene {
         if (playerSprite) allElements.push(playerSprite);
         if (opponentSprite) allElements.push(opponentSprite);
         if (hintText) allElements.push(hintText);
+        if (opponentCatchphraseText) allElements.push(opponentCatchphraseText);
 
         // 1. Slide in player from left
         this.tweens.add({
@@ -350,21 +363,16 @@ export default class VSIntroScene extends Phaser.Scene {
             onComplete: () => {
                 const catchphrase = this.playerCharacter.catchphrase;
                 if (catchphrase) {
-                    const catchphraseText = this.add.text(playerX, GAME_HEIGHT / 2 + 10, '', {
-                        fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
-                        shadow: SHADOW, fontStyle: 'italic',
-                        wordWrap: { width: 180 }, align: 'center'
-                    }).setOrigin(0.5).setDepth(5);
-                    allElements.push(catchphraseText);
-
-                    let charIndex = 0;
-                    this._typewriterTimer = this.time.addEvent({
-                        delay: 30,
-                        repeat: catchphrase.length - 1,
-                        callback: () => {
-                            charIndex++;
-                            catchphraseText.setText(`"${catchphrase.substring(0, charIndex)}"`);
+                    const catchphraseText = this.add.text(playerX, GAME_HEIGHT / 2 - 8,
+                        `"${catchphrase}"`, {
+                            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
+                            shadow: SHADOW, fontStyle: 'italic',
+                            wordWrap: { width: 180 }, align: 'center'
                         }
+                    ).setOrigin(0.5).setDepth(5).setAlpha(0);
+                    allElements.push(catchphraseText);
+                    this.tweens.add({
+                        targets: catchphraseText, alpha: 1, duration: 350, delay: 200
                     });
                 }
             }
@@ -373,7 +381,15 @@ export default class VSIntroScene extends Phaser.Scene {
         // 2. Slide in opponent from right
         this.tweens.add({
             targets: [opponentNameText, opponentTitleText, ...(opponentSprite ? [opponentSprite] : [])],
-            x: opponentX, duration: 500, ease: 'Back.easeOut', delay: 200
+            x: opponentX, duration: 500, ease: 'Back.easeOut', delay: 200,
+            onComplete: () => {
+                if (opponentCatchphraseText) {
+                    opponentCatchphraseText.setX(opponentX);
+                    this.tweens.add({
+                        targets: opponentCatchphraseText, alpha: 1, duration: 350, delay: 200
+                    });
+                }
+            }
         });
 
         // 3. VS text slam with Bounce + shake
