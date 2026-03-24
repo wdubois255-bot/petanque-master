@@ -101,7 +101,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         setSoundScene(this);
 
         // Load data
-        this._charsData = this.cache.json.get('characters');
+        this._charsData = this.cache.json.get('characters') || {};
         const boulesData = this.cache.json.get('boules');
         const terrainsData = this.cache.json.get('terrains');
         this._allBoules = boulesData?.sets || [];

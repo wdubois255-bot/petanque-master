@@ -93,7 +93,11 @@
     "insufficient": "Not enough Galets",
     "confirm": "Buy {name} for {price} Galets?",
     "yes": "YES",
-    "no": "NO"
+    "no": "NO",
+    "tab_balls": "Balls",
+    "tab_jacks": "Jacks",
+    "tab_abilities": "Abilities",
+    "controls_hint": "Arrows Navigate     Enter Buy     1-3 Tabs     Esc Back"
   },
   "levelup": {
     "title": "LEVEL UP!",

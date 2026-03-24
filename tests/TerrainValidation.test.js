@@ -159,6 +159,33 @@ describe('Arcade data validation', () => {
     });
 });
 
+describe('I18n key coverage', () => {
+    const frPath = resolve(__dirname, '../public/data/lang/fr.json');
+    const enPath = resolve(__dirname, '../public/data/lang/en.json');
+    const fr = JSON.parse(readFileSync(frPath, 'utf-8'));
+    const en = JSON.parse(readFileSync(enPath, 'utf-8'));
+
+    const requiredShopKeys = ['buy', 'owned', 'equip', 'insufficient', 'confirm', 'yes', 'no', 'tab_balls', 'tab_jacks', 'tab_abilities', 'controls_hint'];
+
+    it('fr.json has all required shop keys', () => {
+        for (const key of requiredShopKeys) {
+            expect(fr.shop[key], `fr.json missing shop.${key}`).toBeDefined();
+        }
+    });
+
+    it('en.json has all required shop keys', () => {
+        for (const key of requiredShopKeys) {
+            expect(en.shop[key], `en.json missing shop.${key}`).toBeDefined();
+        }
+    });
+
+    it('fr.json and en.json have same top-level sections', () => {
+        const frSections = Object.keys(fr).sort();
+        const enSections = Object.keys(en).sort();
+        expect(enSections).toEqual(frSections);
+    });
+});
+
 describe('Shop data validation', () => {
     const shopPath = resolve(__dirname, '../public/data/shop.json');
     const shop = JSON.parse(readFileSync(shopPath, 'utf-8'));

@@ -93,7 +93,11 @@
     "insufficient": "Galets insuffisants",
     "confirm": "Acheter {name} pour {price} Galets ?",
     "yes": "OUI",
-    "no": "NON"
+    "no": "NON",
+    "tab_balls": "Boules",
+    "tab_jacks": "Cochonnets",
+    "tab_abilities": "Capacites",
+    "controls_hint": "Fleches Naviguer     Entree Acheter     1-3 Onglets     Echap Retour"
   },
   "levelup": {
     "title": "NIVEAU SUPERIEUR !",

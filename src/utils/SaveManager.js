@@ -47,7 +47,8 @@ function defaultSaveData() {
             winsPerCharacter: {}
         },
         lastDailyDate: null,
-        dailyCompleted: false
+        dailyCompleted: false,
+        lang: 'fr'
     };
 }
 

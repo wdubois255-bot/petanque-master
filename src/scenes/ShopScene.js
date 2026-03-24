@@ -4,13 +4,14 @@ import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = UIFactory.SHADOW;
 
 const TABS = [
-    { id: 'boules', label: 'Boules', icon: '\u25CF' },
-    { id: 'cochonnets', label: 'Cochonnets', icon: '\u25C9' },
-    { id: 'capacites', label: 'Capacites', icon: '\u2726' }
+    { id: 'boules', labelKey: 'shop.tab_balls', fallback: 'Boules', icon: '\u25CF' },
+    { id: 'cochonnets', labelKey: 'shop.tab_jacks', fallback: 'Cochonnets', icon: '\u25C9' },
+    { id: 'capacites', labelKey: 'shop.tab_abilities', fallback: 'Capacites', icon: '\u2726' }
 ];
 
 // Layout: left preview panel + right grid
@@ -45,9 +46,14 @@ export default class ShopScene extends Phaser.Scene {
         setSoundScene(this);
         UIFactory.fadeIn(this);
 
-        this.shopData = this.cache.json.get('shop');
-        this.boulesData = this.cache.json.get('boules');
+        this.shopData = this.cache.json.get('shop') || {};
+        this.boulesData = this.cache.json.get('boules') || {};
         this._save = loadSave();
+
+        if (!this.shopData.categories) {
+            fadeToScene(this, 'TitleScene');
+            return;
+        }
 
         this._drawBackground();
         this._drawHeader();
@@ -58,7 +64,10 @@ export default class ShopScene extends Phaser.Scene {
 
         // Back button
         UIFactory.addBackButton(this, 'TitleScene');
-        UIFactory.addControlsHint(this, 'Fleches Naviguer     Entree Acheter     1-3 Onglets     Echap Retour');
+        const controlsHint = I18n.t('shop.controls_hint') !== 'shop.controls_hint'
+            ? I18n.t('shop.controls_hint')
+            : 'Fleches Naviguer     Entree Acheter     1-3 Onglets     Echap Retour';
+        UIFactory.addControlsHint(this, controlsHint);
 
         this.events.on('shutdown', this._shutdown, this);
     }
@@ -123,7 +132,8 @@ export default class ShopScene extends Phaser.Scene {
                 tbg.fillRect(tx - 25, TAB_Y + 18, 50, 2);
             }
 
-            const txt = this.add.text(tx, TAB_Y + 8, `${tab.icon} ${tab.label}`, {
+            const tabLabel = I18n.t(tab.labelKey) !== tab.labelKey ? I18n.t(tab.labelKey) : tab.fallback;
+            const txt = this.add.text(tx, TAB_Y + 8, `${tab.icon} ${tabLabel}`, {
                 fontFamily: FONT_PIXEL, fontSize: '8px',
                 color: isActive ? CSS.OR : CSS.GRIS, shadow: SHADOW
             }).setOrigin(0.5).setDepth(6);

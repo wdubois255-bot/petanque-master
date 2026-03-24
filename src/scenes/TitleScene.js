@@ -5,6 +5,7 @@ import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioS
 import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
 import I18n from '../utils/I18n.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -343,7 +344,7 @@ export default class TitleScene extends Phaser.Scene {
         const save = loadSave();
         if (save.arcadeProgress === 0 && (!save.tutorialPhasesDone || save.tutorialPhasesDone.length === 0)) {
             this.time.delayedCall(500, () => {
-                this.scene.start('ArcadeScene');
+                fadeToScene(this, 'ArcadeScene');
             });
             return;
         }

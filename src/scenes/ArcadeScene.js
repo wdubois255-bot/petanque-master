@@ -37,14 +37,14 @@ export default class ArcadeScene extends Phaser.Scene {
         // Register shutdown FIRST (before any early returns)
         this.events.on('shutdown', this._shutdown, this);
 
-        this.arcadeData = this.cache.json.get('arcade');
-        this.charactersData = this.cache.json.get('characters');
-        this.terrainsData = this.cache.json.get('terrains');
+        this.arcadeData = this.cache.json.get('arcade') || {};
+        this.charactersData = this.cache.json.get('characters') || {};
+        this.terrainsData = this.cache.json.get('terrains') || {};
 
         // Force Rookie in Arcade mode
         if (!this.playerCharacter) {
-            const chars = this.cache.json.get('characters');
-            const rookie = chars.roster.find(c => c.id === 'rookie');
+            const chars = this.cache.json.get('characters') || {};
+            const rookie = chars.roster?.find(c => c.id === 'rookie');
             if (rookie) {
                 const save = loadSave();
                 if (save.rookie) {
@@ -96,6 +96,12 @@ export default class ArcadeScene extends Phaser.Scene {
                 // In arcade: you can retry (no game over, you just replay the round)
                 this.currentRound--; // Go back to the failed round
             }
+        }
+
+        // Check if arcade data is valid
+        if (!this.arcadeData.matches) {
+            fadeToScene(this, 'TitleScene');
+            return;
         }
 
         // Check if arcade is complete
@@ -558,11 +564,11 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _getCharById(id) {
-        return this.charactersData.roster.find(c => c.id === id) || null;
+        return this.charactersData?.roster?.find(c => c.id === id) || null;
     }
 
     _getTerrainById(id) {
-        return this.terrainsData.stages.find(t => t.id === id) || null;
+        return this.terrainsData?.stages?.find(t => t.id === id) || null;
     }
 
     _getSpriteKey(char) {

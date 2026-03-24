@@ -117,6 +117,28 @@ describe('SaveManager', () => {
         });
     });
 
+    describe('Language persistence', () => {
+        it('default save includes lang: fr', () => {
+            const save = loadSave();
+            expect(save.lang).toBe('fr');
+        });
+
+        it('persists lang across save/load cycle', () => {
+            const save = loadSave();
+            save.lang = 'en';
+            saveSave(save);
+            const reloaded = loadSave();
+            expect(reloaded.lang).toBe('en');
+        });
+
+        it('old saves without lang get default fr via spread', () => {
+            const oldData = { version: 2, galets: 200 };
+            localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(oldData));
+            const save = loadSave();
+            expect(save.lang).toBe('fr');
+        });
+    });
+
     describe('Convenience helpers', () => {
         it('addGalets adds amount correctly', () => {
             // Save initial state

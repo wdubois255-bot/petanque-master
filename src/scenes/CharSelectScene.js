@@ -28,10 +28,10 @@ export default class CharSelectScene extends Phaser.Scene {
         UIFactory.fadeIn(this);
 
         setSoundScene(this);
-        const chars = this.cache.json.get('characters');
+        const chars = this.cache.json.get('characters') || {};
         const save = loadSave();
 
-        const visibleRoster = chars.roster.filter(c => !c.hidden);
+        const visibleRoster = (chars.roster || []).filter(c => !c.hidden);
 
         if (this.mode === 'arcade') {
             this.roster = visibleRoster.filter(c => c.isRookie);

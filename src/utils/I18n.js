@@ -1,6 +1,8 @@
 // src/utils/I18n.js
 // Singleton i18n léger — fallback FR automatique, pas de framework
 
+import { loadSave, saveSave } from './SaveManager.js';
+
 const I18n = {
     _locale: 'fr',
     _strings: {},
@@ -14,7 +16,7 @@ const I18n = {
             this._strings = await res.json();
             this._locale = locale;
         } catch (e) {
-            console.warn(`I18n: failed to load ${locale}, falling back to fr`);
+            // Fallback silencieux vers fr
             if (locale !== 'fr') await this.load('fr');
             return;
         }
@@ -53,14 +55,16 @@ const I18n = {
     get locale() { return this._locale; },
 
     detect() {
-        const saved = localStorage.getItem('petanque_lang');
-        if (saved === 'fr' || saved === 'en') return saved;
+        const save = loadSave();
+        if (save.lang === 'fr' || save.lang === 'en') return save.lang;
         const nav = navigator.language?.substring(0, 2);
         return nav === 'fr' ? 'fr' : 'en';
     },
 
     setLocale(locale) {
-        localStorage.setItem('petanque_lang', locale);
+        const save = loadSave();
+        save.lang = locale;
+        saveSave(save);
         this._locale = locale;
     },
 
