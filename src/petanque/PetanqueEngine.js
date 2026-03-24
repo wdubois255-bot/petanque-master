@@ -12,7 +12,7 @@ import {
     HITSTOP_BOULE_MS, HITSTOP_CARREAU_MS,
     SCORE_MENE_DELAY, GAME_OVER_REDIRECT_DELAY,
     DUST_COUNT_ROULETTE, DUST_COUNT_DEMI, DUST_COUNT_PLOMBEE, DUST_COUNT_TIR,
-    MIN_IMPACT_SPEED,
+    MIN_IMPACT_SPEED, TIR_IMPACT_SPEED, TIR_LANDING_CONTACT_RADIUS,
     COCHONNET_ROLL_MIN, COCHONNET_ROLL_MAX, COCHONNET_SAFE_MARGIN, COCHONNET_CLAMP_MARGIN,
     BALL_CLAMP_MARGIN,
     MAX_THROW_SPEED,
@@ -574,21 +574,22 @@ export default class PetanqueEngine {
                 ball.draw();
 
                 // Check immediate collision at landing (ball may have landed ON another ball)
-                // For tir: slightly larger contact zone (ball arrives at high speed from above)
-                const landingContactBonus = isTir ? 3 : 0;
+                // For tir: much larger contact zone (ball arrives at high speed from above)
+                const landingContactBonus = isTir ? TIR_LANDING_CONTACT_RADIUS : 0;
                 const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive && b !== ball);
                 for (const other of allBodies) {
                     const cdx = ball.x - other.x;
                     const cdy = ball.y - other.y;
                     const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
                     if (cdist < ball.radius + other.radius + landingContactBonus) {
-                        // Ball landed on/very near another — give it velocity if it has none
+                        // Ball landed on/very near another — give it velocity
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
-                            // Plombée/demi-portée with low roll: use landing direction as impulse
                             const landAngle = Math.atan2(targetY - startY, targetX - startX);
-                            const minSpeed = MIN_IMPACT_SPEED;
-                            rollVx = Math.cos(landAngle) * minSpeed;
-                            rollVy = Math.sin(landAngle) * minSpeed;
+                            // Tir au fer: simulate high-speed vertical impact converted to horizontal
+                            // With COR 0.62, thrower retains ~19% → stops near impact (carreau naturel)
+                            const impactSpeed = isTir ? TIR_IMPACT_SPEED : MIN_IMPACT_SPEED;
+                            rollVx = Math.cos(landAngle) * impactSpeed;
+                            rollVy = Math.sin(landAngle) * impactSpeed;
                         }
                     }
                 }
@@ -820,77 +821,56 @@ export default class PetanqueEngine {
         };
 
         let redirected = false;
+        const sceneRef = this.scene; // capture ref in case engine is destroyed
         const doRedirect = () => {
             if (redirected) return;
             redirected = true;
-            try { this.scene.cameras.main.setZoom(1.0); } catch (e) { /* safe */ }
+            try { sceneRef.cameras.main.setZoom(1.0); } catch (e) { /* safe */ }
             try {
-                this.scene.scene.start('ResultScene', resultData);
+                sceneRef.scene.start('ResultScene', resultData);
             } catch (e) {
                 // Ultimate fallback: go back to title
-                try { this.scene.scene.start('TitleScene'); } catch (e2) { /* give up */ }
+                try { sceneRef.scene.start('TitleScene'); } catch (e2) { /* give up */ }
             }
         };
 
-        // Always redirect to ResultScene (arcade, quickplay, or any mode)
-        if (this.scene.arcadeState || this.scene.playerCharacter) {
-            this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, doRedirect);
+        // Always redirect to ResultScene after delay (arcade, quickplay, any mode)
+        this.scene.time.delayedCall(GAME_OVER_REDIRECT_DELAY, doRedirect);
 
-            // Allow skip with Space/Enter/click
-            try {
-                this.scene.input.keyboard.once('keydown-SPACE', doRedirect);
-                this.scene.input.keyboard.once('keydown-ENTER', doRedirect);
-                this.scene.input.once('pointerdown', doRedirect);
-            } catch (e) { /* input binding safe */ }
+        // Allow skip with Space/Enter/click
+        try {
+            this.scene.input.keyboard.once('keydown-SPACE', doRedirect);
+            this.scene.input.keyboard.once('keydown-ENTER', doRedirect);
+            this.scene.input.once('pointerdown', doRedirect);
+        } catch (e) { /* input binding safe */ }
 
-            // Safety fallback: if redirect hasn't happened after 5s, force it
-            this.scene.time.delayedCall(5000, doRedirect);
-            return;
-        }
+        // Safety fallback: if redirect hasn't happened after 5s, force it
+        this.scene.time.delayedCall(5000, doRedirect);
 
-        // Fallback overlay (no ResultScene redirect)
-        this.renderer.showGameOverOverlay(isVictory, this.scores, isFanny);
+        // Show fallback overlay + buttons only when no ResultScene redirect expected
+        if (!this.scene.arcadeState && !this.scene.playerCharacter) {
+            this.renderer.showGameOverOverlay(isVictory, this.scores, isFanny);
 
-        const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
-        const hasReturnScene = !!this.scene.returnScene;
-        const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
+            const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
+            const hasReturnScene = !!this.scene.returnScene;
+            const btnLabel = hasReturnScene ? (isVictory ? '[ CONTINUER ]' : '[ RETOUR ]') : '[ REJOUER ]';
 
-        const btn = this.scene.add.text(
-            this.scene.scale.width / 2, this.scene.scale.height / 2 + 70,
-            btnLabel,
-            {
-                fontFamily: 'monospace', fontSize: '24px',
-                color: '#F5E6D0', backgroundColor: '#C44B3F',
-                padding: { x: 20, y: 10 }, shadow
-            }
-        ).setOrigin(0.5).setDepth(101).setInteractive({ useHandCursor: true });
-
-        btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#D4654A' }));
-        btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#C44B3F' }));
-        btn.on('pointerdown', () => {
-            if (hasReturnScene) {
-                const returnScene = this.scene.scene.get(this.scene.returnScene);
-                const isSleeping = returnScene && returnScene.scene
-                    && returnScene.scene.settings
-                    && returnScene.scene.settings.status === Phaser.Scenes.SLEEPING;
-
-                if (isSleeping) {
-                    this.scene.scene.stop();
-                    this.scene.scene.wake(this.scene.returnScene);
-                    if (returnScene.returnFromBattle) {
-                        returnScene.returnFromBattle({ won: isVictory, opponentId: this.scene.opponentId });
-                    }
-                } else {
-                    this.scene.scene.start(this.scene.returnScene);
+            const btn = this.scene.add.text(
+                this.scene.scale.width / 2, this.scene.scale.height / 2 + 70,
+                btnLabel,
+                {
+                    fontFamily: 'monospace', fontSize: '24px',
+                    color: '#F5E6D0', backgroundColor: '#C44B3F',
+                    padding: { x: 20, y: 10 }, shadow
                 }
-            } else {
-                this.scene.scene.restart({
-                    terrain: this.terrainType,
-                    difficulty: this.scene.difficulty,
-                    format: this.format
-                });
-            }
-        });
+            ).setOrigin(0.5).setDepth(101).setInteractive({ useHandCursor: true });
+
+            btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#D4654A' }));
+            btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#C44B3F' }));
+            btn.on('pointerdown', () => {
+                doRedirect(); // use the same redirect, which goes to ResultScene
+            });
+        }
     }
 
     calculateProjectedScore() {

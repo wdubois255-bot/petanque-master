@@ -201,6 +201,11 @@ export const CARREAU_SPARK_RADIUS = 36;
 
 // Petanque - throw animation
 export const MIN_IMPACT_SPEED = 2.0;
+// Tir au fer: vitesse d'impact a l'atterrissage (simule l'energie cinetique de la chute)
+// Avec COR 0.62 et masses egales: cible recoit ~81% → ejectee a ~5.7 px/frame
+export const TIR_IMPACT_SPEED = 7.0;
+// Rayon de detection de contact au tir (px) — plus large car la boule tombe d'en haut
+export const TIR_LANDING_CONTACT_RADIUS = 10;
 export const COCHONNET_ROLL_MIN = 0.15;
 export const COCHONNET_ROLL_MAX = 0.25;
 export const COCHONNET_SAFE_MARGIN = 15;

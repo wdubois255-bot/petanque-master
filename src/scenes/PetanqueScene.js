@@ -48,6 +48,9 @@ export default class PetanqueScene extends Phaser.Scene {
         // Pause menu state (reset on each scene init — CLAUDE.md rule)
         this._gamePaused = false;
         this._pauseContainer = null;
+        // Game over watchdog (reset on each scene init)
+        this._gameOverWatchdogStart = 0;
+        this._watchdogFired = false;
     }
 
     create() {
@@ -1550,5 +1553,43 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.engine) this.engine.update(delta);
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
+
+        // === SAFETY WATCHDOG: force transition if stuck in GAME_OVER ===
+        // If engine is in GAME_OVER state but we're still in PetanqueScene after 8s,
+        // the delayedCall redirect likely failed — force transition to ResultScene
+        if (this.engine && this.engine.state === 'GAME_OVER') {
+            if (!this._gameOverWatchdogStart) {
+                this._gameOverWatchdogStart = time;
+            } else if (time - this._gameOverWatchdogStart > 8000 && !this._watchdogFired) {
+                this._watchdogFired = true;
+                const resultData = {
+                    won: (this.engine.scores?.player || 0) >= (this.engine.victoryScore || 13),
+                    scores: { ...(this.engine.scores || { player: 0, opponent: 0 }) },
+                    playerCharacter: this.playerCharacter,
+                    opponentCharacter: this.opponentCharacter,
+                    terrainName: this.engine.terrainType || this.terrainType,
+                    returnScene: this.returnScene || 'TitleScene',
+                    arcadeState: this.arcadeState,
+                    galetsEarned: 0,
+                    postMatchDialogue: null,
+                    unlocksOnWin: null,
+                    matchStats: {
+                        menes: this.engine.mene || 1,
+                        fanny: false,
+                        bestMene: 0, carreaux: 0, biberons: 0,
+                        shots: 0, points_attempted: 0,
+                        bestBallDist: Infinity, opponentCarreaux: 0
+                    }
+                };
+                try {
+                    this.scene.start('ResultScene', resultData);
+                } catch (e) {
+                    try { this.scene.start('TitleScene'); } catch (_) { /* give up */ }
+                }
+            }
+        } else {
+            this._gameOverWatchdogStart = 0;
+            this._watchdogFired = false;
+        }
     }
 }
