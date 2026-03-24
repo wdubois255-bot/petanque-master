@@ -1,4 +1,5 @@
 import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY, IS_MOBILE, DUST_MAX_SIMULTANEOUS_DESKTOP, DUST_MAX_SIMULTANEOUS_MOBILE } from '../utils/Constants.js';
+import I18n from '../utils/I18n.js';
 
 /**
  * EngineRenderer — handles ALL visual effects for PetanqueEngine.
@@ -94,7 +95,7 @@ export default class EngineRenderer {
 
         const hint = this.scene.add.text(
             this.scene.scale.width / 2, this.scene.scale.height - 28,
-            'Glissez vers le bas pour viser, relâchez pour lancer !',
+            I18n.t('ingame.aim_hint'),
             {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
                 align: 'center', backgroundColor: '#3A2E28',

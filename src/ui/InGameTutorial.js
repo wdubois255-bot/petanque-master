@@ -4,6 +4,7 @@ import {
     TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
     TUTORIAL_PHASE_TURN_RULE
 } from '../utils/Constants.js';
+import I18n from '../utils/I18n.js';
 
 const DEPTH = 200;
 const HINT_DEPTH = 195;
@@ -167,12 +168,12 @@ export default class InGameTutorial {
         });
 
         const main = this.scene.add.text(cx, 53,
-            'Glissez vers le bas pour viser, relâchez pour lancer !',
+            I18n.t('tutorial.aim'),
             TEXT_STYLE
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
         const sub = this.scene.add.text(cx, 74,
-            'Plus vous tirez loin, plus la boule ira vite.',
+            I18n.t('tutorial.aim_sub'),
             { ...HINT_STYLE, fontSize: '11px', color: '#87CEEB' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
@@ -200,12 +201,12 @@ export default class InGameTutorial {
         bg.fillRect(0, 0, GAME_WIDTH, 76);
 
         const main = this.scene.add.text(cx, 34,
-            "L'équipe la plus éloignée du cochonnet rejoue toujours.",
+            I18n.t('tutorial.turn_rule'),
             TEXT_STYLE
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
         const sub = this.scene.add.text(cx, 58,
-            "Vous menez ? C'est à l'adversaire !",
+            I18n.t('tutorial.turn_rule_sub'),
             { ...HINT_STYLE, fontSize: '11px', color: '#FFD700' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
@@ -241,17 +242,17 @@ export default class InGameTutorial {
         bg.strokeRoundedRect(cx - 235, y - 20, 470, 52, 6);
 
         const title = this.scene.add.text(cx, y - 4,
-            'Choisissez votre trajectoire :', {
+            I18n.t('tutorial.loft_title'), {
                 fontFamily: 'monospace', fontSize: '11px',
                 color: '#FFD700', stroke: '#1A1510', strokeThickness: 2
             }
         ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
         const modes = [
-            { key: '1', name: 'Roulette', color: '#44CC44' },
-            { key: '2', name: 'Demi',     color: '#87CEEB' },
-            { key: '3', name: 'Plombée',  color: '#DDA0DD' },
-            { key: 'T', name: 'Tir',      color: '#CC4444' }
+            { key: '1', name: I18n.t('tutorial.modes.roulette'), color: '#44CC44' },
+            { key: '2', name: I18n.t('tutorial.modes.demi'),     color: '#87CEEB' },
+            { key: '3', name: I18n.t('tutorial.modes.plombee'),  color: '#DDA0DD' },
+            { key: 'T', name: I18n.t('tutorial.modes.tir'),      color: '#CC4444' }
         ];
 
         const modeEls = [];
@@ -348,18 +349,18 @@ export default class InGameTutorial {
         panel.strokeRoundedRect(panelX, panelY, panelW, panelH, 8);
 
         // Titre "Fin de mène !"
-        const titleTxt = this.scene.add.text(cx, panelY + 22, '🎯  Fin de mène !', {
+        const titleTxt = this.scene.add.text(cx, panelY + 22, I18n.t('tutorial.score_title'), {
             fontFamily: 'monospace', fontSize: '13px',
             color: '#FFD700', stroke: '#1A1510', strokeThickness: 2
         }).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
         const main = this.scene.add.text(cx, panelY + 52,
-            'Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !',
+            I18n.t('tutorial.score_main'),
             TEXT_STYLE
         ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
         const sub = this.scene.add.text(cx, panelY + 95,
-            'Premier à 13 points gagne la partie.',
+            I18n.t('tutorial.score_sub'),
             { ...HINT_STYLE, color: '#87CEEB' }
         ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
@@ -372,7 +373,7 @@ export default class InGameTutorial {
         btnBg.lineStyle(1, 0xFFD700, 0.5);
         btnBg.strokeRoundedRect(cx - btnW / 2, btnY - 13, btnW, 28, 4);
 
-        const btnText = this.scene.add.text(cx, btnY, 'Compris !', {
+        const btnText = this.scene.add.text(cx, btnY, I18n.t('tutorial.understood'), {
             fontFamily: 'monospace', fontSize: '12px',
             color: '#F5E6D0', stroke: '#1A1510', strokeThickness: 2
         }).setOrigin(0.5).setDepth(DEPTH + 2).setAlpha(0)
@@ -414,14 +415,10 @@ export default class InGameTutorial {
     // TERRAIN HINT — one-shot, avant Phase 1
     // ================================================================
     _maybeShowTerrainHint(terrainId) {
-        const TERRAIN_HINTS = {
-            colline: '⛰️ Attention : ce terrain penche ! Les boules roulent vers le bas.',
-            docks:   '🧱 Les bords métalliques renvoient les boules. Utilisez les rebonds !',
-            plage:   '🏖️ Le sable freine fort. Lancez plus puissamment !',
-            parc:    '🌿 Zones mixtes : herbe (lent) et gravier (rapide). Visez stratégiquement.'
-        };
-        const msg = terrainId ? TERRAIN_HINTS[terrainId] : null;
-        if (!msg) return;
+        if (!terrainId) return;
+        const hintKey = `terrain_hints.${terrainId}`;
+        const msg = I18n.t(hintKey);
+        if (!msg || msg === hintKey) return;
 
         const save = loadSave();
         if (!save.terrainHintsSeen) save.terrainHintsSeen = [];

@@ -4,6 +4,7 @@ import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '..
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -218,7 +219,7 @@ export default class TitleScene extends Phaser.Scene {
         }
 
         // Subtitle
-        this._subtitle = this.add.text(GAME_WIDTH / 2, 172, 'Le meilleur bouliste du canton, c\'est vous !', {
+        this._subtitle = this.add.text(GAME_WIDTH / 2, 172, I18n.t('title.subtitle'), {
             fontFamily: 'monospace',
             fontSize: '14px',
             color: '#F5E6D0',
@@ -246,7 +247,7 @@ export default class TitleScene extends Phaser.Scene {
     // PRESS START
     // ================================================================
     _createPressStart() {
-        this._pressStart = this.add.text(GAME_WIDTH / 2, 280, 'APPUYEZ SUR ESPACE', {
+        this._pressStart = this.add.text(GAME_WIDTH / 2, 280, I18n.t('title.press_start'), {
             fontFamily: FONT_PIXEL,
             fontSize: '16px',
             color: '#FFD700',
@@ -270,6 +271,23 @@ export default class TitleScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
             shadow: SHADOW
         }).setOrigin(1, 1).setAlpha(0.5);
+
+        // Lang toggle FR/EN (bottom-right, above version)
+        const langLabel = I18n.locale === 'fr' ? '[FR|en]' : '[fr|EN]';
+        this._langBtn = this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 26, langLabel, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
+            shadow: SHADOW
+        }).setOrigin(1, 1).setAlpha(0.7).setDepth(10)
+          .setInteractive({ useHandCursor: true });
+
+        this._langBtn.on('pointerover', () => this._langBtn.setAlpha(1));
+        this._langBtn.on('pointerout',  () => this._langBtn.setAlpha(0.7));
+        this._langBtn.on('pointerdown', async () => {
+            const newLocale = I18n.locale === 'fr' ? 'en' : 'fr';
+            await I18n.load(newLocale);
+            I18n.setLocale(newLocale);
+            this.scene.restart();
+        });
     }
 
     // ================================================================
@@ -352,12 +370,12 @@ export default class TitleScene extends Phaser.Scene {
         // Menu layout: hero button + 2x2 grid + settings
         const cx = GAME_WIDTH / 2;
         const menuDefs = [
-            { label: 'JOUER',           x: cx,       y: 230, w: 260, h: 46, hero: true },
-            { label: 'MODE ARCADE',     x: cx - 105, y: 286, w: 196, h: 36 },
-            { label: 'PARTIE RAPIDE',   x: cx + 105, y: 286, w: 196, h: 36 },
-            { label: 'MON PERSO',       x: cx - 105, y: 330, w: 196, h: 36 },
-            { label: 'BOUTIQUE',        x: cx + 105, y: 330, w: 196, h: 36 },
-            { label: 'PARAMETRES',      x: cx,       y: 378, w: 180, h: 30 }
+            { label: I18n.t('title.menu.play'),       x: cx,       y: 230, w: 260, h: 46, hero: true },
+            { label: I18n.t('title.menu.arcade'),     x: cx - 105, y: 286, w: 196, h: 36 },
+            { label: I18n.t('title.menu.quickplay'),  x: cx + 105, y: 286, w: 196, h: 36 },
+            { label: I18n.t('title.menu.character'),  x: cx - 105, y: 330, w: 196, h: 36 },
+            { label: I18n.t('title.menu.shop'),       x: cx + 105, y: 330, w: 196, h: 36 },
+            { label: I18n.t('title.menu.settings'),   x: cx,       y: 378, w: 180, h: 30 }
         ];
 
         this._menuButtons = [];
@@ -405,7 +423,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Controls hint
         this._controlsHint = UIFactory.addControlsHint(this,
-            'FLECHES Naviguer   ESPACE Confirmer', { depth: 5 });
+            I18n.t('title.controls'), { depth: 5 });
         this._controlsHint.setAlpha(0);
         this.tweens.add({ targets: this._controlsHint, alpha: 1, duration: 400, delay: 500 });
 
@@ -426,7 +444,7 @@ export default class TitleScene extends Phaser.Scene {
         this._menuContainer = this.add.container(0, 0).setDepth(5);
 
         // Header
-        const header = UIFactory.addTitle(this, GAME_WIDTH / 2, 200, 'SAUVEGARDES', { depth: 6 });
+        const header = UIFactory.addTitle(this, GAME_WIDTH / 2, 200, I18n.t('title.saves'), { depth: 6 });
         this._menuContainer.add(header);
 
         const slots = getAllSlots();
@@ -437,13 +455,13 @@ export default class TitleScene extends Phaser.Scene {
             if (s) {
                 const badges = s.badges.length;
                 const time = formatPlaytime(s.playtime);
-                label = `Slot ${i + 1}: ${badges} badges - ${time}`;
+                label = I18n.t('title.slot', { n: i + 1, badges, time });
             } else {
-                label = `Slot ${i + 1}: ---`;
+                label = I18n.t('title.slot_empty', { n: i + 1 });
             }
             allItems.push(label);
         }
-        allItems.push('< RETOUR');
+        allItems.push(I18n.t('title.back'));
 
         this._menuButtons = [];
         allItems.forEach((label, i) => {
@@ -644,7 +662,7 @@ export default class TitleScene extends Phaser.Scene {
             this._settingsModal = null;
             this._mode = 'main';
             this._inputEnabled = true;
-        }, { title: 'PARAMETRES' });
+        }, { title: I18n.t('title.menu.settings') });
 
         this._rebuildSettingsItems();
     }
@@ -659,11 +677,11 @@ export default class TitleScene extends Phaser.Scene {
 
         const settings = this._settingsValues;
         const items = [
-            { label: `Son : ${settings.muted ? 'OFF' : 'ON'}`, key: 'mute' },
-            { label: `Musique : ${Math.round(settings.musicVolume * 100)}%`, key: 'music' },
-            { label: `Effets : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
-            { label: 'Tutoriel', key: 'tuto' },
-            { label: 'Fermer', key: 'back' }
+            { label: `${I18n.t('title.settings.sound')} : ${settings.muted ? 'OFF' : 'ON'}`, key: 'mute' },
+            { label: `${I18n.t('title.settings.music')} : ${Math.round(settings.musicVolume * 100)}%`, key: 'music' },
+            { label: `${I18n.t('title.settings.sfx')} : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
+            { label: I18n.t('title.settings.tutorial'), key: 'tuto' },
+            { label: I18n.t('title.settings.close'), key: 'back' }
         ];
 
         const startY = py + 60;

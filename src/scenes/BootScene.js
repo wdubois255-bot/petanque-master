@@ -4,25 +4,7 @@ import { generateAllPortraits } from '../utils/PortraitGenerator.js';
 import { onSaveFailure } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import PortalSDK from '../utils/PortalSDK.js';
-
-const TIPS = [
-    'Maintenez TAB pour voir le classement des boules.',
-    'La plombee arrete la boule net. Ideal pres du cochonnet !',
-    'Chaque personnage a des stats uniques.',
-    'Le tir deplace les boules adverses, mais demande de la precision.',
-    'Sous pression (10-10+), la visee tremble !',
-    'La roulette roule plus loin mais est plus previsible.',
-    'Le Tournoi des Quatre : 3 matchs, 4 legendes du boulodrome.',
-    'Un carreau, c\'est quand votre boule prend exactement la place de l\'autre.',
-    'La petanque est nee a La Ciotat en 1907. "Pied tanque" : jouer les pieds ancres au sol.',
-    'Le Fanny : perdre 13-0 sans marquer un seul point. La tradition est impitoyable.',
-    'Sur le sable, les boules s\'arretent vite. Forcez un peu plus votre lancer !',
-    'Les murs des Docks renvoient les boules. Attention aux rebonds inattendus !',
-    'La Colline penche. Compensez vos lancers vers le haut pour rester dans l\'axe.',
-    'Les meilleurs pointeurs visent souvent une marque au sol, pas le cochonnet lui-meme.',
-    'Chaque terrain a sa propre musique d\'ambiance. Ecoutez le boulodrome vivre.',
-    'Un tir au fer bien execute peut realiser un carreau : la boule prend la place exacte de l\'adverse.',
-];
+import I18n from '../utils/I18n.js';
 
 export default class BootScene extends Phaser.Scene {
     constructor() {
@@ -43,13 +25,13 @@ export default class BootScene extends Phaser.Scene {
         const barY = GAME_HEIGHT / 2 + 20;
 
         // Title
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, 'PETANQUE MASTER', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, I18n.t('boot.title'), {
             fontFamily: FONT_PIXEL, fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
         // Loading text
-        const loadText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 8, 'Chargement...', {
+        const loadText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 8, I18n.t('boot.loading'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
@@ -65,7 +47,8 @@ export default class BootScene extends Phaser.Scene {
         const barFill = this.add.graphics();
 
         // Tip text
-        const tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+        const _tips = I18n.ta('boot.tips');
+        const tip = _tips.length > 0 ? _tips[Math.floor(Math.random() * _tips.length)] : '';
         this.add.text(GAME_WIDTH / 2, barY + 40, tip, {
             fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true },
@@ -79,11 +62,11 @@ export default class BootScene extends Phaser.Scene {
             barFill.fillRoundedRect(barX, barY, barW * value, barH, 3);
             barFill.fillStyle(0xFFD700, 0.3);
             barFill.fillRoundedRect(barX, barY, barW * value, barH / 2, 3);
-            loadText.setText(`Chargement... ${Math.floor(value * 100)}%`);
+            loadText.setText(I18n.t('boot.loading_pct', { pct: Math.floor(value * 100) }));
         });
 
         this.load.on('complete', () => {
-            loadText.setText('Pret !');
+            loadText.setText(I18n.t('boot.ready'));
         });
 
         // === LOAD ASSETS ===
@@ -300,7 +283,7 @@ export default class BootScene extends Phaser.Scene {
             const activeScene = this.scene.manager.getScenes(true)[0];
             if (activeScene) {
                 UIFactory.showFloatingText(activeScene, GAME_WIDTH / 2, 20,
-                    'Sauvegarde echouee !', '#C44B3F',
+                    I18n.t('boot.save_failed'), '#C44B3F',
                     { fontSize: '12px', duration: 3000, depth: 200 });
             }
         });

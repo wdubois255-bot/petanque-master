@@ -1,5 +1,6 @@
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI, SCORE_PANEL_COMPACT_W, SCORE_PANEL_COMPACT_H } from '../utils/Constants.js';
 import UIFactory from './UIFactory.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -43,7 +44,7 @@ export default class ScorePanel {
         }).setOrigin(0, 0).setDepth(91);
 
         // Mene (bas, centré, ocre)
-        this._cMene = scene.add.text(ccx, this.compactY + 36, 'MENE 1', {
+        this._cMene = scene.add.text(ccx, this.compactY + 36, I18n.t('ingame.mene', { n: 1 }), {
             fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
             align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91);
@@ -60,13 +61,13 @@ export default class ScorePanel {
 
         const cx = this.panelX + pw / 2;
 
-        this.titleText = scene.add.text(cx, this.panelY + 16, 'SCORE', {
+        this.titleText = scene.add.text(cx, this.panelY + 16, I18n.t('ingame.score'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91).setAlpha(0);
 
         const playerName = scene.playerCharacter?.name
             ? scene.playerCharacter.name.toUpperCase().substring(0, 10)
-            : 'VOUS';
+            : I18n.t('ingame.you');
         this.playerLabel = scene.add.text(cx - 24, this.panelY + 40, playerName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91).setAlpha(0);
@@ -81,7 +82,7 @@ export default class ScorePanel {
 
         const opponentName = scene.opponentCharacter?.name
             ? scene.opponentCharacter.name.toUpperCase().substring(0, 10)
-            : 'ADV.';
+            : I18n.t('ingame.opponent');
         this.opponentLabel = scene.add.text(cx - 24, this.panelY + 98, opponentName, {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', align: 'center', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(91).setAlpha(0);
@@ -104,7 +105,7 @@ export default class ScorePanel {
         meneGfx.fillRoundedRect(6, 6, 80, 10, { tl: 4, tr: 4, bl: 0, br: 0 });
         this._meneGfx = meneGfx;
 
-        this.meneText = scene.add.text(46, 18, 'MENE 1', {
+        this.meneText = scene.add.text(46, 18, I18n.t('ingame.mene', { n: 1 }), {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5).setDepth(92).setAlpha(0);
 
@@ -123,7 +124,7 @@ export default class ScorePanel {
             this._rankLabels.push(label);
         }
 
-        this._rankHint = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 6, '[TAB] Détail score', {
+        this._rankHint = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 6, I18n.t('ingame.tab_hint'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', align: 'center'
         }).setOrigin(0.5, 1).setDepth(90).setAlpha(0.5);
 
@@ -240,7 +241,7 @@ export default class ScorePanel {
             this._prevOpponentScore = newOpponentScore;
         }
 
-        const meneStr = `MENE ${e.mene}`;
+        const meneStr = I18n.t('ingame.mene', { n: e.mene });
         this._cMene.setText(meneStr);
         this.meneText.setText(meneStr);
 
