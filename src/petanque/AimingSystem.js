@@ -87,9 +87,18 @@ export default class AimingSystem {
         scene.input.on('pointermove', this.onPointerMove, this);
         scene.input.on('pointerup', this.onPointerUp, this);
 
-        // Escape to cancel
+        // Escape: if aiming (after style selection), go back to shot mode selector
+        // If in selector, cancel does nothing (already showing)
         scene.input.keyboard.on('keydown-ESC', () => {
-            this.cancel();
+            if (this.engine.aimingEnabled && this._modeUI.length === 0 &&
+                this.engine.state !== 'COCHONNET_THROW') {
+                this.cancel();
+                this._clearTargetHighlights();
+                this._clearTogglePanel();
+                this._showShotModeChoice();
+            } else {
+                this.cancel();
+            }
         });
 
         // Listen to state changes for cleanup
@@ -160,6 +169,40 @@ export default class AimingSystem {
         }
     }
 
+    // === SHOT MODE SELECTOR ===
+    // Onglets [P] POINTER / [T] TIRER + 3 styles par famille
+    // Logique petanque : le jeu lit l'etat du terrain pour suggerer la bonne famille
+    // Si aucune boule adverse → pointer uniquement (rien a tirer)
+
+    /** Style definitions per family — descriptions orientees effet joueur */
+    _getStyleDefs() {
+        return {
+            pointer: [
+                { loftObj: LOFT_PRESETS[0], label: 'Roulette',     color: 0x87CEEB, desc: 'Precis, roule loin',   mode: 'pointer' },
+                { loftObj: LOFT_PRESETS[1], label: 'Demi-portee',  color: 0x6B8E4E, desc: 'Polyvalent',           mode: 'pointer' },
+                { loftObj: LOFT_PRESETS[2], label: 'Plombee',      color: 0x9B7BB8, desc: "S'arrete net",         mode: 'pointer' },
+            ],
+            tirer: [
+                { loftObj: LOFT_RAFLE,      label: 'Rafle',        color: 0xC4854A, desc: 'Balaye au sol',        mode: 'tirer' },
+                { loftObj: LOFT_TIR,        label: 'Tir au Fer',   color: 0xC44B3F, desc: 'Carreau possible',     mode: 'tirer' },
+                { loftObj: LOFT_TIR_DEVANT, label: 'Tir Devant',   color: 0xAA8866, desc: 'Tolerant en distance', mode: 'tirer' },
+            ],
+        };
+    }
+
+    /** Read terrain state to decide which family to suggest */
+    _readTerrainState() {
+        const engine = this.engine;
+        const team = engine.currentTeam || 'player';
+        const otherTeam = team === 'player' ? 'opponent' : 'player';
+        const opponentBalls = engine.getTeamBallsAlive(otherTeam);
+        const hasTirTargets = opponentBalls.length > 0;
+        const myDist = engine._getMinDistance(team);
+        const theirDist = engine._getMinDistance(otherTeam);
+        const iHavePoint = myDist < theirDist;
+        return { hasTirTargets, iHavePoint, myDist, theirDist, opponentBalls };
+    }
+
     _showShotModeChoice() {
         this._clearModeUI();
         this._clearLoftUI();
@@ -168,191 +211,308 @@ export default class AimingSystem {
         this._targetCochonnet = false;
         this._lateralSpin = 0;
 
+        this._terrainState = this._readTerrainState();
+        this._styleSelected = 0;
+        this._styleContentUI = [];
+
+        // Smart default: suggest family based on game state
+        if (!this._terrainState.hasTirTargets) {
+            // No opponent balls on field → pointer is the only option
+            this._activeFamily = 'pointer';
+            this._tirerAvailable = false;
+        } else {
+            this._tirerAvailable = true;
+            // If player doesn't have the point, suggest tirer (but don't force)
+            if (!this._activeFamily) {
+                this._activeFamily = this._terrainState.iHavePoint ? 'pointer' : 'pointer';
+            }
+        }
+
+        this._buildTabbedPanel();
+    }
+
+    _buildTabbedPanel() {
+        // Destroy only style content (not frame/keyboard) if rebuilding for tab switch
+        this._destroyStyleContent();
+
         const cx = this.scene.scale.width / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
+        const panelW = 480, panelH = 98;
+        const panelTop = baseY - panelH / 2;
 
-        // Panneau 2 rangees : Pointer (haut) + Tirer (bas) — hauteur 96 pour accomoder labels 13px (C4)
-        const panelW = 520, panelH = 96;
-        const bg = this.scene.add.graphics().setDepth(95);
-        bg.fillStyle(0x3A2E28, 0.88);
-        bg.fillRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
-        bg.lineStyle(1, 0xD4A574, 0.35);
-        bg.strokeRoundedRect(cx - panelW / 2, baseY - panelH / 2, panelW, panelH, 6);
-        // Separateur horizontal entre les deux rangees
-        bg.lineStyle(1, 0xD4A574, 0.15);
-        bg.beginPath();
-        bg.moveTo(cx - panelW / 2 + 8, baseY);
-        bg.lineTo(cx + panelW / 2 - 8, baseY);
-        bg.strokePath();
-        this._modeUI.push(bg);
+        // === PANEL FRAME (only build once) ===
+        if (this._modeUI.length === 0) {
+            const bg = this.scene.add.graphics().setDepth(95);
+            bg.fillStyle(0x3A2E28, 0.90);
+            bg.fillRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
+            bg.lineStyle(1, 0xD4A574, 0.35);
+            bg.strokeRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
+            this._modeUI.push(bg);
 
-        // Label rangee Pointer
-        const lblPointer = this.scene.add.text(cx - panelW / 2 + 12, baseY - panelH / 2 + 10,
-            'POINTER', { fontFamily: 'monospace', fontSize: '8px', color: '#87CEEB' }
-        ).setDepth(97).setAlpha(0.6);
-        this._modeUI.push(lblPointer);
+            // Keyboard bindings (created once, destroyed in _clearModeUI)
+            this._key1 = this.scene.input.keyboard.addKey('ONE');
+            this._key2 = this.scene.input.keyboard.addKey('TWO');
+            this._key3 = this.scene.input.keyboard.addKey('THREE');
+            this._keyLeft = this.scene.input.keyboard.addKey('LEFT');
+            this._keyRight = this.scene.input.keyboard.addKey('RIGHT');
+            this._keySpace = this.scene.input.keyboard.addKey('SPACE');
+            // P = Pointer, T = Tirer — mnemoniques petanque naturelles
+            this._keyP = this.scene.input.keyboard.addKey('P');
+            this._keyT = this.scene.input.keyboard.addKey('T');
 
-        // Label rangee Tirer
-        const lblTirer = this.scene.add.text(cx - panelW / 2 + 12, baseY + 4,
-            'TIRER', { fontFamily: 'monospace', fontSize: '8px', color: '#C44B3F' }
-        ).setDepth(97).setAlpha(0.6);
-        this._modeUI.push(lblTirer);
+            // === FOCUS indicator ===
+            this._showFocusUI(cx, panelTop - 22);
+            // === UNIQUE ABILITY indicator ===
+            if (this._abilityDef && this._abilityCharges > 0) {
+                this._showAbilityUI(cx, panelTop - 42);
+            }
+        }
 
-        // Options 2 rangees
-        // Rangee 1 : Pointer (y = baseY - 21)
-        // Rangee 2 : Tirer  (y = baseY + 21)
-        const rowY1 = baseY - 21;
-        const rowY2 = baseY + 21;
-        const allOptions = [
-            // Pointer row
-            { label: '1', sublabel: 'Roulette',   desc: 'Roule au sol',         mode: 'pointer', loftObj: LOFT_PRESETS[0], color: 0x87CEEB, arcH: 0.08, oy: rowY1 },
-            { label: '2', sublabel: 'Demi',        desc: 'Arc moyen',            mode: 'pointer', loftObj: LOFT_PRESETS[1], color: 0x6B8E4E, arcH: 0.35, oy: rowY1 },
-            { label: '3', sublabel: 'Plombee',     desc: "Arc haut, s'arrête",   mode: 'pointer', loftObj: LOFT_PRESETS[2], color: 0x9B7BB8, arcH: 0.75, oy: rowY1 },
-            // Tirer row
-            { label: '4', sublabel: 'Rafle',       desc: 'Rase le sol, déplace', mode: 'tirer', loftObj: LOFT_RAFLE,       color: 0xC4854A, arcH: 0.03, oy: rowY2 },
-            { label: 'T', sublabel: 'Tir au Fer',  desc: 'Frappe directe',       mode: 'tirer', loftObj: LOFT_TIR,         color: 0xC44B3F, arcH: 0.55, oy: rowY2 },
-            { label: 'D', sublabel: 'Tir Devant',  desc: 'Rebond avant cible',   mode: 'tirer', loftObj: LOFT_TIR_DEVANT,  color: 0xAA8866, arcH: 0.42, oy: rowY2 },
+        // === TACTICAL HINT (who has the point?) ===
+        const hintY = panelTop + 5;
+        if (this._terrainState.hasTirTargets) {
+            const hintText = this._terrainState.iHavePoint
+                ? 'Vous avez le point'
+                : 'Adversaire au point';
+            const hintColor = this._terrainState.iHavePoint ? '#6B8E4E' : '#C44B3F';
+            const hint = this.scene.add.text(cx, hintY, hintText, {
+                fontFamily: 'monospace', fontSize: '9px', color: hintColor
+            }).setOrigin(0.5, 0).setDepth(97).setAlpha(0.6);
+            this._styleContentUI.push(hint);
+        }
+
+        // === TABS (P / T) ===
+        const tabY = hintY + 14;
+        const tabH = 20;
+        const tirerAvail = this._tirerAvailable;
+
+        const tabs = [
+            { key: 'pointer', label: '[P] POINTER', shortcut: 'P', color: 0x87CEEB, hexColor: '#87CEEB', available: true },
+            { key: 'tirer',   label: '[T] TIRER',   shortcut: 'T', color: 0xC44B3F, hexColor: '#C44B3F', available: tirerAvail },
         ];
-        const spacing = 150;
-        const startX = cx - spacing;
 
-        this._combinedBtns = [];
-        this._combinedGfx = [];
-        this._combinedSelected = 1; // default demi-portee
+        // Tab width adapts: if only pointer, wider centered tab
+        const tabCount = tirerAvail ? 2 : 1;
+        const tabW = tirerAvail ? 120 : 160;
+        const tabSpacing = tirerAvail ? 135 : 0;
 
-        for (let i = 0; i < allOptions.length; i++) {
-            const opt = allOptions[i];
-            const ox = startX + (i % 3) * spacing;
+        for (let i = 0; i < tabs.length; i++) {
+            const tab = tabs[i];
+            if (!tab.available) continue;
 
-            // Mini arc icon
-            const arcGfx = this.scene.add.graphics().setDepth(97);
-            this._drawMiniArc(arcGfx, ox, opt.oy - 10, opt.arcH, opt.color, false);
-            this._modeUI.push(arcGfx);
-            this._combinedGfx.push(arcGfx);
+            const tabX = tabCount === 1 ? cx : cx + (i === 0 ? -tabSpacing / 2 : tabSpacing / 2);
+            const isActive = tab.key === this._activeFamily;
+            const isRecommended = !this._terrainState.iHavePoint && tab.key === 'tirer';
 
-            // Label (C4 : 10 → 13px)
-            const label = this.scene.add.text(ox, opt.oy + 10, `[${opt.label}] ${opt.sublabel}`, {
-                fontFamily: 'monospace', fontSize: '13px',
-                color: '#' + opt.color.toString(16).padStart(6, '0'),
-                shadow: SHADOW
-            }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
-            this._modeUI.push(label);
+            // Tab background
+            const tabGfx = this.scene.add.graphics().setDepth(96);
+            if (isActive) {
+                tabGfx.fillStyle(tab.color, 0.22);
+                tabGfx.fillRoundedRect(tabX - tabW / 2, tabY, tabW, tabH, 4);
+                tabGfx.lineStyle(1.5, tab.color, 0.6);
+            } else {
+                tabGfx.lineStyle(1, 0xD4A574, 0.18);
+            }
+            tabGfx.strokeRoundedRect(tabX - tabW / 2, tabY, tabW, tabH, 4);
+            this._styleContentUI.push(tabGfx);
 
-            // Sous-description (C4 : 9px → 12px)
-            const subDesc = this.scene.add.text(ox, opt.oy + 24, opt.desc, {
-                fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E'
-            }).setOrigin(0.5).setDepth(97).setAlpha(0.7);
-            this._modeUI.push(subDesc);
+            // Tab label — recommended tab gets a subtle indicator
+            const labelStr = isRecommended && !isActive ? `${tab.label} \u25C0` : tab.label;
+            const tabLabel = this.scene.add.text(tabX, tabY + tabH / 2, labelStr, {
+                fontFamily: 'monospace', fontSize: '11px',
+                color: isActive ? tab.hexColor : (isRecommended ? '#AA7766' : '#6E6E5E'),
+                shadow: isActive ? SHADOW : undefined
+            }).setOrigin(0.5).setDepth(97);
+            this._styleContentUI.push(tabLabel);
 
-            // Hit zone — agrandie sur mobile pour respecter 44px min (WCAG)
-            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : spacing - 8;
-            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : 38;
-            const hitZone = this.scene.add.zone(ox, opt.oy, hitW, hitH)
+            // Tab hit zone
+            const tabHitW = IS_MOBILE ? TOUCH_BUTTON_SIZE * 2 : tabW + 12;
+            const tabHitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : tabH + 8;
+            const tabHit = this.scene.add.zone(tabX, tabY + tabH / 2, tabHitW, tabHitH)
                 .setDepth(98).setInteractive({ useHandCursor: true });
-            this._modeUI.push(hitZone);
-            this._combinedBtns.push({ hitZone, label, arcGfx, opt });
+            this._styleContentUI.push(tabHit);
+
+            tabHit.on('pointerdown', (pointer) => {
+                pointer.event.stopPropagation();
+                if (tab.key !== this._activeFamily) {
+                    sfxUIClick();
+                    this._switchFamily(tab.key);
+                }
+            });
+        }
+
+        // Separator below tabs
+        const sepGfx = this.scene.add.graphics().setDepth(96);
+        sepGfx.lineStyle(1, 0xD4A574, 0.12);
+        sepGfx.lineBetween(cx - panelW / 2 + 10, tabY + tabH + 3, cx + panelW / 2 - 10, tabY + tabH + 3);
+        this._styleContentUI.push(sepGfx);
+
+        // === STYLES (3 for active family) ===
+        const styleDefs = this._getStyleDefs();
+        const styles = styleDefs[this._activeFamily];
+        const styleBaseY = tabY + tabH + 12;
+        const spacing = 145;
+
+        this._styleBtns = [];
+        this._currentStyles = styles;
+
+        for (let i = 0; i < styles.length; i++) {
+            const s = styles[i];
+            const sx = cx + (i - 1) * spacing;
+            const selected = i === this._styleSelected;
+
+            // Enhanced arc preview (60px wide, shows flight + roll)
+            const arcGfx = this.scene.add.graphics().setDepth(97);
+            this._drawEnhancedArc(arcGfx, sx, styleBaseY + 6, s.loftObj, s.color, selected);
+            this._styleContentUI.push(arcGfx);
+
+            // Style label with keyboard hint
+            const label = this.scene.add.text(sx, styleBaseY + 28, `[${i + 1}] ${s.label}`, {
+                fontFamily: 'monospace', fontSize: '12px',
+                color: '#' + s.color.toString(16).padStart(6, '0'),
+                shadow: SHADOW
+            }).setOrigin(0.5).setDepth(97).setAlpha(selected ? 1 : 0.55);
+            this._styleContentUI.push(label);
+
+            // Short description (player-oriented: what it DOES for you)
+            const desc = this.scene.add.text(sx, styleBaseY + 42, s.desc, {
+                fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E'
+            }).setOrigin(0.5).setDepth(97).setAlpha(selected ? 0.75 : 0.4);
+            this._styleContentUI.push(desc);
+
+            // Hit zone (WCAG compliant on mobile)
+            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : spacing - 10;
+            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : 46;
+            const hitZone = this.scene.add.zone(sx, styleBaseY + 22, hitW, hitH)
+                .setDepth(98).setInteractive({ useHandCursor: true });
+            this._styleContentUI.push(hitZone);
+            this._styleBtns.push({ hitZone, label, desc, arcGfx, style: s });
 
             const idx = i;
             hitZone.on('pointerdown', (pointer) => {
                 pointer.event.stopPropagation();
-                this._selectCombined(idx);
+                this._selectStyle(idx);
             });
             hitZone.on('pointerover', () => {
-                this._combinedSelected = idx;
-                this._updateCombinedHighlight();
+                if (this._styleSelected !== idx) {
+                    this._styleSelected = idx;
+                    this._updateStyleHighlight();
+                }
             });
-        }
-
-        this._keyLeft = this.scene.input.keyboard.addKey('LEFT');
-        this._keyRight = this.scene.input.keyboard.addKey('RIGHT');
-        this._keySpace = this.scene.input.keyboard.addKey('SPACE');
-        this._key1 = this.scene.input.keyboard.addKey('ONE');
-        this._key2 = this.scene.input.keyboard.addKey('TWO');
-        this._key3 = this.scene.input.keyboard.addKey('THREE');
-        this._keyT = this.scene.input.keyboard.addKey('T');
-
-        // Touches tirer row
-        this._key4 = this.scene.input.keyboard.addKey('FOUR');
-        this._key5 = null; // T couvre Fer
-        this._key6 = this.scene.input.keyboard.addKey('D');
-
-        this._allOptions = allOptions;
-        this._updateCombinedHighlight();
-
-        // === FOCUS indicator ===
-        this._showFocusUI(cx, baseY - panelH / 2 - 22);
-
-        // === UNIQUE ABILITY indicator ===
-        if (this._abilityDef && this._abilityCharges > 0) {
-            this._showAbilityUI(cx, baseY - panelH / 2 - 42);
         }
     }
 
-    _drawMiniArc(gfx, cx, cy, arcHeight, color, selected) {
+    /** Draw arc preview using real landingFactor — shows flight curve + roll trail */
+    _drawEnhancedArc(gfx, cx, cy, loftObj, color, selected) {
         gfx.clear();
-        const w = 40, h = arcHeight * 20;
-        const alpha = selected ? 1 : 0.5;
+        const totalW = 60;
+        const startX = cx - totalW / 2;
+        const endX = cx + totalW / 2;
+        const lf = loftObj.landingFactor;
+        const landX = startX + lf * totalW;
+        // Arc height proportional to arcHeight param (clamped for very low arcs)
+        const h = Math.max(Math.abs(loftObj.arcHeight) * 0.35, 1.5);
+        const alpha = selected ? 1 : 0.35;
         const lineW = selected ? 2.5 : 1.5;
 
-        // Draw arc curve
-        gfx.lineStyle(lineW, color, alpha);
+        // Ground line
+        gfx.lineStyle(0.5, 0xD4A574, alpha * 0.15);
+        gfx.lineBetween(startX - 2, cy, endX + 2, cy);
+
+        // Launch boule (small dot)
+        gfx.fillStyle(0xF5E6D0, alpha * 0.5);
+        gfx.fillCircle(startX, cy, 1.5);
+
+        // Flight arc (curved path from start to landing point)
+        gfx.lineStyle(lineW, color, alpha * 0.9);
         gfx.beginPath();
-        const steps = 12;
+        const steps = 16;
         for (let s = 0; s <= steps; s++) {
             const t = s / steps;
-            const px = cx - w / 2 + t * w;
+            const px = startX + t * (landX - startX);
             const py = cy - Math.sin(t * Math.PI) * h;
             if (s === 0) gfx.moveTo(px, py);
             else gfx.lineTo(px, py);
         }
         gfx.strokePath();
 
-        // Landing dot
-        if (selected) {
-            gfx.fillStyle(color, 0.9);
-            gfx.fillCircle(cx + w / 2, cy, 2.5);
+        // Landing impact marker
+        if (loftObj.isTir && selected) {
+            // Impact lines (star burst) for tir styles
+            gfx.lineStyle(1.5, color, alpha * 0.8);
+            for (let i = 0; i < 4; i++) {
+                const a = -Math.PI / 2 + (i - 1.5) * 0.45;
+                gfx.lineBetween(
+                    landX + Math.cos(a) * 1.5, cy + Math.sin(a) * 1.5,
+                    landX + Math.cos(a) * 4, cy + Math.sin(a) * 4
+                );
+            }
+        } else {
+            gfx.fillStyle(color, alpha * 0.7);
+            gfx.fillCircle(landX, cy, selected ? 2.5 : 1.5);
         }
 
-        // Ground line
-        gfx.lineStyle(1, color, alpha * 0.3);
-        gfx.beginPath();
-        gfx.moveTo(cx - w / 2, cy);
-        gfx.lineTo(cx + w / 2, cy);
-        gfx.strokePath();
+        // Roll trail (dashed line from landing to end)
+        const rollLen = endX - landX;
+        if (rollLen > 4) {
+            gfx.lineStyle(lineW * 0.6, color, alpha * 0.35);
+            for (let x = landX + 3; x < endX - 1; x += 6) {
+                gfx.lineBetween(x, cy, Math.min(x + 3, endX - 1), cy);
+            }
+        }
+
+        // Final resting position (boule at end)
+        gfx.fillStyle(color, alpha * (selected ? 0.85 : 0.3));
+        gfx.fillCircle(endX, cy, selected ? 3 : 1.8);
     }
 
-    _updateCombinedHighlight() {
-        if (!this._combinedBtns) return;
-        for (let i = 0; i < this._combinedBtns.length; i++) {
-            const { label, arcGfx, opt } = this._combinedBtns[i];
-            const selected = i === this._combinedSelected;
-            label.setAlpha(selected ? 1 : 0.6);
-            label.setFontSize(selected ? '11px' : '10px');
-            this._drawMiniArc(arcGfx, label.x, label.y - 20, opt.arcH, opt.color, selected);
+    _switchFamily(family) {
+        this._activeFamily = family;
+        this._styleSelected = 0;
+        this._buildTabbedPanel();
+    }
+
+    _updateStyleHighlight() {
+        if (!this._styleBtns) return;
+        for (let i = 0; i < this._styleBtns.length; i++) {
+            const { label, desc, arcGfx, style } = this._styleBtns[i];
+            const selected = i === this._styleSelected;
+            label.setAlpha(selected ? 1 : 0.55);
+            desc.setAlpha(selected ? 0.75 : 0.4);
+            this._drawEnhancedArc(arcGfx, label.x, label.y - 22, style.loftObj, style.color, selected);
         }
     }
 
-    _selectCombined(index) {
+    _selectStyle(index) {
         sfxUIClick();
-        const opt = this._allOptions[index];
+        const style = this._currentStyles[index];
         this._clearModeUI();
 
         const effetStat = this.charStats.effet || 6;
         const spinAvail = effetStat >= LATERAL_SPIN_MIN_EFFET;
 
-        if (opt.mode === 'tirer') {
+        if (style.mode === 'tirer') {
             this.shotMode = 'tirer';
-            this.loftPreset = opt.loftObj;
+            this.loftPreset = style.loftObj;
             this._highlightOpponentBalls();
-            this._showTogglePanel({ retro: !!opt.loftObj.retroAllowed, cochonnet: true, spin: spinAvail });
-            this.engine._showMessage(`${opt.loftObj.label} - Visez une boule adverse !`);
+            this._showTogglePanel({ retro: !!style.loftObj.retroAllowed, cochonnet: true, spin: spinAvail });
+            this.engine._showMessage(`${style.loftObj.label} - Visez une boule adverse !`);
         } else {
             this.shotMode = 'pointer';
-            this.loftPreset = opt.loftObj;
+            this.loftPreset = style.loftObj;
             this._showTogglePanel({ retro: !!this.loftPreset.retroAllowed, cochonnet: false, spin: spinAvail });
             this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
         }
         this.engine.aimingEnabled = true;
+    }
+
+    _destroyStyleContent() {
+        if (this._styleContentUI) {
+            this._styleContentUI.forEach(e => e.destroy());
+            this._styleContentUI = [];
+        }
+        this._styleBtns = null;
+        this._currentStyles = null;
     }
 
     // === UNIFIED TOGGLE PANEL (Retro [R], Cochonnet [B], Spin [E]) ===
@@ -423,6 +583,24 @@ export default class AimingSystem {
         if (opts.retro) retroLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleRetro(); });
         if (opts.cochonnet) cochLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleCochonnet(); });
         if (opts.spin) spinLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleSpinLateral(); });
+
+        // === BACK BUTTON (return to style selector) ===
+        const backBtnY = H - AIMING_UI_BOTTOM_OFFSET;
+        const backBtn = this.scene.add.text(8, backBtnY - 12, '\u2190 [ESC]', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
+            shadow: SHADOW
+        }).setDepth(97).setAlpha(0.6).setInteractive({ useHandCursor: true });
+        backBtn.on('pointerover', () => backBtn.setAlpha(1));
+        backBtn.on('pointerout', () => backBtn.setAlpha(0.6));
+        backBtn.on('pointerdown', (p) => {
+            p.event.stopPropagation();
+            sfxUIClick();
+            this.cancel();
+            this._clearTargetHighlights();
+            this._clearTogglePanel();
+            this._showShotModeChoice();
+        });
+        this._togglePanelRows.push(backBtn);
     }
 
     _refreshTogglePanel() {
@@ -980,11 +1158,11 @@ export default class AimingSystem {
     }
 
     _clearModeUI() {
+        this._destroyStyleContent();
         this._modeUI.forEach(e => e.destroy());
         this._modeUI = [];
-        this._combinedBtns = null;
-        this._pointerBtn = null;
-        this._tirerBtn = null;
+        this._styleBtns = null;
+        this._terrainState = null;
         // Clean up keyboard listeners to prevent memory leak
         if (this._keyLeft) { this._keyLeft.destroy(); this._keyLeft = null; }
         if (this._keyRight) { this._keyRight.destroy(); this._keyRight = null; }
@@ -992,9 +1170,8 @@ export default class AimingSystem {
         if (this._key1) { this._key1.destroy(); this._key1 = null; }
         if (this._key2) { this._key2.destroy(); this._key2 = null; }
         if (this._key3) { this._key3.destroy(); this._key3 = null; }
+        if (this._keyP) { this._keyP.destroy(); this._keyP = null; }
         if (this._keyT) { this._keyT.destroy(); this._keyT = null; }
-        if (this._key4) { this._key4.destroy(); this._key4 = null; }
-        if (this._key6) { this._key6.destroy(); this._key6 = null; }
         // Also clean Focus/Ability/Cochonnet/Spin/Retro/TirDevant UI
         this._clearFocusUI();
         this._clearAbilityUI();
@@ -1224,50 +1401,50 @@ export default class AimingSystem {
     update() {
         // Safety: hide shot buttons if it's not a human player's turn
         const isHumanTurn = this.engine.currentTeam === 'player' || this.scene.localMultiplayer;
-        if (!isHumanTurn && this._combinedBtns) {
+        if (!isHumanTurn && this._styleBtns) {
             this._clearModeUI();
             this._clearLoftUI();
         }
 
-        // Handle keyboard for combined mode+loft selection (grille 2x3)
-        if (this._modeUI.length > 0 && this._combinedBtns) {
+        // Handle keyboard for tabbed style selection (onglets [P]/[T] + 3 styles)
+        if (this._modeUI.length > 0 && this._styleBtns) {
+            // P = Pointer, T = Tirer — mnemoniques petanque
+            if (this._keyP && Phaser.Input.Keyboard.JustDown(this._keyP)) {
+                if (this._activeFamily !== 'pointer') {
+                    sfxUIClick();
+                    this._switchFamily('pointer');
+                }
+                return;
+            }
+            if (this._keyT && this._tirerAvailable && Phaser.Input.Keyboard.JustDown(this._keyT)) {
+                if (this._activeFamily !== 'tirer') {
+                    sfxUIClick();
+                    this._switchFamily('tirer');
+                }
+                return;
+            }
+            // LEFT/RIGHT = navigate between styles
             if (this._keyLeft && Phaser.Input.Keyboard.JustDown(this._keyLeft)) {
-                // Navigation dans la rangee courante
-                const row = this._combinedSelected < 3 ? 0 : 1;
-                const col = this._combinedSelected % 3;
-                const newCol = Math.max(0, col - 1);
-                this._combinedSelected = row * 3 + newCol;
-                this._updateCombinedHighlight();
+                this._styleSelected = Math.max(0, this._styleSelected - 1);
+                this._updateStyleHighlight();
             }
             if (this._keyRight && Phaser.Input.Keyboard.JustDown(this._keyRight)) {
-                const row = this._combinedSelected < 3 ? 0 : 1;
-                const col = this._combinedSelected % 3;
-                const newCol = Math.min(2, col + 1);
-                this._combinedSelected = row * 3 + newCol;
-                this._updateCombinedHighlight();
+                this._styleSelected = Math.min(2, this._styleSelected + 1);
+                this._updateStyleHighlight();
             }
+            // SPACE = confirm selected style
             if (this._keySpace && Phaser.Input.Keyboard.JustDown(this._keySpace)) {
-                this._selectCombined(this._combinedSelected);
+                this._selectStyle(this._styleSelected);
             }
-            // Pointer row shortcuts
+            // 1/2/3 = direct style selection
             if (this._key1 && Phaser.Input.Keyboard.JustDown(this._key1)) {
-                this._selectCombined(0); return;
+                this._selectStyle(0); return;
             }
             if (this._key2 && Phaser.Input.Keyboard.JustDown(this._key2)) {
-                this._selectCombined(1); return;
+                this._selectStyle(1); return;
             }
             if (this._key3 && Phaser.Input.Keyboard.JustDown(this._key3)) {
-                this._selectCombined(2); return;
-            }
-            // Tirer row shortcuts
-            if (this._key4 && Phaser.Input.Keyboard.JustDown(this._key4)) {
-                this._selectCombined(3); return; // Rafle
-            }
-            if (this._keyT && Phaser.Input.Keyboard.JustDown(this._keyT)) {
-                this._selectCombined(4); return; // Tir au Fer
-            }
-            if (this._key6 && Phaser.Input.Keyboard.JustDown(this._key6)) {
-                this._selectCombined(5); return; // Tir Devant
+                this._selectStyle(2); return;
             }
             return;
         }

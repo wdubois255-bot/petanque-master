@@ -23,10 +23,17 @@ export function fadeToScene(scene, targetScene, data = {}, duration = 200) {
     if (cam._fadingOut) return;
     cam._fadingOut = true;
 
+    let transitioned = false;
+    const doTransition = () => {
+        if (transitioned) return;
+        transitioned = true;
+        scene.scene.start(targetScene, data);
+    };
+
     cam.fadeOut(duration, 0x1A, 0x15, 0x10);
-    cam.once('camerafadeoutcomplete', () => {
-        if (scene.scene.isActive()) {
-            scene.scene.start(targetScene, data);
-        }
-    });
+    cam.once('camerafadeoutcomplete', doTransition);
+
+    // Safety: force transition if camerafadeoutcomplete never fires
+    // (Phaser 4 RC6 race condition, camera FX already active, etc.)
+    scene.time.delayedCall(duration + 500, doTransition);
 }
