@@ -183,7 +183,7 @@
 - [ ] **AXE C** : Cleanup code (console.log, dead code, init() reset manquants)
 - [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
 - [ ] **AXE E** : Audio (SFX spin, rafle, cochonnet)
-- [ ] **AXE F** : Mobile (touch fallback TAB, keybindings E/B sur ecran)
+- [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
 
 ### 3.1 Sprite Rookie
 - [ ] Sprite de base via PixelLab (128x128, 4 directions, animations)

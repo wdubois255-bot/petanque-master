@@ -463,3 +463,10 @@ export const DIALOG_BOX_HEIGHT = 110;
 // AimingSystem UI positioning
 export const AIMING_UI_BOTTOM_OFFSET = 52;
 export const FOCUS_UI_STACK_OFFSET = 50; // 28 + 22 = espace au-dessus du mode UI
+
+// Mobile detection & touch UX
+export const IS_MOBILE = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+export const TOUCH_BUTTON_SIZE = 56;  // Zone tap minimale WCAG (px)
+export const TOUCH_PADDING = 8;       // Padding invisible autour des boutons interactifs (px)
+export const DUST_MAX_SIMULTANEOUS_DESKTOP = 5;  // Limite groupes dust simultanés (desktop)
+export const DUST_MAX_SIMULTANEOUS_MOBILE = 4;   // Limite groupes dust simultanés (mobile)

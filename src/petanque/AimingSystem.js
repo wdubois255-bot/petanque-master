@@ -4,7 +4,8 @@ import {
     LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT, LOFT_RAFLE,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
-    LATERAL_SPIN_MIN_EFFET
+    LATERAL_SPIN_MIN_EFFET,
+    IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
@@ -232,8 +233,10 @@ export default class AimingSystem {
             }).setOrigin(0.5).setDepth(97).setAlpha(0.85);
             this._modeUI.push(label);
 
-            // Hit zone
-            const hitZone = this.scene.add.zone(ox, opt.oy, spacing - 8, 38)
+            // Hit zone — agrandie sur mobile pour respecter 44px min (WCAG)
+            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : spacing - 8;
+            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : 38;
+            const hitZone = this.scene.add.zone(ox, opt.oy, hitW, hitH)
                 .setDepth(98).setInteractive({ useHandCursor: true });
             this._modeUI.push(hitZone);
             this._combinedBtns.push({ hitZone, label, arcGfx, opt });
@@ -989,20 +992,42 @@ export default class AimingSystem {
         if (!this.engine.aimingEnabled) return;
         if (this._modeUI.length > 0 || this._loftUI.length > 0) return;
 
-        this.isDragging = true;
-        this.startX = pointer.x;
-        this.startY = pointer.y;
-        this.currentX = pointer.x;
-        this.currentY = pointer.y;
+        if (IS_MOBILE) {
+            // Sur mobile : attendre 5px de mouvement avant de confirmer le drag
+            // Evite les faux triggers dus aux micro-dérives du doigt au toucher
+            this._dragPendingX = pointer.x;
+            this._dragPendingY = pointer.y;
+            this._dragPending = true;
+        } else {
+            this.isDragging = true;
+            this.startX = pointer.x;
+            this.startY = pointer.y;
+            this.currentX = pointer.x;
+            this.currentY = pointer.y;
+        }
     }
 
     onPointerMove(pointer) {
+        if (IS_MOBILE && this._dragPending) {
+            const ddx = pointer.x - this._dragPendingX;
+            const ddy = pointer.y - this._dragPendingY;
+            if (Math.sqrt(ddx * ddx + ddy * ddy) >= 5) {
+                // Seuil atteint : confirmer le drag depuis le point d'origine
+                this.isDragging = true;
+                this.startX = this._dragPendingX;
+                this.startY = this._dragPendingY;
+                this.currentX = pointer.x;
+                this.currentY = pointer.y;
+                this._dragPending = false;
+            }
+        }
         if (!this.isDragging) return;
         this.currentX = pointer.x;
         this.currentY = pointer.y;
     }
 
     onPointerUp() {
+        this._dragPending = false;
         if (!this.isDragging) return;
         this.isDragging = false;
         this.arrowGfx.clear();
@@ -1359,8 +1384,10 @@ export default class AimingSystem {
         }
 
         // Show landing marker (cross) — oscillates with precision wobble
+        // Sur mobile : cercle +20% pour meilleure lisibilite (5 → 6)
+        const markerRadius = IS_MOBILE ? 6 : 5;
         this._predictionGfx.lineStyle(1.5, color, 0.6);
-        this._predictionGfx.strokeCircle(wobX, wobY, 5);
+        this._predictionGfx.strokeCircle(wobX, wobY, markerRadius);
         this._predictionGfx.beginPath();
         this._predictionGfx.moveTo(wobX - 4, wobY);
         this._predictionGfx.lineTo(wobX + 4, wobY);

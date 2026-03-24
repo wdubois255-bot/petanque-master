@@ -1,4 +1,4 @@
-import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY } from '../utils/Constants.js';
+import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY, IS_MOBILE, DUST_MAX_SIMULTANEOUS_DESKTOP, DUST_MAX_SIMULTANEOUS_MOBILE } from '../utils/Constants.js';
 
 /**
  * EngineRenderer — handles ALL visual effects for PetanqueEngine.
@@ -29,6 +29,39 @@ export default class EngineRenderer {
 
         // Aim hint
         this._aimHintShown = false;
+
+        // Graphics pool — réutilise les objets Graphics au lieu de créer/détruire
+        // Limite les allocations GC sur mobile (et desktop)
+        this._pool = [];
+        this._poolMax = 10;
+
+        // Compteur de groupes dust simultanés (limité selon plateforme)
+        this._activeDustGroups = 0;
+        this._dustMaxGroups = IS_MOBILE ? DUST_MAX_SIMULTANEOUS_MOBILE : DUST_MAX_SIMULTANEOUS_DESKTOP;
+    }
+
+    // ================================================================
+    // GRAPHICS POOL
+    // ================================================================
+
+    _getPooledGraphics() {
+        if (this._pool.length > 0) {
+            const g = this._pool.pop();
+            g.setVisible(true);
+            return g;
+        }
+        return this.scene.add.graphics();
+    }
+
+    _returnToPool(g) {
+        if (!g || !g.active) return;
+        g.clear();
+        g.setVisible(false);
+        if (this._pool.length < this._poolMax) {
+            this._pool.push(g);
+        } else {
+            g.destroy();
+        }
     }
 
     // ================================================================
@@ -82,6 +115,10 @@ export default class EngineRenderer {
     // ================================================================
 
     spawnDust(x, y, count = 6, terrainType = 'terre') {
+        // Limiter les groupes simultanés pour maintenir 60 FPS (5 desktop, 4 mobile)
+        if (this._activeDustGroups >= this._dustMaxGroups) return;
+        this._activeDustGroups++;
+
         const terrainColors = {
             terre: [0xC4854A, 0xA87040, 0xD4955A],
             herbe: [0x6B8E4E, 0x5E8A44, 0x7BA65E],
@@ -90,13 +127,15 @@ export default class EngineRenderer {
         };
         const colors = terrainColors[terrainType] || terrainColors.terre;
 
+        let remaining = count;
+
         for (let i = 0; i < count; i++) {
             const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
             const dist = 8 + Math.random() * 16;
             const color = colors[Math.floor(Math.random() * colors.length)];
             const size = 2 + Math.random() * 3;
 
-            const p = this.scene.add.graphics().setDepth(8);
+            const p = this._getPooledGraphics().setDepth(8);
             p.fillStyle(color, 0.7);
             p.fillCircle(0, 0, size);
             p.setPosition(x, y);
@@ -108,7 +147,11 @@ export default class EngineRenderer {
                 alpha: 0,
                 duration: 300 + Math.random() * 200,
                 ease: 'Quad.easeOut',
-                onComplete: () => p.destroy()
+                onComplete: () => {
+                    this._returnToPool(p);
+                    remaining--;
+                    if (remaining <= 0) this._activeDustGroups--;
+                }
             });
         }
     }
@@ -122,7 +165,7 @@ export default class EngineRenderer {
         for (let i = 0; i < 5; i++) {
             const angle = Math.random() * Math.PI * 2;
             const dist = 6 + Math.random() * 12;
-            const spark = this.scene.add.graphics().setDepth(55);
+            const spark = this._getPooledGraphics().setDepth(55);
             spark.fillStyle(0xFFFFFF, 0.8);
             spark.fillCircle(0, 0, 1.5);
             spark.setPosition(x, y);
@@ -132,7 +175,7 @@ export default class EngineRenderer {
                 x: x + Math.cos(angle) * dist,
                 y: y + Math.sin(angle) * dist,
                 alpha: 0, duration: 200,
-                onComplete: () => spark.destroy()
+                onComplete: () => this._returnToPool(spark)
             });
         }
     }
@@ -165,14 +208,14 @@ export default class EngineRenderer {
             : terrainType === 'dalles' ? 0x9E9E8E
             : 0xC4854A;
 
-        const p = this.scene.add.graphics().setDepth(3);
+        const p = this._getPooledGraphics().setDepth(3);
         p.fillStyle(color, 0.3);
         p.fillCircle(0, 0, 2);
         p.setPosition(ball.x, ball.y);
 
         this.scene.tweens.add({
             targets: p, alpha: 0, duration: 400,
-            onComplete: () => p.destroy()
+            onComplete: () => this._returnToPool(p)
         });
     }
 
@@ -446,5 +489,12 @@ export default class EngineRenderer {
         }
         if (this._bestGfx) { this._bestGfx.destroy(); this._bestGfx = null; }
         if (this._msgText) { this._msgText.destroy(); this._msgText = null; }
+
+        // Vider le pool de Graphics
+        for (const g of this._pool) {
+            if (g && g.active) g.destroy();
+        }
+        this._pool = [];
+        this._activeDustGroups = 0;
     }
 }

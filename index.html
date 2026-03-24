@@ -37,11 +37,50 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
         #game-container {
             display: flex;
             justify-content: center;
             align-items: center;
+            touch-action: none;
+        }
+        /* Anti-selection globale (requis CrazyGames/Poki) */
+        * {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* Message rotation portrait → paysage */
+        #portrait-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #1A1510;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+        #portrait-overlay svg {
+            animation: rotate-hint 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes rotate-hint {
+            from { transform: rotate(-15deg); }
+            to   { transform: rotate(15deg); }
+        }
+        #portrait-overlay p {
+            font-family: 'PressStart2P', monospace;
+            font-size: 11px;
+            color: #D4A574;
+            text-align: center;
+            line-height: 1.8;
+            padding: 0 24px;
+        }
+        @media (orientation: portrait) {
+            #portrait-overlay { display: flex; }
         }
         /* Preload pixel font to avoid FOUT */
         .font-preload {
@@ -54,6 +93,19 @@
 </head>
 <body>
     <span class="font-preload">.</span>
+
+    <!-- Message rotation portrait (visible uniquement en @media portrait sur mobile) -->
+    <div id="portrait-overlay" aria-hidden="true">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="8" width="28" height="48" rx="4" stroke="#D4A574" stroke-width="3" fill="none"/>
+            <line x1="18" y1="50" x2="46" y2="50" stroke="#D4A574" stroke-width="2"/>
+            <path d="M8 32 L4 28 M8 32 L4 36" stroke="#C4854A" stroke-width="2" stroke-linecap="round"/>
+            <path d="M56 32 L60 28 M56 32 L60 36" stroke="#C4854A" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 32 Q32 20 54 32" stroke="#C4854A" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+        </svg>
+        <p>Tournez votre ecran<br>en mode paysage<br>pour jouer !</p>
+    </div>
+
     <div id="game-container"></div>
     <script type="module" src="/src/main.js"></script>
 </body>
