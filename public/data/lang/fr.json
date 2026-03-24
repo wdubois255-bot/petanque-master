@@ -1,0 +1,132 @@
+{
+  "boot": {
+    "title": "PETANQUE MASTER",
+    "loading": "Chargement...",
+    "loading_pct": "Chargement... {pct}%",
+    "ready": "Pret !",
+    "save_failed": "Sauvegarde echouee !",
+    "tips": [
+      "Maintenez TAB pour voir le classement des boules.",
+      "La plombee arrete la boule net. Ideal pres du cochonnet !",
+      "Chaque personnage a des stats uniques.",
+      "Le tir deplace les boules adverses, mais demande de la precision.",
+      "Sous pression (10-10+), la visee tremble !",
+      "La roulette roule plus loin mais est plus previsible.",
+      "Le Tournoi des Quatre : 3 matchs, 4 legendes du boulodrome.",
+      "Un carreau, c'est quand votre boule prend exactement la place de l'autre.",
+      "La petanque est nee a La Ciotat en 1907. \"Pied tanque\" : jouer les pieds ancres au sol.",
+      "Le Fanny : perdre 13-0 sans marquer un seul point. La tradition est impitoyable.",
+      "Sur le sable, les boules s'arretent vite. Forcez un peu plus votre lancer !",
+      "Les murs des Docks renvoient les boules. Attention aux rebonds inattendus !",
+      "La Colline penche. Compensez vos lancers vers le haut pour rester dans l'axe.",
+      "Les meilleurs pointeurs visent souvent une marque au sol, pas le cochonnet lui-meme.",
+      "Chaque terrain a sa propre musique d'ambiance. Ecoutez le boulodrome vivre.",
+      "Un tir au fer bien execute peut realiser un carreau : la boule prend la place exacte de l'adverse."
+    ]
+  },
+  "title": {
+    "subtitle": "Le meilleur bouliste du canton, c'est vous !",
+    "press_start": "APPUYEZ SUR ESPACE",
+    "menu": {
+      "play": "JOUER",
+      "arcade": "MODE ARCADE",
+      "quickplay": "PARTIE RAPIDE",
+      "character": "MON PERSO",
+      "shop": "BOUTIQUE",
+      "settings": "PARAMETRES"
+    },
+    "controls": "FLECHES Naviguer   ESPACE Confirmer",
+    "saves": "SAUVEGARDES",
+    "back": "< RETOUR",
+    "slot": "Slot {n}: {badges} badges - {time}",
+    "slot_empty": "Slot {n}: ---",
+    "settings": {
+      "sound": "Son",
+      "music": "Musique",
+      "sfx": "Effets",
+      "tutorial": "Tutoriel",
+      "close": "Fermer"
+    }
+  },
+  "charselect": {
+    "title": "CHOIX DU PERSONNAGE",
+    "controls": "FLECHES Naviguer   ESPACE Confirmer",
+    "stats": { "prec": "PREC", "puis": "PUIS", "efft": "EFFT", "sfr": "S-FR" },
+    "abilities_title": "CAPACITES",
+    "locked": "???"
+  },
+  "tutorial": {
+    "aim": "Glissez vers le bas pour viser, relâchez pour lancer !",
+    "aim_sub": "Plus vous tirez loin, plus la boule ira vite.",
+    "loft_title": "Choisissez votre trajectoire :",
+    "modes": {
+      "roulette": "Roulette",
+      "demi": "Demi",
+      "plombee": "Plombée",
+      "tir": "Tir"
+    },
+    "score_title": "🎯  Fin de mène !",
+    "score_main": "Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !",
+    "score_sub": "Premier à 13 points gagne la partie.",
+    "understood": "Compris !",
+    "turn_rule": "L'équipe la plus éloignée du cochonnet rejoue toujours.",
+    "turn_rule_sub": "Vous menez ? C'est à l'adversaire !"
+  },
+  "result": {
+    "victory": "VICTOIRE !",
+    "defeat": "DEFAITE...",
+    "stats": { "menes": "Menes", "carreaux": "Carreaux" },
+    "galets": "+{amount} Galets"
+  },
+  "ingame": {
+    "aim_hint": "Glissez vers le bas pour viser, relâchez pour lancer !",
+    "score": "SCORE",
+    "you": "VOUS",
+    "opponent": "ADV.",
+    "mene": "MENE {n}",
+    "tab_hint": "[TAB] Détail score",
+    "pause": "PAUSE"
+  },
+  "shop": {
+    "buy": "ACHETER",
+    "owned": "✓ POSSEDE",
+    "equip": "EQUIPER",
+    "insufficient": "Galets insuffisants",
+    "confirm": "Acheter {name} pour {price} Galets ?",
+    "yes": "OUI",
+    "no": "NON"
+  },
+  "levelup": {
+    "title": "NIVEAU SUPERIEUR !",
+    "points_remaining": "Points disponibles: {n}",
+    "confirm": "CONFIRMER",
+    "tooltips": {
+      "precision": "Réduit la zone de dispersion au lâcher",
+      "puissance": "Force max du tir et portée",
+      "effet": "Contrôle du spin et des courbes",
+      "sang_froid": "Stabilité de la visée sous pression"
+    }
+  },
+  "loft": {
+    "roulette": "Roulette",
+    "demi": "Demi",
+    "plombee": "Plombée",
+    "rafle": "Rafle",
+    "tir": "Tir au Fer",
+    "tir_devant": "Tir Devant",
+    "desc": {
+      "roulette": "Roule au sol",
+      "demi": "Arc moyen",
+      "plombee": "Arc haut, s'arrête net",
+      "rafle": "Rase le sol, déplace",
+      "tir": "Frappe directe",
+      "tir_devant": "Rebond avant cible"
+    }
+  },
+  "terrain_hints": {
+    "colline": "⛰️ Attention : ce terrain penche ! Les boules roulent vers le bas.",
+    "docks": "🧱 Les bords métalliques renvoient les boules. Utilisez les rebonds !",
+    "plage": "🏖️ Le sable freine fort. Lancez plus puissamment !",
+    "parc": "🌿 Zones mixtes : herbe (lent) et gravier (rapide). Visez stratégiquement."
+  }
+}

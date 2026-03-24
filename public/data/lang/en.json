@@ -1,0 +1,132 @@
+{
+  "boot": {
+    "title": "PETANQUE MASTER",
+    "loading": "Loading...",
+    "loading_pct": "Loading... {pct}%",
+    "ready": "Ready!",
+    "save_failed": "Save failed!",
+    "tips": [
+      "Hold TAB to see the ball ranking.",
+      "The Lob stops the ball dead. Perfect near the Jack!",
+      "Each character has unique stats.",
+      "The Iron Shot moves opponent balls, but requires precision.",
+      "Under pressure (10-10+), your aim trembles!",
+      "Rolling keeps rolling further but is more predictable.",
+      "The Tournament of Four: 3 matches, 4 legends of the court.",
+      "A Carreau is when your ball lands exactly where the other one was.",
+      "Pétanque was born in La Ciotat in 1907. \"Pieds tanqués\": play with feet anchored to the ground.",
+      "The Fanny: losing 13-0 without scoring a single point. Tradition is merciless.",
+      "On sand, balls stop quickly. Put a bit more power into your throw!",
+      "The Docks walls bounce balls back. Watch out for unexpected rebounds!",
+      "The Hill slopes. Compensate your throws upward to stay on target.",
+      "The best pointers often aim at a mark on the ground, not the Jack itself.",
+      "Each court has its own ambient soundtrack. Listen to the court come alive.",
+      "A well-executed Iron Shot can achieve a Carreau: the ball takes the exact place of the opponent's."
+    ]
+  },
+  "title": {
+    "subtitle": "The best bowler in the district — that's you!",
+    "press_start": "PRESS SPACE",
+    "menu": {
+      "play": "PLAY",
+      "arcade": "ARCADE MODE",
+      "quickplay": "QUICK GAME",
+      "character": "MY CHARACTER",
+      "shop": "SHOP",
+      "settings": "SETTINGS"
+    },
+    "controls": "ARROWS Navigate   SPACE Confirm",
+    "saves": "SAVE SLOTS",
+    "back": "< BACK",
+    "slot": "Slot {n}: {badges} badges - {time}",
+    "slot_empty": "Slot {n}: ---",
+    "settings": {
+      "sound": "Sound",
+      "music": "Music",
+      "sfx": "Effects",
+      "tutorial": "Tutorial",
+      "close": "Close"
+    }
+  },
+  "charselect": {
+    "title": "CHARACTER SELECT",
+    "controls": "ARROWS Navigate   SPACE Confirm",
+    "stats": { "prec": "PREC", "puis": "POWR", "efft": "SPIN", "sfr": "COMP" },
+    "abilities_title": "ABILITIES",
+    "locked": "???"
+  },
+  "tutorial": {
+    "aim": "Swipe down to aim, release to throw!",
+    "aim_sub": "The further you pull, the faster the ball goes.",
+    "loft_title": "Choose your trajectory:",
+    "modes": {
+      "roulette": "Rolling",
+      "demi": "Half-Lob",
+      "plombee": "Lob",
+      "tir": "Iron Shot"
+    },
+    "score_title": "🎯  End of End!",
+    "score_main": "Every ball closer to the Jack\nthan the opponent's best = 1 point!",
+    "score_sub": "First to 13 points wins the game.",
+    "understood": "Got it!",
+    "turn_rule": "The team furthest from the Jack always plays next.",
+    "turn_rule_sub": "You're winning? It's the opponent's turn!"
+  },
+  "result": {
+    "victory": "VICTORY!",
+    "defeat": "DEFEAT...",
+    "stats": { "menes": "Ends", "carreaux": "Carreaux" },
+    "galets": "+{amount} Galets"
+  },
+  "ingame": {
+    "aim_hint": "Swipe down to aim, release to throw!",
+    "score": "SCORE",
+    "you": "YOU",
+    "opponent": "OPP.",
+    "mene": "END {n}",
+    "tab_hint": "[TAB] Score detail",
+    "pause": "PAUSE"
+  },
+  "shop": {
+    "buy": "BUY",
+    "owned": "✓ OWNED",
+    "equip": "EQUIP",
+    "insufficient": "Not enough Galets",
+    "confirm": "Buy {name} for {price} Galets?",
+    "yes": "YES",
+    "no": "NO"
+  },
+  "levelup": {
+    "title": "LEVEL UP!",
+    "points_remaining": "Available points: {n}",
+    "confirm": "CONFIRM",
+    "tooltips": {
+      "precision": "Reduces scatter zone on release",
+      "puissance": "Max throw force and range",
+      "effet": "Spin and curve control",
+      "sang_froid": "Aim stability under pressure"
+    }
+  },
+  "loft": {
+    "roulette": "Rolling",
+    "demi": "Half-Lob",
+    "plombee": "Lob",
+    "rafle": "Skim Shot",
+    "tir": "Iron Shot",
+    "tir_devant": "Front Shot",
+    "desc": {
+      "roulette": "Rolls along the ground",
+      "demi": "Medium arc",
+      "plombee": "High arc, stops dead",
+      "rafle": "Skims the ground, displaces",
+      "tir": "Direct strike",
+      "tir_devant": "Bounces in front of target"
+    }
+  },
+  "terrain_hints": {
+    "colline": "⛰️ Watch out: this court slopes! Balls roll downhill.",
+    "docks": "🧱 Metal edges bounce balls back. Use the rebounds!",
+    "plage": "🏖️ Sand slows balls quickly. Throw with more power!",
+    "parc": "🌿 Mixed zones: grass (slow) and gravel (fast). Aim strategically."
+  }
+}
