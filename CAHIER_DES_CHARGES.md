@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.7 — 24 mars 2026 (AXE B Phase 3 : 8 resultats de tir, SFX proceduraux, barks)
+> Version 2.8 — 24 mars 2026 (Phase 3 AXE A+B+E+F termines : tirs, feedback, audio enrichi, mobile)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -174,7 +174,7 @@
 ## 3. RESTE A IMPLEMENTER
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
-> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE C-F en attente)
+> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE E ✅, AXE F ✅ — AXE C+D restants)
 > Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
@@ -182,7 +182,7 @@
 - [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
 - [ ] **AXE C** : Cleanup code (console.log, dead code, init() reset manquants)
 - [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
-- [ ] **AXE E** : Audio (SFX spin, rafle, cochonnet)
+- [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions, Commentator.js 55 phrases)
 - [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
 
 ### 3.1 Sprite Rookie
