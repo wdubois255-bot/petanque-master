@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.6 — 24 mars 2026 (AXE A Phase 3 : rafle, spin lateral, ciblage cochonnet, UI 2 rangees)
+> Version 2.7 — 24 mars 2026 (AXE B Phase 3 : 8 resultats de tir, SFX proceduraux, barks)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -174,12 +174,12 @@
 ## 3. RESTE A IMPLEMENTER
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
-> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B-F en attente)
+> En cours : `docs/PLAN_PHASE3.md` (AXE A ✅, AXE B ✅, AXE C-F en attente)
 > Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
 - [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
-- [ ] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
+- [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
 - [ ] **AXE C** : Cleanup code (console.log, dead code, init() reset manquants)
 - [ ] **AXE D** : Tests complementaires (E2E, edge cases physique)
 - [ ] **AXE E** : Audio (SFX spin, rafle, cochonnet)
