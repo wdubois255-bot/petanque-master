@@ -94,7 +94,7 @@ export default class EngineRenderer {
 
         const hint = this.scene.add.text(
             this.scene.scale.width / 2, this.scene.scale.height - 28,
-            'Glissez et relachez pour viser',
+            'Glissez vers le bas pour viser, relâchez pour lancer !',
             {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
                 align: 'center', backgroundColor: '#3A2E28',

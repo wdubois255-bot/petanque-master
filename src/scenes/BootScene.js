@@ -14,6 +14,14 @@ const TIPS = [
     'La roulette roule plus loin mais est plus previsible.',
     'Le Tournoi des Quatre : 3 matchs, 4 legendes du boulodrome.',
     'Un carreau, c\'est quand votre boule prend exactement la place de l\'autre.',
+    'La petanque est nee a La Ciotat en 1907. "Pied tanque" : jouer les pieds ancres au sol.',
+    'Le Fanny : perdre 13-0 sans marquer un seul point. La tradition est impitoyable.',
+    'Sur le sable, les boules s\'arretent vite. Forcez un peu plus votre lancer !',
+    'Les murs des Docks renvoient les boules. Attention aux rebonds inattendus !',
+    'La Colline penche. Compensez vos lancers vers le haut pour rester dans l\'axe.',
+    'Les meilleurs pointeurs visent souvent une marque au sol, pas le cochonnet lui-meme.',
+    'Chaque terrain a sa propre musique d\'ambiance. Ecoutez le boulodrome vivre.',
+    'Un tir au fer bien execute peut realiser un carreau : la boule prend la place exacte de l\'adverse.',
 ];
 
 export default class BootScene extends Phaser.Scene {

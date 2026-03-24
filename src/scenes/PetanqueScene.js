@@ -142,13 +142,19 @@ export default class PetanqueScene extends Phaser.Scene {
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);
 
-        // VS label
+        // VS label (fade out after 5s)
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
-        this.add.text(
+        const vsLabel = this.add.text(
             GAME_WIDTH / 2, this.terrainY - 12,
             `VS ${this.opponentName}`,
             { fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center', shadow }
         ).setOrigin(0.5, 1).setDepth(5);
+        this.time.delayedCall(5000, () => {
+            this.tweens.add({
+                targets: vsLabel, alpha: 0, duration: 1000, ease: 'Sine.easeIn',
+                onComplete: () => { if (vsLabel.active) vsLabel.destroy(); }
+            });
+        });
 
         // Impact traces layer
         this.impactLayer = this.add.renderTexture(
