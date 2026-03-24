@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_
 import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -238,6 +239,9 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
+        // === PROCHAIN OBJECTIF (teaser unlock) ===
+        this._showNextUnlockTeaser(isRookie);
+
         // === ACTION BUTTONS ===
         const btnY = 310;
 
@@ -256,7 +260,7 @@ export default class ResultScene extends Phaser.Scene {
                 backgroundColor: '#3A2E28', padding: { x: 14, y: 6 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-            menuBtn.on('pointerdown', () => this.scene.start('TitleScene'));
+            menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         } else {
             // Quick Play / other modes
             const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, '[ REJOUER ]', {
@@ -271,7 +275,7 @@ export default class ResultScene extends Phaser.Scene {
                 backgroundColor: '#3A2E28', padding: { x: 14, y: 8 }, shadow: SHADOW
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-            menuBtn.on('pointerdown', () => this.scene.start('TitleScene'));
+            menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         }
 
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, 'Espace Continuer     Echap Menu', {
@@ -537,7 +541,7 @@ export default class ResultScene extends Phaser.Scene {
             if (this.arcadeState) {
                 this._returnToArcade();
             } else {
-                this.scene.start('TitleScene');
+                fadeToScene(this, 'TitleScene');
             }
         });
     }
@@ -799,7 +803,7 @@ export default class ResultScene extends Phaser.Scene {
         if (this.arcadeState) {
             if (isRookie && xpEarned > 0) {
                 const save = loadSave();
-                this.scene.start('LevelUpScene', {
+                fadeToScene(this, 'LevelUpScene', {
                     pointsToDistribute: xpEarned,
                     currentStats: save.rookie.stats,
                     totalPoints: save.rookie.totalPoints,
@@ -814,7 +818,7 @@ export default class ResultScene extends Phaser.Scene {
                     }
                 });
             } else {
-                this.scene.start('ArcadeScene', {
+                fadeToScene(this, 'ArcadeScene', {
                     playerCharacter: this.arcadeState.playerCharacter,
                     currentRound: this.arcadeState.currentRound,
                     wins: this.arcadeState.wins,
@@ -829,7 +833,7 @@ export default class ResultScene extends Phaser.Scene {
         // === QUICK PLAY / OTHER: return to returnScene (with optional LevelUp) ===
         if (isRookie && xpEarned > 0) {
             const save = loadSave();
-            this.scene.start('LevelUpScene', {
+            fadeToScene(this, 'LevelUpScene', {
                 pointsToDistribute: xpEarned,
                 currentStats: save.rookie.stats,
                 totalPoints: save.rookie.totalPoints,
@@ -837,11 +841,62 @@ export default class ResultScene extends Phaser.Scene {
                 returnData: {}
             });
         } else {
-            this.scene.start(this.returnScene || 'TitleScene');
+            fadeToScene(this, this.returnScene || 'TitleScene');
         }
     }
 
     _getSpriteKey(char) {
         return getCharSpriteKey(char);
+    }
+
+    // === PROCHAIN OBJECTIF : teaser galets + rookie ability ===
+    _showNextUnlockTeaser(isRookie) {
+        const save = loadSave();
+        const teaserY = GAME_HEIGHT - 44;
+        const cx = GAME_WIDTH / 2;
+        const SHADOW_SM = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
+
+        // --- Galets teaser ---
+        const shopData = this.cache.json.get('shop');
+        if (shopData) {
+            const allItems = shopData.categories.flatMap(c => c.items).filter(i => i.price > 0);
+            const purchases = save.purchases || [];
+            const unpurchased = allItems.filter(i => !purchases.includes(i.id) && save.galets < i.price);
+            unpurchased.sort((a, b) => a.price - b.price);
+            const next = unpurchased[0];
+            if (next) {
+                const diff = next.price - save.galets;
+                const galetTxt = this.add.text(cx, teaserY,
+                    `Encore ${diff} Galets pour ${next.name} !`, {
+                        fontFamily: 'monospace', fontSize: '11px',
+                        color: '#D4A574', shadow: SHADOW_SM
+                    }
+                ).setOrigin(0.5).setAlpha(0);
+                this.tweens.add({ targets: galetTxt, alpha: 1, duration: 400, delay: 1200 });
+            }
+        }
+
+        // --- Rookie XP teaser ---
+        if (isRookie) {
+            const charsData = this.cache.json.get('characters');
+            const rookieDef = charsData?.roster?.find(r => r.id === 'rookie');
+            if (rookieDef?.abilities_unlock) {
+                const totalPts = (save.rookie?.totalPoints || 0);
+                const abilitiesUnlocked = save.rookie?.abilitiesUnlocked || [];
+                const nextAbility = rookieDef.abilities_unlock.find(
+                    u => !abilitiesUnlocked.includes(u.id) && u.threshold > totalPts
+                );
+                if (nextAbility) {
+                    const diff = nextAbility.threshold - totalPts;
+                    const xpTxt = this.add.text(cx, teaserY + 14,
+                        `Encore ${diff} pts pour ${nextAbility.ability.name} !`, {
+                            fontFamily: 'monospace', fontSize: '11px',
+                            color: '#FFD700', shadow: SHADOW_SM
+                        }
+                    ).setOrigin(0.5).setAlpha(0);
+                    this.tweens.add({ targets: xpTxt, alpha: 1, duration: 400, delay: 1200 });
+                }
+            }
+        }
     }
 }
