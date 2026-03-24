@@ -8,6 +8,7 @@ import {
     IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
 import PetanqueEngine from './PetanqueEngine.js';
+import I18n from '../utils/I18n.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
@@ -614,13 +615,13 @@ export default class AimingSystem {
         const states = [
             {
                 active: this.retroActive,
-                activeText: '[R] RETRO !', inactiveText: '[R] Retro',
+                activeText: I18n.t('aiming.retro_on'), inactiveText: I18n.t('aiming.retro_off'),
                 activeColor: '#D4A574', inactiveColor: '#9B7BB8',
                 activeDot: 0xD4A574,    inactiveDot: 0x9B7BB8
             },
             {
                 active: this._targetCochonnet,
-                activeText: '[B] COCHONNET !', inactiveText: '[B] Cochonnet',
+                activeText: I18n.t('aiming.cochonnet_on'), inactiveText: I18n.t('aiming.cochonnet_off'),
                 activeColor: '#FFD700', inactiveColor: '#FFD700',
                 activeDot: 0xFFD700,   inactiveDot: 0xFFD700
             },
@@ -681,7 +682,7 @@ export default class AimingSystem {
         const x = this.scene.scale.width - 90;
         const y = this.scene.scale.height - 54;
 
-        const label = this.scene.add.text(x, y, '[D] Tir devant', {
+        const label = this.scene.add.text(x, y, I18n.t('aiming.tir_devant'), {
             fontFamily: 'monospace', fontSize: '10px',
             color: '#AA8866', shadow: SHADOW
         }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
@@ -705,17 +706,17 @@ export default class AimingSystem {
             if (this._tirDevantLabel) {
                 this._tirDevantLabel.setAlpha(1);
                 this._tirDevantLabel.setColor('#FFD700');
-                this._tirDevantLabel.setText('[D] TIR DEVANT !');
+                this._tirDevantLabel.setText(I18n.t('aiming.tir_devant'));
             }
-            this.engine._showMessage('Tir devant : atterrit avant la cible !');
+            this.engine._showMessage(I18n.t('aiming.tir_devant_msg'));
         } else {
             this.loftPreset = LOFT_TIR;
             if (this._tirDevantLabel) {
                 this._tirDevantLabel.setAlpha(0.5);
                 this._tirDevantLabel.setColor('#AA8866');
-                this._tirDevantLabel.setText('[D] Tir devant');
+                this._tirDevantLabel.setText(I18n.t('aiming.tir_devant'));
             }
-            this.engine._showMessage('Tir au fer : frappe directe !');
+            this.engine._showMessage(I18n.t('aiming.tir_normal_msg'));
         }
     }
 

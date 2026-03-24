@@ -65,12 +65,20 @@
       "plombee": "Lob",
       "tir": "Iron Shot"
     },
-    "score_title": "🎯  End of End!",
+    "score_title": "End of Round!",
     "score_main": "Every ball closer to the Jack\nthan the opponent's best = 1 point!",
     "score_sub": "First to 13 points wins the game.",
     "understood": "Got it!",
     "turn_rule": "The team furthest from the Jack always plays next.",
-    "turn_rule_sub": "You're winning? It's the opponent's turn!"
+    "turn_rule_sub": "You're winning? It's the opponent's turn!",
+    "previous": "< PREVIOUS",
+    "next": "NEXT >",
+    "controls_hint": "Arrows Pages     Enter Finish",
+    "page1_title": "OBJECTIVE",
+    "page2_title": "HOW TO THROW",
+    "page3_title": "THROW TECHNIQUES",
+    "page4_title": "HOW TO SCORE",
+    "page5_title": "TIPS"
   },
   "result": {
     "victory": "VICTORY!",
@@ -115,7 +123,11 @@
     "yes": "Yes",
     "no": "No",
     "controls_label": "CONTROLS",
-    "volume_label": "VOLUME"
+    "volume_label": "VOLUME",
+    "hint_sand": "Sand slows balls down. Throw harder!",
+    "hint_mixed": "Watch the zones! Grass = slow, gravel = fast.",
+    "hint_slope": "Sloped terrain! Aim higher to compensate.",
+    "hint_walls": "Balls bounce off walls here!"
   },
   "shop": {
     "buy": "BUY",
@@ -131,15 +143,32 @@
     "controls_hint": "Arrows Navigate     Enter Buy     1-3 Tabs     Esc Back"
   },
   "levelup": {
-    "title": "LEVEL UP!",
+    "title": "UPGRADE",
     "points_remaining": "Available points: {n}",
     "confirm": "CONFIRM",
+    "new_ability": "NEW ABILITY!",
+    "controls_hint": "1-4 Add     Enter Confirm     Esc Menu",
     "tooltips": {
       "precision": "Reduces scatter zone on release",
       "puissance": "Max throw force and range",
       "effet": "Spin and curve control",
       "sang_froid": "Aim stability under pressure"
     }
+  },
+  "ui": {
+    "back": "< BACK",
+    "confirm": "CONFIRM",
+    "vs": "VS"
+  },
+  "aiming": {
+    "retro_on": "[R] BACKSPIN!",
+    "retro_off": "[R] Backspin",
+    "cochonnet_on": "[B] JACK!",
+    "cochonnet_off": "[B] Jack",
+    "tir_devant": "[D] FRONT SHOT!",
+    "tir_devant_msg": "Front shot: lands before the target!",
+    "tir_normal_msg": "Iron shot: direct hit!",
+    "spin_label": "Spin"
   },
   "loft": {
     "roulette": "Rolling",

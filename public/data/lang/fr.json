@@ -65,12 +65,20 @@
       "plombee": "Plombée",
       "tir": "Tir"
     },
-    "score_title": "🎯  Fin de mène !",
+    "score_title": "Fin de mene !",
     "score_main": "Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !",
-    "score_sub": "Premier à 13 points gagne la partie.",
+    "score_sub": "Premier a 13 points gagne la partie.",
     "understood": "Compris !",
-    "turn_rule": "L'équipe la plus éloignée du cochonnet rejoue toujours.",
-    "turn_rule_sub": "Vous menez ? C'est à l'adversaire !"
+    "turn_rule": "L'equipe la plus eloignee du cochonnet rejoue toujours.",
+    "turn_rule_sub": "Vous menez ? C'est a l'adversaire !",
+    "previous": "< PRECEDENT",
+    "next": "SUIVANT >",
+    "controls_hint": "Fleches Pages     Entree Terminer",
+    "page1_title": "OBJECTIF",
+    "page2_title": "COMMENT LANCER",
+    "page3_title": "TECHNIQUES DE LANCER",
+    "page4_title": "COMMENT MARQUER",
+    "page5_title": "ASTUCES"
   },
   "result": {
     "victory": "VICTOIRE !",
@@ -115,7 +123,11 @@
     "yes": "Oui",
     "no": "Non",
     "controls_label": "CONTROLES",
-    "volume_label": "VOLUME"
+    "volume_label": "VOLUME",
+    "hint_sand": "Le sable ralentit les boules. Tirez plus fort !",
+    "hint_mixed": "Attention aux zones ! Herbe = lent, gravier = rapide.",
+    "hint_slope": "Terrain en pente ! Compensez en visant plus haut.",
+    "hint_walls": "Les boules rebondissent sur les murs ici !"
   },
   "shop": {
     "buy": "ACHETER",
@@ -131,15 +143,32 @@
     "controls_hint": "Fleches Naviguer     Entree Acheter     1-3 Onglets     Echap Retour"
   },
   "levelup": {
-    "title": "NIVEAU SUPERIEUR !",
+    "title": "AMELIORATION",
     "points_remaining": "Points disponibles: {n}",
     "confirm": "CONFIRMER",
+    "new_ability": "NOUVELLE CAPACITE !",
+    "controls_hint": "1-4 Ajouter     Entree Confirmer     Echap Menu",
     "tooltips": {
-      "precision": "Réduit la zone de dispersion au lâcher",
-      "puissance": "Force max du tir et portée",
-      "effet": "Contrôle du spin et des courbes",
-      "sang_froid": "Stabilité de la visée sous pression"
+      "precision": "Reduit la zone de dispersion au lacher",
+      "puissance": "Force max du tir et portee",
+      "effet": "Controle du spin et des courbes",
+      "sang_froid": "Stabilite de la visee sous pression"
     }
+  },
+  "ui": {
+    "back": "< RETOUR",
+    "confirm": "CONFIRMER",
+    "vs": "VS"
+  },
+  "aiming": {
+    "retro_on": "[R] RETRO !",
+    "retro_off": "[R] Retro",
+    "cochonnet_on": "[B] COCHONNET !",
+    "cochonnet_off": "[B] Cochonnet",
+    "tir_devant": "[D] TIR DEVANT !",
+    "tir_devant_msg": "Tir devant : atterrit avant la cible !",
+    "tir_normal_msg": "Tir au fer : frappe directe !",
+    "spin_label": "Spin"
   },
   "loft": {
     "roulette": "Roulette",

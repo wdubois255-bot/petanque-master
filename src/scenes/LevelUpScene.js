@@ -4,6 +4,7 @@ import { setRookieStats, addRookiePoints } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -91,7 +92,7 @@ export default class LevelUpScene extends Phaser.Scene {
             banner.strokeRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
         }
 
-        const label = this.add.text(GAME_WIDTH / 2, bannerY - 14, 'NOUVELLE CAPACITE !', {
+        const label = this.add.text(GAME_WIDTH / 2, bannerY - 14, I18n.t('levelup.new_ability'), {
             fontFamily: 'monospace', fontSize: '14px', color: CSS.OR,
             shadow: SHADOW
         }).setOrigin(0.5).setDepth(52).setAlpha(0);
@@ -130,7 +131,7 @@ export default class LevelUpScene extends Phaser.Scene {
 
     _buildStatScreen() {
         // Title
-        const title = this.add.text(GAME_WIDTH / 2, 48, 'AMELIORATION', {
+        const title = this.add.text(GAME_WIDTH / 2, 48, I18n.t('levelup.title'), {
             fontFamily: 'monospace', fontSize: '32px', color: CSS.OR,
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setScale(0);
@@ -388,7 +389,7 @@ export default class LevelUpScene extends Phaser.Scene {
         this.confirmY = y;
 
         this.confirmGfx = this.add.graphics();
-        this.confirmText = this.add.text(GAME_WIDTH / 2, y, 'CONFIRMER', {
+        this.confirmText = this.add.text(GAME_WIDTH / 2, y, I18n.t('levelup.confirm'), {
             fontFamily: 'monospace', fontSize: '22px', color: CSS.CREME,
             shadow: SHADOW
         }).setOrigin(0.5);

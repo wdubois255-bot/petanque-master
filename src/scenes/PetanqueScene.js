@@ -464,10 +464,10 @@ export default class PetanqueScene extends Phaser.Scene {
         if (phasesDone.length >= 3) {
             const terrainId = this.terrainFullData?.id || 'village';
             const terrainHints = {
-                plage: { id: 'hint_sand', msg: 'Le sable ralentit les boules. Tirez plus fort !' },
-                parc: { id: 'hint_mixed', msg: 'Attention aux zones ! Herbe = lent, gravier = rapide.' },
-                colline: { id: 'hint_slope', msg: 'Terrain en pente ! Compensez en visant plus haut.' },
-                docks: { id: 'hint_walls', msg: 'Les boules rebondissent sur les murs ici !' }
+                plage: { id: 'hint_sand', msg: I18n.t('ingame.hint_sand') },
+                parc: { id: 'hint_mixed', msg: I18n.t('ingame.hint_mixed') },
+                colline: { id: 'hint_slope', msg: I18n.t('ingame.hint_slope') },
+                docks: { id: 'hint_walls', msg: I18n.t('ingame.hint_walls') }
             };
             const hint = terrainHints[terrainId];
             if (hint) {

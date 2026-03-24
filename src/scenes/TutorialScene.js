@@ -4,6 +4,7 @@ import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
@@ -49,14 +50,14 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer = this.add.container(0, 0);
 
         // Navigation buttons (persistent, updated per page)
-        this._navLeft = this.add.text(60, GAME_HEIGHT - 45, '< PRECEDENT', {
+        this._navLeft = this.add.text(60, GAME_HEIGHT - 45, I18n.t('tutorial.previous'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
         this._navLeft.on('pointerdown', () => this._goPrev());
         this._navLeft.on('pointerover', () => this._navLeft.setColor('#FFD700'));
         this._navLeft.on('pointerout', () => this._navLeft.setColor('#D4A574'));
 
-        this._navRight = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, 'SUIVANT >', {
+        this._navRight = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, I18n.t('tutorial.next'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
         this._navRight.on('pointerdown', () => this._goNext());
@@ -64,7 +65,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._navRight.on('pointerout', () => this._navRight.setColor('#D4A574'));
 
         // "J'AI COMPRIS" button (last page only)
-        this._doneBtn = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, "J'AI COMPRIS !", {
+        this._doneBtn = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, I18n.t('tutorial.understood'), {
             fontFamily: 'monospace', fontSize: '18px', color: '#1A1510',
             backgroundColor: '#FFD700', padding: { x: 16, y: 8 },
             shadow: { offsetX: 1, offsetY: 1, color: '#B8960A', blur: 0, fill: true }
@@ -74,7 +75,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._doneBtn.on('pointerout', () => this._doneBtn.setStyle({ backgroundColor: '#FFD700' }));
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, '\u2190\u2192 Pages     Entree Terminer', {
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('tutorial.controls_hint'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
 
@@ -181,7 +182,7 @@ export default class TutorialScene extends Phaser.Scene {
     _drawPageObjectif() {
         const cx = GAME_WIDTH / 2;
 
-        const title = this.add.text(cx, CONTENT_Y + 20, 'OBJECTIF', {
+        const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page1_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
         }).setOrigin(0.5);
         this._contentContainer.add(title);
@@ -273,7 +274,7 @@ export default class TutorialScene extends Phaser.Scene {
     _drawPageLancer() {
         const cx = GAME_WIDTH / 2;
 
-        const title = this.add.text(cx, CONTENT_Y + 20, 'COMMENT LANCER', {
+        const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page2_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
         }).setOrigin(0.5);
         this._contentContainer.add(title);
@@ -363,7 +364,7 @@ export default class TutorialScene extends Phaser.Scene {
     _drawPageTechniques() {
         const cx = GAME_WIDTH / 2;
 
-        const title = this.add.text(cx, CONTENT_Y + 20, 'TECHNIQUES DE LANCER', {
+        const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page3_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
         }).setOrigin(0.5);
         this._contentContainer.add(title);
@@ -445,7 +446,7 @@ export default class TutorialScene extends Phaser.Scene {
     _drawPageScore() {
         const cx = GAME_WIDTH / 2;
 
-        const title = this.add.text(cx, CONTENT_Y + 20, 'COMMENT MARQUER', {
+        const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page4_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
         }).setOrigin(0.5);
         this._contentContainer.add(title);
@@ -507,7 +508,7 @@ export default class TutorialScene extends Phaser.Scene {
     _drawPageAstuces() {
         const cx = GAME_WIDTH / 2;
 
-        const title = this.add.text(cx, CONTENT_Y + 20, 'ASTUCES', {
+        const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page5_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
         }).setOrigin(0.5);
         this._contentContainer.add(title);

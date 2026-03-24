@@ -1,6 +1,7 @@
 import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY, GAME_WIDTH, GAME_HEIGHT, UI, FONT_PIXEL, FONT_BODY } from '../utils/Constants.js';
 import { loadSave } from '../utils/SaveManager.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
+import I18n from '../utils/I18n.js';
 
 /**
  * UIFactory — centralized UI component creation for Petanque Master.
@@ -687,7 +688,7 @@ export default class UIFactory {
     // ================================================================
 
     static addBackButton(scene, targetScene, options = {}) {
-        const { x = UI.BACK_X, y = UI.BACK_Y, label = '< RETOUR', depth = 50, onBack = null } = options;
+        const { x = UI.BACK_X, y = UI.BACK_Y, label = I18n.t('ui.back'), depth = 50, onBack = null } = options;
 
         const btn = UIFactory.addText(scene, x, y, label, UI.HINT_SIZE, CSS.OCRE, {
             originX: 0, originY: 0.5, depth
