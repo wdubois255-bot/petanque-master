@@ -1,330 +1,327 @@
-# PLAN PHASE 4 — Polish, Completude & Publication
+# PLAN PHASE 4 — LA Reference Petanque
 
-> **Objectif** : Couvrir TOUT ce que Phase 3 ne couvre pas pour un jeu publiable.
-> **Prerequis** : PLAN_PHASE3 execute (6 axes : tirs, feedback, cleanup, tests, audio, mobile)
-> **Estimation** : 8 axes, ~2-4h par axe
-> **Priorite** : par blocage publication (P0 = bloquant, P1 = important, P2 = nice-to-have)
-
----
-
-## CE QUE PHASE 3 COUVRE (ne pas refaire)
-
-- AXE A : Techniques de tir (rafle, devant, cochonnet, spin lateral)
-- AXE B : Feedback resultats (8 resultats, SFX, barks)
-- AXE C : Nettoyage (dead code, leaks, duplication, bugs controles)
-- AXE D : Tests (slopes, walls, match flow, AimingSystem, scene reuse)
-- AXE E : Audio (ambiances terrain, crowd, commentateur)
-- AXE F : Mobile (touch, responsive, portal SDK wrapper)
+> **Vision** : Faire de Petanque Master LE jeu de petanque de reference, avec des heures de contenu solo,
+> un multi solide, et une rejouabilite qui ramene les joueurs chaque jour.
+> **Prerequis** : PLAN_PHASE3 ✅ (273 tests, 6 axes completes)
+> **Organisation** : 3 tiers par urgence, 15 axes (G-U), executables par Sonnet 4.6
 
 ---
 
-## AXE G — SPRITES & ANIMATIONS MANQUANTS (P0 — Bloquant)
+## CONSTAT POST-AUDIT
 
-> 3 personnages sans throw animation, 3 greeting manquantes, Marcel a regenerer.
-> Un roster incomplet = impression de jeu inacheve.
+L'arcade actuel est **narrativement excellent mais fondamentalement superficiel** :
+- 2h de contenu puis plus rien
+- Rookie force (12 personnages inutilises en arcade)
+- Zero rejouabilite apres la 1ere completion
+- Pas de multi, pas de defis quotidiens, pas de mode competitif
 
-### G1. Throw animations manquantes
+**Ce plan transforme un proto en jeu complet.**
 
-**Fichier** : `src/utils/Constants.js` (CHAR_THROW_MAP)
+---
 
-3 personnages n'ont pas de spritesheet de lancer : **papi_rene, fazzino, rizzi**.
-Ils utilisent le fallback squash/stretch.
+# TIER 1 — PUBLICATION QUALITY (Bloquant)
 
-- Option A (rapide) : Generer via `/sprite` les 3 spritesheets throw (4 frames 32x32)
-- Option B (minimal) : Creer des throw animations 2-frame a partir des sprites existants
-  (frame 1 = corps penche, frame 2 = bras etendu) par manipulation de pixels
+> Sans ca, le jeu n'est pas publiable sur CrazyGames/Poki.
 
-Ajouter les 3 entrees dans CHAR_THROW_MAP une fois les sprites prets.
+## AXE G — SPRITES & ANIMATIONS MANQUANTS (~4h)
 
-### G2. Greeting animations manquantes (3/12)
+### G1. Throw animations : papi_rene, fazzino, rizzi
+- `src/utils/Constants.js` : CHAR_THROW_MAP — 3 entrees manquantes
+- Generer via `/sprite` ou creer 2-frame manuellement (bras leve → bras etendu)
+- Charger dans `src/scenes/BootScene.js`
 
-**Fichier** : `src/scenes/BootScene.js` (section greeting anims)
-
-9/12 sont faites. Identifier les 3 manquantes (probablement papi_rene, fazzino, rizzi).
-Generer ou creer des greeting frames pour chacun.
+### G2. Greeting animations : 3 manquantes
+- Identifier dans BootScene section greeting anims
+- Meme approche : 2-frame ou PixelLab
 
 ### G3. Marcel sprite a regenerer
+- Qualite insuffisante (documente dans memoire)
+- Regenerer avec memes parametres que le reste du roster
 
-**Memoire** : `project_marcel_sprite_issue.md`
-
-Le sprite de Marcel a un probleme de qualite. Regenerer via PixelLab avec les memes
-parametres que les autres personnages (32x32, 4 directions, palette provencale).
-
-### G4. Portraits HD (128x128)
-
-**Fichier** : `src/utils/PortraitGenerator.js`
-
-Actuellement les portraits sont extraits des spritesheets (frame 0,0 = face sud).
-C'est fonctionnel mais petit. Pour le character select et la boutique, des portraits
-128x128 dedies seraient plus impactants.
-
-- Generer 12 portraits 128x128 via PixelLab
-- Les charger dans BootScene
-- Les utiliser dans QuickPlayScene, ShopScene, PlayerScene
+### G4. Portraits 128x128 (optionnel)
+- 12 portraits dedies pour CharSelect, boutique, VS screen
+- Impact visuel fort pour peu d'effort
 
 ---
 
-## AXE H — TUTORIEL MISE A JOUR (P0 — Bloquant)
+## AXE H — TUTORIEL MIS A JOUR (~3h)
 
-> Phase 3 ajoute rafle, tir devant, spin lateral, ciblage cochonnet.
-> Le tutoriel actuel ne couvre que les bases. Un joueur ne decouvre PAS les nouvelles mecaniques.
+### H1. Phase 4 : Modes de tir (apres 3e mene)
+- "6 techniques disponibles ! Pointer ou Tirer, a toi de choisir."
+- Auto-ferme quand joueur selectionne un nouveau mode
 
-### H1. Mise a jour InGameTutorial.js
+### H2. Phase 5 : Effets (apres 5e mene si jamais utilise)
+- "[E] = spin lateral, [R] = retro. Plus ton Effet est eleve, plus c'est fort."
 
-**Fichier** : `src/ui/InGameTutorial.js`
-
-Ajouter Phase 4 et 5 au tutoriel in-game :
-
-- **Phase 4 — MODES DE TIR** (apres 3e mene) :
-  "Tu peux choisir entre 6 techniques ! Pointer (Roulette/Demi/Plombee) ou Tirer (Rafle/Fer/Devant)."
-  Montrer les 6 boutons, auto-fermer quand le joueur en selectionne un.
-
-- **Phase 5 — EFFETS** (apres 5e mene si jamais utilise) :
-  "Appuie sur [E] pour ajouter un effet lateral ! [R] pour le retro !"
-  "Plus ton stat Effet est eleve, plus l'effet est fort."
-
-### H2. Hints contextuels
-
-**Fichier** : `src/ui/InGameTutorial.js` (methode `showContextualHint()`)
-
-Ajouter hints one-shot :
-- Premier tir au fer : "Essaie la Rafle [touche 4] pour un tir rasant !"
-- Premier match sur Plage : "Le sable ralentit les boules. La Plombee est ideale ici."
-- Premier match sur Docks : "Les murs rebondissent ! Attention aux bandes."
+### H3. Hints contextuels one-shot
+- Premier tir au fer : "Essaie la Rafle [4] !"
+- Premier match Plage : "Le sable ralentit. La Plombee est ideale."
+- Premier match Docks : "Les murs rebondissent !"
 
 ---
 
-## AXE I — LOCALISATION ANGLAIS (P0 — Bloquant pour portails)
+## AXE I — LOCALISATION ANGLAIS (~6h)
 
-> CrazyGames et Poki = audience anglophone majoritaire.
-> Un jeu 100% francais perd 80%+ du marche.
+### I1. Systeme i18n (nouveau src/utils/I18n.js)
+- `I18n.t(key, params)` avec interpolation {param}
+- Charge `public/data/lang/{locale}.json`
 
-### I1. Systeme i18n
+### I2. Extraction textes FR → public/data/lang/fr.json
+- Grep toutes les strings francaises du code
+- Categories : menu, gameplay, results, tutorial, shop, dialogues, barks
 
-**Nouveau fichier** : `src/utils/I18n.js`
+### I3. Traduction EN → public/data/lang/en.json
+- Traduction complete (adapter l'humour, pas mot a mot)
+- Noms techniques : Roulette, Half-Lob, Lob, Skim Shot, Iron Shot, Front Shot
 
-```js
-class I18n {
-  static _locale = 'fr';
-  static _strings = {};
-  static async load(locale) { /* fetch public/data/lang/{locale}.json */ }
-  static t(key, params) { /* return translated string with {param} interpolation */ }
-}
-```
-
-### I2. Fichiers de langue
-
-**Nouveaux fichiers** :
-- `public/data/lang/fr.json` — Extraire TOUS les textes hardcodes du code
-- `public/data/lang/en.json` — Traduction anglaise complete
-
-Categories de textes a extraire :
-- Menus (TitleScene, QuickPlayScene, ShopScene, PlayerScene)
-- Gameplay (ScorePanel, AimingSystem labels, InGameTutorial)
-- Resultats (ResultScene, LevelUpScene)
-- Dialogues (arcade.json preMatchDialogue, postMatchDialogue)
-- Barks (characters.json)
-- Boutique (shop.json item names/descriptions)
-- Tutoriel (toutes les phases)
-
-### I3. Detection langue + selecteur
-
-**Fichier** : `src/scenes/TitleScene.js`
-
-- Detecter `navigator.language` au boot
-- Ajouter toggle FR/EN dans les settings (TitleScene menu)
-- Persister dans SaveManager
+### I4. Detection langue + toggle dans settings
 
 ---
 
-## AXE J — ACCESSIBILITE BASIQUE (P1 — Standard industrie)
-
-> 8% des joueurs sont daltoniens. Les portails valorisent l'accessibilite.
+## AXE J — ACCESSIBILITE BASIQUE (~3h)
 
 ### J1. Mode daltonien
-
-**Fichier** : `src/utils/Constants.js` + `src/petanque/EngineRenderer.js`
-
-- Ajouter 3 palettes alternatives (protanopie, deuteranopie, tritanopie)
-- Boules joueur : ajouter marqueur forme (cercle plein vs cercle vide) en plus de la couleur
-- Best ball glow : ajouter indicateur forme (fleche) en plus de la couleur
+- 3 palettes alternatives + marqueurs forme sur boules (cercle/losange)
 
 ### J2. Options accessibilite
-
-**Fichier** : `src/scenes/TitleScene.js` (settings)
-
-- Toggle screen shake (on/off)
-- Toggle slow-mo (on/off pour photosensibles)
-- Taille texte (Normal / Grand / Tres Grand)
+- Toggle screen shake, slow-mo
+- Taille texte (Normal/Grand/Tres Grand)
 - Persister dans SaveManager
 
 ### J3. Audio unlock mobile
-
-**Fichier** : `src/utils/SoundManager.js`
-
-- Verifier que l'AudioContext est resume au premier input (tap/click)
-- Afficher hint "Touchez l'ecran pour activer le son" si audio suspendu
+- AudioContext.resume() au premier input
 
 ---
 
-## AXE K — EQUILIBRAGE & DIFFICULTE (P1 — Experience joueur)
+## AXE K — EQUILIBRAGE & ARCADE ENRICHI (~5h)
 
-> Aucun audit d'equilibrage n'a ete fait. Certains matchups pourraient etre injouables.
+> L'arcade actuel = 5 matchs fixes avec Rookie force. On le transforme.
 
-### K1. Audit equilibrage personnages
+### K1. Selection de personnage en Arcade
+- **Apres la 1ere completion**, debloquer la selection de personnage en Arcade
+- Chaque personnage = run differente (Ley arcade ≠ Rookie arcade)
+- Impact immediat : 12x rejouabilite
 
-**Fichiers** : `public/data/characters.json`, `src/utils/Constants.js`
+### K2. Choix de difficulte
+- Facile / Normal / Difficile (scale les stats adverses de -2 / 0 / +2)
+- Visible sur l'ecran Arcade
 
-Pour chaque personnage, documenter :
-- Total stats (precision + puissance + effet + sang_froid)
-- Archetype et personnalite IA
-- Points forts / faiblesses
-- Matchups problematiques (ex: Rookie 14pts vs Ley 31pts en round 5)
+### K3. Mode Difficile (debloque apres perfect run)
+- Memes 5 adversaires mais +3 stats, ordre aleatoire, terrains aleatoires
+- Recompense : titre "Champion des Champions" + 500 Galets
 
-Produire : `research/61_character_balance_audit.md`
+### K4. Stats Rookie sur l'ecran hub
+- Afficher portrait + stats + abilities sur l'ecran de progression Arcade
+- Le joueur voit son evolution
 
-### K2. Validation courbe difficulte Arcade
-
-**Fichier** : `public/data/arcade.json`
-
-Verifier que la progression est fluide :
-- Round 1 (Facile) : Le joueur doit gagner 80%+ du temps
-- Round 2 (Moyen) : 60-70%
-- Round 3 (Difficile) : 40-50%
-- Round 4 (Tres difficile) : 25-35%
-- Round 5 (Expert) : 15-25%
-
-Si les taux ne matchent pas, ajuster les stats IA ou la precision par difficulte.
-
-### K3. Ajustements si necessaire
-
-Si l'audit revele des desequilibres :
-- Ajuster les stats dans characters.json (source de verite)
-- Ajuster AI_PERSONALITY_MODIFIERS dans Constants.js
-- Ne PAS toucher a la physique (Ball.js)
+### K5. Audit balance matchups
+- Verifier que Round 1 = 80% winrate, Round 5 = 20%
+- Ajuster si necessaire dans characters.json
+- Produire research/61_character_balance_audit.md
 
 ---
 
-## AXE L — POLISH VISUEL (P1 — Game feel)
+## AXE L — POLISH VISUEL (~4h)
 
-> Beaucoup de "MUST-HAVE" de research/50_cosmetic_overhaul_checklist.md ne sont pas couverts.
+### L1. Transitions fade entre scenes
+- fadeOut(300) avant chaque scene.start(), fadeIn(300) dans create()
 
-### L1. Transitions entre scenes
+### L2. Score bounce + confettis victoire
+- ScorePanel : tween scale 1.3x quand score change
+- ResultScene : 40 particules palette provencale si victoire
 
-**Fichier** : Toutes les scenes (transition via `scene.start()`)
+### L3. Loading bar (BootScene)
+- this.load.on('progress', value => { barre + pourcentage })
 
-Ajouter un fade-out/fade-in entre chaque scene :
-```js
-this.cameras.main.fadeOut(300);
-this.cameras.main.once('camerafadeoutcomplete', () => {
-  this.scene.start('NextScene', data);
-});
-```
-
-Et dans chaque scene.create() :
-```js
-this.cameras.main.fadeIn(300);
-```
-
-### L2. Score bounce feedback
-
-**Fichier** : `src/ui/ScorePanel.js`
-
-Quand le score change, ajouter un tween bounce sur le chiffre :
-```js
-this.tweens.add({ targets: scoreText, scaleX: 1.3, scaleY: 1.3, duration: 150, yoyo: true });
-```
-
-### L3. Confettis victoire
-
-**Fichier** : `src/scenes/ResultScene.js`
-
-Si le joueur gagne, ajouter des confettis (30-50 particules colorees qui tombent).
-Utiliser les couleurs de la palette provencale.
-
-### L4. Loading screen avec barre de progression
-
-**Fichier** : `src/scenes/BootScene.js`
-
-Ajouter une barre de progression pendant le chargement :
-```js
-this.load.on('progress', (value) => { /* update bar width */ });
-```
+### L4. Charges d'abilities visibles en match
+- HUD coin : "[Instinct: 1/1]" avec keybind
 
 ---
 
-## AXE M — CONTENU POST-ARCADE (P2 — Retention)
+## AXE N — LEGAL & CREDITS (~2h)
 
-> Apres les 5 matchs Arcade, le joueur n'a plus rien a faire sauf Quick Play libre.
-
-### M1. Defis quotidiens
-
-**Fichiers** : `src/utils/SaveManager.js` (lastDailyDate, dailyCompleted existent deja)
-
-Implementer :
-- Seed quotidien (SaveManager.getDailyState() existe deja)
-- Generation defi : personnage impose + terrain impose + contrainte
-- UI : bouton "Defi du jour" dans TitleScene
-- Recompense : 75 Galets (GAME_DESIGN.md)
-
-### M2. Mode Boss Rush
-
-Apres avoir complete l'Arcade, debloquer "Boss Rush" :
-- Les 5 adversaires en sequence, difficulte maximale
-- Pas de LevelUp entre les matchs
-- Recompense speciale (titre + Galets)
+### N1. Scene Credits (developpeur, outils, licences, inspirations)
+### N2. public/privacy.html (localStorage, pas de cookies, pas de tracking)
+### N3. LICENSE a la racine
 
 ---
 
-## AXE N — LEGAL & PUBLICATION (P0 — Bloquant pour stores)
+# TIER 2 — MULTIJOUEUR & REJOUABILITE (Gros impact)
 
-### N1. Credits screen
+> Transforme un jeu solo en experience sociale.
 
-**Nouveau fichier** : Ajouter "Credits" dans TitleScene menu.
-- Developpe par [nom]
-- Sprites : PixelLab AI + retouche manuelle
-- Audio : ElevenLabs + procedural Web Audio
-- Moteur : Phaser 4.0.0-rc.6
-- Police : Press Start 2P (OFL License)
-- Inspiration : FIPJP, La Ciotat 1907
+## AXE O — MULTIJOUEUR LOCAL 1v1 (~6h)
 
-### N2. Privacy Policy
+### O1. Mode Versus Local (hot-seat)
+- QuickPlayScene : ajouter option "VS Local" (2 joueurs alternent)
+- Tour par tour : "Joueur 1, a toi !" → cache l'ecran → "Joueur 2, a toi !"
+- Score et mene sur ecran partage
 
-**Nouveau fichier** : `public/privacy.html`
-- Le jeu utilise localStorage (pas de cookies)
-- Pas de tracking (sauf si portal SDK ajoute)
-- Pas de donnees personnelles collectees
-- Contact : [email]
+### O2. Selection personnage pour les 2 joueurs
+- Chaque joueur choisit son personnage + boule + cochonnet
 
-### N3. License
-
-**Nouveau fichier** : `LICENSE` a la racine
-- Le code du jeu (pas les assets)
+### O3. Stats head-to-head
+- SaveManager : tracker les matchs locaux (victoires par joueur)
+- Afficher historique dans PlayerScene
 
 ---
 
-## ORDRE D'EXECUTION RECOMMANDE
+## AXE P — DOUBLETTE 2v2 AVEC STRATEGIE (~8h)
+
+> Le joueur choisit si son partenaire doit pointer ou tirer. Couche strategique unique.
+
+### P1. Support format doublette dans PetanqueEngine
+- Fix : ajouter 'doublette' dans ballsPerPlayer (3 boules/joueur, 6 total/equipe)
+- Nouveau state STRATEGY_DECISION dans la FSM
+
+### P2. UI decision strategique
+- Popup avant chaque tour du partenaire : "Marcel : Pointer ou Tirer ?"
+- Boutons larges, auto-close 5s, son de confirmation
+- Afficher contexte (score, boules restantes, distance cochonnet)
+
+### P3. AI role override
+- PetanqueAI accepte roleOverride ('pointer'|'tirer')
+- Force la strategie du partenaire selon le choix du joueur
+
+### P4. Selection equipe
+- QuickPlayScene : choisir son partenaire + 2 adversaires
+- Synergie : tireur + pointeur = equipe equilibree
+
+**Ref technique** : research/62_doublette_strategy_system.md (a creer)
+
+---
+
+## AXE Q — DEFIS QUOTIDIENS & ASYNC (~5h)
+
+### Q1. Defis quotidiens (seed date)
+- SaveManager.getDailyState() existe deja
+- generateDailyChallenge(seed) → { character, terrain, constraint }
+- Bouton "Defi du jour" dans TitleScene (visible apres 1er arcade win)
+- Recompense : 75 Galets, non-rejouable
+
+### Q2. Challenge async entre amis
+- Apres un match : bouton "Defier un ami"
+- Generer URL avec config match compressée (LZString + btoa)
+- L'ami charge l'URL, joue la meme config, compare les scores
+- Zero backend, 100% client-side
+
+### Q3. Boss Rush
+- Debloque apres arcade complete
+- 5 adversaires difficulte max, pas de LevelUp entre
+- Recompense : titre + 500 Galets
+
+---
+
+## AXE R — SYSTEME D'ACHIEVEMENTS (~4h)
+
+### R1. 30 achievements en 5 categories
+- **Histoire** : "Chapitre 1", "Champion du Carreau d'Or"
+- **Technique** : "Sniper" (<1cm), "Carreau Master" (3+/match), "Ciseau !"
+- **Collection** : "Tous les personnages", "Tous les terrains"
+- **Streaks** : "5 victoires", "Mardi imbattable"
+- **Cache** : "Battre le Rookie avec le Rookie"
+
+### R2. SaveManager + toasts
+- achievementsUnlocked: { sniper: true, ... }
+- Toast notification visuel sur unlock
+
+### R3. Scene Achievements (grille de badges)
+- Accessible depuis TitleScene ou PlayerScene
+
+---
+
+# TIER 3 — AMBITION (Differenciateurs)
+
+> Ce qui fait passer le jeu de "bon" a "reference".
+
+## AXE S — REPLAYS & PARTAGE (~6h)
+
+### S1. Enregistrement
+- Pendant PetanqueScene : logger chaque throw (angle, power, loft, boule, result)
+- Structure legere (JSON ~2KB par match)
+
+### S2. Lecteur de replay
+- Scene ReplayScene : auto-simule le match avec le moteur physique
+- Slow-mo sur les meilleurs coups
+
+### S3. Partage URL
+- Compresser replay → LZString → URL partageable
+- "Regarde ce carreau !" → viral sur les reseaux
+
+---
+
+## AXE T — MODE ROGUELITE "GAUNTLET" (~8h)
+
+### T1. Structure
+- 7 adversaires aleatoires, difficulte escalade
+- Entre chaque match : choisir 1 bonus parmi 3
+  - "+1 Precision pour le run"
+  - "Debloquer la Rafle"
+  - "Objet maudit : +2 Puissance, -2 Sang-froid"
+- 1 vie : perd = run termine
+
+### T2. Meta-progression
+- Debloquer des items permanents (cosmetiques, titres) selon distance parcourue
+- Leaderboard local : "Meilleur run avec Rookie : 5 victoires"
+
+### T3. Chaos modifiers (optionnel)
+- Chaque match a un modifier aleatoire : "vent", "nuit", "boules geantes"
+
+---
+
+## AXE U — METEO & MODES FUN (~4h)
+
+### U1. Systeme meteo
+- Constants.js : WEATHER_MODIFIERS (vent = force laterale, pluie = friction+, chaleur = friction-)
+- Activer aleatoirement dans les defis quotidiens
+- VFX : particules vent/pluie
+
+### U2. Mode Party (QuickPlay option)
+- Boules speciales : Explosive (COR+0.3), Magnetique, Rebondissante
+- Desactive les leaderboards (mode fun uniquement)
+
+---
+
+# ORDRE D'EXECUTION
 
 ```
-AXE G (Sprites manquants)      ← Bloquant visuel
-  ↓
-AXE H (Tutoriel mis a jour)    ← Bloquant UX
-  ↓
-AXE I (Localisation EN)        ← Bloquant portails
-  ↓
-AXE N (Legal & credits)        ← Bloquant publication
-  ↓
-AXE K (Equilibrage)            ← Important game feel
-  ↓
-AXE J (Accessibilite)          ← Standard industrie
-  ↓
-AXE L (Polish visuel)          ← Nice-to-have impactant
-  ↓
-AXE M (Contenu post-arcade)    ← Retention long terme
+DEMAIN — Tier 1 (publication quality) :
+  Session 1 (Sonnet) : G (sprites) + H (tutorial)
+  Session 2 (Sonnet) : I (i18n) — gros morceau
+  Session 3 (Sonnet) : K (equilibrage + arcade enrichi)
+  Session 4 (Sonnet) : L (polish) + J (accessibilite) + N (legal)
+
+SEMAINE 2 — Tier 2 (multi + rejouabilite) :
+  Session 5 (Sonnet) : O (local 1v1)
+  Session 6 (Sonnet) : P (doublette 2v2 strategie)
+  Session 7 (Sonnet) : Q (defis + async + boss rush) + R (achievements)
+
+SEMAINE 3 — Tier 3 (ambition) :
+  Session 8 (Sonnet) : S (replays)
+  Session 9 (Sonnet) : T (roguelite gauntlet)
+  Session 10 (Sonnet) : U (meteo + party mode)
 ```
+
+**Parallelisable** :
+- G + H (sprites + tutorial : fichiers differents)
+- L + J + N (polish + accessibilite + legal : fichiers differents)
+- Q + R (defis + achievements : fichiers differents)
+
+---
+
+# METRIQUES DE SUCCES
+
+| Metrique | Avant Phase 4 | Apres Tier 1 | Apres Tier 2 | Apres Tier 3 |
+|----------|--------------|-------------|-------------|-------------|
+| Contenu solo | ~2h | ~5h | ~10h | ~20h+ |
+| Modes de jeu | 2 (Arcade, QuickPlay) | 4 (+Hard, +Daily) | 7 (+Local, +2v2, +Boss, +Async) | 10 (+Gauntlet, +Party, +Challenges) |
+| Personnages jouables arcade | 1 (Rookie) | 12 | 12 | 12 |
+| Rejouabilite quotidienne | 0 | 1 (daily) | 3 (daily + async + boss) | 5+ |
+| Langues | FR | FR + EN | FR + EN | FR + EN |
+| Tests | 273 | ~310 | ~350 | ~400 |
 
 ---
 
 *Plan cree le 24 mars 2026 par Claude Opus 4.6.*
-*Prerequis : PLAN_PHASE3 ✅*
-*Complementaire a PLAN_PHASE3, ne duplique rien.*
+*Basé sur audit complet : arcade, controles, transitions, research, brainstorm.*
+*References : Windjammers 2, Golf Story, Slay the Spire, Rocket League.*
