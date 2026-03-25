@@ -123,7 +123,7 @@ export default class BootScene extends Phaser.Scene {
         this.load.spritesheet('v2_stat_icons', `${BASE}assets/sprites/v2_new/ui/pixellab-pixel-art-game-stat-icon-set---1774128154376.png`, {
             frameWidth: 64, frameHeight: 64
         });
-        this.load.image('v2_terrain_terre', `${BASE}assets/sprites/v2_new/ui/pixellab-packed-brown-earth-petanque-te-1774130926511.png`);
+        this.load.image('v2_terrain_terre', `${BASE}assets/sprites/v2_new/terrains/pixellab-packed-brown-earth-petanque-te-1774130926511.png`);
 
         // Throw animation spritesheets (v2 — 4 frames 128x128 each, horizontal strip 512x128)
         const THROW_CHARS = [
@@ -192,11 +192,11 @@ export default class BootScene extends Phaser.Scene {
             this.load.image(`to_coquillage_new_${p}`, `${toBase}sable_details/new/coquillage_new_${p}.png`);
         }
 
-        // Terrain surface textures (seamless 64x64)
-        this.load.image('terrain_tex_terre', `${BASE}assets/sprites/terrain_tex_terre.png`);
-        this.load.image('terrain_tex_herbe', `${BASE}assets/sprites/terrain_tex_herbe.png`);
-        this.load.image('terrain_tex_sable', `${BASE}assets/sprites/terrain_tex_sable.png`);
-        this.load.image('terrain_tex_dalles', `${BASE}assets/sprites/terrain_tex_dalles.png`);
+        // Terrain surface textures (seamless)
+        this.load.image('terrain_tex_terre',  `${toBase}terre_battue/terre_13.png`);
+        this.load.image('terrain_tex_herbe',  `${toBase}herbe/herbe_15_seamless.png`);
+        this.load.image('terrain_tex_sable',  `${toBase}sable/sable_10_seamless.png`);
+        this.load.image('terrain_tex_dalles', `${toBase}dalles/dalles_13.png`);
 
         // Border textures per terrain
         // Village — rondins bois clair
