@@ -23,7 +23,8 @@
       "Bash(git branch -D master*)"
     ],
     "additionalDirectories": [
-      "C:\\Users\\wdubo\\OneDrive\\Bureau\\Projets\\Projet jeux web petanque Pokémon\\assets"
+      "C:\\Users\\wdubo\\OneDrive\\Bureau\\Projets\\Projet jeux web petanque Pokémon\\assets",
+      "c:\\Users\\wdubo\\.claude\\projects\\c--Users-wdubo-OneDrive-Bureau-Projets-Projet-jeux-web-petanque-Pok-mon\\memory"
     ]
   },
   "hooks": {
