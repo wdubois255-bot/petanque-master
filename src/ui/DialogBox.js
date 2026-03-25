@@ -67,7 +67,7 @@ export default class DialogBox {
             '',
             {
                 fontFamily: FONT_PIXEL,
-                fontSize: '10px',
+                fontSize: '12px',
                 color: TEXT_COLOR,
                 wordWrap: { width: GAME_WIDTH - BOX_MARGIN * 2 - BOX_PADDING * 2 },
                 lineSpacing: 6,

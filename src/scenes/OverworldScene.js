@@ -5,6 +5,7 @@ import MapManager from '../world/MapManager.js';
 import NPCManager from '../world/NPCManager.js';
 import Player from '../entities/Player.js';
 import DialogBox from '../ui/DialogBox.js';
+import I18n from '../utils/I18n.js';
 import { saveGame } from '../utils/SaveManager.js';
 
 export default class OverworldScene extends Phaser.Scene {
@@ -220,7 +221,7 @@ export default class OverworldScene extends Phaser.Scene {
         if (!exit) {
             // Blocked exit
             this.player.freeze();
-            this.dialogBox.show('', ['Vous ne pouvez pas encore aller par la.'], () => {
+            this.dialogBox.show('', [I18n.t('overworld.blocked_exit')], () => {
                 this.player.unfreeze();
             });
             return;
@@ -235,7 +236,7 @@ export default class OverworldScene extends Phaser.Scene {
                 const missing = gate.requires.filter(b => !this.gameState.badges.includes(b));
                 if (missing.length > 0) {
                     this.player.freeze();
-                    this.dialogBox.show('', ['Il faut d\'abord battre le Maitre d\'Arene pour continuer !'], () => {
+                    this.dialogBox.show('', [I18n.t('overworld.gate_locked')], () => {
                         // Push player back one tile
                         this.player.unfreeze();
                     });

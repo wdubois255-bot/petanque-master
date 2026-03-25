@@ -1,0 +1,4998 @@
+{
+  "village": [
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 134,
+      "y": 144,
+      "size": 24,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 136,
+      "y": 129,
+      "size": 16,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 38,
+      "y": 93,
+      "size": 12,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 52,
+      "y": 93,
+      "size": 14,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 58,
+      "y": 234,
+      "size": 14,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    }
+  ],
+  "plage": [
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 18,
+      "y": 22,
+      "size": 13,
+      "rotation": 47,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 98,
+      "y": 15,
+      "size": 12,
+      "rotation": 205,
+      "alpha": 0.77,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 142,
+      "y": 68,
+      "size": 11,
+      "rotation": 183,
+      "alpha": 0.76,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 22,
+      "y": 78,
+      "size": 14,
+      "rotation": 68,
+      "alpha": 0.81,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 55,
+      "y": 112,
+      "size": 15,
+      "rotation": 271,
+      "alpha": 0.81,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 162,
+      "y": 108,
+      "size": 11,
+      "rotation": 329,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 108,
+      "y": 158,
+      "size": 12,
+      "rotation": 34,
+      "alpha": 0.77,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 72,
+      "y": 162,
+      "size": 15,
+      "rotation": 112,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 32,
+      "y": 205,
+      "size": 14,
+      "rotation": 156,
+      "alpha": 0.8,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 145,
+      "y": 188,
+      "size": 13,
+      "rotation": 255,
+      "alpha": 0.77,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 158,
+      "y": 228,
+      "size": 13,
+      "rotation": 312,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 18,
+      "y": 242,
+      "size": 12,
+      "rotation": 41,
+      "alpha": 0.82,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 82,
+      "y": 268,
+      "size": 11,
+      "rotation": 89,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 112,
+      "y": 282,
+      "size": 14,
+      "rotation": 174,
+      "alpha": 0.8,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 128,
+      "y": 308,
+      "size": 15,
+      "rotation": 228,
+      "alpha": 0.82,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 52,
+      "y": 318,
+      "size": 11,
+      "rotation": 298,
+      "alpha": 0.76,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 48,
+      "y": 352,
+      "size": 12,
+      "rotation": 17,
+      "alpha": 0.76,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 138,
+      "y": 365,
+      "size": 15,
+      "rotation": 63,
+      "alpha": 0.78,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 165,
+      "y": 392,
+      "size": 14,
+      "rotation": 143,
+      "alpha": 0.78,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 88,
+      "y": 412,
+      "size": 13,
+      "rotation": 207,
+      "alpha": 0.81,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 88,
+      "y": 38,
+      "size": 12,
+      "rotation": 127,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 168,
+      "y": 58,
+      "size": 14,
+      "rotation": 302,
+      "alpha": 0.77,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 12,
+      "y": 92,
+      "size": 11,
+      "rotation": 215,
+      "alpha": 0.81,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 132,
+      "y": 128,
+      "size": 13,
+      "rotation": 74,
+      "alpha": 0.76,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 62,
+      "y": 178,
+      "size": 15,
+      "rotation": 341,
+      "alpha": 0.8,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 172,
+      "y": 218,
+      "size": 12,
+      "rotation": 158,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 35,
+      "y": 248,
+      "size": 14,
+      "rotation": 47,
+      "alpha": 0.78,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 118,
+      "y": 278,
+      "size": 11,
+      "rotation": 233,
+      "alpha": 0.82,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 8,
+      "y": 332,
+      "size": 13,
+      "rotation": 112,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_03.png",
+      "x": 95,
+      "y": 418,
+      "size": 12,
+      "rotation": 267,
+      "alpha": 0.77,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 45,
+      "y": 52,
+      "size": 13,
+      "rotation": 188,
+      "alpha": 0.8,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 128,
+      "y": 95,
+      "size": 11,
+      "rotation": 43,
+      "alpha": 0.76,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 28,
+      "y": 142,
+      "size": 15,
+      "rotation": 271,
+      "alpha": 0.78,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 162,
+      "y": 152,
+      "size": 14,
+      "rotation": 335,
+      "alpha": 0.77,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 95,
+      "y": 198,
+      "size": 12,
+      "rotation": 117,
+      "alpha": 0.81,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 58,
+      "y": 258,
+      "size": 11,
+      "rotation": 82,
+      "alpha": 0.79,
+      "flipX": true
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 145,
+      "y": 322,
+      "size": 13,
+      "rotation": 208,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 78,
+      "y": 388,
+      "size": 15,
+      "rotation": 29,
+      "alpha": 0.82,
+      "flipX": false
+    },
+    {
+      "src": "sable_details/new/coquillage_new_04.png",
+      "x": 12,
+      "y": 402,
+      "size": 12,
+      "rotation": 154,
+      "alpha": 0.78,
+      "flipX": true
+    }
+  ],
+  "parc": [
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 14,
+      "y": 19,
+      "size": 32,
+      "rotation": 238,
+      "alpha": 0.78,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 72,
+      "y": 8,
+      "size": 23,
+      "rotation": 185,
+      "alpha": 0.81,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 71,
+      "y": 70,
+      "size": 31,
+      "rotation": 176,
+      "alpha": 0.92,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 126,
+      "y": 60,
+      "size": 23,
+      "rotation": 140,
+      "alpha": 0.94,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 99,
+      "y": 109,
+      "size": 29,
+      "rotation": 238,
+      "alpha": 0.92,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 118,
+      "y": 93,
+      "size": 26,
+      "rotation": 68,
+      "alpha": 0.79,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 158,
+      "y": 96,
+      "size": 23,
+      "rotation": 189,
+      "alpha": 0.8,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 31,
+      "y": 136,
+      "size": 22,
+      "rotation": 296,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 84,
+      "y": 146,
+      "size": 31,
+      "rotation": 150,
+      "alpha": 0.84,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 150,
+      "y": 136,
+      "size": 32,
+      "rotation": 164,
+      "alpha": 0.85,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 170,
+      "y": 183,
+      "size": 28,
+      "rotation": 162,
+      "alpha": 0.8,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 13,
+      "y": 221,
+      "size": 30,
+      "rotation": 21,
+      "alpha": 0.79,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 75,
+      "y": 214,
+      "size": 24,
+      "rotation": 235,
+      "alpha": 0.73,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 140,
+      "y": 217,
+      "size": 24,
+      "rotation": 281,
+      "alpha": 0.72,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 150,
+      "y": 221,
+      "size": 25,
+      "rotation": 18,
+      "alpha": 0.73,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 108,
+      "y": 258,
+      "size": 28,
+      "rotation": 293,
+      "alpha": 0.72,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 115,
+      "y": 240,
+      "size": 29,
+      "rotation": 40,
+      "alpha": 0.74,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 30,
+      "y": 332,
+      "size": 30,
+      "rotation": 195,
+      "alpha": 0.94,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 61,
+      "y": 308,
+      "size": 30,
+      "rotation": 246,
+      "alpha": 0.9,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 79,
+      "y": 320,
+      "size": 26,
+      "rotation": 309,
+      "alpha": 0.86,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 143,
+      "y": 324,
+      "size": 25,
+      "rotation": 247,
+      "alpha": 0.93,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 169,
+      "y": 308,
+      "size": 24,
+      "rotation": 240,
+      "alpha": 0.84,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 31,
+      "y": 368,
+      "size": 22,
+      "rotation": 204,
+      "alpha": 0.77,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 48,
+      "y": 378,
+      "size": 25,
+      "rotation": 121,
+      "alpha": 0.84,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 119,
+      "y": 368,
+      "size": 27,
+      "rotation": 354,
+      "alpha": 0.89,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 149,
+      "y": 351,
+      "size": 24,
+      "rotation": 54,
+      "alpha": 0.8,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 24,
+      "y": 392,
+      "size": 31,
+      "rotation": 272,
+      "alpha": 0.76,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 45,
+      "y": 393,
+      "size": 29,
+      "rotation": 61,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 88,
+      "y": 411,
+      "size": 22,
+      "rotation": 35,
+      "alpha": 0.83,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_01.png",
+      "x": 161,
+      "y": 404,
+      "size": 27,
+      "rotation": 108,
+      "alpha": 0.94,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_04.png",
+      "x": 28,
+      "y": 155,
+      "size": 19,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_04.png",
+      "x": 63,
+      "y": 238,
+      "size": 21,
+      "rotation": 15,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "herbe_touffes/new/touffe_new_04.png",
+      "x": 113,
+      "y": 36,
+      "size": 18,
+      "rotation": 0,
+      "alpha": 0.75,
+      "flipX": false
+    }
+  ],
+  "colline": [
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 4,
+      "y": 25,
+      "size": 27,
+      "rotation": 169,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 43,
+      "y": 4,
+      "size": 31,
+      "rotation": 281,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 126,
+      "y": 15,
+      "size": 27,
+      "rotation": 95,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 165,
+      "y": 12,
+      "size": 29,
+      "rotation": 193,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 11,
+      "y": 34,
+      "size": 31,
+      "rotation": 223,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 86,
+      "y": 43,
+      "size": 31,
+      "rotation": 155,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 110,
+      "y": 45,
+      "size": 32,
+      "rotation": 217,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 134,
+      "y": 41,
+      "size": 29,
+      "rotation": 57,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 31,
+      "y": 78,
+      "size": 24,
+      "rotation": 95,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 72,
+      "y": 71,
+      "size": 24,
+      "rotation": 297,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 112,
+      "y": 67,
+      "size": 27,
+      "rotation": 305,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 15,
+      "y": 107,
+      "size": 27,
+      "rotation": 210,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 83,
+      "y": 108,
+      "size": 26,
+      "rotation": 326,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 104,
+      "y": 112,
+      "size": 28,
+      "rotation": 285,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 160,
+      "y": 107,
+      "size": 29,
+      "rotation": 213,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 42,
+      "y": 130,
+      "size": 28,
+      "rotation": 276,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 77,
+      "y": 137,
+      "size": 32,
+      "rotation": 224,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 100,
+      "y": 151,
+      "size": 29,
+      "rotation": 139,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 140,
+      "y": 135,
+      "size": 29,
+      "rotation": 359,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 158,
+      "y": 149,
+      "size": 32,
+      "rotation": 312,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 28,
+      "y": 175,
+      "size": 26,
+      "rotation": 187,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 88,
+      "y": 170,
+      "size": 29,
+      "rotation": 284,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 109,
+      "y": 181,
+      "size": 27,
+      "rotation": 50,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 125,
+      "y": 170,
+      "size": 30,
+      "rotation": 284,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 7,
+      "y": 215,
+      "size": 30,
+      "rotation": 153,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 103,
+      "y": 217,
+      "size": 28,
+      "rotation": 332,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 144,
+      "y": 205,
+      "size": 25,
+      "rotation": 26,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 43,
+      "y": 246,
+      "size": 27,
+      "rotation": 260,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 99,
+      "y": 231,
+      "size": 31,
+      "rotation": 192,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 133,
+      "y": 237,
+      "size": 28,
+      "rotation": 204,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 45,
+      "y": 265,
+      "size": 29,
+      "rotation": 69,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 64,
+      "y": 279,
+      "size": 28,
+      "rotation": 328,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 116,
+      "y": 284,
+      "size": 29,
+      "rotation": 225,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 139,
+      "y": 265,
+      "size": 31,
+      "rotation": 66,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 27,
+      "y": 317,
+      "size": 29,
+      "rotation": 230,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 55,
+      "y": 300,
+      "size": 26,
+      "rotation": 120,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 73,
+      "y": 310,
+      "size": 31,
+      "rotation": 124,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 97,
+      "y": 311,
+      "size": 31,
+      "rotation": 56,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 120,
+      "y": 318,
+      "size": 31,
+      "rotation": 324,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 169,
+      "y": 314,
+      "size": 29,
+      "rotation": 142,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 13,
+      "y": 325,
+      "size": 24,
+      "rotation": 153,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 60,
+      "y": 341,
+      "size": 27,
+      "rotation": 2,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 68,
+      "y": 344,
+      "size": 26,
+      "rotation": 30,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 146,
+      "y": 343,
+      "size": 29,
+      "rotation": 327,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 157,
+      "y": 346,
+      "size": 27,
+      "rotation": 287,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 21,
+      "y": 379,
+      "size": 29,
+      "rotation": 69,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 32,
+      "y": 377,
+      "size": 30,
+      "rotation": 278,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 80,
+      "y": 371,
+      "size": 25,
+      "rotation": 201,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 104,
+      "y": 370,
+      "size": 26,
+      "rotation": 291,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 146,
+      "y": 358,
+      "size": 28,
+      "rotation": 319,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 161,
+      "y": 355,
+      "size": 31,
+      "rotation": 41,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 11,
+      "y": 409,
+      "size": 30,
+      "rotation": 190,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 51,
+      "y": 412,
+      "size": 29,
+      "rotation": 248,
+      "alpha": 0.75,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 85,
+      "y": 407,
+      "size": 30,
+      "rotation": 303,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 108,
+      "y": 393,
+      "size": 25,
+      "rotation": 128,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 136,
+      "y": 385,
+      "size": 26,
+      "rotation": 256,
+      "alpha": 0.75,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_13.png",
+      "x": 171,
+      "y": 388,
+      "size": 30,
+      "rotation": 319,
+      "alpha": 0.75,
+      "flipX": false
+    }
+  ],
+  "docks": [
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 8,
+      "size": 23,
+      "rotation": 8,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 13,
+      "y": 4,
+      "size": 27,
+      "rotation": 283,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 31,
+      "y": 6,
+      "size": 26,
+      "rotation": 36,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 40,
+      "y": 5,
+      "size": 27,
+      "rotation": 193,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 54,
+      "y": 7,
+      "size": 29,
+      "rotation": 195,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 69,
+      "y": 9,
+      "size": 30,
+      "rotation": 301,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 79,
+      "y": 11,
+      "size": 30,
+      "rotation": 215,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 86,
+      "y": 7,
+      "size": 25,
+      "rotation": 91,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 98,
+      "y": 4,
+      "size": 27,
+      "rotation": 351,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 118,
+      "y": 11,
+      "size": 22,
+      "rotation": 231,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 9,
+      "size": 27,
+      "rotation": 22,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 139,
+      "y": 5,
+      "size": 24,
+      "rotation": 327,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 155,
+      "y": 11,
+      "size": 28,
+      "rotation": 284,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 160,
+      "y": 4,
+      "size": 29,
+      "rotation": 185,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 7,
+      "size": 28,
+      "rotation": 150,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 6,
+      "y": 19,
+      "size": 25,
+      "rotation": 18,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 16,
+      "y": 26,
+      "size": 22,
+      "rotation": 52,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 29,
+      "y": 28,
+      "size": 29,
+      "rotation": 53,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 38,
+      "y": 22,
+      "size": 23,
+      "rotation": 329,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 27,
+      "size": 26,
+      "rotation": 160,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 71,
+      "y": 25,
+      "size": 24,
+      "rotation": 216,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 76,
+      "y": 21,
+      "size": 25,
+      "rotation": 52,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 90,
+      "y": 23,
+      "size": 27,
+      "rotation": 326,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 104,
+      "y": 28,
+      "size": 26,
+      "rotation": 139,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 117,
+      "y": 23,
+      "size": 28,
+      "rotation": 41,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 123,
+      "y": 20,
+      "size": 28,
+      "rotation": 72,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 141,
+      "y": 20,
+      "size": 23,
+      "rotation": 204,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 155,
+      "y": 23,
+      "size": 25,
+      "rotation": 122,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 161,
+      "y": 21,
+      "size": 23,
+      "rotation": 78,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 174,
+      "y": 25,
+      "size": 30,
+      "rotation": 295,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 10,
+      "y": 34,
+      "size": 22,
+      "rotation": 37,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 16,
+      "y": 37,
+      "size": 28,
+      "rotation": 50,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 29,
+      "y": 34,
+      "size": 26,
+      "rotation": 190,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 38,
+      "y": 34,
+      "size": 26,
+      "rotation": 215,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 40,
+      "size": 24,
+      "rotation": 90,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 63,
+      "y": 35,
+      "size": 26,
+      "rotation": 170,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 82,
+      "y": 41,
+      "size": 22,
+      "rotation": 297,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 87,
+      "y": 39,
+      "size": 26,
+      "rotation": 342,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 97,
+      "y": 36,
+      "size": 24,
+      "rotation": 296,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 116,
+      "y": 36,
+      "size": 27,
+      "rotation": 248,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 121,
+      "y": 35,
+      "size": 23,
+      "rotation": 198,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 36,
+      "size": 22,
+      "rotation": 141,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 153,
+      "y": 37,
+      "size": 24,
+      "rotation": 311,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 162,
+      "y": 36,
+      "size": 23,
+      "rotation": 349,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 172,
+      "y": 34,
+      "size": 26,
+      "rotation": 313,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 5,
+      "y": 55,
+      "size": 28,
+      "rotation": 328,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 22,
+      "y": 56,
+      "size": 24,
+      "rotation": 349,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 30,
+      "y": 57,
+      "size": 27,
+      "rotation": 187,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 39,
+      "y": 48,
+      "size": 25,
+      "rotation": 101,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 57,
+      "size": 30,
+      "rotation": 305,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 69,
+      "y": 57,
+      "size": 27,
+      "rotation": 172,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 79,
+      "y": 57,
+      "size": 26,
+      "rotation": 244,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 90,
+      "y": 48,
+      "size": 27,
+      "rotation": 333,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 106,
+      "y": 58,
+      "size": 26,
+      "rotation": 223,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 115,
+      "y": 55,
+      "size": 25,
+      "rotation": 138,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 58,
+      "size": 22,
+      "rotation": 217,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 143,
+      "y": 54,
+      "size": 28,
+      "rotation": 330,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 150,
+      "y": 49,
+      "size": 28,
+      "rotation": 53,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 165,
+      "y": 49,
+      "size": 27,
+      "rotation": 122,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 49,
+      "size": 27,
+      "rotation": 85,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 63,
+      "size": 23,
+      "rotation": 214,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 23,
+      "y": 67,
+      "size": 28,
+      "rotation": 191,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 28,
+      "y": 72,
+      "size": 30,
+      "rotation": 254,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 45,
+      "y": 67,
+      "size": 28,
+      "rotation": 65,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 51,
+      "y": 63,
+      "size": 28,
+      "rotation": 259,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 70,
+      "y": 72,
+      "size": 23,
+      "rotation": 312,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 79,
+      "y": 67,
+      "size": 29,
+      "rotation": 316,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 85,
+      "y": 67,
+      "size": 22,
+      "rotation": 27,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 100,
+      "y": 63,
+      "size": 28,
+      "rotation": 314,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 111,
+      "y": 70,
+      "size": 29,
+      "rotation": 167,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 130,
+      "y": 66,
+      "size": 28,
+      "rotation": 146,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 63,
+      "size": 25,
+      "rotation": 31,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 152,
+      "y": 67,
+      "size": 27,
+      "rotation": 300,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 161,
+      "y": 65,
+      "size": 24,
+      "rotation": 157,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 67,
+      "size": 26,
+      "rotation": 92,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 7,
+      "y": 78,
+      "size": 25,
+      "rotation": 93,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 20,
+      "y": 82,
+      "size": 30,
+      "rotation": 354,
+      "alpha": 0.6,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 34,
+      "y": 81,
+      "size": 29,
+      "rotation": 118,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 41,
+      "y": 84,
+      "size": 29,
+      "rotation": 126,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 55,
+      "y": 79,
+      "size": 24,
+      "rotation": 187,
+      "alpha": 0.6,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 68,
+      "y": 86,
+      "size": 29,
+      "rotation": 110,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 82,
+      "y": 83,
+      "size": 29,
+      "rotation": 360,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 86,
+      "y": 87,
+      "size": 27,
+      "rotation": 230,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 98,
+      "y": 79,
+      "size": 28,
+      "rotation": 86,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 111,
+      "y": 87,
+      "size": 22,
+      "rotation": 241,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 86,
+      "size": 27,
+      "rotation": 269,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 140,
+      "y": 84,
+      "size": 23,
+      "rotation": 336,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 148,
+      "y": 79,
+      "size": 27,
+      "rotation": 346,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 159,
+      "y": 84,
+      "size": 23,
+      "rotation": 350,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 175,
+      "y": 82,
+      "size": 26,
+      "rotation": 175,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 10,
+      "y": 96,
+      "size": 25,
+      "rotation": 283,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 19,
+      "y": 100,
+      "size": 25,
+      "rotation": 92,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 35,
+      "y": 95,
+      "size": 27,
+      "rotation": 31,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 44,
+      "y": 96,
+      "size": 25,
+      "rotation": 175,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 51,
+      "y": 93,
+      "size": 22,
+      "rotation": 111,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 62,
+      "y": 97,
+      "size": 25,
+      "rotation": 109,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 75,
+      "y": 97,
+      "size": 25,
+      "rotation": 84,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 87,
+      "y": 102,
+      "size": 27,
+      "rotation": 120,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 102,
+      "y": 100,
+      "size": 27,
+      "rotation": 66,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 118,
+      "y": 97,
+      "size": 22,
+      "rotation": 117,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 94,
+      "size": 24,
+      "rotation": 267,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 137,
+      "y": 101,
+      "size": 27,
+      "rotation": 356,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 150,
+      "y": 94,
+      "size": 29,
+      "rotation": 265,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 158,
+      "y": 96,
+      "size": 29,
+      "rotation": 91,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 171,
+      "y": 96,
+      "size": 30,
+      "rotation": 167,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 7,
+      "y": 117,
+      "size": 25,
+      "rotation": 340,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 20,
+      "y": 115,
+      "size": 29,
+      "rotation": 176,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 31,
+      "y": 110,
+      "size": 24,
+      "rotation": 51,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 45,
+      "y": 114,
+      "size": 28,
+      "rotation": 300,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 113,
+      "size": 24,
+      "rotation": 60,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 69,
+      "y": 109,
+      "size": 23,
+      "rotation": 225,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 78,
+      "y": 110,
+      "size": 24,
+      "rotation": 57,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 88,
+      "y": 110,
+      "size": 22,
+      "rotation": 339,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 98,
+      "y": 110,
+      "size": 27,
+      "rotation": 63,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 116,
+      "y": 117,
+      "size": 28,
+      "rotation": 193,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 123,
+      "y": 115,
+      "size": 28,
+      "rotation": 214,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 143,
+      "y": 111,
+      "size": 28,
+      "rotation": 281,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 151,
+      "y": 111,
+      "size": 24,
+      "rotation": 210,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 165,
+      "y": 113,
+      "size": 27,
+      "rotation": 352,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 169,
+      "y": 117,
+      "size": 27,
+      "rotation": 350,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 5,
+      "y": 132,
+      "size": 26,
+      "rotation": 8,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 22,
+      "y": 130,
+      "size": 28,
+      "rotation": 255,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 25,
+      "y": 123,
+      "size": 29,
+      "rotation": 130,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 39,
+      "y": 128,
+      "size": 29,
+      "rotation": 76,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 53,
+      "y": 130,
+      "size": 27,
+      "rotation": 327,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 63,
+      "y": 126,
+      "size": 29,
+      "rotation": 144,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 79,
+      "y": 124,
+      "size": 28,
+      "rotation": 121,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 92,
+      "y": 125,
+      "size": 27,
+      "rotation": 144,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 102,
+      "y": 132,
+      "size": 22,
+      "rotation": 132,
+      "alpha": 0.6,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 119,
+      "y": 126,
+      "size": 26,
+      "rotation": 111,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 127,
+      "size": 29,
+      "rotation": 144,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 135,
+      "y": 129,
+      "size": 28,
+      "rotation": 138,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 150,
+      "y": 132,
+      "size": 28,
+      "rotation": 16,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 162,
+      "y": 124,
+      "size": 29,
+      "rotation": 312,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 127,
+      "size": 27,
+      "rotation": 218,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 143,
+      "size": 22,
+      "rotation": 285,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 18,
+      "y": 145,
+      "size": 24,
+      "rotation": 38,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 29,
+      "y": 139,
+      "size": 22,
+      "rotation": 196,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 44,
+      "y": 142,
+      "size": 23,
+      "rotation": 76,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 50,
+      "y": 141,
+      "size": 30,
+      "rotation": 116,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 66,
+      "y": 148,
+      "size": 27,
+      "rotation": 77,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 75,
+      "y": 139,
+      "size": 24,
+      "rotation": 137,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 88,
+      "y": 139,
+      "size": 26,
+      "rotation": 86,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 104,
+      "y": 145,
+      "size": 25,
+      "rotation": 198,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 111,
+      "y": 139,
+      "size": 26,
+      "rotation": 172,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 121,
+      "y": 143,
+      "size": 29,
+      "rotation": 20,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 138,
+      "y": 143,
+      "size": 26,
+      "rotation": 196,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 155,
+      "y": 147,
+      "size": 26,
+      "rotation": 172,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 161,
+      "y": 143,
+      "size": 25,
+      "rotation": 192,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 171,
+      "y": 143,
+      "size": 26,
+      "rotation": 39,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 9,
+      "y": 160,
+      "size": 26,
+      "rotation": 36,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 13,
+      "y": 161,
+      "size": 23,
+      "rotation": 321,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 30,
+      "y": 156,
+      "size": 28,
+      "rotation": 64,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 43,
+      "y": 157,
+      "size": 28,
+      "rotation": 174,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 157,
+      "size": 24,
+      "rotation": 106,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 66,
+      "y": 153,
+      "size": 28,
+      "rotation": 346,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 73,
+      "y": 156,
+      "size": 28,
+      "rotation": 128,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 89,
+      "y": 157,
+      "size": 27,
+      "rotation": 309,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 106,
+      "y": 160,
+      "size": 30,
+      "rotation": 348,
+      "alpha": 0.6,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 119,
+      "y": 158,
+      "size": 27,
+      "rotation": 306,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 127,
+      "y": 162,
+      "size": 27,
+      "rotation": 9,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 134,
+      "y": 157,
+      "size": 26,
+      "rotation": 55,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 147,
+      "y": 161,
+      "size": 24,
+      "rotation": 55,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 160,
+      "y": 160,
+      "size": 25,
+      "rotation": 22,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 158,
+      "size": 25,
+      "rotation": 176,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 172,
+      "size": 29,
+      "rotation": 6,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 20,
+      "y": 172,
+      "size": 26,
+      "rotation": 41,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 33,
+      "y": 171,
+      "size": 29,
+      "rotation": 213,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 45,
+      "y": 171,
+      "size": 24,
+      "rotation": 149,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 54,
+      "y": 175,
+      "size": 23,
+      "rotation": 177,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 67,
+      "y": 169,
+      "size": 29,
+      "rotation": 325,
+      "alpha": 0.6,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 83,
+      "y": 174,
+      "size": 22,
+      "rotation": 244,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 92,
+      "y": 173,
+      "size": 25,
+      "rotation": 207,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 103,
+      "y": 172,
+      "size": 25,
+      "rotation": 303,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 113,
+      "y": 177,
+      "size": 24,
+      "rotation": 57,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 128,
+      "y": 169,
+      "size": 24,
+      "rotation": 306,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 175,
+      "size": 29,
+      "rotation": 17,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 153,
+      "y": 171,
+      "size": 25,
+      "rotation": 78,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 163,
+      "y": 175,
+      "size": 27,
+      "rotation": 87,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 174,
+      "size": 25,
+      "rotation": 347,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 5,
+      "y": 184,
+      "size": 28,
+      "rotation": 21,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 16,
+      "y": 184,
+      "size": 29,
+      "rotation": 195,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 26,
+      "y": 187,
+      "size": 27,
+      "rotation": 99,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 40,
+      "y": 184,
+      "size": 26,
+      "rotation": 314,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 191,
+      "size": 30,
+      "rotation": 176,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 67,
+      "y": 190,
+      "size": 26,
+      "rotation": 275,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 76,
+      "y": 186,
+      "size": 30,
+      "rotation": 307,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 89,
+      "y": 187,
+      "size": 27,
+      "rotation": 324,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 104,
+      "y": 192,
+      "size": 30,
+      "rotation": 33,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 109,
+      "y": 190,
+      "size": 26,
+      "rotation": 220,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 122,
+      "y": 192,
+      "size": 23,
+      "rotation": 160,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 136,
+      "y": 185,
+      "size": 29,
+      "rotation": 7,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 154,
+      "y": 184,
+      "size": 26,
+      "rotation": 153,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 162,
+      "y": 193,
+      "size": 29,
+      "rotation": 91,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 174,
+      "y": 192,
+      "size": 23,
+      "rotation": 323,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 7,
+      "y": 202,
+      "size": 30,
+      "rotation": 253,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 13,
+      "y": 206,
+      "size": 26,
+      "rotation": 353,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 32,
+      "y": 206,
+      "size": 26,
+      "rotation": 242,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 44,
+      "y": 205,
+      "size": 28,
+      "rotation": 112,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 57,
+      "y": 199,
+      "size": 25,
+      "rotation": 344,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 68,
+      "y": 207,
+      "size": 23,
+      "rotation": 323,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 76,
+      "y": 201,
+      "size": 22,
+      "rotation": 213,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 93,
+      "y": 202,
+      "size": 27,
+      "rotation": 339,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 97,
+      "y": 204,
+      "size": 27,
+      "rotation": 117,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 113,
+      "y": 207,
+      "size": 29,
+      "rotation": 285,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 206,
+      "size": 29,
+      "rotation": 275,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 139,
+      "y": 204,
+      "size": 24,
+      "rotation": 151,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 145,
+      "y": 202,
+      "size": 26,
+      "rotation": 147,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 166,
+      "y": 199,
+      "size": 22,
+      "rotation": 270,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 172,
+      "y": 203,
+      "size": 30,
+      "rotation": 25,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 11,
+      "y": 221,
+      "size": 29,
+      "rotation": 34,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 21,
+      "y": 220,
+      "size": 25,
+      "rotation": 41,
+      "alpha": 0.53,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 26,
+      "y": 221,
+      "size": 24,
+      "rotation": 174,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 43,
+      "y": 214,
+      "size": 26,
+      "rotation": 318,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 54,
+      "y": 222,
+      "size": 26,
+      "rotation": 145,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 67,
+      "y": 215,
+      "size": 23,
+      "rotation": 152,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 82,
+      "y": 223,
+      "size": 30,
+      "rotation": 338,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 93,
+      "y": 220,
+      "size": 24,
+      "rotation": 120,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 100,
+      "y": 220,
+      "size": 29,
+      "rotation": 289,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 112,
+      "y": 223,
+      "size": 22,
+      "rotation": 70,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 216,
+      "size": 28,
+      "rotation": 35,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 135,
+      "y": 215,
+      "size": 23,
+      "rotation": 291,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 151,
+      "y": 221,
+      "size": 27,
+      "rotation": 342,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 159,
+      "y": 222,
+      "size": 27,
+      "rotation": 15,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 216,
+      "size": 23,
+      "rotation": 91,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 6,
+      "y": 235,
+      "size": 23,
+      "rotation": 197,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 18,
+      "y": 233,
+      "size": 27,
+      "rotation": 134,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 31,
+      "y": 229,
+      "size": 28,
+      "rotation": 8,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 40,
+      "y": 234,
+      "size": 22,
+      "rotation": 134,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 55,
+      "y": 237,
+      "size": 24,
+      "rotation": 336,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 67,
+      "y": 231,
+      "size": 25,
+      "rotation": 271,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 77,
+      "y": 229,
+      "size": 29,
+      "rotation": 296,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 89,
+      "y": 237,
+      "size": 28,
+      "rotation": 133,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 104,
+      "y": 237,
+      "size": 28,
+      "rotation": 356,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 110,
+      "y": 238,
+      "size": 30,
+      "rotation": 168,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 122,
+      "y": 229,
+      "size": 26,
+      "rotation": 320,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 231,
+      "size": 27,
+      "rotation": 250,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 153,
+      "y": 235,
+      "size": 25,
+      "rotation": 56,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 160,
+      "y": 231,
+      "size": 29,
+      "rotation": 230,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 171,
+      "y": 229,
+      "size": 26,
+      "rotation": 194,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 250,
+      "size": 26,
+      "rotation": 298,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 20,
+      "y": 246,
+      "size": 26,
+      "rotation": 109,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 26,
+      "y": 245,
+      "size": 25,
+      "rotation": 161,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 44,
+      "y": 250,
+      "size": 24,
+      "rotation": 85,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 54,
+      "y": 247,
+      "size": 27,
+      "rotation": 64,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 62,
+      "y": 247,
+      "size": 26,
+      "rotation": 359,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 78,
+      "y": 253,
+      "size": 28,
+      "rotation": 106,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 91,
+      "y": 246,
+      "size": 27,
+      "rotation": 221,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 105,
+      "y": 245,
+      "size": 23,
+      "rotation": 190,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 119,
+      "y": 247,
+      "size": 22,
+      "rotation": 43,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 130,
+      "y": 248,
+      "size": 23,
+      "rotation": 174,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 141,
+      "y": 252,
+      "size": 25,
+      "rotation": 99,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 150,
+      "y": 246,
+      "size": 23,
+      "rotation": 295,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 164,
+      "y": 250,
+      "size": 26,
+      "rotation": 215,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 171,
+      "y": 246,
+      "size": 26,
+      "rotation": 316,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 260,
+      "size": 27,
+      "rotation": 61,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 19,
+      "y": 267,
+      "size": 30,
+      "rotation": 139,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 28,
+      "y": 265,
+      "size": 27,
+      "rotation": 17,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 37,
+      "y": 265,
+      "size": 27,
+      "rotation": 237,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 264,
+      "size": 23,
+      "rotation": 23,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 66,
+      "y": 258,
+      "size": 29,
+      "rotation": 97,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 80,
+      "y": 266,
+      "size": 25,
+      "rotation": 210,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 89,
+      "y": 266,
+      "size": 26,
+      "rotation": 89,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 107,
+      "y": 268,
+      "size": 23,
+      "rotation": 151,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 112,
+      "y": 259,
+      "size": 25,
+      "rotation": 295,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 259,
+      "size": 26,
+      "rotation": 223,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 140,
+      "y": 264,
+      "size": 26,
+      "rotation": 56,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 147,
+      "y": 260,
+      "size": 29,
+      "rotation": 214,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 163,
+      "y": 259,
+      "size": 29,
+      "rotation": 264,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 172,
+      "y": 259,
+      "size": 27,
+      "rotation": 281,
+      "alpha": 0.45,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 276,
+      "size": 24,
+      "rotation": 170,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 17,
+      "y": 278,
+      "size": 23,
+      "rotation": 19,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 25,
+      "y": 283,
+      "size": 29,
+      "rotation": 310,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 40,
+      "y": 273,
+      "size": 30,
+      "rotation": 81,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 59,
+      "y": 277,
+      "size": 23,
+      "rotation": 33,
+      "alpha": 0.47,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 68,
+      "y": 281,
+      "size": 30,
+      "rotation": 287,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 80,
+      "y": 278,
+      "size": 27,
+      "rotation": 312,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 92,
+      "y": 275,
+      "size": 26,
+      "rotation": 50,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 103,
+      "y": 280,
+      "size": 27,
+      "rotation": 204,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 118,
+      "y": 276,
+      "size": 26,
+      "rotation": 42,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 124,
+      "y": 283,
+      "size": 24,
+      "rotation": 91,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 143,
+      "y": 280,
+      "size": 28,
+      "rotation": 105,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 155,
+      "y": 281,
+      "size": 23,
+      "rotation": 16,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 160,
+      "y": 275,
+      "size": 28,
+      "rotation": 93,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 274,
+      "size": 30,
+      "rotation": 254,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 296,
+      "size": 29,
+      "rotation": 75,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 15,
+      "y": 297,
+      "size": 22,
+      "rotation": 259,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 30,
+      "y": 295,
+      "size": 30,
+      "rotation": 304,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 46,
+      "y": 289,
+      "size": 27,
+      "rotation": 70,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 57,
+      "y": 291,
+      "size": 27,
+      "rotation": 4,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 70,
+      "y": 298,
+      "size": 30,
+      "rotation": 303,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 74,
+      "y": 295,
+      "size": 26,
+      "rotation": 240,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 86,
+      "y": 295,
+      "size": 29,
+      "rotation": 341,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 100,
+      "y": 295,
+      "size": 22,
+      "rotation": 61,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 119,
+      "y": 295,
+      "size": 30,
+      "rotation": 88,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 294,
+      "size": 27,
+      "rotation": 339,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 292,
+      "size": 22,
+      "rotation": 83,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 146,
+      "y": 292,
+      "size": 29,
+      "rotation": 234,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 162,
+      "y": 297,
+      "size": 26,
+      "rotation": 56,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 174,
+      "y": 293,
+      "size": 23,
+      "rotation": 132,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 10,
+      "y": 311,
+      "size": 25,
+      "rotation": 45,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 20,
+      "y": 304,
+      "size": 24,
+      "rotation": 139,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 27,
+      "y": 310,
+      "size": 27,
+      "rotation": 167,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 39,
+      "y": 308,
+      "size": 27,
+      "rotation": 151,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 49,
+      "y": 305,
+      "size": 27,
+      "rotation": 137,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 65,
+      "y": 312,
+      "size": 27,
+      "rotation": 219,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 76,
+      "y": 307,
+      "size": 24,
+      "rotation": 345,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 86,
+      "y": 308,
+      "size": 28,
+      "rotation": 83,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 101,
+      "y": 307,
+      "size": 24,
+      "rotation": 211,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 115,
+      "y": 310,
+      "size": 28,
+      "rotation": 31,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 124,
+      "y": 304,
+      "size": 23,
+      "rotation": 19,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 142,
+      "y": 308,
+      "size": 26,
+      "rotation": 307,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 151,
+      "y": 304,
+      "size": 23,
+      "rotation": 243,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 167,
+      "y": 305,
+      "size": 27,
+      "rotation": 242,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 310,
+      "size": 22,
+      "rotation": 281,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 7,
+      "y": 325,
+      "size": 24,
+      "rotation": 355,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 15,
+      "y": 325,
+      "size": 26,
+      "rotation": 224,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 29,
+      "y": 319,
+      "size": 28,
+      "rotation": 13,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 39,
+      "y": 319,
+      "size": 25,
+      "rotation": 123,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 57,
+      "y": 322,
+      "size": 25,
+      "rotation": 328,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 63,
+      "y": 321,
+      "size": 26,
+      "rotation": 31,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 77,
+      "y": 322,
+      "size": 28,
+      "rotation": 179,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 91,
+      "y": 319,
+      "size": 28,
+      "rotation": 26,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 106,
+      "y": 319,
+      "size": 26,
+      "rotation": 12,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 112,
+      "y": 321,
+      "size": 29,
+      "rotation": 53,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 122,
+      "y": 323,
+      "size": 22,
+      "rotation": 117,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 136,
+      "y": 320,
+      "size": 28,
+      "rotation": 329,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 146,
+      "y": 327,
+      "size": 26,
+      "rotation": 40,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 161,
+      "y": 323,
+      "size": 29,
+      "rotation": 292,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 328,
+      "size": 27,
+      "rotation": 330,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 339,
+      "size": 23,
+      "rotation": 85,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 19,
+      "y": 334,
+      "size": 24,
+      "rotation": 187,
+      "alpha": 0.49,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 32,
+      "y": 336,
+      "size": 25,
+      "rotation": 49,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 45,
+      "y": 341,
+      "size": 26,
+      "rotation": 265,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 58,
+      "y": 334,
+      "size": 26,
+      "rotation": 69,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 64,
+      "y": 333,
+      "size": 29,
+      "rotation": 239,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 76,
+      "y": 338,
+      "size": 24,
+      "rotation": 71,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 89,
+      "y": 339,
+      "size": 29,
+      "rotation": 203,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 99,
+      "y": 334,
+      "size": 24,
+      "rotation": 80,
+      "alpha": 0.46,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 113,
+      "y": 334,
+      "size": 23,
+      "rotation": 14,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 129,
+      "y": 343,
+      "size": 23,
+      "rotation": 276,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 141,
+      "y": 336,
+      "size": 25,
+      "rotation": 121,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 148,
+      "y": 336,
+      "size": 23,
+      "rotation": 204,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 162,
+      "y": 336,
+      "size": 24,
+      "rotation": 209,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 339,
+      "size": 25,
+      "rotation": 24,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 9,
+      "y": 351,
+      "size": 23,
+      "rotation": 249,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 19,
+      "y": 352,
+      "size": 26,
+      "rotation": 250,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 29,
+      "y": 351,
+      "size": 29,
+      "rotation": 101,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 39,
+      "y": 357,
+      "size": 26,
+      "rotation": 256,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 55,
+      "y": 355,
+      "size": 27,
+      "rotation": 328,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 65,
+      "y": 351,
+      "size": 30,
+      "rotation": 156,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 80,
+      "y": 356,
+      "size": 28,
+      "rotation": 355,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 87,
+      "y": 351,
+      "size": 23,
+      "rotation": 285,
+      "alpha": 0.5,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 102,
+      "y": 348,
+      "size": 24,
+      "rotation": 230,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 110,
+      "y": 351,
+      "size": 26,
+      "rotation": 227,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 128,
+      "y": 349,
+      "size": 29,
+      "rotation": 35,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 140,
+      "y": 355,
+      "size": 25,
+      "rotation": 171,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 148,
+      "y": 350,
+      "size": 26,
+      "rotation": 283,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 161,
+      "y": 356,
+      "size": 28,
+      "rotation": 68,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 169,
+      "y": 352,
+      "size": 29,
+      "rotation": 344,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 6,
+      "y": 373,
+      "size": 22,
+      "rotation": 48,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 23,
+      "y": 373,
+      "size": 27,
+      "rotation": 241,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 34,
+      "y": 365,
+      "size": 24,
+      "rotation": 331,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 42,
+      "y": 371,
+      "size": 27,
+      "rotation": 163,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 51,
+      "y": 373,
+      "size": 28,
+      "rotation": 324,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 66,
+      "y": 373,
+      "size": 29,
+      "rotation": 219,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 77,
+      "y": 372,
+      "size": 30,
+      "rotation": 189,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 86,
+      "y": 364,
+      "size": 23,
+      "rotation": 348,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 100,
+      "y": 364,
+      "size": 26,
+      "rotation": 29,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 111,
+      "y": 372,
+      "size": 25,
+      "rotation": 317,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 373,
+      "size": 29,
+      "rotation": 83,
+      "alpha": 0.48,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 136,
+      "y": 366,
+      "size": 24,
+      "rotation": 2,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 153,
+      "y": 364,
+      "size": 28,
+      "rotation": 250,
+      "alpha": 0.47,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 163,
+      "y": 365,
+      "size": 30,
+      "rotation": 119,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 171,
+      "y": 372,
+      "size": 23,
+      "rotation": 167,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 7,
+      "y": 386,
+      "size": 25,
+      "rotation": 63,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 15,
+      "y": 380,
+      "size": 29,
+      "rotation": 208,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 31,
+      "y": 388,
+      "size": 24,
+      "rotation": 201,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 41,
+      "y": 383,
+      "size": 24,
+      "rotation": 161,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 49,
+      "y": 386,
+      "size": 26,
+      "rotation": 105,
+      "alpha": 0.53,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 64,
+      "y": 384,
+      "size": 23,
+      "rotation": 283,
+      "alpha": 0.52,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 75,
+      "y": 385,
+      "size": 24,
+      "rotation": 183,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 93,
+      "y": 383,
+      "size": 22,
+      "rotation": 132,
+      "alpha": 0.56,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 100,
+      "y": 380,
+      "size": 26,
+      "rotation": 118,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 118,
+      "y": 383,
+      "size": 26,
+      "rotation": 344,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 126,
+      "y": 383,
+      "size": 27,
+      "rotation": 145,
+      "alpha": 0.5,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 135,
+      "y": 386,
+      "size": 28,
+      "rotation": 40,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 152,
+      "y": 381,
+      "size": 25,
+      "rotation": 80,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 164,
+      "y": 383,
+      "size": 30,
+      "rotation": 100,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 170,
+      "y": 381,
+      "size": 25,
+      "rotation": 163,
+      "alpha": 0.48,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 4,
+      "y": 400,
+      "size": 29,
+      "rotation": 21,
+      "alpha": 0.57,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 15,
+      "y": 393,
+      "size": 26,
+      "rotation": 136,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 26,
+      "y": 400,
+      "size": 23,
+      "rotation": 262,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 43,
+      "y": 401,
+      "size": 22,
+      "rotation": 353,
+      "alpha": 0.58,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 51,
+      "y": 402,
+      "size": 29,
+      "rotation": 55,
+      "alpha": 0.6,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 64,
+      "y": 397,
+      "size": 27,
+      "rotation": 41,
+      "alpha": 0.52,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 78,
+      "y": 402,
+      "size": 23,
+      "rotation": 78,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 93,
+      "y": 394,
+      "size": 28,
+      "rotation": 187,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 98,
+      "y": 395,
+      "size": 30,
+      "rotation": 357,
+      "alpha": 0.57,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 118,
+      "y": 398,
+      "size": 23,
+      "rotation": 316,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 122,
+      "y": 394,
+      "size": 27,
+      "rotation": 302,
+      "alpha": 0.51,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 133,
+      "y": 396,
+      "size": 24,
+      "rotation": 87,
+      "alpha": 0.59,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 152,
+      "y": 393,
+      "size": 25,
+      "rotation": 269,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 160,
+      "y": 399,
+      "size": 24,
+      "rotation": 132,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 173,
+      "y": 396,
+      "size": 24,
+      "rotation": 160,
+      "alpha": 0.56,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 10,
+      "y": 416,
+      "size": 30,
+      "rotation": 51,
+      "alpha": 0.45,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 17,
+      "y": 410,
+      "size": 28,
+      "rotation": 91,
+      "alpha": 0.59,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 27,
+      "y": 414,
+      "size": 22,
+      "rotation": 273,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 45,
+      "y": 411,
+      "size": 22,
+      "rotation": 229,
+      "alpha": 0.54,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 50,
+      "y": 414,
+      "size": 29,
+      "rotation": 189,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 67,
+      "y": 416,
+      "size": 27,
+      "rotation": 108,
+      "alpha": 0.51,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 78,
+      "y": 414,
+      "size": 28,
+      "rotation": 305,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 90,
+      "y": 416,
+      "size": 29,
+      "rotation": 190,
+      "alpha": 0.55,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 103,
+      "y": 413,
+      "size": 30,
+      "rotation": 188,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 113,
+      "y": 416,
+      "size": 29,
+      "rotation": 88,
+      "alpha": 0.54,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 122,
+      "y": 412,
+      "size": 28,
+      "rotation": 85,
+      "alpha": 0.58,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 140,
+      "y": 416,
+      "size": 24,
+      "rotation": 211,
+      "alpha": 0.46,
+      "flipX": true
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 152,
+      "y": 416,
+      "size": 27,
+      "rotation": 55,
+      "alpha": 0.49,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 166,
+      "y": 412,
+      "size": 26,
+      "rotation": 290,
+      "alpha": 0.55,
+      "flipX": false
+    },
+    {
+      "src": "pierres/pierres_07.png",
+      "x": 176,
+      "y": 416,
+      "size": 23,
+      "rotation": 231,
+      "alpha": 0.45,
+      "flipX": true
+    }
+  ]
+}
