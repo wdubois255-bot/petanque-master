@@ -172,20 +172,19 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
-        // === STATS PANEL (right side) ===
+        // === STATS + REWARDS PANEL (right side) ===
         const panelX = 530;
         const panelY = 155;
         const panelW = 280;
-        const panelH = 200;
+        const panelH = 195;
         const statsContainer = this.add.container(0, 0).setAlpha(0).setDepth(5);
 
-        // Panel background (clean, dark with subtle border)
+        // Panel background
         const panelGfx = this.add.graphics();
         panelGfx.fillStyle(0x1A1510, 0.75);
         panelGfx.fillRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
         panelGfx.lineStyle(1, this.won ? 0xD4A574 : 0x6B4A3A, 0.4);
         panelGfx.strokeRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
-        // Inner highlight
         panelGfx.lineStyle(1, 0xF5E6D0, 0.06);
         panelGfx.beginPath();
         panelGfx.moveTo(panelX - panelW / 2 + 12, panelY + 1);
@@ -193,50 +192,112 @@ export default class ResultScene extends Phaser.Scene {
         panelGfx.strokePath();
         statsContainer.add(panelGfx);
 
-        // Panel title
-        statsContainer.add(this.add.text(panelX, panelY + 16,
-            I18n.t('result.stats_title') || 'STATISTIQUES', {
-                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(0.5));
-
-        // Stats grid (2 columns x 3 rows)
+        // Compute stats
         const ms = this.matchStats;
         const bestDist = ms.bestBallDist && ms.bestBallDist < Infinity
             ? `${(ms.bestBallDist * (PIXELS_TO_METERS || 0.036) * 100).toFixed(0)}cm`
             : '-';
         const totalThrows = (ms.shots || 0) + (ms.points_attempted || 0);
-        const tirRatio = totalThrows > 0 ? `${Math.round((ms.shots || 0) / totalThrows * 100)}%` : '-';
 
+        // Playstyle label (more meaningful than raw %)
+        let playstyle = I18n.t('result.stats.style_balanced') || 'Equilibre';
+        if (totalThrows > 0) {
+            const tirPct = (ms.shots || 0) / totalThrows;
+            if (tirPct >= 0.6) playstyle = I18n.t('result.stats.style_tireur') || 'Tireur';
+            else if (tirPct <= 0.2) playstyle = I18n.t('result.stats.style_pointeur') || 'Pointeur';
+        }
+
+        // 4 key stats (2x2 grid) — focused on what matters
         const stats = [
             { label: I18n.t('result.stats.menes'), value: ms.menes || '?', color: '#F5E6D0' },
-            { label: I18n.t('result.stats.best_score'), value: ms.bestMene || '0', color: '#F5E6D0' },
+            { label: I18n.t('result.stats.best_ball'), value: bestDist, color: '#87CEEB' },
             { label: I18n.t('result.stats.carreaux'), value: ms.carreaux || 0, color: (ms.carreaux || 0) > 0 ? '#FFD700' : '#F5E6D0' },
-            { label: I18n.t('result.stats.biberons'), value: ms.biberons || 0, color: (ms.biberons || 0) > 0 ? '#FFD700' : '#F5E6D0' },
-            { label: I18n.t('result.stats.best_ball'), value: bestDist, color: '#F5E6D0' },
-            { label: I18n.t('result.stats.hit_rate'), value: tirRatio, color: '#F5E6D0' },
+            { label: I18n.t('result.stats.playstyle') || 'Style', value: playstyle, color: '#9B7BB8' },
         ];
 
         for (let i = 0; i < stats.length; i++) {
             const col = i % 2;
             const row = Math.floor(i / 2);
             const sx = panelX - panelW / 2 + 24 + col * (panelW / 2);
-            const sy = panelY + 36 + row * 50;
+            const sy = panelY + 12 + row * 44;
 
             statsContainer.add(this.add.text(sx, sy, stats[i].label, {
                 fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E', shadow: SHADOW
             }));
+            const isTextValue = typeof stats[i].value === 'string' && stats[i].value.length > 4;
             statsContainer.add(this.add.text(sx, sy + 14, `${stats[i].value}`, {
-                fontFamily: 'monospace', fontSize: '20px', color: stats[i].color, shadow: HEAVY_SHADOW
+                fontFamily: 'monospace', fontSize: isTextValue ? '14px' : '20px',
+                color: stats[i].color, shadow: HEAVY_SHADOW
             }));
         }
 
-        // Fanny badge (inside panel, bottom)
+        // Fanny badge
         if (ms.fanny) {
-            statsContainer.add(this.add.text(panelX, panelY + panelH - 16,
+            statsContainer.add(this.add.text(panelX, panelY + 104,
                 I18n.t('result.fanny'), {
                     fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F',
                     shadow: HEAVY_SHADOW
                 }).setOrigin(0.5));
+        }
+
+        // ── Rewards section (inside panel, bottom zone) ──
+        const rewardBaseY = panelY + 110;
+        const rewardSep = this.add.graphics();
+        rewardSep.lineStyle(1, 0xD4A574, 0.15);
+        rewardSep.beginPath();
+        rewardSep.moveTo(panelX - panelW / 2 + 16, rewardBaseY);
+        rewardSep.lineTo(panelX + panelW / 2 - 16, rewardBaseY);
+        rewardSep.strokePath();
+        statsContainer.add(rewardSep);
+
+        const rewardLineY = rewardBaseY + 14;
+        const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
+
+        // Rookie XP (compute early for layout)
+        const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
+        let xpEarned = 0;
+        if (isRookie) {
+            if (this.won) {
+                if (this.arcadeState) {
+                    const save = loadSave();
+                    const currentRound = this.arcadeState.currentRound - 1;
+                    xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
+                } else {
+                    xpEarned = ROOKIE_XP_QUICKPLAY;
+                }
+            } else {
+                xpEarned = ROOKIE_XP_LOSS;
+            }
+        }
+
+        // Galets + XP on same line to save space
+        if (galetsToGive > 0 || xpEarned > 0) {
+            const parts = [];
+            if (galetsToGive > 0) { addGalets(galetsToGive); parts.push(`+${galetsToGive} Galets`); }
+            if (xpEarned > 0) parts.push(`+${xpEarned} XP`);
+            const rewardStr = parts.join('   ');
+            statsContainer.add(this.add.text(panelX, rewardLineY, rewardStr, {
+                fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: HEAVY_SHADOW
+            }).setOrigin(0.5));
+        }
+
+        // Match challenge (below rewards, compact)
+        if (this.matchChallenge && this.won) {
+            const c = this.matchChallenge;
+            const msc = this.matchStats;
+            let completed = false;
+            if (c.condition === 'carreaux >= 1' && (msc.carreaux || 0) >= 1) completed = true;
+            if (c.condition === 'shots === 0 && won' && (msc.shots || 0) === 0) completed = true;
+            if (c.condition === 'won && opponentScore <= 5' && this.scores.opponent <= 5) completed = true;
+            if (c.condition === 'won && maxDeficit >= 5' && (msc._maxDeficit || 0) >= 5) completed = true;
+            if (c.condition === 'won && opponentScore === 0' && this.scores.opponent === 0) completed = true;
+            if (completed) {
+                addGalets(c.reward);
+                statsContainer.add(this.add.text(panelX, rewardLineY + 20,
+                    I18n.t('arcade.challenge_complete', { galets: c.reward }), {
+                        fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', shadow: SHADOW
+                    }).setOrigin(0.5));
+            }
         }
 
         // Stats panel slides in
@@ -255,75 +316,6 @@ export default class ResultScene extends Phaser.Scene {
             galetsEarned: this.won ? this.galetsEarned : 0,
             bestMeneScore: this.matchStats?.bestMene || 0
         });
-
-        // ════════════════════════════════════════════════════════
-        //  REWARDS ZONE — Galets + XP (below stats panel)
-        // ════════════════════════════════════════════════════════
-        const rewardY = panelY + panelH + 18;
-        const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
-        if (galetsToGive > 0) {
-            addGalets(galetsToGive);
-            if (this.textures.exists('v2_icon_galet')) {
-                const galetIcon = this.add.sprite(panelX - 50, rewardY, 'v2_icon_galet', 0)
-                    .setScale(0.8).setOrigin(0.5).setAlpha(0).setDepth(6);
-                this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 1800 });
-            }
-            const galetText = this.add.text(panelX, rewardY, `+${galetsToGive} Galets`, {
-                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: HEAVY_SHADOW
-            }).setOrigin(0.5).setAlpha(0).setScale(0.5).setDepth(6);
-            this.tweens.add({
-                targets: galetText, alpha: 1, scale: 1,
-                duration: 500, ease: 'Back.easeOut', delay: 1800
-            });
-        }
-
-        // Match challenge
-        if (this.matchChallenge && this.won) {
-            const c = this.matchChallenge;
-            const msc = this.matchStats;
-            let completed = false;
-            if (c.condition === 'carreaux >= 1' && (msc.carreaux || 0) >= 1) completed = true;
-            if (c.condition === 'shots === 0 && won' && (msc.shots || 0) === 0) completed = true;
-            if (c.condition === 'won && opponentScore <= 5' && this.scores.opponent <= 5) completed = true;
-            if (c.condition === 'won && maxDeficit >= 5' && (msc._maxDeficit || 0) >= 5) completed = true;
-            if (c.condition === 'won && opponentScore === 0' && this.scores.opponent === 0) completed = true;
-            if (completed) {
-                addGalets(c.reward);
-                const ctxt = this.add.text(panelX, rewardY + 24,
-                    I18n.t('arcade.challenge_complete', { galets: c.reward }), {
-                        fontFamily: 'monospace', fontSize: '12px', color: '#FFD700',
-                        shadow: HEAVY_SHADOW
-                    }).setOrigin(0.5).setAlpha(0).setDepth(6);
-                this.tweens.add({ targets: ctxt, alpha: 1, duration: 500, delay: 2400 });
-            }
-        }
-
-        // Rookie XP
-        const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
-        let xpEarned = 0;
-        if (isRookie) {
-            if (this.won) {
-                if (this.arcadeState) {
-                    const save = loadSave();
-                    const currentRound = this.arcadeState.currentRound - 1;
-                    xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
-                } else {
-                    xpEarned = ROOKIE_XP_QUICKPLAY;
-                }
-            } else {
-                xpEarned = ROOKIE_XP_LOSS;
-            }
-            if (xpEarned > 0) {
-                const xpText = this.add.text(panelX, rewardY + (galetsToGive > 0 ? 24 : 0),
-                    `+${xpEarned} XP`, {
-                        fontFamily: 'monospace', fontSize: '14px', color: '#9B7BB8',
-                        shadow: HEAVY_SHADOW
-                    }).setOrigin(0.5).setAlpha(0).setDepth(6);
-                this.tweens.add({ targets: xpText, alpha: 1, duration: 400, delay: 2200 });
-            }
-        }
-
-        this._showNextUnlockTeaser(isRookie);
 
         // ════════════════════════════════════════════════════════
         //  BOTTOM ZONE — Buttons (380-480px)
@@ -976,8 +968,8 @@ export default class ResultScene extends Phaser.Scene {
     // === PROCHAIN OBJECTIF : teaser galets + rookie ability ===
     _showNextUnlockTeaser(isRookie) {
         const save = loadSave();
-        const teaserY = GAME_HEIGHT - 44;
-        const cx = GAME_WIDTH / 2;
+        const teaserY = GAME_HEIGHT - 36; // Just above controls hint
+        const cx = 160; // Left side, under character
         const SHADOW_SM = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
 
         // --- Galets teaser ---
