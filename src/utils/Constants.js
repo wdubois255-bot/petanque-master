@@ -320,7 +320,7 @@ export const TERRAIN_COLORS = {
     terre: { bg: 0xC4854A, line: 0xFFFFFF },
     herbe: { bg: 0x6B8E4E, line: 0xFFFFFF },
     sable: { bg: 0xE8D5B7, line: 0xFFFFFF },
-    dalles: { bg: 0x9E9E8E, line: 0xFFFFFF }
+    dalles: { bg: 0x7A7A70, line: 0xC0C0C0 }
 };
 
 // Terrain friction multipliers
