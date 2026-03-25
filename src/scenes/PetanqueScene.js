@@ -10,7 +10,8 @@ import {
     MOMENTUM_INDICATOR_THRESHOLD, MOMENTUM_INDICATOR_ALPHA, MOMENTUM_INDICATOR_RADIUS,
     PRESSURE_INDICATOR_COLOR, PRESSURE_WOBBLE_AMPLITUDE, PRESSURE_WOBBLE_SPEED,
     CHALLENGE_BANNER_DURATION, CHALLENGE_REWARD_GALETS, CHALLENGE_PROBABILITY,
-    CROWD_INTENSITY_BY_ROUND, COMMENTATOR_COOLDOWN
+    CROWD_INTENSITY_BY_ROUND, COMMENTATOR_COOLDOWN,
+    FOCUS_CHARGES_PER_MATCH
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -154,7 +155,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // Focus (Respire) + Character Unique Ability
         const save = loadSave();
         const extraFocus = save.purchases.filter(p => p === 'focus_extra').length;
-        this.aimingSystem.resetFocusCharges(5 + extraFocus);
+        this.aimingSystem.resetFocusCharges(FOCUS_CHARGES_PER_MATCH + extraFocus);
         const ability = this._getCharacterAbility(this.playerCharId);
         if (ability) {
             const extraCharge = save.purchases.filter(p => p === 'charge_extra').length;
