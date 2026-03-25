@@ -32,10 +32,13 @@
 - [x] Loft simplifie : demi-portee (default), plombee (unlock 1ere victoire), tir au fer
 - [x] ~~Roulette, Tir devant, Rafle~~ retires (session 23 — simplification onboarding)
 - [x] Retro (backspin) toggle [R]
-- [x] **Spin lateral** [E] : off → ← gauche → → droite → off (stat Effet >= 4, force 0.045 * effetStat/10)
+- [x] **Spin lateral** [E] : off → ← gauche → → droite → off (stat Effet >= 3, force 0.15 * effetStat/10) — rebalance session 25
 - [x] Ciblage cochonnet [B] (angle auto-oriente vers cochonnet)
+- [x] **Plombee rebalancee** : 72% vol / 28% roule, rollEfficiency 1.10 (overshoot terrain) — session 25
+- [x] **Impact terrain sur distance** : compensation partielle (0.6) — sable 76%, dalles 115% de terre — session 25
+- [x] **Portee augmentee** : THROW_RANGE_FACTOR 0.92 (was 0.85) — session 25
 - **Fichiers** : `src/petanque/Ball.js`, `src/petanque/Cochonnet.js`, `src/petanque/PetanqueEngine.js`
-- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*, LOFT_DEMI_PORTEE/PLOMBEE/TIR, LATERAL_SPIN_*)
+- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*, LOFT_*, LATERAL_SPIN_*, THROW_RANGE_FACTOR*, TERRAIN_ROLL_COMPENSATION)
 
 ### 2.2 Systeme de visee
 - [x] Drag-and-release (direction + puissance)
