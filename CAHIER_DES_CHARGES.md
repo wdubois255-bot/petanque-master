@@ -29,17 +29,17 @@
 - [x] Rebonds murs (terrain Docks)
 - [x] Zones de friction mixte (Parc : herbe + gravier)
 - [x] Zones de pente (Colline : gravity_component)
-- [x] Loft : roulette, demi-portee, plombee, tir au fer, tir devant
-- [x] **Tir a la rafle** (rasant, landingFactor 0.20, arc minimal)
+- [x] Loft simplifie : demi-portee (default), plombee (unlock 1ere victoire), tir au fer
+- [x] ~~Roulette, Tir devant, Rafle~~ retires (session 23 — simplification onboarding)
 - [x] Retro (backspin) toggle [R]
 - [x] **Spin lateral** [E] : off → ← gauche → → droite → off (stat Effet >= 4, force 0.045 * effetStat/10)
 - [x] Ciblage cochonnet [B] (angle auto-oriente vers cochonnet)
 - **Fichiers** : `src/petanque/Ball.js`, `src/petanque/Cochonnet.js`, `src/petanque/PetanqueEngine.js`
-- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*, LOFT_RAFLE, LATERAL_SPIN_*)
+- **Constantes** : `src/utils/Constants.js` (FRICTION_BASE, COR_*, TERRAIN_FRICTION_*, LOFT_DEMI_PORTEE/PLOMBEE/TIR, LATERAL_SPIN_*)
 
 ### 2.2 Systeme de visee
 - [x] Drag-and-release (direction + puissance)
-- [x] **Selecteur a onglets [P]/[T]** : Pointer (Roulette/Demi/Plombee) + Tirer (Rafle/Fer/Devant), suggestion tactique, retour ESC
+- [x] **Selecteur simplifie** : panneau plat 2-3 boutons (Demi-portee/Plombee/Tir au fer), suggestion tactique, retour ESC
 - [x] Focus (Respire) : 5 charges, -80% wobble
 - [x] Capacites uniques par personnage
 - [x] Tremblement sous pression (sang_froid stat)
