@@ -22,6 +22,7 @@ export default class PlayerScene extends Phaser.Scene {
         this._activeTab = 0;
         this._contentElements = [];
         this._hoverTooltip = null;
+        this._transitioning = false;
     }
 
     create() {

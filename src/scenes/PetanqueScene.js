@@ -78,6 +78,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this._goldenZoneActive = false;
         // Phase 5 — Match challenge
         this._matchChallenge = null;
+        this._matchChallengePanel = null;
     }
 
     create() {
@@ -219,41 +220,13 @@ export default class PetanqueScene extends Phaser.Scene {
             });
         };
 
-        // === COMMENTATEUR ===
-        this._commentator = new Commentator(this);
-        this._commentator.loadPhrases(this.cache);
+        // === COMMENTATEUR (disabled — encombrait l'ecran) ===
+        this._commentator = null;
 
-        // Hook resultats de tir → commentateur
-        this.engine.onShotResult = (resultType, ball) => {
-            const catMap = {
-                carreau: 'carreau', ciseau: 'ciseau', palet: 'palet',
-                biberon: 'biberon', contre: 'contre', trou: 'trou', recul: 'tres_pres'
-            };
-            const cat = catMap[resultType];
-            if (cat) this._commentator.say(cat);
-        };
-
-        // Hook score → commentateur (tension, match_point, fanny, comeback)
+        // Hook score for gameplay indicators (pressure, momentum, challenges)
         const _origOnScore = this.engine.onScore;
         this.engine.onScore = (scores, winner, points) => {
             if (_origOnScore) _origOnScore(scores, winner, points);
-            const total = scores.player + scores.opponent;
-            const maxScore = Math.max(scores.player, scores.opponent);
-            const minScore = Math.min(scores.player, scores.opponent);
-            const diff = maxScore - minScore;
-            // Fanny
-            if (scores[winner] >= 13 && scores[winner === 'player' ? 'opponent' : 'player'] === 0) {
-                this._commentator.say('fanny', true);
-            // Match point
-            } else if (scores[winner] >= 12) {
-                this._commentator.say('match_point', true);
-            // Egalite serree
-            } else if (minScore >= 10 && diff <= 2) {
-                this._commentator.say('tension');
-            // Comeback (retour de 5+ points)
-            } else if (winner === 'player' && diff >= 5 && scores.player > scores.opponent) {
-                this._commentator.say('comeback');
-            }
 
             // === Phase 5 B2 — Pressure indicator ===
             if (scores.player >= 10 && scores.opponent >= 10) {
@@ -417,24 +390,26 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.engine.startGame();
 
-        // === ARCADE BADGE "Match X/Y" (animated entry) ===
+        // === ARCADE BADGE "Match X/Y" (top-left, aligned with score panel) ===
         if (this.arcadeRound) {
             const arcadeData = this.cache.json.get('arcade');
             const totalMatches = arcadeData?.matches?.length ?? '?';
             const badgeText = `Match ${this.arcadeRound}/${totalMatches}`;
-            const badgeW = badgeText.length * 6 + 10;
+            const badgeW = badgeText.length * 7 + 16;
+            const badgeH = 22;
+            const badgeX = 6;
+            const badgeY = 6;
             const badgeBg = this.add.graphics().setDepth(92).setAlpha(0);
-            badgeBg.fillStyle(0x3A2E28, 0.7);
-            badgeBg.fillRoundedRect(4, 36, badgeW, 16, 3);
-            const badgeLabel = this.add.text(4 + badgeW / 2, 44, badgeText, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574'
+            badgeBg.fillStyle(0x3A2E28, 0.85);
+            badgeBg.fillRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
+            badgeBg.lineStyle(1, 0xD4A574, 0.3);
+            badgeBg.strokeRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
+            const badgeLabel = this.add.text(badgeX + badgeW / 2, badgeY + badgeH / 2, badgeText, {
+                fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(92).setAlpha(0);
-            // Slide in from left
-            badgeBg.setPosition(-badgeW, 0);
-            badgeLabel.setPosition(-badgeW + 4 + badgeW / 2, 44);
-            this.tweens.add({ targets: [badgeBg, badgeLabel], alpha: 1, duration: 300, delay: 500 });
-            this.tweens.add({ targets: badgeBg, x: 0, duration: 400, delay: 500, ease: 'Back.easeOut' });
-            this.tweens.add({ targets: badgeLabel, x: 4 + badgeW / 2, duration: 400, delay: 500, ease: 'Back.easeOut' });
+            // Fade in
+            this.tweens.add({ targets: [badgeBg, badgeLabel], alpha: 1, duration: 400, delay: 500 });
         }
 
         // === Phase 5 — Mene challenges (arcade only) ===
@@ -442,21 +417,14 @@ export default class PetanqueScene extends Phaser.Scene {
             const arcadeData = this.cache.json.get('arcade');
             this._challengePool = arcadeData?.mene_challenges || [];
 
-            // Match challenge
+            // Match challenge — persistent panel on the right side
             const matchChallenges = arcadeData?.match_challenges || [];
             if (matchChallenges.length > 0) {
                 this._matchChallenge = matchChallenges[Math.floor(Math.random() * matchChallenges.length)];
-                const cText = I18n.field(this._matchChallenge, 'name');
-                this.time.delayedCall(3000, () => {
-                    const badge = this.add.text(4, 56, 'Defi: ' + cText, {
-                        fontFamily: 'monospace', fontSize: '8px', color: '#FFD700',
-                        backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
-                    }).setDepth(92).setAlpha(0);
-                    this.tweens.add({ targets: badge, alpha: 0.8, duration: 500 });
-                    this.time.delayedCall(5000, () => {
-                        if (badge.active) this.tweens.add({ targets: badge, alpha: 0, duration: 500 });
-                    });
-                });
+                const cName = I18n.field(this._matchChallenge, 'name');
+                const cDesc = I18n.field(this._matchChallenge, 'description');
+                const cReward = this._matchChallenge.reward || CHALLENGE_REWARD_GALETS;
+                this._matchChallengePanel = this._createChallengePanel(cName, cDesc, cReward);
             }
         }
 
@@ -667,24 +635,69 @@ export default class PetanqueScene extends Phaser.Scene {
         }
     }
 
-    // === Phase 5 D1 — Challenge banner ===
+    // === Challenge panel (persistent, right side) ===
+    _createChallengePanel(name, description, reward) {
+        const px = GAME_WIDTH - 148;
+        const py = 62;
+        const pw = 142;
+        const ph = 52;
+
+        const container = this.add.container(px + pw / 2, py + ph / 2).setDepth(92).setAlpha(0);
+
+        const bg = this.add.graphics();
+        bg.fillStyle(0x3A2E28, 0.85);
+        bg.fillRoundedRect(-pw / 2, -ph / 2, pw, ph, 4);
+        bg.lineStyle(1, 0xFFD700, 0.4);
+        bg.strokeRoundedRect(-pw / 2, -ph / 2, pw, ph, 4);
+        container.add(bg);
+
+        const header = this.add.text(0, -ph / 2 + 8, I18n.t('arcade.challenge_label') || 'DEFI', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5);
+        container.add(header);
+
+        const desc = this.add.text(0, 2, description || name, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#F5E6D0',
+            wordWrap: { width: pw - 12 }, align: 'center',
+            lineSpacing: 1
+        }).setOrigin(0.5);
+        container.add(desc);
+
+        const rewardTxt = this.add.text(0, ph / 2 - 8, `+${reward} Galets`, {
+            fontFamily: 'monospace', fontSize: '8px', color: '#D4A574'
+        }).setOrigin(0.5);
+        container.add(rewardTxt);
+
+        // Slide in from right
+        container.x += pw;
+        this.tweens.add({
+            targets: container, x: px + pw / 2, alpha: 1,
+            duration: 500, delay: 2000, ease: 'Back.easeOut'
+        });
+
+        return container;
+    }
+
+    // === Phase 5 D1 — Mene challenge banner (right side, below match challenge) ===
     _showChallengeBanner(text) {
         if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
 
-        const cx = GAME_WIDTH / 2;
-        const y = 55;
+        const bx = GAME_WIDTH - 148 + 71; // aligned with challenge panel
+        const y = 124;
 
-        const container = this.add.container(cx, y).setDepth(95).setAlpha(0);
+        const container = this.add.container(bx, y).setDepth(95).setAlpha(0);
 
         const bg = this.add.graphics();
         bg.fillStyle(0x3A2E28, 0.9);
-        bg.fillRoundedRect(-160, -14, 320, 28, 6);
+        bg.fillRoundedRect(-71, -14, 142, 28, 4);
         bg.lineStyle(1, 0xFFD700, 0.5);
-        bg.strokeRoundedRect(-160, -14, 320, 28, 6);
+        bg.strokeRoundedRect(-71, -14, 142, 28, 4);
         container.add(bg);
 
         const label = this.add.text(0, 0, text, {
-            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700',
+            fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
+            wordWrap: { width: 130 }, align: 'center',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
         container.add(label);
@@ -761,6 +774,9 @@ export default class PetanqueScene extends Phaser.Scene {
             if (this._pressureBadge) { this._pressureBadge.destroy(); this._pressureBadge = null; }
             if (this._pressureText) { this._pressureText.destroy(); this._pressureText = null; }
             if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
+            if (this._matchChallengePanel) { this._matchChallengePanel.destroy(true); this._matchChallengePanel = null; }
+            if (this._playerHalo) { this._playerHalo.destroy(); this._playerHalo = null; }
+            if (this._opponentHalo) { this._opponentHalo.destroy(); this._opponentHalo = null; }
             this._clearGoldenZone();
             if (this.tweens) this.tweens.killAll();
         } catch (e) {
@@ -994,13 +1010,18 @@ export default class PetanqueScene extends Phaser.Scene {
         const circleX = this.throwCircleX;
         const circleY = this.throwCircleY + 20;
 
-        // Watcher positions (where the non-active player stands, well separated)
-        // Player watches from the LEFT of the terrain (further out to avoid overlap)
-        this._playerWatchX = this.terrainX - 55;
+        // Watcher positions (where the non-active player stands)
+        // Keep close to terrain border; visibility ensured by high depth + halo
+        this._playerWatchX = this.terrainX - 30;
         this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.35;
-        // Opponent watches from the RIGHT of the terrain
-        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 55;
+        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 30;
         this._opponentWatchY = this.terrainY + 100;
+
+        // Halo behind watchers — ensures visibility against tree foliage
+        this._playerHalo = this.add.ellipse(this._playerWatchX, this._playerWatchY, 48, 24, 0xF5E6D0, 0.25)
+            .setDepth(19);
+        this._opponentHalo = this.add.ellipse(this._opponentWatchX, this._opponentWatchY, 48, 24, 0xF5E6D0, 0.25)
+            .setDepth(19);
 
         // Shared circle position (both players use the same throw circle)
         this._circleX = circleX;
@@ -1087,6 +1108,13 @@ export default class PetanqueScene extends Phaser.Scene {
             this._opponentWatchY = Math.max(this.terrainY + 60,
                 Math.min(this.engine.cochonnet.y + 10, this.terrainY + TERRAIN_HEIGHT - 40));
             this._playerWatchY = this._opponentWatchY;
+        }
+        // Move halos to match watcher positions
+        if (this._playerHalo) {
+            this._playerHalo.setPosition(this._playerWatchX, this._playerWatchY + 16);
+        }
+        if (this._opponentHalo) {
+            this._opponentHalo.setPosition(this._opponentWatchX, this._opponentWatchY + 16);
         }
     }
 

@@ -69,8 +69,18 @@ export default class ArcadeScene extends Phaser.Scene {
             this.playerCharacter.isRookie = true;
         }
 
-        // Show intro narrative on very first Arcade session (never seen before)
+        // Restore arcade progress from save on fresh entry (no match just played)
         const save = loadSave();
+        if (this.currentRound === 1 && !this.lastMatchResult) {
+            const savedProgress = save.arcadeProgress || 0;
+            if (savedProgress > 0) {
+                this.currentRound = savedProgress + 1;
+                this.wins = savedProgress;
+                this.matchResults = Array.from({ length: savedProgress }, (_, i) => ({ round: i + 1, won: true }));
+            }
+        }
+
+        // Show intro narrative on very first Arcade session (never seen before)
         if (this.currentRound === 1 && !this.lastMatchResult && this.arcadeData.intro_narrative && !save.arcadeIntroSeen) {
             setArcadeIntroSeen();
             this._showNarrative(I18n.fieldArray(this.arcadeData, 'intro_narrative') || this.arcadeData.intro_narrative, () => {
@@ -114,7 +124,6 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Check if arcade is complete (either by wins count or saved progress)
         const totalMatches = this.arcadeData.matches.length;
-        const save = loadSave();
         if (this.wins >= totalMatches || this.currentRound > totalMatches || (save.arcadeProgress || 0) >= totalMatches) {
             this._showArcadeComplete();
             return;
