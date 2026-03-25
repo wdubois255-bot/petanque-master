@@ -216,6 +216,7 @@ export default class TerrainRenderer {
         this._drawBackgroundDecor();
         this._drawTerrainShadow();
         this._drawSurface();
+        this._drawTerrainObjects();
         this._drawDeadLines();
         this._drawBorders();
         return this;
@@ -313,6 +314,34 @@ export default class TerrainRenderer {
         }
     }
 
+    // ============================================================
+    // TERRAIN OBJECTS - Sprites éditeur (pierres, touffes, rivets…)
+    // Données : public/data/terrain_objects.json
+    // Clé texture : 'to_' + filename sans extension
+    // ============================================================
+    _drawTerrainObjects() {
+        const data = this.scene.cache.json.get('terrain_objects');
+        if (!data) return;
+        const objs = data[this.terrainId];
+        if (!objs || !objs.length) return;
+
+        for (const o of objs) {
+            const key = 'to_' + o.src.split('/').pop().replace('.png', '');
+            if (!this.scene.textures.exists(key)) continue;
+
+            const img = this.scene.add.image(
+                this.tx + o.x,
+                this.ty + o.y,
+                key
+            );
+            img.setScale(o.size / 32);
+            img.setAngle(o.rotation);
+            img.setAlpha(o.alpha);
+            if (o.flipX) img.setFlipX(true);
+            img.setDepth(2.5);
+        }
+    }
+
     // Decors proceduraux supprimes — fond uni + sprites PixelLab uniquement
 
     // ============================================================
@@ -375,6 +404,16 @@ export default class TerrainRenderer {
             // Tint colline warmer to differentiate from village (same terre texture)
             if (this.terrainId === 'colline') {
                 ts.setTint(0xDDCC88);
+            }
+
+            // Overlay docks with blue-gray to neutralize warm reddish tones from dalles texture
+            if (this.terrainId === 'docks') {
+                this.scene.add.rectangle(
+                    this.tx + TERRAIN_WIDTH / 2,
+                    this.ty + TERRAIN_HEIGHT / 2,
+                    TERRAIN_WIDTH, TERRAIN_HEIGHT,
+                    0x506482, 0.45
+                ).setDepth(2.05);
             }
 
             // v2_terrain_terre overlay: adds gravel/debris detail on terre-based terrains
@@ -845,8 +884,8 @@ export default class TerrainRenderer {
             TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.35,
             TERRAIN_WIDTH / 2, TERRAIN_HEIGHT / 2, TERRAIN_HEIGHT * 0.6
         );
-        edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
-        edgeGrad.addColorStop(1, 'rgba(0,0,0,0.08)');
+        edgeGrad.addColorStop(0, 'rgba(58,46,40,0)');
+        edgeGrad.addColorStop(1, 'rgba(58,46,40,0.08)');
         ctx.fillStyle = edgeGrad;
         ctx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
     }
@@ -938,22 +977,22 @@ export default class TerrainRenderer {
         // Top
         for (let x = tx + inset; x < tx + tw - inset; x += chevronW * 2) {
             g.fillStyle(0xFFCC00, 0.6); g.fillRect(x, ty + inset, chevronW, 3);
-            g.fillStyle(0x1A1A18, 0.6); g.fillRect(x + chevronW, ty + inset, chevronW, 3);
+            g.fillStyle(0x1A1510, 0.6); g.fillRect(x + chevronW, ty + inset, chevronW, 3);
         }
         // Bottom
         for (let x = tx + inset; x < tx + tw - inset; x += chevronW * 2) {
             g.fillStyle(0xFFCC00, 0.6); g.fillRect(x, ty + th - inset - 3, chevronW, 3);
-            g.fillStyle(0x1A1A18, 0.6); g.fillRect(x + chevronW, ty + th - inset - 3, chevronW, 3);
+            g.fillStyle(0x1A1510, 0.6); g.fillRect(x + chevronW, ty + th - inset - 3, chevronW, 3);
         }
         // Left
         for (let y = ty + inset; y < ty + th - inset; y += chevronW * 2) {
             g.fillStyle(0xFFCC00, 0.6); g.fillRect(tx + inset, y, 3, chevronW);
-            g.fillStyle(0x1A1A18, 0.6); g.fillRect(tx + inset, y + chevronW, 3, chevronW);
+            g.fillStyle(0x1A1510, 0.6); g.fillRect(tx + inset, y + chevronW, 3, chevronW);
         }
         // Right
         for (let y = ty + inset; y < ty + th - inset; y += chevronW * 2) {
             g.fillStyle(0xFFCC00, 0.6); g.fillRect(tx + tw - inset - 3, y, 3, chevronW);
-            g.fillStyle(0x1A1A18, 0.6); g.fillRect(tx + tw - inset - 3, y + chevronW, 3, chevronW);
+            g.fillStyle(0x1A1510, 0.6); g.fillRect(tx + tw - inset - 3, y + chevronW, 3, chevronW);
         }
     }
 

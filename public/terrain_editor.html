@@ -4,951 +4,629 @@
 <meta charset="UTF-8">
 <title>Terrain Editor — Petanque Master</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    background: #0A0805;
-    color: #F5E6D0;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-}
-#topbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: #1A1510;
-    border-bottom: 2px solid #C4854A;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-}
-#topbar h1 { font-size: 11px; color: #C4854A; margin-right: 4px; }
-.sep { color: #3A2E28; }
-select {
-    background: #2A2018; color: #F5E6D0;
-    border: 1px solid #C4854A; padding: 3px 6px;
-    font-family: monospace; font-size: 11px; cursor: pointer;
-}
-button {
-    background: #C4854A; color: #1A1510;
-    border: none; padding: 4px 10px;
-    cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
-}
-button:hover { background: #D4A574; }
-button.danger { background: #C44B3F; color: #F5E6D0; }
-button.danger:hover { background: #D45540; }
-button.sec { background: #3A2E28; color: #F5E6D0; border: 1px solid #C4854A; }
-button.sec:hover { background: #4A3E38; }
-button.green { background: #6B8E4E; color: #F5E6D0; }
-button.green:hover { background: #7BA65E; }
-label { color: #9E9E8E; font-size: 10px; }
-#main { display: flex; flex: 1; overflow: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1A1510; color: #F5E6D0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-/* LEFT PANEL */
-#library {
-    width: 210px; background: #1A1510;
-    border-right: 2px solid #3A2E28;
-    overflow-y: auto; flex-shrink: 0;
+/* === LEFT: Palette === */
+#palette {
+    width: 220px; background: #2A2218; border-right: 2px solid #3A2E28;
+    display: flex; flex-direction: column; overflow-y: auto;
 }
-.cat-title {
-    background: #2A2018; padding: 4px 8px;
-    font-size: 9px; text-transform: uppercase;
-    color: #C4854A; border-top: 1px solid #3A2E28;
-    border-bottom: 1px solid #3A2E28;
-    letter-spacing: 1px; position: sticky; top: 0; z-index: 1;
+#palette h3 { padding: 10px; font-size: 13px; color: #FFD700; border-bottom: 1px solid #3A2E28; }
+.pal-section { padding: 8px; border-bottom: 1px solid #3A2E28; }
+.pal-section h4 { font-size: 11px; color: #9B7BB8; margin-bottom: 6px; }
+.pal-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.pal-item {
+    width: 48px; height: 48px; border: 1px solid #3A2E28; border-radius: 3px;
+    cursor: grab; background: #1A1510; image-rendering: pixelated; overflow: hidden;
 }
-.cat-unused .cat-title { color: #9B7BB8; }
-.sprite-grid { display: flex; flex-wrap: wrap; gap: 3px; padding: 5px; }
-.sprite-thumb {
-    cursor: pointer; border: 1px solid #3A2E28;
-    background: #0A0805; display: flex;
-    flex-direction: column; align-items: center;
-    padding: 2px; user-select: none;
-}
-.sprite-thumb:hover { border-color: #C4854A; }
-.sprite-thumb.active-add { border: 2px solid #FFD700; background: #1A1800; }
-.sprite-thumb canvas { image-rendering: pixelated; display: block; }
-.sprite-label {
-    font-size: 7px; color: #9E9E8E;
-    text-align: center; max-width: 56px;
-    overflow: hidden; text-overflow: ellipsis;
-    white-space: nowrap; margin-top: 1px;
-}
+.pal-item img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; pointer-events: none; }
+.pal-item:hover { border-color: #6B8E4E; }
+.pal-item.selected { border-color: #FFD700; border-width: 2px; }
+.pal-item .pal-label { font-size: 7px; text-align: center; color: #9B7BB8; overflow: hidden; white-space: nowrap; }
 
-/* CENTER CANVAS */
-#canvasArea {
-    flex: 1; overflow: auto;
-    display: flex; align-items: flex-start;
-    justify-content: center;
-    background: #080604; padding: 16px;
+/* === CENTER: Canvas === */
+#center { flex: 1; display: flex; flex-direction: column; align-items: center; }
+#toolbar {
+    display: flex; gap: 8px; padding: 8px; background: #2A2218;
+    border-bottom: 1px solid #3A2E28; width: 100%; justify-content: center; flex-wrap: wrap;
 }
-#canvasWrapper { position: relative; transform-origin: top center; flex-shrink: 0; }
-#canvas {
-    display: block; image-rendering: pixelated;
-    cursor: crosshair; border: 2px solid #3A2E28;
+#toolbar select, #toolbar button {
+    background: #3A2E28; color: #F5E6D0; border: 1px solid #6B8E4E;
+    padding: 5px 10px; border-radius: 3px; font-size: 12px; cursor: pointer;
 }
-#canvas.dragging { cursor: grabbing; }
-#canvas.placing { cursor: copy; }
+#toolbar button:hover { background: #6B8E4E; }
+#canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; }
+#terrain-wrap {
+    position: relative; border: 2px solid #6B8E4E; border-radius: 2px;
+    image-rendering: pixelated; cursor: crosshair; overflow: hidden;
+}
+#terrain-canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+.placed-obj {
+    position: absolute; cursor: move; outline: 1px dashed transparent;
+    image-rendering: pixelated; transform-origin: center center;
+}
+.placed-obj:hover, .placed-obj.selected { outline: 1px dashed #FFD700; }
+.placed-obj img { width: 100%; height: 100%; pointer-events: none; image-rendering: pixelated; }
 
-/* RIGHT PANEL */
-#propsPanel {
-    width: 225px; background: #1A1510;
-    border-left: 2px solid #3A2E28;
-    overflow-y: auto; flex-shrink: 0;
-    display: flex; flex-direction: column;
+/* === RIGHT: Properties === */
+#properties {
+    width: 230px; background: #2A2218; border-left: 2px solid #3A2E28;
+    padding: 10px; overflow-y: auto; display: flex; flex-direction: column;
 }
-#propsInner { padding: 10px; flex: 1; }
-#propsPanel h2 { font-size: 10px; color: #C4854A; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-.prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
-.prop-label { color: #C4854A; font-size: 10px; min-width: 50px; }
-input[type="number"] {
-    width: 62px; background: #2A2018; color: #F5E6D0;
-    border: 1px solid #3A2E28; padding: 2px 4px;
-    font-family: monospace; font-size: 11px;
+#properties h3 { font-size: 13px; color: #FFD700; margin-bottom: 8px; }
+.prop-group { margin-bottom: 8px; }
+.prop-group label { display: flex; justify-content: space-between; font-size: 11px; color: #9B7BB8; margin-bottom: 2px; }
+.prop-group input[type=range] { width: 100%; }
+.val { color: #D4A574; }
+#obj-list { max-height: 180px; overflow-y: auto; margin-bottom: 8px; }
+.obj-entry {
+    padding: 4px 6px; font-size: 11px; cursor: pointer; border-radius: 2px;
+    display: flex; justify-content: space-between; align-items: center;
 }
-input[type="range"] { width: 110px; accent-color: #C4854A; }
-input[type="checkbox"] { width: 16px; height: 16px; accent-color: #C4854A; cursor: pointer; }
-select.psel {
-    width: 138px; background: #2A2018; color: #F5E6D0;
-    border: 1px solid #3A2E28; padding: 2px 4px;
-    font-family: monospace; font-size: 10px;
+.obj-entry:hover { background: #3A2E28; }
+.obj-entry.active { background: #3A2E28; color: #FFD700; }
+.obj-entry .del-btn { color: #C44B3F; cursor: pointer; font-weight: bold; font-size: 14px; }
+#json-output {
+    flex: 1; min-height: 100px; width: 100%; background: #1A1510; color: #6B8E4E;
+    border: 1px solid #3A2E28; font-family: monospace; font-size: 10px;
+    padding: 4px; resize: vertical;
 }
-.pval { font-size: 9px; color: #9E9E8E; min-width: 30px; text-align: right; }
-#noSelect { color: #9E9E8E; font-size: 10px; margin-top: 20px; text-align: center; line-height: 1.8; }
-#propsButtons { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
-#coordHint {
-    font-size: 8px; color: #6B8E4E; background: #0A0805;
-    padding: 5px; margin-top: 8px; border: 1px solid #3A2E28;
-    white-space: pre; line-height: 1.6;
-}
-#exportArea { border-top: 1px solid #3A2E28; padding: 8px; }
-#exportArea h3 { font-size: 9px; color: #C4854A; margin-bottom: 6px; text-transform: uppercase; }
-#exportOutput {
-    background: #0A0805; color: #6B8E4E;
-    font-size: 8px; padding: 6px;
-    border: 1px solid #3A2E28; white-space: pre;
-    overflow: auto; max-height: 200px;
-    font-family: monospace; user-select: text; cursor: text;
-}
-
-/* STATUS BAR */
-#statusBar {
-    display: flex; gap: 12px;
-    padding: 3px 10px; background: #1A1510;
-    border-top: 1px solid #3A2E28;
-    font-size: 9px; color: #9E9E8E; flex-shrink: 0;
-}
-#statusBar b { color: #C4854A; }
-#zoomCtrl { display: flex; align-items: center; gap: 6px; }
+#help { font-size: 10px; color: #6B8E4E; margin-top: 6px; line-height: 1.5; }
 </style>
 </head>
 <body>
 
-<div id="topbar">
-    <h1>🎯 TERRAIN EDITOR</h1>
-    <span class="sep">|</span>
-    <label>Terrain :</label>
-    <select id="terrainSel">
-        <option value="village">Village (terre)</option>
-        <option value="plage">Plage (sable)</option>
-        <option value="parc">Parc (herbe)</option>
-        <option value="colline">Colline</option>
-        <option value="docks">Docks (nuit)</option>
-    </select>
-    <span class="sep">|</span>
-    <div id="zoomCtrl">
-        <button class="sec" id="zoomOut">−</button>
-        <span id="zoomVal" style="color:#C4854A;min-width:38px;text-align:center">100%</span>
-        <button class="sec" id="zoomIn">+</button>
-    </div>
-    <span class="sep">|</span>
-    <button class="sec" id="toggleOverlay">Overlay ON</button>
-    <button class="sec" id="loadCurrent">Charger scène actuelle</button>
-    <button class="danger" id="clearAll">Tout effacer</button>
-    <input type="file" id="importFile" accept=".json" style="display:none">
-    <button class="sec" id="importBtn">↑ Importer session</button>
-    <button class="sec" id="saveBtn">Sauvegarder session</button>
-    <button class="green" id="exportBtn" style="margin-left:auto">↓ Exporter JSON</button>
+<!-- LEFT: Palette -->
+<div id="palette">
+    <h3>Objets a placer</h3>
+    <div class="pal-section"><h4>Pierres / Cailloux</h4><div class="pal-grid" id="pal-pierres"></div></div>
+    <div class="pal-section"><h4>Impacts / Trous</h4><div class="pal-grid" id="pal-impacts"></div></div>
+    <div class="pal-section"><h4>Details terre</h4><div class="pal-grid" id="pal-terre"></div></div>
+    <div class="pal-section"><h4>Touffes d'herbe</h4><div class="pal-grid" id="pal-touffes"></div></div>
+    <div class="pal-section"><h4>Details plage</h4><div class="pal-grid" id="pal-plage"></div></div>
+    <div class="pal-section"><h4>Boulons / Dalles</h4><div class="pal-grid" id="pal-boulons"></div></div>
 </div>
 
-<div id="main">
-    <div id="library"><div id="libHint" style="padding:6px 8px;font-size:9px;color:#9E9E8E;border-bottom:1px solid #3A2E28;line-height:1.5">Cliquez un sprite → sélectionné<br>Puis cliquez sur le canvas pour placer</div></div>
-    <div id="canvasArea">
-        <div id="canvasWrapper">
-            <canvas id="canvas" width="832" height="480"></canvas>
-        </div>
+<!-- CENTER -->
+<div id="center">
+    <div id="toolbar">
+        <select id="terrain-select">
+            <option value="village">Village (terre)</option>
+            <option value="plage">Plage (sable)</option>
+            <option value="parc">Parc (herbe)</option>
+            <option value="colline">Colline (terre chaude)</option>
+            <option value="docks">Docks (dalles)</option>
+        </select>
+        <button onclick="exportJSON()">Export JSON</button>
+        <button onclick="importJSON()">Import JSON</button>
+        <button onclick="clearObjects()">Effacer tout</button>
     </div>
-    <div id="propsPanel">
-        <div id="propsInner">
-            <h2>Propriétés</h2>
-            <div id="noSelect">← Cliquez un sprite<br>dans la librairie,<br>puis placez-le sur<br>le canvas.<br><br>Cliquez un sprite<br>placé pour le<br>sélectionner.</div>
-            <div id="propsForm" style="display:none">
-                <div class="prop-row"><span class="prop-label">X absolu</span><input type="number" id="pX" step="1"></div>
-                <div class="prop-row"><span class="prop-label">Y absolu</span><input type="number" id="pY" step="1"></div>
-                <div class="prop-row" id="frameRow"><span class="prop-label">Frame</span><select class="psel" id="pFrame"></select></div>
-                <div class="prop-row">
-                    <span class="prop-label">Scale</span>
-                    <input type="range" id="pScaleR" min="0.2" max="4" step="0.05">
-                    <input type="number" id="pScale" step="0.05" min="0.2" max="6" style="width:48px">
-                </div>
-                <div class="prop-row">
-                    <span class="prop-label">Alpha</span>
-                    <input type="range" id="pAlphaR" min="0.05" max="1" step="0.05">
-                    <span class="pval" id="pAlphaV">1.00</span>
-                </div>
-                <div class="prop-row">
-                    <span class="prop-label">Depth</span>
-                    <input type="range" id="pDepthR" min="0" max="1" step="0.05">
-                    <span class="pval" id="pDepthV">0.50</span>
-                </div>
-                <div class="prop-row"><span class="prop-label">FlipX</span><input type="checkbox" id="pFlipX"></div>
-                <div class="prop-row">
-                    <span class="prop-label">Gris dist.</span>
-                    <input type="checkbox" id="pTint">
-                    <label for="pTint" style="font-size:9px">Éléments lointains</label>
-                </div>
-                <div id="propsButtons">
-                    <button class="sec" id="dupBtn">⧉ Dupliquer</button>
-                    <button class="sec" id="upBtn">↑ Depth +0.05</button>
-                    <button class="sec" id="downBtn">↓ Depth −0.05</button>
-                    <button class="danger" id="delBtn">✕ Supprimer (Del)</button>
-                </div>
-                <div id="coordHint">—</div>
-            </div>
-        </div>
-        <div id="exportArea">
-            <h3>Export pour TerrainRenderer.js</h3>
-            <button class="green" onclick="exportJSON()" style="width:100%;margin-bottom:6px">Copier dans le presse-papiers</button>
-            <div id="exportOutput">Cliquez "Exporter JSON" en haut</div>
+    <div id="canvas-area">
+        <div id="terrain-wrap">
+            <canvas id="terrain-canvas"></canvas>
         </div>
     </div>
 </div>
 
-<div id="statusBar">
-    <span>Mode : <b id="stMode">navigation</b></span>
-    <span>Sprites : <b id="stCount">0</b></span>
-    <span>Terrain : <b id="stTerrain">village</b></span>
-    <span>Curseur : <b id="stCursor">—</b></span>
-    <span style="margin-left:auto;color:#3A2E28">Flèches = déplacer (Shift×10) | Del = supprimer | Esc = désélectionner</span>
+<!-- RIGHT: Properties -->
+<div id="properties">
+    <h3>Liste objets</h3>
+    <div id="obj-list"></div>
+    <h3>Proprietes</h3>
+    <div id="prop-panel"><p style="font-size:11px;color:#6B8E4E">Cliquez un objet dans la palette, puis cliquez sur le terrain</p></div>
+    <h3 style="margin-top:10px">JSON</h3>
+    <textarea id="json-output" readonly></textarea>
+    <div id="help">
+        <b>Palette</b> &rarr; clic terrain = placer<br>
+        <b>Drag</b> = deplacer l'objet<br>
+        <b>Molette</b> = taille +/-<br>
+        <b>Shift + Molette</b> = rotation<br>
+        <b>Suppr</b> = supprimer<br>
+        <b>Ctrl+D</b> = dupliquer<br>
+        <b>F</b> = flip horizontal
+    </div>
 </div>
 
 <script>
-'use strict';
 // ============================================================
-// PETANQUE MASTER — TERRAIN EDITOR
-// Accès : npm run dev → http://localhost:5173/terrain_editor.html
-// ============================================================
+const BASE = 'assets/sprites/v2_new/terrains/';
+const SCALE = 2;
+const TW = 180, TH = 420;
 
-const GAME_W = 832, GAME_H = 480;
-const TERRAIN_W = 180, TERRAIN_H = 420;
-const TX = (GAME_W - TERRAIN_W) / 2;  // 326
-const TY = (GAME_H - TERRAIN_H) / 2;  // 30
-const BORDER_W = 16; // Même valeur que TerrainRenderer.js BORDER_WIDTH
-
-const VIS = {
-    village: { sky:['#6BB8E0','#A8D8EA','#D4E8D0','#C4B090'], ground:'#9B8D6A', surface:'#C4854A', border:'#8B6B3A' },
-    plage:   { sky:['#4A9ED5','#7EC8E8','#E8D890','#F0C870'], ground:'#D4C0A0', surface:'#E8D5B7', border:'#A08050' },
-    parc:    { sky:['#78C0E8','#A0D8F0','#C0E8D0','#B0D8A0'], ground:'#5A7A3A', surface:'#6B8E4E', border:'#3A6A2A' },
-    colline: { sky:['#D4A060','#E8C080','#F0D8A0','#C49050'], ground:'#8B7D5A', surface:'#C4954A', border:'#A09878' },
-    docks:   { sky:['#1A2A4A','#2A3A5A','#3A3A50','#4A3A40'], ground:'#3A3A30', surface:'#7A7A70', border:'#5A5A50' },
+const TERRAIN_TEX = {
+    village:  { src: 'terre_battue/terre_02.png', tint: null },
+    plage:    { src: 'sable/sable_10_seamless.png', tint: null },
+    parc:     { src: 'herbe/herbe_15_seamless.png', tint: 'rgba(180,255,140,0.12)' },
+    colline:  { src: 'terre_battue/terre_02.png', tint: 'rgba(221,204,136,0.18)' },
+    docks:    { src: 'dalles/dalles_13.png', tint: 'rgba(80,100,130,0.45)' },
 };
 
-// Sprite catalogue — all decorating assets
-const SPRITES = [
-    // Arbres & végétation
-    {cat:'Arbres & végétation', id:'grid_olive',    type:'grid',  path:'assets/sprites/decor/grid_olive.png',    label:'Olivier', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Arbres & végétation', id:'grid_tree',     type:'grid',  path:'assets/sprites/decor/pixellab-pixel-art-top-down-tree--direc-1774279608365.png', label:'Arbre', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Arbres & végétation', id:'grid_herbe',    type:'grid',  path:'assets/sprites/decor/pixellab-pixel-art-grass-tuft--top-down-1774283489357.png',  label:'Herbe', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Arbres & végétation', id:'decor_olivier', type:'image', path:'assets/sprites/decor_olivier.png',   label:'Olivier v1'},
-    {cat:'Arbres & végétation', id:'decor_pin',     type:'image', path:'assets/sprites/decor_pin.png',       label:'Pin v1'},
-    // Mobilier
-    {cat:'Mobilier', id:'grid_banc_td', type:'grid',  path:'assets/sprites/decor/pixellab-pixel-art-wooden-bench--top-do-1774281600119.png', label:'Banc TD', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Mobilier', id:'grid_banc_v1', type:'grid',  path:'assets/sprites/decor/grid_banc_v1.png', label:'Banc v1', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Mobilier', id:'grid_banc_v2', type:'grid',  path:'assets/sprites/decor/grid_banc_v2.png', label:'Banc v2', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Mobilier', id:'grid_table',   type:'grid',  path:'assets/sprites/decor/pixellab-pixel-art-small-outdoor-table--1774282453490.png', label:'Table', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Mobilier', id:'decor_banc',   type:'image', path:'assets/sprites/decor_banc.png', label:'Banc v0'},
-    // Pétanque
-    {cat:'Pétanque', id:'grid_sac', type:'grid', path:'assets/sprites/decor/pixellab-pixel-art-p-tanque-ball-bag--t-1774282033460.png', label:'Sac boules', cols:4, rows:4, fw:64, fh:64},
-    // Fontaines
-    {cat:'Fontaines & eau', id:'grid_fontaine',  type:'grid',  path:'assets/sprites/decor/grid_fontaine.png', label:'Fontaine', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Fontaines & eau', id:'decor_fontaine', type:'image', path:'assets/sprites/decor_fontaine.png',      label:'Fontaine v1'},
-    // Sol
-    {cat:'Sol & pierres', id:'grid_stones', type:'grid', path:'assets/sprites/decor/pixellab-pixel-art-small-scattered-ston-1774283903515.png', label:'Pierres', cols:4, rows:4, fw:64, fh:64},
-    // Nouveaux décors provençaux (générés)
-    {cat:'Arbres & végétation', id:'decor_lavande',  type:'image', path:'assets/sprites/decor/grid_lavande.png',  label:'Lavande'},
-    {cat:'Mobilier',            id:'decor_parasol',  type:'image', path:'assets/sprites/decor/grid_parasol.png',  label:'Parasol'},
-    {cat:'Accessoires & objets',id:'decor_pastis',   type:'image', path:'assets/sprites/decor/grid_pastis.png',   label:'Pastis+verre'},
-    {cat:'Accessoires & objets',id:'decor_glaciere', type:'image', path:'assets/sprites/decor/grid_glaciere.png', label:'Glaciere'},
-    // Fontaines v2
-    {cat:'Fontaines & eau', id:'grid_fontaine_pierre', type:'grid', path:'assets/sprites/v2_new/ui/pixellab-pixel-art-stone-fountain--roun-1774270327746.png', label:'Fontaine pierre', cols:4, rows:4, fw:64, fh:64},
-    // Mobilier v2
-    {cat:'Mobilier', id:'grid_banc_v3', type:'grid', path:'assets/sprites/v2_new/ui/pixellab-pixel-art-wooden-park-bench--w-1774269873380.png', label:'Banc v3', cols:4, rows:4, fw:64, fh:64},
-    // Boules pétanque (décoratives)
-    {cat:'Boules petanque', id:'grid_boules_plain',   type:'grid', path:'assets/sprites/v2_new/ui/pixellab-4x4-grid-of-16-metallic-petanq-1774227645929.png', label:'Boules lisses',  cols:4, rows:4, fw:64, fh:64},
-    {cat:'Boules petanque', id:'grid_boules_striped', type:'grid', path:'assets/sprites/v2_new/ui/pixellab-4x4-grid-of-16-metallic-petanq-1774227941980.png', label:'Boules striees', cols:4, rows:4, fw:64, fh:64},
-    {cat:'Boules petanque', id:'grid_boules_cross',   type:'grid', path:'assets/sprites/v2_new/ui/pixellab-4x4-grid-of-16-metallic-petanq-1774228132617.png', label:'Boules croix',   cols:4, rows:4, fw:64, fh:64},
-    {cat:'Boules petanque', id:'grid_boules_lines',   type:'grid', path:'assets/sprites/v2_new/ui/pixellab-4x4-grid-of-16-metallic-petanq-1774228225842.png', label:'Boules lignes',  cols:4, rows:4, fw:64, fh:64},
-    {cat:'Boules petanque', id:'grid_boules_retro',   type:'grid', path:'assets/sprites/v2_new/ui/pixellab-4x4-grid-of-16-metallic-petanq-1774227435112.png', label:'Boules retro',   cols:4, rows:4, fw:64, fh:64},
-    {cat:'Boules petanque', id:'grid_boules_dark',    type:'grid', path:'assets/sprites/v2_new/ui/pixellab-Top-down-pixel-art-dark-carbon-1774223649433.png',  label:'Boules dark',    cols:4, rows:4, fw:64, fh:64},
-    // Accessoires & objets (items boutique placables comme décors)
-    {cat:'Accessoires & objets', id:'item_pastis',      type:'image', path:'assets/sprites/v2_new/items_shop/item_pastis.png',         label:'Pastis'},
-    {cat:'Accessoires & objets', id:'item_cochonnet',   type:'image', path:'assets/sprites/v2_new/items_shop/item_cochonnet.png',      label:'Cochonnet'},
-    {cat:'Accessoires & objets', id:'item_beret',       type:'image', path:'assets/sprites/v2_new/items_shop/item_beret.png',          label:'Beret'},
-    {cat:'Accessoires & objets', id:'item_coffret',     type:'image', path:'assets/sprites/v2_new/items_shop/item_coffret_boules.png', label:'Coffret boules'},
-    {cat:'Accessoires & objets', id:'item_cle',         type:'image', path:'assets/sprites/v2_new/items_shop/item_cle.png',            label:'Cle'},
-    {cat:'Accessoires & objets', id:'item_corde',       type:'image', path:'assets/sprites/v2_new/items_shop/item_corde.png',          label:'Corde'},
-    {cat:'Accessoires & objets', id:'item_ficelle',     type:'image', path:'assets/sprites/v2_new/items_shop/item_ficelle.png',        label:'Ficelle'},
-    {cat:'Accessoires & objets', id:'item_bourse',      type:'image', path:'assets/sprites/v2_new/items_shop/item_bourse.png',         label:'Bourse'},
-    {cat:'Accessoires & objets', id:'item_medaillon',   type:'image', path:'assets/sprites/v2_new/items_shop/item_medaillon.png',      label:'Medaillon'},
-    {cat:'Accessoires & objets', id:'item_metre',       type:'image', path:'assets/sprites/v2_new/items_shop/item_metre_pliant.png',   label:'Metre pliant'},
-    {cat:'Accessoires & objets', id:'item_cle_ang',     type:'image', path:'assets/sprites/v2_new/items_shop/item_cle_anglaise.png',   label:'Cle anglaise'},
-    {cat:'Accessoires & objets', id:'grid_items_retro', type:'grid',  path:'assets/sprites/v2_new/ui/pixellab-Top-down-retro-8-bit-style-bro-1774223172989.png', label:'Objets retro', cols:4, rows:4, fw:64, fh:64},
-    // Materiaux (planches, pierres, metal — pour docks/village)
-    {cat:'Materiaux', id:'mat_planches', type:'image', path:'assets/sprites/v2_new/ui/pixellab-seamless-tileable-top-down-vie-1774267126571.png', label:'Planches bois'},
-    {cat:'Materiaux', id:'mat_pierres',  type:'image', path:'assets/sprites/v2_new/ui/pixellab-seamless-tileable-top-down-vie-1774267424004.png', label:'Mur pierres'},
-    {cat:'Materiaux', id:'mat_rails',    type:'image', path:'assets/sprites/v2_new/ui/pixellab-seamless-tileable-top-down-vie-1774267581926.png', label:'Rails metal'},
-    // Inutilisés (disponibles pour expérimentation)
-    {cat:'[ Inutilisés ]', unused:true, id:'_bush1',       type:'image', path:'assets/sprites/decor/_unused/decor_bush_variant_1.png', label:'Bush v1'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_bush2',       type:'image', path:'assets/sprites/decor/_unused/decor_bush_variant_2.png', label:'Bush v2'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_conifer',     type:'image', path:'assets/sprites/decor/_unused/decor_tree_conifer.png',   label:'Conifère'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_willow',      type:'image', path:'assets/sprites/decor/_unused/decor_tree_willow.png',    label:'Saule'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_autumn',      type:'image', path:'assets/sprites/decor/_unused/decor_tree_autumn.png',    label:'Automne'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_large',       type:'image', path:'assets/sprites/decor/_unused/decor_tree_large.png',     label:'Grand arbre'},
-    {cat:'[ Inutilisés ]', unused:true, id:'_gravel',      type:'grid',  path:'assets/sprites/decor/_unused/pixellab-pixel-art-small-gravel-impact--1774281732882.png', label:'Gravier', cols:4, rows:4, fw:64, fh:64},
-    {cat:'[ Inutilisés ]', unused:true, id:'_dusty',       type:'grid',  path:'assets/sprites/decor/_unused/pixellab-pixel-art-dusty-ground-tile-fo-1774281809868.png', label:'Sol poussiéreux', cols:4, rows:4, fw:64, fh:64},
-    {cat:'[ Inutilisés ]', unused:true, id:'_throwcircle', type:'grid',  path:'assets/sprites/decor/_unused/pixellab-pixel-art-p-tanque-throwing-ci-1774282348141.png', label:'Cercle lancer', cols:4, rows:4, fw:64, fh:64},
-    {cat:'[ Inutilisés ]', unused:true, id:'_scoreboard',  type:'grid',  path:'assets/sprites/decor/_unused/pixellab-pixel-art-small-p-tanque-score-1774283062999.png', label:'Tableau score', cols:4, rows:4, fw:64, fh:64},
-];
-
-// Sprite → DECOR_FRAMES type name mapping
-const TO_TYPE = {
-    'grid_olive':'olive', 'grid_fontaine':'fontaine', 'grid_banc_v1':'banc_v1',
-    'grid_banc_v2':'banc_v2', 'grid_tree':'tree', 'grid_herbe':'herbe',
-    'grid_stones':'stones', 'grid_table':'table', 'grid_banc_td':'banc_td',
-    'grid_sac':'sac', 'decor_pin':'decor_pin', 'decor_olivier':'decor_olivier',
-    'decor_banc':'decor_banc', 'decor_fontaine':'decor_fontaine',
-    // inutilisés promus
-    '_willow':'willow', '_scoreboard':'scoreboard', '_dusty':'dusty_ground',
-    '_gravel':'gravel', '_throwcircle':'throw_circle', '_bush1':'bush1', '_bush2':'bush2',
-    '_conifer':'conifer', '_autumn':'autumn', '_large':'large_tree',
-    // provençaux générés
-    'decor_lavande':'lavande', 'decor_parasol':'parasol',
-    'decor_pastis':'pastis_decor', 'decor_glaciere':'glaciere',
-    // v2
-    'grid_fontaine_pierre':'fontaine_pierre', 'grid_banc_v3':'banc_v3',
-    'grid_boules_plain':'boules_plain', 'grid_boules_striped':'boules_striees',
-    'grid_boules_cross':'boules_croix', 'grid_boules_lines':'boules_lignes',
-    'grid_boules_retro':'boules_retro', 'grid_boules_dark':'boules_dark',
-    'item_pastis':'pastis', 'item_cochonnet':'cochonnet_decor', 'item_beret':'beret',
-    'item_coffret':'coffret_boules', 'item_cle':'cle', 'item_corde':'corde',
-    'item_ficelle':'ficelle', 'item_bourse':'bourse', 'item_medaillon':'medaillon',
-    'item_metre':'metre_pliant', 'item_cle_ang':'cle_anglaise',
-    'grid_items_retro':'items_retro',
-    'mat_planches':'planches_bois', 'mat_pierres':'pierres_mur', 'mat_rails':'rails_metal',
-};
-
-// Scene data synchronisée avec TERRAIN_DECOR de TerrainRenderer.js
-const SCENE = {
-    village: [
-        {spriteId:'grid_olive',       frame:4,  x:TX-54,            y:76,  scale:2.35, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',       frame:4,  x:TX-38,            y:157, scale:1.80, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',       frame:5,  x:TX+TERRAIN_W+49,  y:168, scale:2.00, depth:0.65, alpha:1, flipX:false},
-        {spriteId:'grid_olive',       frame:5,  x:TX+TERRAIN_W+31,  y:118, scale:1.30, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',       frame:4,  x:TX-39,            y:406, scale:1.55, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td',     frame:3,  x:TX+35,            y:10,  scale:1.10, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td',     frame:3,  x:TX+137,           y:10,  scale:1.10, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',       frame:6,  x:TX+79,            y:20,  scale:0.55, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',       frame:7,  x:TX+TERRAIN_W+10,  y:328, scale:0.50, depth:1.00, alpha:1, flipX:false},
-        {spriteId:'grid_fontaine',    frame:8,  x:TX-32,            y:376, scale:1.05, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_table',       frame:14, x:TX+TERRAIN_W+22,  y:292, scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_sac',         frame:15, x:TX+TERRAIN_W+17,  y:318, scale:0.45, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_items_retro', frame:9,  x:TX+TERRAIN_W+18,  y:266, scale:0.50, depth:0.50, alpha:1, flipX:false},
+const PAL = {
+    pierres: [
+        { src: 'pierres/pierres_07.png', name: 'Amas cailloux' },
+        { src: 'pierres/pierres_08.png', name: 'Gros cailloux' },
+        { src: 'pierres/pierres_13.png', name: 'Petits cailloux' },
+        { src: 'pixellab-pixel-art-small-scattered-ston-1774283903515.png', name: 'Pierres epars (new)' },
     ],
-    parc: [
-        {spriteId:'grid_olive',   frame:14, x:TX-41,           y:73,  scale:1.85, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:14, x:TX-41,           y:134, scale:1.85, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:14, x:TX-42,           y:170, scale:1.85, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:14, x:TX-38,           y:230, scale:2.00, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:10, x:TX+TERRAIN_W+61, y:220, scale:1.85, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:10, x:TX+TERRAIN_W+57, y:159, scale:1.85, depth:0.30, alpha:1, flipX:false},
-        {spriteId:'grid_olive',   frame:14, x:TX+TERRAIN_W+46, y:101, scale:2.00, depth:0.00, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td', frame:1,  x:TX+29,           y:15,  scale:0.90, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td', frame:1,  x:TX+94,           y:15,  scale:0.90, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td', frame:1,  x:TX+156,          y:15,  scale:0.90, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_table',   frame:6,  x:TX-21,           y:314, scale:0.65, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',   frame:4,  x:TX+TERRAIN_W+15, y:269, scale:0.60, depth:0.35, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',   frame:7,  x:TX+TERRAIN_W+31, y:275, scale:0.60, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_sac',     frame:5,  x:TX-20,           y:297, scale:0.45, depth:0.50, alpha:1, flipX:false},
+    impacts: [
+        { src: 'gravier_impact/impact_01.png', name: 'Impact etoile' },
+        { src: 'gravier_impact/impact_10.png', name: 'Impact rond' },
+        { src: 'pixellab-pixel-art-small-gravel-impact--1774281732882.png', name: 'Impact gravier (new)' },
     ],
-    colline: [
-        {spriteId:'grid_olive',    frame:15, x:TX-69,           y:77,  scale:2.60, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',    frame:15, x:TX-67,           y:151, scale:2.45, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',    frame:15, x:TX-62,           y:229, scale:2.45, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',    frame:15, x:TX-60,           y:390, scale:2.55, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',    frame:14, x:TX+TERRAIN_W+71, y:292, scale:2.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',    frame:14, x:TX+TERRAIN_W+70, y:125, scale:2.90, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_fontaine', frame:1,  x:TX+TERRAIN_W+55, y:209, scale:1.50, depth:0.00, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td',  frame:2,  x:TX+89,           y:12,  scale:0.95, depth:0.50, alpha:1, flipX:false},
+    terre: [
+        { src: 'terre_battue/terre_01.png', name: 'Terre + graviers' },
+        { src: 'terre_battue/terre_06.png', name: 'Gravier dense' },
+        { src: 'terre_battue/terre_12.png', name: 'Cailloux epars' },
+        { src: 'terre_battue/terre_13.png', name: 'Terre rase' },
+    ],
+    touffes: [
+        { src: 'herbe_touffes/new/touffe_new_01.png', name: 'Touffe 01' },
+        { src: 'herbe_touffes/new/touffe_new_02.png', name: 'Touffe 02' },
+        { src: 'herbe_touffes/new/touffe_new_03.png', name: 'Touffe 03' },
+        { src: 'herbe_touffes/new/touffe_new_04.png', name: 'Touffe 04' },
+        { src: 'herbe_touffes/new/touffe_new_05.png', name: 'Touffe 05' },
+        { src: 'herbe_touffes/new/touffe_new_06.png', name: 'Touffe 06' },
+        { src: 'herbe_touffes/new/touffe_new_07.png', name: 'Touffe 07' },
+        { src: 'herbe_touffes/new/touffe_new_08.png', name: 'Touffe 08' },
+        { src: 'herbe_touffes/new/touffe_new_09.png', name: 'Touffe 09' },
+        { src: 'herbe_touffes/new/touffe_new_10.png', name: 'Touffe 10' },
+        { src: 'herbe_touffes/new/touffe_new_11.png', name: 'Touffe 11' },
+        { src: 'herbe_touffes/new/touffe_new_12.png', name: 'Touffe 12' },
+        { src: 'herbe_touffes/new/touffe_new_13.png', name: 'Touffe 13' },
+        { src: 'herbe_touffes/new/touffe_new_14.png', name: 'Touffe 14' },
+        { src: 'herbe_touffes/new/touffe_new_15.png', name: 'Touffe 15' },
+        { src: 'herbe_touffes/new/touffe_new_16.png', name: 'Touffe 16' },
     ],
     plage: [
-        {spriteId:'_willow',      frame:0,  x:TX-75,            y:111, scale:2.85, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_willow',      frame:0,  x:TX+TERRAIN_W+62,  y:157, scale:2.25, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_willow',      frame:0,  x:TX+TERRAIN_W+63,  y:242, scale:2.25, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_willow',      frame:0,  x:TX+TERRAIN_W+62,  y:327, scale:2.25, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_scoreboard',  frame:8,  x:TX-22,            y:185, scale:0.60, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-21,            y:361, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-50,            y:368, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-71,            y:391, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-102,           y:388, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-117,           y:421, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'_dusty',       frame:14, x:TX-156,           y:420, scale:0.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_td', frame:7,  x:TX+TERRAIN_W+38,  y:98,  scale:1.35, depth:0.40, alpha:1, flipX:true},
+        { src: 'sable_details/new/coquillage_new_01.png', name: 'Sable 01' },
+        { src: 'sable_details/new/coquillage_new_02.png', name: 'Sable 02' },
+        { src: 'sable_details/new/coquillage_new_03.png', name: 'Sable 03' },
+        { src: 'sable_details/new/coquillage_new_04.png', name: 'Sable 04' },
+        { src: 'sable_details/new/coquillage_new_05.png', name: 'Sable 05' },
+        { src: 'sable_details/new/coquillage_new_06.png', name: 'Sable 06' },
+        { src: 'sable_details/new/coquillage_new_07.png', name: 'Sable 07' },
+        { src: 'sable_details/new/coquillage_new_08.png', name: 'Sable 08' },
+        { src: 'sable_details/new/coquillage_new_09.png', name: 'Sable 09' },
+        { src: 'sable_details/new/coquillage_new_10.png', name: 'Sable 10' },
+        { src: 'sable_details/new/coquillage_new_11.png', name: 'Sable 11' },
+        { src: 'sable_details/new/coquillage_new_12.png', name: 'Sable 12' },
     ],
-    docks: [
-        {spriteId:'grid_olive',  frame:8,  x:TX-42,            y:40,  scale:1.50, depth:0.25, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-42,            y:70,  scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-43,            y:122, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-41,            y:179, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-42,            y:233, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-43,            y:280, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-43,            y:341, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-43,            y:395, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX-45,            y:441, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:11, x:TX+TERRAIN_W+53,  y:126, scale:2.30, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:11, x:TX+TERRAIN_W+60,  y:175, scale:2.30, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:11, x:TX+TERRAIN_W+64,  y:234, scale:2.30, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_olive',  frame:8,  x:TX+TERRAIN_W+61,  y:333, scale:1.50, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_banc_v1',frame:7,  x:TX+TERRAIN_W+51,  y:288, scale:0.80, depth:0.10, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+15,            y:11,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+47,            y:12,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+77,            y:13,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+109,           y:11,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+139,           y:12,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+168,           y:11,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+20,  y:18,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+22,  y:42,  scale:0.75, depth:0.50, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+22,  y:62,  scale:0.75, depth:0.20, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+19,  y:10,  scale:0.75, depth:0.00, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+46,  y:12,  scale:0.75, depth:0.20, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+55,  y:30,  scale:0.75, depth:0.20, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+57,  y:48,  scale:0.75, depth:0.20, alpha:1, flipX:false},
-        {spriteId:'grid_herbe',  frame:3,  x:TX+TERRAIN_W+57,  y:74,  scale:0.75, depth:0.20, alpha:1, flipX:false},
+    boulons: [
+        { src: 'dalles/rivets/rivet_01.png', name: 'Rivet 01' },
+        { src: 'dalles/rivets/rivet_02.png', name: 'Rivet 02' },
+        { src: 'dalles/rivets/rivet_03.png', name: 'Rivet 03' },
+        { src: 'dalles/rivets/rivet_04.png', name: 'Rivet 04' },
+        { src: 'dalles/rivets/rivet_05.png', name: 'Rivet 05' },
+        { src: 'dalles/rivets/rivet_06.png', name: 'Rivet 06' },
+        { src: 'dalles/rivets/rivet_07.png', name: 'Rivet 07' },
+        { src: 'dalles/rivets/rivet_08.png', name: 'Rivet 08' },
+        { src: 'dalles/rivets/rivet_09.png', name: 'Rivet 09' },
+        { src: 'dalles/rivets/rivet_10.png', name: 'Rivet 10' },
+        { src: 'dalles/rivets/rivet_11.png', name: 'Rivet 11' },
+        { src: 'dalles/rivets/rivet_12.png', name: 'Rivet 12' },
     ],
 };
 
-// ============================================================
 // STATE
-// ============================================================
-let terrain = 'village';
-let zoom = 1.0;
-let showOverlay = true;
-let placed = [];          // { id, spriteId, frame, x, y, scale, alpha, flipX, depth, distanceTint }
-let selIdx = -1;
-let addMode = null;       // { spriteId, frame }
-let drag = null;          // { idx, mx0, my0, x0, y0 }
-
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-ctx.imageSmoothingEnabled = false;
+let curTerrain = 'village';
+let objects = { village: [], plage: [], parc: [], colline: [], docks: [] };
+let selId = null, selPal = null, idCounter = 0;
+let dragging = null, dragOff = { x: 0, y: 0 };
 
 const imgCache = {};
-function loadImg(path) {
-    if (imgCache[path] !== undefined) return Promise.resolve(imgCache[path]);
-    return new Promise(res => {
+function loadImg(src) {
+    if (imgCache[src]) return Promise.resolve(imgCache[src]);
+    return new Promise(r => {
         const img = new Image();
-        img.onload  = () => { imgCache[path] = img; res(img); };
-        img.onerror = () => { imgCache[path] = null;res(null); };
-        img.src = path;
+        img.onload = () => { imgCache[src] = img; r(img); };
+        img.onerror = () => r(null);
+        img.src = BASE + src;
     });
 }
-function getSpr(id) { return SPRITES.find(s => s.id === id); }
-function uid()      { return Date.now() + Math.random(); }
 
 // ============================================================
-// RENDER
+// SEAMLESS TERRAIN: tile with random 90deg rot + flip to hide seams
 // ============================================================
-function drawSky(v) {
-    const g = ctx.createLinearGradient(0, 0, 0, GAME_H);
-    g.addColorStop(0,    v.sky[0]);
-    g.addColorStop(0.35, v.sky[1]);
-    g.addColorStop(0.60, v.sky[2]);
-    g.addColorStop(1,    v.sky[3]);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, GAME_W, GAME_H);
-}
-function drawGround(v) {
-    ctx.fillStyle = v.ground;
-    ctx.fillRect(0, GAME_H * 0.55, GAME_W, GAME_H * 0.45);
-}
-function drawTerrain(v) {
-    ctx.fillStyle = v.surface;
-    ctx.fillRect(TX, TY, TERRAIN_W, TERRAIN_H);
-    // Subtle texture
-    ctx.fillStyle = 'rgba(0,0,0,0.05)';
-    for (let y = TY+10; y < TY+TERRAIN_H; y += 18)
-        for (let x = TX+6; x < TX+TERRAIN_W; x += 14)
-            ctx.fillRect(x + (y%36===0?5:0), y, 2, 2);
-    // Dead lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([6, 5]);
-    ctx.beginPath(); ctx.moveTo(TX, TY+30);          ctx.lineTo(TX+TERRAIN_W, TY+30);          ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(TX, TY+TERRAIN_H-30);ctx.lineTo(TX+TERRAIN_W, TY+TERRAIN_H-30);ctx.stroke();
-    ctx.setLineDash([]);
-    // Rondins de bois (16px, identique au jeu)
-    drawBorders(v);
-}
+async function drawBG() {
+    const c = document.getElementById('terrain-canvas');
+    c.width = TW; c.height = TH;
+    c.style.width = (TW * SCALE) + 'px';
+    c.style.height = (TH * SCALE) + 'px';
+    const w = document.getElementById('terrain-wrap');
+    w.style.width = (TW * SCALE) + 'px';
+    w.style.height = (TH * SCALE) + 'px';
 
-function drawBorders(v) {
-    const bw = BORDER_W;
-    ctx.save();
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
 
-    // Remplissage principal
-    ctx.fillStyle = v.border;
-    ctx.fillRect(TX - bw, TY - bw, TERRAIN_W + bw*2, bw); // haut
-    ctx.fillRect(TX - bw, TY + TERRAIN_H, TERRAIN_W + bw*2, bw); // bas
-    ctx.fillRect(TX - bw, TY, bw, TERRAIN_H); // gauche
-    ctx.fillRect(TX + TERRAIN_W, TY, bw, TERRAIN_H); // droite
-
-    // Grain de bois (traits sombres parallèles)
-    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-    ctx.lineWidth = 0.8;
-    for (let g = 3; g < bw; g += 4) {
-        // Haut & bas
-        ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw+g); ctx.lineTo(TX+TERRAIN_W+bw, TY-bw+g); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(TX-bw, TY+TERRAIN_H+g); ctx.lineTo(TX+TERRAIN_W+bw, TY+TERRAIN_H+g); ctx.stroke();
-        // Gauche & droite
-        ctx.beginPath(); ctx.moveTo(TX-bw+g, TY); ctx.lineTo(TX-bw+g, TY+TERRAIN_H); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(TX+TERRAIN_W+g, TY); ctx.lineTo(TX+TERRAIN_W+g, TY+TERRAIN_H); ctx.stroke();
-    }
-
-    // Reflet clair sur le bord extérieur
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw); ctx.lineTo(TX+TERRAIN_W+bw, TY-bw); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(TX-bw, TY-bw); ctx.lineTo(TX-bw, TY); ctx.stroke();
-
-    ctx.restore();
-}
-function drawOverlayGuides() {
-    if (!showOverlay) return;
-    // Terrain outline
-    ctx.strokeStyle = 'rgba(0,220,255,0.6)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(TX-0.5, TY-0.5, TERRAIN_W+1, TERRAIN_H+1);
-    // Center line
-    ctx.strokeStyle = 'rgba(0,220,255,0.2)';
-    ctx.beginPath();
-    ctx.moveTo(TX + TERRAIN_W/2, TY);
-    ctx.lineTo(TX + TERRAIN_W/2, TY+TERRAIN_H);
-    ctx.stroke();
-    // Labels
-    ctx.fillStyle = 'rgba(0,220,255,0.8)';
-    ctx.font = '8px monospace';
-    ctx.fillText(`TX=${TX} TY=${TY} TW=${TERRAIN_W} TH=${TERRAIN_H}`, TX, TY-5);
-    ctx.fillText('TERRAIN', TX + 4, TY + 14);
-}
-
-async function drawOne(p) {
-    const def = getSpr(p.spriteId);
-    if (!def) return;
-    const img = await loadImg(def.path);
+    const def = TERRAIN_TEX[curTerrain];
+    const img = await loadImg(def.src);
     if (!img) return;
 
-    const dw = (def.fw || img.naturalWidth)  * p.scale;
-    const dh = (def.fh || img.naturalHeight) * p.scale;
+    // Seeded random for consistency per terrain
+    let s = 0;
+    for (let i = 0; i < curTerrain.length; i++) s += curTerrain.charCodeAt(i) * (i + 1);
+    const rand = () => { s = (s * 16807 + 11) % 2147483647; return (s & 0x7fffffff) / 0x7fffffff; };
 
-    ctx.save();
-    ctx.globalAlpha = p.alpha ?? 1;
-    ctx.translate(p.x, p.y);
-    if (p.flipX) ctx.scale(-1, 1);
-    if (p.distanceTint) { ctx.filter = 'grayscale(50%) brightness(0.85)'; }
+    const tileSize = 64;
+    const cols = Math.ceil(TW / tileSize) + 1;
+    const rows = Math.ceil(TH / tileSize) + 1;
 
-    if (def.type === 'grid') {
-        const fi = p.frame ?? 0;
-        const col = fi % def.cols;
-        const row = Math.floor(fi / def.cols);
-        ctx.drawImage(img, col*def.fw, row*def.fh, def.fw, def.fh, -dw/2, -dh/2, dw, dh);
+    for (let r = 0; r < rows; r++) {
+        for (let co = 0; co < cols; co++) {
+            ctx.save();
+            ctx.translate(co * tileSize + tileSize / 2, r * tileSize + tileSize / 2);
+            ctx.rotate(Math.floor(rand() * 4) * Math.PI / 2);
+            if (rand() > 0.5) ctx.scale(-1, 1);
+            if (rand() > 0.5) ctx.scale(1, -1);
+            ctx.drawImage(img, -tileSize / 2, -tileSize / 2, tileSize, tileSize);
+            ctx.restore();
+        }
+    }
+
+    // Clip to exact terrain size (tiles overflow)
+    ctx.clearRect(TW, 0, cols * tileSize - TW, rows * tileSize);
+    ctx.clearRect(0, TH, cols * tileSize, rows * tileSize - TH);
+
+    if (def.tint) {
+        ctx.fillStyle = def.tint;
+        ctx.fillRect(0, 0, TW, TH);
+    }
+
+    // Vignette
+    const grad = ctx.createRadialGradient(TW / 2, TH / 2, TH * 0.3, TW / 2, TH / 2, TH * 0.58);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(26,21,16,0.18)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, TW, TH);
+}
+
+// ============================================================
+// RENDER PLACED OBJECTS AS DOM ELEMENTS
+// ============================================================
+function objs() { return objects[curTerrain]; }
+
+function renderObjs() {
+    document.querySelectorAll('.placed-obj').forEach(e => e.remove());
+    const wrap = document.getElementById('terrain-wrap');
+
+    for (const o of objs()) {
+        const div = document.createElement('div');
+        div.className = 'placed-obj' + (o.id === selId ? ' selected' : '');
+        div.dataset.id = o.id;
+        const sz = o.size * SCALE;
+        div.style.width = sz + 'px';
+        div.style.height = sz + 'px';
+        div.style.left = (o.x * SCALE - sz / 2) + 'px';
+        div.style.top = (o.y * SCALE - sz / 2) + 'px';
+        div.style.opacity = o.alpha;
+        div.style.transform = `rotate(${o.rotation}deg) scaleX(${o.flipX ? -1 : 1})`;
+
+        const im = document.createElement('img');
+        im.src = BASE + o.src;
+        div.appendChild(im);
+
+        div.addEventListener('mousedown', e => { e.stopPropagation(); startDrag(e, o); });
+        wrap.appendChild(div);
+    }
+    updateList();
+    updateJSON();
+}
+
+// ============================================================
+// ADD / SELECT / DELETE
+// ============================================================
+function addObj(pal, x, y) {
+    const o = {
+        id: ++idCounter, src: pal.src, name: pal.name,
+        x: x / SCALE, y: y / SCALE,
+        size: 24, rotation: 0, alpha: 0.75, flipX: false,
+    };
+    objs().push(o);
+    selId = o.id;
+    renderObjs();
+    updateProps();
+}
+
+function selectObj(id) {
+    selId = id;
+    document.querySelectorAll('.placed-obj').forEach(e => e.classList.toggle('selected', +e.dataset.id === id));
+    updateList();
+    updateProps();
+}
+
+function deleteObj(id) {
+    const arr = objs(), i = arr.findIndex(o => o.id === id);
+    if (i >= 0) arr.splice(i, 1);
+    if (selId === id) selId = null;
+    renderObjs(); updateProps();
+}
+
+function dupObj() {
+    const o = objs().find(o => o.id === selId);
+    if (!o) return;
+    const c = { ...o, id: ++idCounter, x: o.x + 8, y: o.y + 8 };
+    objs().push(c);
+    selId = c.id;
+    renderObjs(); updateProps();
+}
+
+function selObj() { return objs().find(o => o.id === selId); }
+
+// ============================================================
+// DRAG
+// ============================================================
+function startDrag(e, o) {
+    e.preventDefault();
+    dragging = o;
+    selId = o.id;
+    selectObj(o.id);
+    const rect = document.getElementById('terrain-wrap').getBoundingClientRect();
+    dragOff.x = e.clientX - (o.x * SCALE + rect.left);
+    dragOff.y = e.clientY - (o.y * SCALE + rect.top);
+}
+document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const rect = document.getElementById('terrain-wrap').getBoundingClientRect();
+    dragging.x = Math.round((e.clientX - rect.left - dragOff.x) / SCALE);
+    dragging.y = Math.round((e.clientY - rect.top - dragOff.y) / SCALE);
+    renderObjs(); updateProps();
+});
+document.addEventListener('mouseup', () => { dragging = null; });
+
+// ============================================================
+// WHEEL: size / rotation
+// ============================================================
+document.addEventListener('wheel', e => {
+    const o = selObj();
+    if (!o) return;
+    const rect = document.getElementById('terrain-wrap').getBoundingClientRect();
+    if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+    e.preventDefault();
+    const d = e.deltaY > 0 ? -1 : 1;
+    if (e.shiftKey) {
+        o.rotation = ((o.rotation + d * 15) % 360 + 360) % 360;
     } else {
-        ctx.drawImage(img, -dw/2, -dh/2, dw, dh);
+        o.size = Math.max(6, Math.min(80, o.size + d * 2));
     }
-    ctx.restore();
-}
+    renderObjs(); updateProps();
+}, { passive: false });
 
-function drawSel(p) {
-    const def = getSpr(p.spriteId);
-    if (!def) return;
-    const dw = (def.fw || 64) * p.scale;
-    const dh = (def.fh || 64) * p.scale;
-    ctx.save();
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 3]);
-    ctx.strokeRect(p.x - dw/2 - 2, p.y - dh/2 - 2, dw+4, dh+4);
-    ctx.setLineDash([]);
-    // Center anchor
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-}
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'Delete' && selId) deleteObj(selId);
+    if (e.key === 'd' && e.ctrlKey) { e.preventDefault(); dupObj(); }
+    if (e.key === 'f') { const o = selObj(); if (o) { o.flipX = !o.flipX; renderObjs(); } }
+});
 
-async function render() {
-    const v = VIS[terrain];
-    ctx.clearRect(0, 0, GAME_W, GAME_H);
-    drawSky(v);
-    drawGround(v);
-    drawTerrain(v);
-    // Draw in depth order
-    const byDepth = placed.map((p,i) => ({...p,_i:i})).sort((a,b) => (a.depth??0.5)-(b.depth??0.5));
-    for (const p of byDepth) {
-        await drawOne(p);
-        if (p._i === selIdx) drawSel(p);
+// ============================================================
+// PALETTE
+// ============================================================
+function buildPalette() {
+    for (const [cat, items] of Object.entries(PAL)) {
+        const cont = document.getElementById('pal-' + cat);
+        if (!cont) continue;
+        for (const item of items) {
+            const div = document.createElement('div');
+            div.className = 'pal-item';
+            div.title = item.name;
+            const img = document.createElement('img');
+            img.src = BASE + item.src;
+            div.appendChild(img);
+            div.addEventListener('click', () => {
+                document.querySelectorAll('.pal-item').forEach(p => p.classList.remove('selected'));
+                div.classList.add('selected');
+                selPal = item;
+            });
+            cont.appendChild(div);
+        }
     }
-    drawOverlayGuides();
-    document.getElementById('stCount').textContent = placed.length;
 }
 
-// ============================================================
-// HIT TEST
-// ============================================================
-function hitTest(mx, my) {
-    // Test in reverse depth order (topmost first)
-    const byDepth = placed.map((p,i) => ({...p,_i:i})).sort((a,b) => (b.depth??0.5)-(a.depth??0.5));
-    for (const p of byDepth) {
-        const def = getSpr(p.spriteId);
-        if (!def) continue;
-        const dw = (def.fw || 64) * p.scale;
-        const dh = (def.fh || 64) * p.scale;
-        if (mx >= p.x-dw/2 && mx <= p.x+dw/2 && my >= p.y-dh/2 && my <= p.y+dh/2) return p._i;
-    }
-    return -1;
-}
-
-// ============================================================
-// CANVAS EVENTS
-// ============================================================
-function canvasXY(e) {
-    const r = canvas.getBoundingClientRect();
-    return { x: (e.clientX-r.left) * GAME_W/r.width, y: (e.clientY-r.top) * GAME_H/r.height };
-}
-
-canvas.addEventListener('mousedown', e => {
-    const {x, y} = canvasXY(e);
-
-    if (addMode) {
-        placed.push({ id:uid(), spriteId:addMode.spriteId, frame:addMode.frame??0, x:Math.round(x), y:Math.round(y), scale:1.5, alpha:1, flipX:false, depth:0.5, distanceTint:false });
-        selIdx = placed.length - 1;
-        addMode = null;
-        clearLibSel();
-        updateProps();
-        render();
+// Click terrain to place
+document.getElementById('terrain-wrap').addEventListener('click', e => {
+    if (dragging) return;
+    if (!selPal) return;
+    if (e.target.closest('.placed-obj')) {
+        selectObj(+e.target.closest('.placed-obj').dataset.id);
         return;
     }
-
-    const hit = hitTest(x, y);
-    if (hit >= 0) {
-        selIdx = hit;
-        drag = { idx:hit, mx0:x, my0:y, x0:placed[hit].x, y0:placed[hit].y };
-        canvas.classList.add('dragging');
-    } else {
-        selIdx = -1;
-    }
-    updateProps();
-    render();
+    const rect = document.getElementById('terrain-wrap').getBoundingClientRect();
+    addObj(selPal, e.clientX - rect.left, e.clientY - rect.top);
 });
-
-canvas.addEventListener('mousemove', e => {
-    const {x, y} = canvasXY(e);
-    document.getElementById('stCursor').textContent =
-        `abs:(${Math.round(x)},${Math.round(y)})  rel:(${Math.round(x-TX)},${Math.round(y)})`;
-
-    if (drag) {
-        placed[drag.idx].x = Math.round(drag.x0 + x - drag.mx0);
-        placed[drag.idx].y = Math.round(drag.y0 + y - drag.my0);
-        updateProps();
-        render();
-    }
-});
-
-canvas.addEventListener('mouseup',   () => { drag = null; canvas.classList.remove('dragging'); updateCoordHint(); });
-canvas.addEventListener('mouseleave',() => { drag = null; canvas.classList.remove('dragging'); });
 
 // ============================================================
-// PROPERTIES PANEL
+// OBJECT LIST
+// ============================================================
+function updateList() {
+    const list = document.getElementById('obj-list');
+    list.innerHTML = '';
+    for (const o of objs()) {
+        const e = document.createElement('div');
+        e.className = 'obj-entry' + (o.id === selId ? ' active' : '');
+        e.innerHTML = `<span>${o.name} (${Math.round(o.x)},${Math.round(o.y)})</span><span class="del-btn">&times;</span>`;
+        e.addEventListener('click', () => selectObj(o.id));
+        e.querySelector('.del-btn').addEventListener('click', ev => { ev.stopPropagation(); deleteObj(o.id); });
+        list.appendChild(e);
+    }
+}
+
+// ============================================================
+// PROPERTY PANEL
 // ============================================================
 function updateProps() {
-    const form  = document.getElementById('propsForm');
-    const noSel = document.getElementById('noSelect');
-    if (selIdx < 0 || selIdx >= placed.length) {
-        form.style.display = 'none'; noSel.style.display = 'block'; return;
-    }
-    noSel.style.display = 'none'; form.style.display = 'block';
-    const p = placed[selIdx];
-    const def = getSpr(p.spriteId);
-
-    document.getElementById('pX').value     = Math.round(p.x);
-    document.getElementById('pY').value     = Math.round(p.y);
-    document.getElementById('pScale').value = p.scale;
-    document.getElementById('pScaleR').value= p.scale;
-    document.getElementById('pAlphaR').value= p.alpha ?? 1;
-    document.getElementById('pAlphaV').textContent = (p.alpha ?? 1).toFixed(2);
-    document.getElementById('pDepthR').value= p.depth ?? 0.5;
-    document.getElementById('pDepthV').textContent = (p.depth ?? 0.5).toFixed(2);
-    document.getElementById('pFlipX').checked = !!p.flipX;
-    document.getElementById('pTint').checked  = !!p.distanceTint;
-
-    const frameRow = document.getElementById('frameRow');
-    const frameSel = document.getElementById('pFrame');
-    if (def && def.type === 'grid') {
-        frameRow.style.display = 'flex';
-        frameSel.innerHTML = '';
-        for (let i = 0; i < def.cols*def.rows; i++) {
-            const o = document.createElement('option');
-            o.value = i; o.textContent = `#${i} (col${i%def.cols} row${Math.floor(i/def.cols)})`;
-            if (i === (p.frame??0)) o.selected = true;
-            frameSel.appendChild(o);
-        }
-    } else { frameRow.style.display = 'none'; }
-
-    updateCoordHint();
+    const p = document.getElementById('prop-panel');
+    const o = selObj();
+    if (!o) { p.innerHTML = '<p style="font-size:11px;color:#6B8E4E">Aucun objet selectionne</p>'; return; }
+    p.innerHTML = `
+        <div class="prop-group"><label>X <span class="val">${Math.round(o.x)}</span></label>
+            <input type="range" min="0" max="${TW}" value="${Math.round(o.x)}" oninput="setP('x',+this.value)"></div>
+        <div class="prop-group"><label>Y <span class="val">${Math.round(o.y)}</span></label>
+            <input type="range" min="0" max="${TH}" value="${Math.round(o.y)}" oninput="setP('y',+this.value)"></div>
+        <div class="prop-group"><label>Taille <span class="val">${o.size}px</span></label>
+            <input type="range" min="6" max="80" value="${o.size}" oninput="setP('size',+this.value)"></div>
+        <div class="prop-group"><label>Rotation <span class="val">${o.rotation}°</span></label>
+            <input type="range" min="0" max="360" value="${o.rotation}" oninput="setP('rotation',+this.value)"></div>
+        <div class="prop-group"><label>Opacite <span class="val">${(o.alpha*100).toFixed(0)}%</span></label>
+            <input type="range" min="5" max="100" value="${Math.round(o.alpha*100)}" oninput="setP('alpha',+this.value/100)"></div>
+        <div class="prop-group"><label><input type="checkbox" ${o.flipX?'checked':''} onchange="setP('flipX',this.checked)"> Flip H</label></div>
+    `;
 }
 
-function updateCoordHint() {
-    if (selIdx < 0 || selIdx >= placed.length) return;
-    const p = placed[selIdx];
-    const relX = Math.round(p.x - TX);
-    const xStr = relX > TERRAIN_W ? `'R+${relX-TERRAIN_W}'` : String(relX);
-    let hint = `type: '?'\nx: ${xStr}, y: ${Math.round(p.y)}\nscale: ${p.scale}, depth: ${(p.depth??0.5).toFixed(2)}`;
-    if ((p.alpha??1) < 1) hint += `\nalpha: ${(p.alpha).toFixed(2)}`;
-    if (p.flipX) hint += '\nflipX: true';
-    document.getElementById('coordHint').textContent = hint;
-}
-
-// Props bindings
-const bind = (id, ev, fn) => document.getElementById(id).addEventListener(ev, fn);
-bind('pX',    'input', e => { if (selIdx<0) return; placed[selIdx].x = parseInt(e.target.value)||0; updateCoordHint(); render(); });
-bind('pY',    'input', e => { if (selIdx<0) return; placed[selIdx].y = parseInt(e.target.value)||0; updateCoordHint(); render(); });
-bind('pScale','input', e => { if (selIdx<0) return; const v=parseFloat(e.target.value)||1; placed[selIdx].scale=v; document.getElementById('pScaleR').value=v; render(); });
-bind('pScaleR','input',e => { if (selIdx<0) return; const v=parseFloat(e.target.value); placed[selIdx].scale=v; document.getElementById('pScale').value=v; render(); });
-bind('pAlphaR','input',e => { if (selIdx<0) return; placed[selIdx].alpha=parseFloat(e.target.value); document.getElementById('pAlphaV').textContent=placed[selIdx].alpha.toFixed(2); render(); });
-bind('pDepthR','input',e => { if (selIdx<0) return; placed[selIdx].depth=parseFloat(e.target.value); document.getElementById('pDepthV').textContent=placed[selIdx].depth.toFixed(2); render(); });
-bind('pFlipX','change',e => { if (selIdx<0) return; placed[selIdx].flipX=e.target.checked; render(); });
-bind('pTint', 'change',e => { if (selIdx<0) return; placed[selIdx].distanceTint=e.target.checked; render(); });
-bind('pFrame','change',e => { if (selIdx<0) return; placed[selIdx].frame=parseInt(e.target.value); render(); });
-bind('delBtn', 'click', () => { if (selIdx<0) return; placed.splice(selIdx,1); selIdx=-1; updateProps(); render(); });
-bind('dupBtn', 'click', () => { if (selIdx<0) return; const c={...placed[selIdx],id:uid(),x:placed[selIdx].x+20,y:placed[selIdx].y+20}; placed.push(c); selIdx=placed.length-1; updateProps(); render(); });
-bind('upBtn',  'click', () => { if (selIdx<0) return; placed[selIdx].depth=Math.min(1,(placed[selIdx].depth??0.5)+0.05); updateProps(); render(); });
-bind('downBtn','click', () => { if (selIdx<0) return; placed[selIdx].depth=Math.max(0,(placed[selIdx].depth??0.5)-0.05); updateProps(); render(); });
-
-// ============================================================
-// SPRITE LIBRARY
-// ============================================================
-async function buildLib() {
-    const lib = document.getElementById('library');
-    // Keep hint
-    const cats = {};
-    for (const s of SPRITES) { if (!cats[s.cat]) cats[s.cat]=[]; cats[s.cat].push(s); }
-
-    for (const [cat, sprs] of Object.entries(cats)) {
-        const wrap = document.createElement('div');
-        wrap.className = cat.includes('Inutilisés') ? 'cat-unused' : '';
-        const title = document.createElement('div');
-        title.className = 'cat-title';
-        title.textContent = cat;
-        wrap.appendChild(title);
-        const grid = document.createElement('div');
-        grid.className = 'sprite-grid';
-
-        for (const s of sprs) {
-            if (s.type === 'grid') {
-                const total = Math.min(s.cols * s.rows, 16);
-                for (let fi = 0; fi < total; fi++) {
-                    grid.appendChild(await makeGridThumb(s, fi));
-                }
-            } else {
-                grid.appendChild(await makeImgThumb(s));
-            }
-        }
-        wrap.appendChild(grid);
-        lib.appendChild(wrap);
-    }
-}
-
-async function makeGridThumb(def, fi) {
-    const div = document.createElement('div');
-    div.className = 'sprite-thumb';
-    const tc = document.createElement('canvas');
-    tc.width = 48; tc.height = 48;
-    div.appendChild(tc);
-    const lbl = document.createElement('div');
-    lbl.className = 'sprite-label';
-    lbl.textContent = `${def.label} #${fi}`;
-    div.appendChild(lbl);
-
-    const img = await loadImg(def.path);
-    if (img) {
-        const cx = tc.getContext('2d'); cx.imageSmoothingEnabled = false;
-        cx.drawImage(img, (fi%def.cols)*def.fw, Math.floor(fi/def.cols)*def.fh, def.fw, def.fh, 0, 0, 48, 48);
-    }
-    div.addEventListener('click', () => { clearLibSel(); div.classList.add('active-add'); addMode={spriteId:def.id,frame:fi}; document.getElementById('stMode').textContent=`placer: ${def.label} #${fi}`; canvas.classList.add('placing'); });
-    return div;
-}
-
-async function makeImgThumb(def) {
-    const div = document.createElement('div');
-    div.className = 'sprite-thumb';
-    div.style.width = '80px';
-    const tc = document.createElement('canvas');
-    tc.width = 76; tc.height = 48; tc.style.cssText = 'width:76px;height:48px;image-rendering:pixelated';
-    div.appendChild(tc);
-    const lbl = document.createElement('div');
-    lbl.className = 'sprite-label'; lbl.style.maxWidth = '76px';
-    lbl.textContent = def.label;
-    div.appendChild(lbl);
-
-    const img = await loadImg(def.path);
-    if (img) {
-        const cx = tc.getContext('2d'); cx.imageSmoothingEnabled = false;
-        const r = Math.min(76/img.naturalWidth, 48/img.naturalHeight);
-        const dw = img.naturalWidth*r, dh = img.naturalHeight*r;
-        cx.drawImage(img, (76-dw)/2, (48-dh)/2, dw, dh);
-    }
-    div.addEventListener('click', () => { clearLibSel(); div.classList.add('active-add'); addMode={spriteId:def.id,frame:0}; document.getElementById('stMode').textContent=`placer: ${def.label}`; canvas.classList.add('placing'); });
-    return div;
-}
-
-function clearLibSel() {
-    document.querySelectorAll('.sprite-thumb.active-add').forEach(e=>e.classList.remove('active-add'));
-    addMode = null;
-    document.getElementById('stMode').textContent = 'navigation';
-    canvas.classList.remove('placing');
+function setP(k, v) {
+    const o = selObj();
+    if (!o) return;
+    o[k] = v;
+    renderObjs(); updateProps();
 }
 
 // ============================================================
-// EXPORT
+// JSON
 // ============================================================
+function updateJSON() {
+    const data = {};
+    for (const [t, arr] of Object.entries(objects)) {
+        if (!arr.length) continue;
+        data[t] = arr.map(o => ({
+            src: o.src, x: Math.round(o.x), y: Math.round(o.y),
+            size: o.size, rotation: o.rotation, alpha: +o.alpha.toFixed(2), flipX: o.flipX,
+        }));
+    }
+    document.getElementById('json-output').value = JSON.stringify(data, null, 2);
+}
+
 function exportJSON() {
-    if (placed.length === 0) { alert('Aucun sprite placé.'); return; }
-    const lines = [`    ${terrain}: [`];
-    for (const p of placed) {
-        const type = TO_TYPE[p.spriteId] || `/* ${p.spriteId} */`;
-        const relX = Math.round(p.x - TX);
-        const xStr = relX > TERRAIN_W ? `'R+${relX-TERRAIN_W}'` : String(relX);
-        let line = `        { type: '${type}', x: ${xStr}, y: ${Math.round(p.y)}, scale: ${p.scale}, depth: ${(p.depth??0.5).toFixed(2)}`;
-        if ((p.alpha??1) < 1) line += `, alpha: ${(p.alpha).toFixed(2)}`;
-        if (p.flipX) line += `, flipX: true`;
-        if ((p.frame??0) !== 0) line += `, frame: ${p.frame}`;
-        line += ` },`;
-        lines.push(line);
-    }
-    lines.push('    ],');
-    const out = lines.join('\n');
-    document.getElementById('exportOutput').textContent = out;
-    navigator.clipboard?.writeText(out).then(() => {
-        document.getElementById('exportOutput').style.borderColor = '#6B8E4E';
-        setTimeout(() => document.getElementById('exportOutput').style.borderColor = '#3A2E28', 1500);
-    });
+    const blob = new Blob([document.getElementById('json-output').value], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'terrain_objects.json'; a.click();
 }
 
-// ============================================================
-// TOP BAR CONTROLS
-// ============================================================
-bind('terrainSel',   'change', e => { terrain = e.target.value; document.getElementById('stTerrain').textContent = terrain; render(); });
-bind('toggleOverlay','click',  () => { showOverlay = !showOverlay; document.getElementById('toggleOverlay').textContent = showOverlay ? 'Overlay ON' : 'Overlay OFF'; render(); });
-bind('loadCurrent',  'click',  () => {
-    const data = SCENE[terrain];
-    if (!data) return;
-    if (placed.length > 0 && !confirm(`Remplacer ${placed.length} sprites par la scène "${terrain}" ?`)) return;
-    placed = data.map(p => ({...p, id:uid()}));
-    selIdx = -1; updateProps(); render();
-});
-bind('clearAll', 'click', () => { if (!confirm(`Effacer tous les ${placed.length} sprites ?`)) return; placed=[]; selIdx=-1; clearLibSel(); updateProps(); render(); });
-bind('exportBtn','click', exportJSON);
-
-// Zoom
-let cZoom = 1.0;
-function applyZoom() {
-    document.getElementById('canvasWrapper').style.transform = `scale(${cZoom})`;
-    document.getElementById('zoomVal').textContent = Math.round(cZoom*100)+'%';
-}
-bind('zoomIn', 'click', () => { cZoom = Math.min(2.0, cZoom+0.1); applyZoom(); });
-bind('zoomOut','click', () => { cZoom = Math.max(0.3, cZoom-0.1); applyZoom(); });
-
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-    if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
-    if (e.key === 'Escape')       { clearLibSel(); selIdx=-1; updateProps(); render(); }
-    if (e.key === 'Delete' && selIdx>=0) { placed.splice(selIdx,1); selIdx=-1; updateProps(); render(); }
-    const step = e.shiftKey ? 10 : 1;
-    if (selIdx >= 0) {
-        if (e.key==='ArrowLeft')  { placed[selIdx].x -= step; updateProps(); render(); e.preventDefault(); }
-        if (e.key==='ArrowRight') { placed[selIdx].x += step; updateProps(); render(); e.preventDefault(); }
-        if (e.key==='ArrowUp')    { placed[selIdx].y -= step; updateProps(); render(); e.preventDefault(); }
-        if (e.key==='ArrowDown')  { placed[selIdx].y += step; updateProps(); render(); e.preventDefault(); }
-        if (e.key==='f' || e.key==='F') { placed[selIdx].flipX = !placed[selIdx].flipX; updateProps(); render(); }
-        if (e.key==='d' || e.key==='D') { const c={...placed[selIdx],id:uid(),x:placed[selIdx].x+20,y:placed[selIdx].y+20}; placed.push(c); selIdx=placed.length-1; updateProps(); render(); }
-    }
-});
-
-// ============================================================
-// IMPORT / SAVE SESSION
-// ============================================================
-function saveSession() {
-    const data = JSON.stringify({ terrain, placed }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `terrain_${terrain}_${Date.now()}.json`;
-    a.click();
-}
-
-function importSession() {
-    document.getElementById('importFile').click();
-}
-
-document.getElementById('importFile').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
+function importJSON() {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+    inp.onchange = async () => {
+        const t = await inp.files[0].text();
         try {
-            const data = JSON.parse(ev.target.result);
-            if (Array.isArray(data)) {
-                placed = data.map(p => ({ ...p, id: uid() }));
-            } else if (data.placed) {
-                placed = data.placed.map(p => ({ ...p, id: uid() }));
-                if (data.terrain && VIS[data.terrain]) {
-                    terrain = data.terrain;
-                    document.getElementById('terrainSel').value = terrain;
-                    document.getElementById('stTerrain').textContent = terrain;
-                }
-            } else {
-                throw new Error('Format non reconnu (doit avoir une propriété "placed")');
+            const d = JSON.parse(t);
+            for (const [terrain, arr] of Object.entries(d)) {
+                if (!objects[terrain]) continue;
+                objects[terrain] = arr.map(o => ({ ...o, id: ++idCounter, name: o.name || o.src.split('/').pop() }));
             }
-            selIdx = -1;
-            updateProps();
-            render();
-            document.getElementById('stMode').textContent = `Session chargee — ${placed.length} sprites`;
-        } catch (err) {
-            alert('Erreur JSON : ' + err.message);
-        }
+            renderObjs();
+        } catch (e) { alert('JSON invalide'); }
     };
-    reader.readAsText(file);
-    e.target.value = '';
+    inp.click();
+}
+
+function clearObjects() {
+    if (!confirm('Effacer les objets de ' + curTerrain + ' ?')) return;
+    objects[curTerrain] = []; selId = null;
+    renderObjs(); updateProps();
+}
+
+// ============================================================
+// TERRAIN SWITCH
+// ============================================================
+document.getElementById('terrain-select').addEventListener('change', async e => {
+    curTerrain = e.target.value; selId = null;
+    await drawBG(); renderObjs(); updateProps();
 });
 
-bind('importBtn', 'click', importSession);
-bind('saveBtn',   'click', saveSession);
+// ============================================================
+// AUTO-SCATTER: fill terrain with pierres_13 like user's reference
+// ============================================================
+function generateScatter(terrainId) {
+    // Seeded random per terrain
+    let s = 0;
+    for (let i = 0; i < terrainId.length; i++) s += terrainId.charCodeAt(i) * (i + 7);
+    const rand = () => { s = (s * 16807 + 11) % 2147483647; return (s & 0x7fffffff) / 0x7fffffff; };
+
+    const result = [];
+    // Grid-jitter: divide terrain into cells, place 0-1 pebble per cell
+    const cellW = 30, cellH = 32;
+    const cols = Math.ceil(TW / cellW);
+    const rows = Math.ceil(TH / cellH);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            // ~75% chance to place a pebble in each cell
+            if (rand() > 0.75) continue;
+            const x = Math.round(c * cellW + rand() * cellW);
+            const y = Math.round(r * cellH + rand() * cellH);
+            // Clamp inside terrain
+            if (x < 4 || x > TW - 4 || y < 4 || y > TH - 4) continue;
+            const size = 24 + Math.round(rand() * 8); // 24-32, same or bigger than user ref
+            const rotation = Math.round(rand() * 360);
+            const flipX = rand() > 0.5;
+            result.push({
+                id: ++idCounter,
+                src: 'pierres/pierres_13.png',
+                name: 'Petits cailloux',
+                x, y, size, rotation,
+                alpha: 0.75,
+                flipX,
+            });
+        }
+    }
+    return result;
+}
+
+function generateTouffe(terrainId) {
+    let s = 0;
+    for (let i = 0; i < terrainId.length; i++) s += terrainId.charCodeAt(i) * (i + 7);
+    const rand = () => { s = (s * 16807 + 11) % 2147483647; return (s & 0x7fffffff) / 0x7fffffff; };
+
+    const tuffes = [
+        { src: 'herbe_touffes/new/touffe_new_01.png', name: 'Touffe 01' },
+    ];
+
+    const result = [];
+    const cellW = 36, cellH = 38;
+    const cols = Math.ceil(TW / cellW);
+    const rows = Math.ceil(TH / cellH);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (rand() > 0.55) continue;
+            const x = Math.round(c * cellW + rand() * cellW);
+            const y = Math.round(r * cellH + rand() * cellH);
+            if (x < 8 || x > TW - 8 || y < 8 || y > TH - 8) continue;
+            const t = tuffes[Math.floor(rand() * tuffes.length)];
+            result.push({
+                id: ++idCounter,
+                src: t.src, name: t.name,
+                x, y,
+                size: 20 + Math.round(rand() * 12),
+                rotation: Math.round(rand() * 360),
+                alpha: 0.7 + rand() * 0.25,
+                flipX: rand() > 0.5,
+            });
+        }
+    }
+    return result;
+}
+
+async function initAllTerrains() {
+    try {
+        const resp = await fetch('data/terrain_objects.json?t=' + Date.now());
+        const raw = await resp.json();
+        for (const [terrain, arr] of Object.entries(raw)) {
+            if (!objects[terrain]) continue;
+            objects[terrain] = arr.map(o => ({ ...o, id: ++idCounter, name: o.name || o.src.split('/').pop() }));
+        }
+    } catch (e) {
+        console.warn('terrain_objects.json introuvable, démarrage vide', e);
+    }
+}
 
 // ============================================================
 // INIT
 // ============================================================
-buildLib().then(() => render());
+buildPalette();
+initAllTerrains().then(() => drawBG().then(() => renderObjs()));
 </script>
 </body>
 </html>

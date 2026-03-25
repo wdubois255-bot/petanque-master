@@ -170,6 +170,28 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('ball_cochonnet_jungle', `${BASE}assets/sprites/cochonnet_jungle.png`);
         this.load.image('ball_cochonnet_multicolor', `${BASE}assets/sprites/cochonnet_multicolor.png`);
 
+        // Shop ability icons
+        this.load.image('icon_focus_extra', `${BASE}assets/sprites/icon_focus_extra.png`);
+        this.load.image('icon_charge_extra', `${BASE}assets/sprites/icon_charge_extra.png`);
+
+        // Terrain objects (sprites placés sur la surface, définis dans terrain_objects.json)
+        this.load.json('terrain_objects', `${BASE}data/terrain_objects.json`);
+        const toBase = `${BASE}assets/sprites/v2_new/terrains/`;
+        this.load.image('to_pierres_07',    `${toBase}pierres/pierres_07.png`);
+        this.load.image('to_pierres_13',    `${toBase}pierres/pierres_13.png`);
+        this.load.image('to_touffe_new_01', `${toBase}herbe_touffes/new/touffe_new_01.png`);
+        this.load.image('to_touffe_new_04', `${toBase}herbe_touffes/new/touffe_new_04.png`);
+        // Rivets docks (12 variants sur 64 disponibles)
+        for (const n of [3, 8, 13, 18, 23, 28, 33, 38, 43, 48, 53, 58]) {
+            const p = String(n).padStart(2, '0');
+            this.load.image(`to_rivet_${p}`, `${toBase}dalles/rivets/rivet_${p}.png`);
+        }
+        // Coquillages plage (16 variants)
+        for (let i = 1; i <= 16; i++) {
+            const p = String(i).padStart(2, '0');
+            this.load.image(`to_coquillage_new_${p}`, `${toBase}sable_details/new/coquillage_new_${p}.png`);
+        }
+
         // Terrain surface textures (seamless 64x64)
         this.load.image('terrain_tex_terre', `${BASE}assets/sprites/terrain_tex_terre.png`);
         this.load.image('terrain_tex_herbe', `${BASE}assets/sprites/terrain_tex_herbe.png`);
