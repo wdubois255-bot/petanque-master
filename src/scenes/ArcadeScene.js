@@ -417,18 +417,25 @@ export default class ArcadeScene extends Phaser.Scene {
                 }).setOrigin(0.5).setDepth(5);
 
             } else {
-                // FUTURE: dark silhouette with locked icon
-                if (spriteKey && this.textures.exists(spriteKey)) {
-                    this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
-                        .setScale(0.35).setOrigin(0.5).setDepth(4)
-                        .setTint(0x222222).setAlpha(0.5);
-                }
-                nodeG.lineStyle(1, 0x5A4A38, 0.4);
+                // FUTURE: mysterious fog node — no spoiler, builds anticipation
+                // Fog circle fill (layered for depth)
+                nodeG.fillStyle(0x3A2E28, 0.7);
+                nodeG.fillCircle(pos.x, pos.y, R);
+                nodeG.fillStyle(0x5A4A38, 0.3);
+                nodeG.fillCircle(pos.x, pos.y, R - 4);
+                nodeG.lineStyle(1, 0x8B6B3A, 0.25);
                 nodeG.strokeCircle(pos.x, pos.y, R + 1);
-                // Lock icon
-                this.add.text(pos.x, pos.y + R - 6, '\uD83D\uDD12', {
-                    fontSize: '10px'
-                }).setOrigin(0.5).setDepth(5).setAlpha(0.6);
+
+                // Stylized "?" — mystery, not locked
+                const q = this.add.text(pos.x, pos.y - 1, '?', {
+                    fontFamily: 'monospace', fontSize: '20px', color: '#D4A574',
+                    shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                }).setOrigin(0.5).setDepth(5).setAlpha(0.7);
+                // Subtle breathing effect
+                this.tweens.add({
+                    targets: q, alpha: 0.4,
+                    duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                });
             }
 
             // Terrain name under each node (on dark chip for readability)
@@ -436,7 +443,7 @@ export default class ArcadeScene extends Phaser.Scene {
             const tName = terrain ? I18n.field(terrain, 'name') : match.terrain;
             const tY = pos.y + R + (isCurrent ? 24 : (result?.won ? 26 : 14));
             this.add.text(pos.x, tY, tName, {
-                fontFamily: 'monospace', fontSize: '8px', color: '#D4A574',
+                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574',
                 shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(4);
         }
@@ -572,7 +579,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 const oVal = nextOpponent.stats[statNames[i]] || 5;
 
                 this.add.text(sx, sy, statLabels[i], {
-                    fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E'
+                    fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E'
                 }).setDepth(6);
                 barG.fillStyle(0x1A1510, 0.7);
                 barG.fillRoundedRect(sx + 32, sy, barW, 5, 2);
@@ -848,13 +855,13 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // Victory text
-        this.add.text(GAME_WIDTH / 2, 100, 'ARCADE\nTERMINEE !', {
+        this.add.text(GAME_WIDTH / 2, 100, I18n.t('arcade.complete'), {
             fontFamily: 'monospace', fontSize: '48px', color: '#FFD700',
             align: 'center', lineSpacing: 4,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 200, `Victoires : ${this.wins} / ${this.wins + this.losses}`, {
+        this.add.text(GAME_WIDTH / 2, 200, I18n.t('arcade.wins_label', { wins: this.wins, total: this.wins + this.losses }), {
             fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5);
 
@@ -864,30 +871,40 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Perfect run badge
         if (this._isPerfect) {
-            this.add.text(GAME_WIDTH / 2, 270, 'PARCOURS PARFAIT !', {
+            this.add.text(GAME_WIDTH / 2, 270, I18n.t('arcade.perfect'), {
                 fontFamily: 'monospace', fontSize: '22px', color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
         }
 
-        this.add.text(GAME_WIDTH / 2, 300, 'Le Terrain des Quatre est a toi !', {
+        this.add.text(GAME_WIDTH / 2, 300, I18n.t('arcade.champion'), {
             fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5);
 
         // Galets bonus display
-        const bonusLabel = this._isPerfect ? 'Bonus parfait' : 'Bonus completion';
+        const bonusLabel = this._isPerfect ? I18n.t('arcade.bonus_perfect') : I18n.t('arcade.bonus_complete');
         this.add.text(GAME_WIDTH / 2, 335, `+${this._completionGalets} Galets (${bonusLabel})`, {
             fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Return button
-        const btn = this.add.text(GAME_WIDTH / 2, 380, '[ MENU PRINCIPAL ]', {
-            fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0',
-            backgroundColor: '#C44B3F', padding: { x: 20, y: 10 }, shadow: SHADOW
+        // Buttons — replay + menu
+        const replayBtn = this.add.text(GAME_WIDTH / 2, 380, `[ ${I18n.t('arcade.replay')} ]`, {
+            fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0',
+            backgroundColor: '#6B8E4E', padding: { x: 16, y: 8 }, shadow: SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        btn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
-        this.input.keyboard.on('keydown-SPACE', () => fadeToScene(this, 'TitleScene'));
-        this.input.keyboard.on('keydown-ENTER', () => fadeToScene(this, 'TitleScene'));
+        const menuBtn = this.add.text(GAME_WIDTH / 2, 430, `[ ${I18n.t('arcade.menu')} ]`, {
+            fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0',
+            backgroundColor: '#C44B3F', padding: { x: 16, y: 6 }, shadow: SHADOW
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        replayBtn.on('pointerdown', () => {
+            fadeToScene(this, 'ArcadeScene', { playerCharacter: this.playerCharacter });
+        });
+        menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+        this.input.keyboard.on('keydown-SPACE', () => {
+            fadeToScene(this, 'ArcadeScene', { playerCharacter: this.playerCharacter });
+        });
+        this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
     }
 
     _getCharById(id) {

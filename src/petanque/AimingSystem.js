@@ -950,6 +950,13 @@ export default class AimingSystem {
         this._clearTirDevantUI();
     }
 
+    _clearLoftUI() {
+        if (this._loftUI) {
+            this._loftUI.forEach(e => e.destroy());
+            this._loftUI = [];
+        }
+    }
+
     // --- POINTER EVENTS ---
 
     onPointerDown(pointer) {

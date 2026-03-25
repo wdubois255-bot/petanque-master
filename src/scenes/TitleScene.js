@@ -346,8 +346,9 @@ export default class TitleScene extends Phaser.Scene {
         if (save.arcadeProgress === 0 && (!save.tutorialPhasesDone || save.tutorialPhasesDone.length === 0)) {
             // Charger le perso La Choupe comme adversaire tutoriel
             const charsData = this.cache.json.get('characters');
-            const rookieChar = charsData?.find(c => c.id === 'rookie') || { id: 'rookie', name: 'Le Rookie' };
-            const tutorialOpponent = charsData?.find(c => c.id === 'la_choupe') || { id: 'la_choupe', name: 'La Choupe' };
+            const roster = charsData?.roster || charsData || [];
+            const rookieChar = roster.find?.(c => c.id === 'rookie') || { id: 'rookie', name: 'Le Rookie' };
+            const tutorialOpponent = roster.find?.(c => c.id === 'la_choupe') || { id: 'la_choupe', name: 'La Choupe' };
             this.time.delayedCall(500, () => {
                 fadeToScene(this, 'PetanqueScene', {
                     terrain: 'village',
