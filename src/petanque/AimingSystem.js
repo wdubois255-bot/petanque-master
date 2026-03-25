@@ -191,7 +191,7 @@ export default class AimingSystem {
 
         // Plombee: unlocked after first win
         if (plombeeUnlocked) {
-            styles.push({ loftObj: LOFT_PLOMBEE, label: 'Plombee', color: 0x9B7BB8, desc: "S'arrete net", mode: 'pointer' });
+            styles.push({ loftObj: LOFT_PLOMBEE, label: 'Plombee', color: 0x9B7BB8, desc: 'Roule moins', mode: 'pointer' });
         }
 
         // Tir au fer: available when opponent balls exist
@@ -236,13 +236,19 @@ export default class AimingSystem {
 
         const cx = this.scene.scale.width / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
-        const panelW = 480, panelH = 78;
+
+        const styles = this._getAvailableStyles();
+        const count = styles.length;
+        const btnW = 130, btnH = 40, gap = 8;
+        const totalW = count * btnW + (count - 1) * gap;
+        const panelW = totalW + 24;
+        const panelH = btnH + 36;
         const panelTop = baseY - panelH / 2;
 
         // === PANEL FRAME (only build once) ===
         if (this._modeUI.length === 0) {
             const bg = this.scene.add.graphics().setDepth(95);
-            bg.fillStyle(0x3A2E28, 0.90);
+            bg.fillStyle(0x3A2E28, 0.92);
             bg.fillRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
             bg.lineStyle(1, 0xD4A574, 0.35);
             bg.strokeRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
@@ -265,58 +271,54 @@ export default class AimingSystem {
         }
 
         // === TACTICAL HINT (who has the point?) ===
-        const hintY = panelTop + 5;
         if (this._terrainState.hasTirTargets) {
             const hintText = this._terrainState.iHavePoint
                 ? 'Vous avez le point'
                 : 'Adversaire au point';
             const hintColor = this._terrainState.iHavePoint ? '#6B8E4E' : '#C44B3F';
-            const hint = this.scene.add.text(cx, hintY, hintText, {
+            const hint = this.scene.add.text(cx, panelTop + 5, hintText, {
                 fontFamily: 'monospace', fontSize: '9px', color: hintColor
             }).setOrigin(0.5, 0).setDepth(97).setAlpha(0.6);
             this._styleContentUI.push(hint);
         }
 
-        // === STYLES (flat list: 2 or 3 options) ===
-        const styles = this._getAvailableStyles();
-        const styleBaseY = hintY + 16;
-        const count = styles.length;
-        const spacing = count === 2 ? 160 : 145;
+        // === STYLE BUTTONS (clear, solid rectangles) ===
+        const btnBaseY = panelTop + panelH / 2 + 4;
+        const startX = cx - totalW / 2 + btnW / 2;
 
         this._styleBtns = [];
         this._currentStyles = styles;
 
         for (let i = 0; i < styles.length; i++) {
             const s = styles[i];
-            const sx = cx + (i - (count - 1) / 2) * spacing;
+            const bx = startX + i * (btnW + gap);
             const selected = i === this._styleSelected;
 
-            // Enhanced arc preview (60px wide, shows flight + roll)
-            const arcGfx = this.scene.add.graphics().setDepth(97);
-            this._drawEnhancedArc(arcGfx, sx, styleBaseY + 6, s.loftObj, s.color, selected);
-            this._styleContentUI.push(arcGfx);
+            // Button background
+            const btnGfx = this.scene.add.graphics().setDepth(96);
+            this._drawStyleButton(btnGfx, bx, btnBaseY, btnW, btnH, s.color, selected);
+            this._styleContentUI.push(btnGfx);
 
-            // Style label with keyboard hint
-            const label = this.scene.add.text(sx, styleBaseY + 28, `[${i + 1}] ${s.label}`, {
-                fontFamily: 'monospace', fontSize: '12px',
-                color: '#' + s.color.toString(16).padStart(6, '0'),
-                shadow: SHADOW
-            }).setOrigin(0.5).setDepth(97).setAlpha(selected ? 1 : 0.55);
+            // Button label: "[1] Demi-portee"
+            const label = this.scene.add.text(bx, btnBaseY - 4, `${s.label}`, {
+                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0',
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setDepth(97);
             this._styleContentUI.push(label);
 
-            // Short description (player-oriented: what it DOES for you)
-            const desc = this.scene.add.text(sx, styleBaseY + 42, s.desc, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E'
-            }).setOrigin(0.5).setDepth(97).setAlpha(selected ? 0.75 : 0.4);
-            this._styleContentUI.push(desc);
+            // Keyboard hint + description
+            const sub = this.scene.add.text(bx, btnBaseY + 12, `[${i + 1}] ${s.desc}`, {
+                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
+            }).setOrigin(0.5).setDepth(97).setAlpha(0.8);
+            this._styleContentUI.push(sub);
 
-            // Hit zone (WCAG compliant on mobile)
-            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : spacing - 10;
-            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : 46;
-            const hitZone = this.scene.add.zone(sx, styleBaseY + 22, hitW, hitH)
+            // Hit zone
+            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : btnW;
+            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : btnH;
+            const hitZone = this.scene.add.zone(bx, btnBaseY, hitW, hitH)
                 .setDepth(98).setInteractive({ useHandCursor: true });
             this._styleContentUI.push(hitZone);
-            this._styleBtns.push({ hitZone, label, desc, arcGfx, style: s });
+            this._styleBtns.push({ hitZone, label, sub, btnGfx, style: s });
 
             const idx = i;
             hitZone.on('pointerdown', (pointer) => {
@@ -332,78 +334,34 @@ export default class AimingSystem {
         }
     }
 
-    /** Draw arc preview using real landingFactor — shows flight curve + roll trail */
-    _drawEnhancedArc(gfx, cx, cy, loftObj, color, selected) {
+    /** Draw a solid style button (filled rect with color accent) */
+    _drawStyleButton(gfx, cx, cy, w, h, color, selected) {
         gfx.clear();
-        const totalW = 60;
-        const startX = cx - totalW / 2;
-        const endX = cx + totalW / 2;
-        const lf = loftObj.landingFactor;
-        const landX = startX + lf * totalW;
-        // Arc height proportional to arcHeight param (clamped for very low arcs)
-        const h = Math.max(Math.abs(loftObj.arcHeight) * 0.35, 1.5);
-        const alpha = selected ? 1 : 0.35;
-        const lineW = selected ? 2.5 : 1.5;
-
-        // Ground line
-        gfx.lineStyle(0.5, 0xD4A574, alpha * 0.15);
-        gfx.lineBetween(startX - 2, cy, endX + 2, cy);
-
-        // Launch boule (small dot)
-        gfx.fillStyle(0xF5E6D0, alpha * 0.5);
-        gfx.fillCircle(startX, cy, 1.5);
-
-        // Flight arc (curved path from start to landing point)
-        gfx.lineStyle(lineW, color, alpha * 0.9);
-        gfx.beginPath();
-        const steps = 16;
-        for (let s = 0; s <= steps; s++) {
-            const t = s / steps;
-            const px = startX + t * (landX - startX);
-            const py = cy - Math.sin(t * Math.PI) * h;
-            if (s === 0) gfx.moveTo(px, py);
-            else gfx.lineTo(px, py);
+        const x = cx - w / 2, y = cy - h / 2;
+        // Fill: dark if unselected, colored if selected
+        gfx.fillStyle(selected ? color : 0x2A1F14, selected ? 0.85 : 0.7);
+        gfx.fillRoundedRect(x, y, w, h, 6);
+        // Border: colored accent
+        gfx.lineStyle(selected ? 2 : 1, color, selected ? 1 : 0.5);
+        gfx.strokeRoundedRect(x, y, w, h, 6);
+        // Top highlight on selected
+        if (selected) {
+            gfx.lineStyle(1, 0xFFFFFF, 0.15);
+            gfx.beginPath();
+            gfx.moveTo(x + 8, y + 1);
+            gfx.lineTo(x + w - 8, y + 1);
+            gfx.strokePath();
         }
-        gfx.strokePath();
-
-        // Landing impact marker
-        if (loftObj.isTir && selected) {
-            // Impact lines (star burst) for tir styles
-            gfx.lineStyle(1.5, color, alpha * 0.8);
-            for (let i = 0; i < 4; i++) {
-                const a = -Math.PI / 2 + (i - 1.5) * 0.45;
-                gfx.lineBetween(
-                    landX + Math.cos(a) * 1.5, cy + Math.sin(a) * 1.5,
-                    landX + Math.cos(a) * 4, cy + Math.sin(a) * 4
-                );
-            }
-        } else {
-            gfx.fillStyle(color, alpha * 0.7);
-            gfx.fillCircle(landX, cy, selected ? 2.5 : 1.5);
-        }
-
-        // Roll trail (dashed line from landing to end)
-        const rollLen = endX - landX;
-        if (rollLen > 4) {
-            gfx.lineStyle(lineW * 0.6, color, alpha * 0.35);
-            for (let x = landX + 3; x < endX - 1; x += 6) {
-                gfx.lineBetween(x, cy, Math.min(x + 3, endX - 1), cy);
-            }
-        }
-
-        // Final resting position (boule at end)
-        gfx.fillStyle(color, alpha * (selected ? 0.85 : 0.3));
-        gfx.fillCircle(endX, cy, selected ? 3 : 1.8);
     }
 
     _updateStyleHighlight() {
         if (!this._styleBtns) return;
         for (let i = 0; i < this._styleBtns.length; i++) {
-            const { label, desc, arcGfx, style } = this._styleBtns[i];
+            const { label, sub, btnGfx, style } = this._styleBtns[i];
             const selected = i === this._styleSelected;
-            label.setAlpha(selected ? 1 : 0.55);
-            desc.setAlpha(selected ? 0.75 : 0.4);
-            this._drawEnhancedArc(arcGfx, label.x, label.y - 22, style.loftObj, style.color, selected);
+            label.setColor(selected ? '#F5E6D0' : '#9E9E8E');
+            sub.setAlpha(selected ? 0.8 : 0.45);
+            this._drawStyleButton(btnGfx, label.x, label.y + 4, 130, 40, style.color, selected);
         }
     }
 

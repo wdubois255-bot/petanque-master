@@ -137,18 +137,8 @@ export default class BootScene extends Phaser.Scene {
             });
         }
 
-        // Tiled maps (.tmj) - try to load for each map, will silently fail if not found
-        const mapNames = [
-            'village_depart', 'route_1', 'village_arene_1', 'route_2',
-            'village_arene_2', 'route_3', 'village_arene_3', 'arene_finale'
-        ];
-        for (const name of mapNames) {
-            this.load.tilemapTiledJSON(`${name}_tiled`, `${BASE}assets/maps/${name}.tmj`);
-        }
-        // Don't fail the whole boot if .tmj files are missing
-        this.load.on('loaderror', (file) => {
-            // Silently ignore missing Tiled maps — procedural generation will be used
-        });
+        // Tiled maps: disabled — Overworld uses procedural generation (MapManager.js)
+        // .tmj files will be loaded here when V2 hand-crafted maps are ready
 
         // Boules v3 — 16 couleurs, pixel art avec 6-frame roll animation (384x64)
         const BOULES = [

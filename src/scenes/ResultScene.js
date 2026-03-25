@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC, PLOMBEE_UNLOCK_WINS } from '../utils/Constants.js';
 import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -357,12 +357,12 @@ export default class ResultScene extends Phaser.Scene {
             duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
 
-        // Secondary "Menu" button (text only, no background)
-        const menuBtn = this.add.text(mainBtnX, btnY + 34, I18n.t('result.menu'), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        // Secondary "Menu" button — top-right corner, away from main action
+        const menuBtn = this.add.text(GAME_WIDTH - 16, 16, I18n.t('result.menu'), {
+            fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
+        }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
         menuBtn.on('pointerover', () => menuBtn.setColor('#D4A574'));
-        menuBtn.on('pointerout', () => menuBtn.setColor('#9E9E8E'));
+        menuBtn.on('pointerout', () => menuBtn.setColor('#5A4A38'));
         menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         btnContainer.add(menuBtn);
 
@@ -383,10 +383,23 @@ export default class ResultScene extends Phaser.Scene {
         };
 
         const afterDialogue = () => {
-            if (this.unlocksOnWin) {
-                this._showCharacterUnlock(this.unlocksOnWin, afterEverything);
+            // Check if plombée was just unlocked (first win)
+            const save = loadSave();
+            const justUnlockedPlombee = this.won
+                && (save.stats?.totalWins || 0) === PLOMBEE_UNLOCK_WINS;
+
+            const afterUnlocks = () => {
+                if (this.unlocksOnWin) {
+                    this._showCharacterUnlock(this.unlocksOnWin, afterEverything);
+                } else {
+                    afterEverything();
+                }
+            };
+
+            if (justUnlockedPlombee) {
+                this._showTechniqueUnlock('PLOMBEE', 'Lancer en cloche — la boule roule moins !', 0x9B7BB8, afterUnlocks);
             } else {
-                afterEverything();
+                afterUnlocks();
             }
         };
 
@@ -628,6 +641,66 @@ export default class ResultScene extends Phaser.Scene {
         this.input.once('pointerdown', dismiss);
     }
 
+    _showTechniqueUnlock(name, description, color, onDone) {
+        sfxScore();
+        const colorHex = '#' + color.toString(16).padStart(6, '0');
+
+        const overlay = this.add.graphics().setDepth(300);
+        overlay.fillStyle(0x1A1510, 0.85);
+        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.setAlpha(0);
+        this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
+
+        const panelW = 380, panelH = 120;
+        const panelX = GAME_WIDTH / 2 - panelW / 2;
+        const panelY = GAME_HEIGHT / 2 - panelH / 2;
+
+        const panel = this.add.graphics().setDepth(302);
+        panel.fillStyle(0x2A1F14, 0.98);
+        panel.fillRoundedRect(panelX, panelY, panelW, panelH, 10);
+        panel.lineStyle(2, color, 0.8);
+        panel.strokeRoundedRect(panelX, panelY, panelW, panelH, 10);
+        panel.setScale(0);
+        this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
+
+        const title = this.add.text(GAME_WIDTH / 2, panelY + 28, '★ NOUVELLE TECHNIQUE ★', {
+            fontFamily: 'monospace', fontSize: '16px', color: colorHex,
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(303).setScale(0);
+        this.tweens.add({ targets: title, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
+
+        const nameText = this.add.text(GAME_WIDTH / 2, panelY + 58, name, {
+            fontFamily: 'monospace', fontSize: '26px', color: '#F5E6D0',
+            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: nameText, alpha: 1, duration: 400, delay: 300 });
+
+        const descText = this.add.text(GAME_WIDTH / 2, panelY + 88, description, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: descText, alpha: 1, duration: 300, delay: 500 });
+
+        const hint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, '~ Appuyez sur Espace ~', {
+            fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: hint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
+
+        let dismissed = false;
+        const dismiss = () => {
+            if (dismissed) return;
+            dismissed = true;
+            this.tweens.add({
+                targets: [overlay, panel, title, nameText, descText, hint],
+                alpha: 0, duration: 300, ease: 'Quad.easeIn',
+                onComplete: () => onDone()
+            });
+        };
+        this.time.delayedCall(3000, dismiss);
+        this.input.keyboard.once('keydown-SPACE', dismiss);
+        this.input.keyboard.once('keydown-ENTER', dismiss);
+        this.input.once('pointerdown', dismiss);
+    }
+
     _addInputHandlers() {
         // Check milestones before enabling navigation
         this._checkMilestones();
@@ -691,25 +764,26 @@ export default class ResultScene extends Phaser.Scene {
 
     _showMilestoneToasts(toasts) {
         toasts.forEach((toast, i) => {
-            const toastText = this.add.text(GAME_WIDTH / 2, 20 + i * 36,
+            const y = 18 + i * 34;
+            const toastText = this.add.text(GAME_WIDTH / 2, y + 10,
                 `★ ${toast.text}  +${toast.reward} Galets`, {
                     fontFamily: 'monospace', fontSize: '13px', color: '#FFD700',
                     backgroundColor: '#2A1F14', padding: { x: 12, y: 6 },
                     shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
                 }
-            ).setOrigin(0.5).setDepth(250).setAlpha(0).setY(60 + i * 40);
+            ).setOrigin(0.5).setDepth(250).setAlpha(0);
 
             this.tweens.add({
                 targets: toastText,
-                alpha: 1, y: 55 + i * 40,
+                alpha: 1, y: y,
                 duration: 400, ease: 'Back.easeOut', delay: i * 300
             });
 
             this.tweens.add({
                 targets: toastText,
-                alpha: 0, y: 45 + i * 40,
+                alpha: 0, y: y - 10,
                 duration: 400, ease: 'Quad.easeIn',
-                delay: 2500 + i * 300
+                delay: 3000 + i * 300
             });
         });
     }

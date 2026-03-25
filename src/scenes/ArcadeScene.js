@@ -112,9 +112,10 @@ export default class ArcadeScene extends Phaser.Scene {
             return;
         }
 
-        // Check if arcade is complete
+        // Check if arcade is complete (either by wins count or saved progress)
         const totalMatches = this.arcadeData.matches.length;
-        if (this.wins >= totalMatches) {
+        const save = loadSave();
+        if (this.wins >= totalMatches || this.currentRound > totalMatches || (save.arcadeProgress || 0) >= totalMatches) {
             this._showArcadeComplete();
             return;
         }
@@ -449,7 +450,8 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // === ROOKIE SPRITE on the map (at current node) ===
-        const rookiePos = NODE_POSITIONS[this.currentRound - 1];
+        const rookieIdx = Math.min(this.currentRound - 1, NODE_POSITIONS.length - 1);
+        const rookiePos = NODE_POSITIONS[rookieIdx];
         const rookieKey = this.playerCharacter ? this._getSpriteKey(this.playerCharacter) : null;
         if (rookieKey && this.textures.exists(rookieKey)) {
             const prevRound = this.currentRound - 2;

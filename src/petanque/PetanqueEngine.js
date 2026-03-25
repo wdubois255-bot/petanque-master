@@ -581,11 +581,13 @@ export default class PetanqueEngine {
                 // For tir: much larger contact zone (ball arrives at high speed from above)
                 const landingContactBonus = isTir ? TIR_LANDING_CONTACT_RADIUS : 0;
                 const allBodies = [...this.balls, this.cochonnet].filter(b => b && b.isAlive && b !== ball);
+                let landingHit = false;
                 for (const other of allBodies) {
                     const cdx = ball.x - other.x;
                     const cdy = ball.y - other.y;
                     const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
                     if (cdist < ball.radius + other.radius + landingContactBonus) {
+                        landingHit = true;
                         // Ball landed on/very near another — give it velocity
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
                             const landAngle = Math.atan2(targetY - startY, targetX - startX);
@@ -605,7 +607,8 @@ export default class PetanqueEngine {
                 const shakeDuration = isTir ? THROW_SHAKE_DURATION * 1.5 : THROW_SHAKE_DURATION;
                 // Camera shake removed — fixed scene
 
-                if (isTir) {
+                // Flash only on actual tir impact (not misses)
+                if (isTir && landingHit) {
                     this.renderer.flashTirImpact(targetX, targetY, ball.radius);
                 }
 
@@ -619,13 +622,12 @@ export default class PetanqueEngine {
                 this._drawImpactTrace(targetX, targetY, traceRadius);
 
                 // flyOnly miss safety: if tir missed everything, give residual roll
-                // (in real petanque a missed tir still bounces forward from landing impact)
-                // Use full MIN_IMPACT_SPEED — 0.5× was too low on high-friction terrains
-                // (sable/herbe: friction ate all speed in 3 frames → ball stopped dead)
+                // In real petanque a missed tir still hits the ground hard and bounces forward
+                // Same kinetic energy as a hit — the ball fell from the same height
                 if (isTir && Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
                     const landAngle = Math.atan2(targetY - startY, targetX - startX);
-                    rollVx = Math.cos(landAngle) * MIN_IMPACT_SPEED;
-                    rollVy = Math.sin(landAngle) * MIN_IMPACT_SPEED;
+                    rollVx = Math.cos(landAngle) * TIR_IMPACT_SPEED;
+                    rollVy = Math.sin(landAngle) * TIR_IMPACT_SPEED;
                 }
 
                 ball.launch(rollVx, rollVy);
@@ -1116,26 +1118,46 @@ export default class PetanqueEngine {
             // Trigger reaction animations
             try {
                 if (this.onAfterStop) this.onAfterStop(this.lastTeamPlayed);
-            } catch (e) { /* onAfterStop failure safe */ }
+            } catch (e) { console.warn('[PetanqueEngine] onAfterStop error:', e); }
 
             if (this._afterStopCallback) {
                 const cb = this._afterStopCallback;
                 this._afterStopCallback = null;
-                try { cb(); } catch (e) { /* afterStopCallback failure safe */ }
+                try {
+                    cb();
+                } catch (e) {
+                    console.error('[PetanqueEngine] afterStopCallback crashed:', e);
+                    // Fallback: force advance to prevent game freeze
+                    if (!this.cochonnet?.isAlive) {
+                        this.setState(STATES.MENE_DEAD);
+                    } else {
+                        this.setState(STATES.PLAY_LOOP);
+                    }
+                }
             }
         }
 
         // === SAFETY WATCHDOG: detect stuck WAITING_STOP ===
         // If balls have been "settling" for >12 seconds, force them all to stop
-        if (this.state === STATES.WAITING_STOP && anyMoving) {
+        if (this.state === STATES.WAITING_STOP) {
             const elapsed = Date.now() - this._stateEnteredAt;
-            if (elapsed > 12000) {
+            if (anyMoving && elapsed > 12000) {
                 for (const b of allBodies) {
                     if (b.isMoving) {
                         b.vx = 0;
                         b.vy = 0;
                         b.isMoving = false;
                     }
+                }
+            }
+            // Fallback: if stuck in WAITING_STOP for >5s with no balls moving and no callback,
+            // force advance (catches silent callback crashes)
+            if (!anyMoving && !this._afterStopCallback && elapsed > 5000) {
+                console.warn('[PetanqueEngine] Stuck in WAITING_STOP, forcing advance');
+                if (!this.cochonnet?.isAlive) {
+                    this.setState(STATES.MENE_DEAD);
+                } else {
+                    this.setState(STATES.PLAY_LOOP);
                 }
             }
         }
@@ -1344,12 +1366,7 @@ export default class PetanqueEngine {
                 }
             }
 
-            // Bon tir sans label special — afficher "Court !" si tir devant, sinon rien
-            if (isTirDevant) {
-                this._showShotLabel(ball, 'Court !', '#6B8E4E', 13);
-                this._shotCollisions = [];
-                return;
-            }
+            // Bon tir sans label special — no label needed
         }
 
         this._shotCollisions = [];

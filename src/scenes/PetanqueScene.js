@@ -924,17 +924,24 @@ export default class PetanqueScene extends Phaser.Scene {
         const playerKey = this._getCharSpriteKey(this.playerCharId);
         const playerIsStatic = CHAR_STATIC_SPRITES.includes(this.playerCharId);
         if (this.textures.exists(playerKey)) {
+            const src = this.textures.get(playerKey).getSourceImage();
             if (playerIsStatic) {
                 // Static image: create a 1-frame spritesheet from the image
-                const src = this.textures.get(playerKey).getSourceImage();
                 this.textures.addSpriteSheet('petanque_player', src,
                     { frameWidth: src.width, frameHeight: src.height }
                 );
             } else {
-                this.textures.addSpriteSheet('petanque_player',
-                    this.textures.get(playerKey).getSourceImage(),
-                    { frameWidth: 128, frameHeight: 128 }
-                );
+                // Canvas textures (V2 characters): copy to new canvas + add frames manually
+                // (Phaser 4 addSpriteSheet doesn't reliably handle canvas sources on scene re-entry)
+                const w = src.width || 512, h = src.height || 512;
+                const canvas = this.textures.createCanvas('petanque_player', w, h);
+                canvas.context.imageSmoothingEnabled = false;
+                canvas.context.drawImage(src, 0, 0);
+                canvas.refresh();
+                const tex = this.textures.get('petanque_player');
+                for (let i = 0; i < 16; i++) {
+                    tex.add(i, 0, (i % 4) * 128, Math.floor(i / 4) * 128, 128, 128);
+                }
             }
             this.textures.get('petanque_player').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
@@ -949,16 +956,21 @@ export default class PetanqueScene extends Phaser.Scene {
         const opponentKey = this._getCharSpriteKey(opponentId);
         const opponentIsStatic = CHAR_STATIC_SPRITES.includes(opponentId);
         if (this.textures.exists(opponentKey)) {
+            const src = this.textures.get(opponentKey).getSourceImage();
             if (opponentIsStatic) {
-                const src = this.textures.get(opponentKey).getSourceImage();
                 this.textures.addSpriteSheet('petanque_opponent', src,
                     { frameWidth: src.width, frameHeight: src.height }
                 );
             } else {
-                this.textures.addSpriteSheet('petanque_opponent',
-                    this.textures.get(opponentKey).getSourceImage(),
-                    { frameWidth: 128, frameHeight: 128 }
-                );
+                const w = src.width || 512, h = src.height || 512;
+                const canvas = this.textures.createCanvas('petanque_opponent', w, h);
+                canvas.context.imageSmoothingEnabled = false;
+                canvas.context.drawImage(src, 0, 0);
+                canvas.refresh();
+                const tex = this.textures.get('petanque_opponent');
+                for (let i = 0; i < 16; i++) {
+                    tex.add(i, 0, (i % 4) * 128, Math.floor(i / 4) * 128, 128, 128);
+                }
             }
             this.textures.get('petanque_opponent').setFilter(Phaser.Textures.FilterMode.LINEAR);
         } else {
@@ -1921,30 +1933,32 @@ export default class PetanqueScene extends Phaser.Scene {
         const cy = GAME_HEIGHT / 2;
         const maxRadius = Math.sqrt(cx * cx + cy * cy) + 20;
 
+        // Iris-open effect: shrinking dark overlay circle (no mask — Phaser 4 WebGL compatible)
         const overlay = this.add.graphics().setDepth(200);
-        const shape = this.make.graphics({ add: false });
-        shape.fillStyle(0xffffff);
-        shape.fillCircle(cx, cy, 1);
-        const mask = shape.createGeometryMask();
-        mask.invertAlpha = true;
-
-        overlay.fillStyle(0x1A1510, 1);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        overlay.setMask(mask);
 
         const anim = { r: 0 };
+        const drawFrame = () => {
+            overlay.clear();
+            // Draw dark overlay with a circular hole
+            overlay.fillStyle(0x1A1510, 1);
+            // Top
+            overlay.fillRect(0, 0, GAME_WIDTH, Math.max(0, cy - anim.r));
+            // Bottom
+            overlay.fillRect(0, Math.min(GAME_HEIGHT, cy + anim.r), GAME_WIDTH, GAME_HEIGHT);
+            // Left
+            overlay.fillRect(0, Math.max(0, cy - anim.r), Math.max(0, cx - anim.r), anim.r * 2);
+            // Right
+            overlay.fillRect(Math.min(GAME_WIDTH, cx + anim.r), Math.max(0, cy - anim.r), GAME_WIDTH, anim.r * 2);
+        };
+        drawFrame();
+
         this.tweens.add({
             targets: anim,
             r: maxRadius,
             duration: 600,
             ease: 'Quad.easeOut',
-            onUpdate: () => {
-                shape.clear();
-                shape.fillStyle(0xffffff);
-                shape.fillCircle(cx, cy, anim.r);
-            },
+            onUpdate: drawFrame,
             onComplete: () => {
-                overlay.clearMask(true);
                 overlay.destroy();
             }
         });

@@ -22,6 +22,8 @@ export default class TitleScene extends Phaser.Scene {
         this._menuContainer = null;
         this._pressStartTween = null;
         this._transitioning = false;
+        this._galetsDisplay = null;
+        this._pressStart = null;
     }
 
     create() {
@@ -639,7 +641,11 @@ export default class TitleScene extends Phaser.Scene {
                 });
             });
         } else if (this._selectedIndex === 1) {
-            this._transitionTo(() => this.scene.start('ArcadeScene'));
+            this._transitionTo(() => {
+                const save = loadSave();
+                const resumeRound = Math.min((save.arcadeProgress || 0) + 1, 5);
+                this.scene.start('ArcadeScene', { currentRound: resumeRound });
+            });
         } else if (this._selectedIndex === 2) {
             this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 3) {
