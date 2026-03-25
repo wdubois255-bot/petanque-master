@@ -75,17 +75,32 @@ export default class ResultScene extends Phaser.Scene {
             }
         });
 
-        // Score
-        this.add.text(GAME_WIDTH / 2, 90, `${this.scores.player} - ${this.scores.opponent}`, {
+        // Score (starts hidden for sequence)
+        const scoreText = this.add.text(GAME_WIDTH / 2, 90, `${this.scores.player} - ${this.scores.opponent}`, {
             fontFamily: 'monospace', fontSize: '36px', color: '#F5E6D0',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setAlpha(0);
+        // Sequence step 1: score appears with title
+        this.tweens.add({ targets: scoreText, alpha: 1, duration: 300, delay: 400 });
 
         // === STAR RATING (only on victory) ===
         if (this.won) {
             const stars = this._calculateStars();
             this._drawStars(GAME_WIDTH / 2, 120, stars);
             this._saveStarRating(stars);
+        }
+
+        // === CONTEXTUAL DEFEAT ADVICE (sequence step 2: 800ms) ===
+        if (!this.won) {
+            const advice = this._getDefeatAdvice();
+            if (advice) {
+                const adviceText = this.add.text(GAME_WIDTH / 2, 120, advice, {
+                    fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
+                    shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true },
+                    wordWrap: { width: 400 }, align: 'center'
+                }).setOrigin(0.5).setAlpha(0);
+                this.tweens.add({ targets: adviceText, alpha: 0.9, duration: 400, delay: 800 });
+            }
         }
 
         // Character sprite + name
@@ -128,19 +143,21 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
-        // === ENRICHED STATS PANEL ===
+        // === ENRICHED STATS PANEL (sequence step 3: 1200ms) ===
         const panelX = GAME_WIDTH / 2 + 40;
         const panelY = 148;
         const panelW = 340;
         const panelH = 130;
+        const statsContainer = this.add.container(0, 0).setAlpha(0);
 
         if (this.textures.exists('v2_panel_elegant')) {
-            this.add.nineslice(panelX, panelY + panelH / 2, 'v2_panel_elegant', 0, panelW, panelH, 16, 16, 16, 16)
-                .setOrigin(0.5).setAlpha(0.9);
+            statsContainer.add(this.add.nineslice(panelX, panelY + panelH / 2, 'v2_panel_elegant', 0, panelW, panelH, 16, 16, 16, 16)
+                .setOrigin(0.5).setAlpha(0.9));
         } else {
-            UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
+            const panelGfx = UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
                 fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
             });
+            if (panelGfx) statsContainer.add(panelGfx);
         }
 
         const ms = this.matchStats;
@@ -165,20 +182,26 @@ export default class ResultScene extends Phaser.Scene {
             const sx = panelX - panelW / 2 + 20 + col * 110;
             const sy = panelY + 15 + row * 55;
 
-            this.add.text(sx, sy, stats[i].label, {
+            statsContainer.add(this.add.text(sx, sy, stats[i].label, {
                 fontFamily: 'monospace', fontSize: '9px', color: '#D4A574', shadow: SHADOW
-            });
-            this.add.text(sx, sy + 16, `${stats[i].value}`, {
+            }));
+            statsContainer.add(this.add.text(sx, sy + 16, `${stats[i].value}`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: SHADOW
-            });
+            }));
         }
 
         // Fanny badge
         if (ms.fanny) {
-            this.add.text(panelX, panelY + panelH + 8, I18n.t('result.fanny'), {
+            statsContainer.add(this.add.text(panelX, panelY + panelH + 8, I18n.t('result.fanny'), {
                 fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
-            }).setOrigin(0.5);
+            }).setOrigin(0.5));
         }
+
+        // Sequence: stats panel slides in at 1200ms
+        this.tweens.add({
+            targets: statsContainer, alpha: 1, duration: 400, delay: 1200,
+            onStart: () => sfxScore()
+        });
 
         // === PERSISTENT STATS ===
         recordMatchStats({
@@ -191,7 +214,7 @@ export default class ResultScene extends Phaser.Scene {
             bestMeneScore: this.matchStats?.bestMene || 0
         });
 
-        // === GALETS EARNED ===
+        // === GALETS EARNED (sequence step 4: 1800ms) ===
         const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
         if (galetsToGive > 0) {
             addGalets(galetsToGive);
@@ -199,7 +222,7 @@ export default class ResultScene extends Phaser.Scene {
             if (this.textures.exists('v2_icon_galet')) {
                 const galetIcon = this.add.sprite(GAME_WIDTH / 2 - 70, panelY + panelH + 28, 'v2_icon_galet', 0)
                     .setScale(0.8).setOrigin(0.5).setAlpha(0);
-                this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 800 });
+                this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 1800 });
             }
             const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${galetsToGive} Galets`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
@@ -208,7 +231,7 @@ export default class ResultScene extends Phaser.Scene {
 
             this.tweens.add({
                 targets: galetText, alpha: 1, scale: 1,
-                duration: 500, ease: 'Back.easeOut', delay: 800
+                duration: 500, ease: 'Back.easeOut', delay: 1800
             });
         }
 
@@ -229,7 +252,7 @@ export default class ResultScene extends Phaser.Scene {
                         fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
                         shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
                     }).setOrigin(0.5).setAlpha(0);
-                this.tweens.add({ targets: ctxt, alpha: 1, duration: 500, delay: 1500 });
+                this.tweens.add({ targets: ctxt, alpha: 1, duration: 500, delay: 2400 });
             }
         }
 
@@ -258,7 +281,7 @@ export default class ResultScene extends Phaser.Scene {
 
                 this.tweens.add({
                     targets: xpText, alpha: 1,
-                    duration: 400, ease: 'Sine.easeOut', delay: 1200
+                    duration: 400, ease: 'Sine.easeOut', delay: 2200
                 });
             }
         }
@@ -266,8 +289,9 @@ export default class ResultScene extends Phaser.Scene {
         // === PROCHAIN OBJECTIF (teaser unlock) ===
         this._showNextUnlockTeaser(isRookie);
 
-        // === ACTION BUTTONS ===
+        // === ACTION BUTTONS (sequence step 5: 2600ms) ===
         const btnY = 310;
+        const btnContainer = this.add.container(0, 0).setAlpha(0);
 
         if (this.arcadeState) {
             const continueLabel = this.won ? I18n.t('result.continue') : I18n.t('arcade.retry');
@@ -278,6 +302,7 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             continueBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
+            btnContainer.add(continueBtn);
 
             const menuBtn = this.add.text(GAME_WIDTH / 2, btnY + 50, `[ ${I18n.t('result.menu')} ]`, {
                 fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
@@ -285,6 +310,7 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+            btnContainer.add(menuBtn);
         } else {
             // Quick Play / other modes
             const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, `[ ${I18n.t('result.replay')} ]`, {
@@ -293,6 +319,7 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             replayBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
+            btnContainer.add(replayBtn);
 
             const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, `[ ${I18n.t('result.menu')} ]`, {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
@@ -300,7 +327,11 @@ export default class ResultScene extends Phaser.Scene {
             }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
             menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+            btnContainer.add(menuBtn);
         }
+
+        // Buttons appear last
+        this.tweens.add({ targets: btnContainer, alpha: 1, duration: 400, delay: 2600 });
 
         this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('result.controls'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
@@ -669,6 +700,22 @@ export default class ResultScene extends Phaser.Scene {
                 onComplete: () => conf.destroy()
             });
         }
+    }
+
+    _getDefeatAdvice() {
+        const ms = this.matchStats;
+        const bestDist = ms.bestBallDist || Infinity;
+        const shots = ms.shots || 0;
+        const carreaux = ms.carreaux || 0;
+        const pScore = this.scores.player || 0;
+        const oScore = this.scores.opponent || 0;
+        // Priority-ordered: return most relevant advice
+        if (bestDist > 80) return I18n.t('result.advice.too_long');
+        if (shots === 0) return I18n.t('result.advice.no_tir');
+        if (pScore >= 10 && oScore >= 10) return I18n.t('result.advice.pressure_loss');
+        if (carreaux === 0 && shots > 0) return I18n.t('result.advice.no_carreau');
+        if (bestDist > 40) return I18n.t('result.advice.low_precision');
+        return I18n.t('result.advice.general');
     }
 
     _shutdown() {

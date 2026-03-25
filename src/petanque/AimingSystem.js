@@ -1,15 +1,17 @@
 import Phaser from 'phaser';
 import {
     DEAD_ZONE_PX,
-    LOFT_PRESETS, LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_TIR_DEVANT, LOFT_RAFLE,
+    LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
+    PLOMBEE_UNLOCK_WINS,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
     LATERAL_SPIN_MIN_EFFET,
     IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
+import { loadSave } from '../utils/SaveManager.js';
 import PetanqueEngine from './PetanqueEngine.js';
 import I18n from '../utils/I18n.js';
-import { sfxUIClick } from '../utils/SoundManager.js';
+import { sfxUIClick, startChargingSound, updateChargingSound, stopChargingSound } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
 
 const SHADOW = UIFactory.SHADOW;
@@ -40,10 +42,9 @@ export default class AimingSystem {
         this._modeUI = [];
         this._targetHighlights = null;
 
-        // Loft selection (only for pointer mode)
-        this.loftIndex = 1; // default = demi-portee (middle)
+        // Active loft preset
         this.loftPreset = LOFT_DEMI_PORTEE;
-        this._loftUI = [];
+        this._loftUI = []; // kept for cleanup compat (always empty)
 
         // Retro (backspin) toggle
         this.retroActive = false;
@@ -170,28 +171,39 @@ export default class AimingSystem {
         }
     }
 
-    // === SHOT MODE SELECTOR ===
-    // Onglets [P] POINTER / [T] TIRER + 3 styles par famille
-    // Logique petanque : le jeu lit l'etat du terrain pour suggerer la bonne famille
-    // Si aucune boule adverse → pointer uniquement (rien a tirer)
+    // === SHOT STYLE SELECTOR ===
+    // Flat list: Demi-portee + Tir au fer (+ Plombee when unlocked)
+    // No tabs, no families — simple and clear
 
-    /** Style definitions per family — descriptions orientees effet joueur */
-    _getStyleDefs() {
-        return {
-            pointer: [
-                { loftObj: LOFT_PRESETS[0], label: 'Roulette',     color: 0x87CEEB, desc: 'Precis, roule loin',   mode: 'pointer' },
-                { loftObj: LOFT_PRESETS[1], label: 'Demi-portee',  color: 0x6B8E4E, desc: 'Polyvalent',           mode: 'pointer' },
-                { loftObj: LOFT_PRESETS[2], label: 'Plombee',      color: 0x9B7BB8, desc: "S'arrete net",         mode: 'pointer' },
-            ],
-            tirer: [
-                { loftObj: LOFT_RAFLE,      label: 'Rafle',        color: 0xC4854A, desc: 'Balaye au sol',        mode: 'tirer' },
-                { loftObj: LOFT_TIR,        label: 'Tir au Fer',   color: 0xC44B3F, desc: 'Carreau possible',     mode: 'tirer' },
-                { loftObj: LOFT_TIR_DEVANT, label: 'Tir Devant',   color: 0xAA8866, desc: 'Tolerant en distance', mode: 'tirer' },
-            ],
-        };
+    /** Check if plombee is unlocked (derived from save, no extra field) */
+    _isPlombeeUnlocked() {
+        const save = loadSave();
+        return (save.stats?.totalWins || 0) >= PLOMBEE_UNLOCK_WINS;
     }
 
-    /** Read terrain state to decide which family to suggest */
+    /** Build available style list based on game state and progression */
+    _getAvailableStyles() {
+        const styles = [];
+        const plombeeUnlocked = this._isPlombeeUnlocked();
+
+        // Demi-portee: always available, default pointer
+        styles.push({ loftObj: LOFT_DEMI_PORTEE, label: 'Demi-portee', color: 0x6B8E4E, desc: 'Polyvalent', mode: 'pointer' });
+
+        // Plombee: unlocked after first win
+        if (plombeeUnlocked) {
+            styles.push({ loftObj: LOFT_PLOMBEE, label: 'Plombee', color: 0x9B7BB8, desc: "S'arrete net", mode: 'pointer' });
+        }
+
+        // Tir au fer: available when opponent balls exist
+        const hasTirTargets = this._readTerrainState().hasTirTargets;
+        if (hasTirTargets) {
+            styles.push({ loftObj: LOFT_TIR, label: 'Tir au Fer', color: 0xC44B3F, desc: 'Carreau possible', mode: 'tirer' });
+        }
+
+        return styles;
+    }
+
+    /** Read terrain state to decide available actions */
     _readTerrainState() {
         const engine = this.engine;
         const team = engine.currentTeam || 'player';
@@ -216,29 +228,15 @@ export default class AimingSystem {
         this._styleSelected = 0;
         this._styleContentUI = [];
 
-        // Smart default: suggest family based on game state
-        if (!this._terrainState.hasTirTargets) {
-            // No opponent balls on field → pointer is the only option
-            this._activeFamily = 'pointer';
-            this._tirerAvailable = false;
-        } else {
-            this._tirerAvailable = true;
-            // If player doesn't have the point, suggest tirer (but don't force)
-            if (!this._activeFamily) {
-                this._activeFamily = this._terrainState.iHavePoint ? 'pointer' : 'tirer';
-            }
-        }
-
-        this._buildTabbedPanel();
+        this._buildStylePanel();
     }
 
-    _buildTabbedPanel() {
-        // Destroy only style content (not frame/keyboard) if rebuilding for tab switch
+    _buildStylePanel() {
         this._destroyStyleContent();
 
         const cx = this.scene.scale.width / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
-        const panelW = 480, panelH = 98;
+        const panelW = 480, panelH = 78;
         const panelTop = baseY - panelH / 2;
 
         // === PANEL FRAME (only build once) ===
@@ -250,16 +248,13 @@ export default class AimingSystem {
             bg.strokeRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
             this._modeUI.push(bg);
 
-            // Keyboard bindings (created once, destroyed in _clearModeUI)
+            // Keyboard bindings
             this._key1 = this.scene.input.keyboard.addKey('ONE');
             this._key2 = this.scene.input.keyboard.addKey('TWO');
             this._key3 = this.scene.input.keyboard.addKey('THREE');
             this._keyLeft = this.scene.input.keyboard.addKey('LEFT');
             this._keyRight = this.scene.input.keyboard.addKey('RIGHT');
             this._keySpace = this.scene.input.keyboard.addKey('SPACE');
-            // P = Pointer, T = Tirer — mnemoniques petanque naturelles
-            this._keyP = this.scene.input.keyboard.addKey('P');
-            this._keyT = this.scene.input.keyboard.addKey('T');
 
             // === FOCUS indicator ===
             this._showFocusUI(cx, panelTop - 22);
@@ -282,84 +277,18 @@ export default class AimingSystem {
             this._styleContentUI.push(hint);
         }
 
-        // === TABS (P / T) ===
-        const tabY = hintY + 14;
-        const tabH = 20;
-        const tirerAvail = this._tirerAvailable;
-
-        const tabs = [
-            { key: 'pointer', label: '[P] POINTER', shortcut: 'P', color: 0x87CEEB, hexColor: '#87CEEB', available: true },
-            { key: 'tirer',   label: '[T] TIRER',   shortcut: 'T', color: 0xC44B3F, hexColor: '#C44B3F', available: tirerAvail },
-        ];
-
-        // Tab width adapts: if only pointer, wider centered tab
-        const tabCount = tirerAvail ? 2 : 1;
-        const tabW = tirerAvail ? 120 : 160;
-        const tabSpacing = tirerAvail ? 135 : 0;
-
-        for (let i = 0; i < tabs.length; i++) {
-            const tab = tabs[i];
-            if (!tab.available) continue;
-
-            const tabX = tabCount === 1 ? cx : cx + (i === 0 ? -tabSpacing / 2 : tabSpacing / 2);
-            const isActive = tab.key === this._activeFamily;
-            const isRecommended = !this._terrainState.iHavePoint && tab.key === 'tirer';
-
-            // Tab background
-            const tabGfx = this.scene.add.graphics().setDepth(96);
-            if (isActive) {
-                tabGfx.fillStyle(tab.color, 0.22);
-                tabGfx.fillRoundedRect(tabX - tabW / 2, tabY, tabW, tabH, 4);
-                tabGfx.lineStyle(1.5, tab.color, 0.6);
-            } else {
-                tabGfx.lineStyle(1, 0xD4A574, 0.18);
-            }
-            tabGfx.strokeRoundedRect(tabX - tabW / 2, tabY, tabW, tabH, 4);
-            this._styleContentUI.push(tabGfx);
-
-            // Tab label — recommended tab gets a subtle indicator
-            const labelStr = isRecommended && !isActive ? `${tab.label} \u25C0` : tab.label;
-            const tabLabel = this.scene.add.text(tabX, tabY + tabH / 2, labelStr, {
-                fontFamily: 'monospace', fontSize: '11px',
-                color: isActive ? tab.hexColor : (isRecommended ? '#AA7766' : '#6E6E5E'),
-                shadow: isActive ? SHADOW : undefined
-            }).setOrigin(0.5).setDepth(97);
-            this._styleContentUI.push(tabLabel);
-
-            // Tab hit zone
-            const tabHitW = IS_MOBILE ? TOUCH_BUTTON_SIZE * 2 : tabW + 12;
-            const tabHitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : tabH + 8;
-            const tabHit = this.scene.add.zone(tabX, tabY + tabH / 2, tabHitW, tabHitH)
-                .setDepth(98).setInteractive({ useHandCursor: true });
-            this._styleContentUI.push(tabHit);
-
-            tabHit.on('pointerdown', (pointer) => {
-                pointer.event.stopPropagation();
-                if (tab.key !== this._activeFamily) {
-                    sfxUIClick();
-                    this._switchFamily(tab.key);
-                }
-            });
-        }
-
-        // Separator below tabs
-        const sepGfx = this.scene.add.graphics().setDepth(96);
-        sepGfx.lineStyle(1, 0xD4A574, 0.12);
-        sepGfx.lineBetween(cx - panelW / 2 + 10, tabY + tabH + 3, cx + panelW / 2 - 10, tabY + tabH + 3);
-        this._styleContentUI.push(sepGfx);
-
-        // === STYLES (3 for active family) ===
-        const styleDefs = this._getStyleDefs();
-        const styles = styleDefs[this._activeFamily];
-        const styleBaseY = tabY + tabH + 12;
-        const spacing = 145;
+        // === STYLES (flat list: 2 or 3 options) ===
+        const styles = this._getAvailableStyles();
+        const styleBaseY = hintY + 16;
+        const count = styles.length;
+        const spacing = count === 2 ? 160 : 145;
 
         this._styleBtns = [];
         this._currentStyles = styles;
 
         for (let i = 0; i < styles.length; i++) {
             const s = styles[i];
-            const sx = cx + (i - 1) * spacing;
+            const sx = cx + (i - (count - 1) / 2) * spacing;
             const selected = i === this._styleSelected;
 
             // Enhanced arc preview (60px wide, shows flight + roll)
@@ -465,12 +394,6 @@ export default class AimingSystem {
         // Final resting position (boule at end)
         gfx.fillStyle(color, alpha * (selected ? 0.85 : 0.3));
         gfx.fillCircle(endX, cy, selected ? 3 : 1.8);
-    }
-
-    _switchFamily(family) {
-        this._activeFamily = family;
-        this._styleSelected = 0;
-        this._buildTabbedPanel();
     }
 
     _updateStyleHighlight() {
@@ -674,60 +597,9 @@ export default class AimingSystem {
         if (this._keyR) { this._keyR.removeAllListeners(); this._keyR = null; }
     }
 
-    // Tir devant toggle: [D] switches between TIR and TIR DEVANT
-    _showTirDevantToggle() {
-        this._clearTirDevantUI();
-        this._tirDevantUI = [];
-
-        const x = this.scene.scale.width - 90;
-        const y = this.scene.scale.height - 54;
-
-        const label = this.scene.add.text(x, y, I18n.t('aiming.tir_devant'), {
-            fontFamily: 'monospace', fontSize: '10px',
-            color: '#AA8866', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(96).setAlpha(0.5)
-            .setInteractive({ useHandCursor: true });
-        this._tirDevantUI.push(label);
-        this._tirDevantLabel = label;
-
-        label.on('pointerdown', (pointer) => {
-            pointer.event.stopPropagation();
-            this._toggleTirDevant();
-        });
-
-        this._keyD = this.scene.input.keyboard.addKey('D');
-    }
-
-    _toggleTirDevant() {
-        this._tirDevant = !this._tirDevant;
-        sfxUIClick();
-        if (this._tirDevant) {
-            this.loftPreset = LOFT_TIR_DEVANT;
-            if (this._tirDevantLabel) {
-                this._tirDevantLabel.setAlpha(1);
-                this._tirDevantLabel.setColor('#FFD700');
-                this._tirDevantLabel.setText(I18n.t('aiming.tir_devant'));
-            }
-            this.engine._showMessage(I18n.t('aiming.tir_devant_msg'));
-        } else {
-            this.loftPreset = LOFT_TIR;
-            if (this._tirDevantLabel) {
-                this._tirDevantLabel.setAlpha(0.5);
-                this._tirDevantLabel.setColor('#AA8866');
-                this._tirDevantLabel.setText(I18n.t('aiming.tir_devant'));
-            }
-            this.engine._showMessage(I18n.t('aiming.tir_normal_msg'));
-        }
-    }
-
-    _clearTirDevantUI() {
-        if (this._tirDevantUI) {
-            this._tirDevantUI.forEach(e => e.destroy());
-            this._tirDevantUI = [];
-        }
-        this._tirDevantLabel = null;
-        if (this._keyD) { this._keyD.removeAllListeners(); this._keyD = null; }
-    }
+    // Stubs for removed tir devant toggle
+    _showTirDevantToggle() {}
+    _clearTirDevantUI() {}
 
     _toggleCochonnet() {
         this._targetCochonnet = !this._targetCochonnet;
@@ -1029,108 +901,6 @@ export default class AimingSystem {
         return false;
     }
 
-    _updateModeHighlight() {
-        if (!this._pointerBtn || !this._tirerBtn) return;
-        if (this._modeSelected === 0) {
-            this._pointerBtn.setStyle({ backgroundColor: '#6B5A40', color: '#FFD700' });
-            this._tirerBtn.setStyle({ backgroundColor: '#4A3E28', color: '#C44B3F' });
-        } else {
-            this._pointerBtn.setStyle({ backgroundColor: '#4A3E28', color: '#A8B5C2' });
-            this._tirerBtn.setStyle({ backgroundColor: '#6B5A40', color: '#FFD700' });
-        }
-    }
-
-    _selectShotMode(mode) {
-        this.shotMode = mode;
-        this._clearModeUI();
-
-        if (mode === 'tirer') {
-            this.loftPreset = LOFT_TIR;
-            this._highlightOpponentBalls();
-            this.engine._showMessage('Visez une boule adverse !');
-            this.engine.aimingEnabled = true;
-        } else {
-            this._showLoftChoice();
-        }
-    }
-
-    // --- LOFT SELECTION ---
-
-    _showLoftChoice() {
-        this._clearLoftUI();
-        this.engine.aimingEnabled = false;
-
-        const cx = this.scene.scale.width / 2;
-        const baseY = this.scene.scale.height - 72;
-
-        const bg = this.scene.add.graphics().setDepth(95);
-        bg.fillStyle(0x3A2E28, 0.9);
-        bg.fillRoundedRect(cx - 240, baseY - 16, 480, 60, 8);
-        bg.lineStyle(2, 0xD4A574, 0.5);
-        bg.strokeRoundedRect(cx - 240, baseY - 16, 480, 60, 8);
-        this._loftUI.push(bg);
-
-        this._loftBtns = [];
-        const labels = LOFT_PRESETS.map(p => p.label);
-        const offsets = [-150, 0, 150];
-
-        for (let i = 0; i < 3; i++) {
-            const btn = this.scene.add.text(
-                cx + offsets[i], baseY + 12,
-                labels[i], {
-                    fontFamily: 'monospace', fontSize: '18px',
-                    color: '#F5E6D0', backgroundColor: '#4A3E28',
-                    padding: { x: 12, y: 6 }, shadow: SHADOW
-                }
-            ).setOrigin(0.5).setDepth(96).setInteractive({ useHandCursor: true });
-            this._loftUI.push(btn);
-            this._loftBtns.push(btn);
-
-            const idx = i;
-            btn.on('pointerdown', (pointer) => {
-                pointer.event.stopPropagation();
-                this._selectLoft(idx);
-            });
-        }
-
-        // Keyboard: 1/2/3 or UP/DOWN
-        this._key1 = this.scene.input.keyboard.addKey('ONE');
-        this._key2 = this.scene.input.keyboard.addKey('TWO');
-        this._key3 = this.scene.input.keyboard.addKey('THREE');
-        this._keyUp = this.scene.input.keyboard.addKey('UP');
-        this._keyDown = this.scene.input.keyboard.addKey('DOWN');
-
-        this._updateLoftHighlight();
-    }
-
-    _updateLoftHighlight() {
-        if (!this._loftBtns) return;
-        for (let i = 0; i < this._loftBtns.length; i++) {
-            if (i === this.loftIndex) {
-                this._loftBtns[i].setStyle({ backgroundColor: '#6B5A40', color: '#FFD700' });
-            } else {
-                this._loftBtns[i].setStyle({ backgroundColor: '#4A3E28', color: '#F5E6D0' });
-            }
-        }
-    }
-
-    _selectLoft(index) {
-        this.loftIndex = index;
-        this.loftPreset = LOFT_PRESETS[index];
-        this._clearLoftUI();
-        this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
-        this.engine.aimingEnabled = true;
-    }
-
-    _clearLoftUI() {
-        this._loftUI.forEach(e => e.destroy());
-        this._loftUI = [];
-        this._loftBtns = null;
-        // Clean up loft keyboard listeners
-        if (this._keyUp) { this._keyUp.destroy(); this._keyUp = null; }
-        if (this._keyDown) { this._keyDown.destroy(); this._keyDown = null; }
-    }
-
     // --- TARGET HIGHLIGHTS ---
 
     _highlightOpponentBalls() {
@@ -1171,9 +941,7 @@ export default class AimingSystem {
         if (this._key1) { this._key1.destroy(); this._key1 = null; }
         if (this._key2) { this._key2.destroy(); this._key2 = null; }
         if (this._key3) { this._key3.destroy(); this._key3 = null; }
-        if (this._keyP) { this._keyP.destroy(); this._keyP = null; }
-        if (this._keyT) { this._keyT.destroy(); this._keyT = null; }
-        // Also clean Focus/Ability/Cochonnet/Spin/Retro/TirDevant UI
+        // Also clean Focus/Ability/Cochonnet/Spin/Retro UI
         this._clearFocusUI();
         this._clearAbilityUI();
         this._clearCochonnetUI();
@@ -1186,7 +954,7 @@ export default class AimingSystem {
 
     onPointerDown(pointer) {
         if (!this.engine.aimingEnabled) return;
-        if (this._modeUI.length > 0 || this._loftUI.length > 0) return;
+        if (this._modeUI.length > 0) return;
 
         if (IS_MOBILE) {
             // Sur mobile : attendre 5px de mouvement avant de confirmer le drag
@@ -1200,6 +968,7 @@ export default class AimingSystem {
             this.startY = pointer.y;
             this.currentX = pointer.x;
             this.currentY = pointer.y;
+            startChargingSound();
         }
     }
 
@@ -1215,15 +984,22 @@ export default class AimingSystem {
                 this.currentX = pointer.x;
                 this.currentY = pointer.y;
                 this._dragPending = false;
+                startChargingSound();
             }
         }
         if (!this.isDragging) return;
         this.currentX = pointer.x;
         this.currentY = pointer.y;
+        // Update charging sound based on drag distance (power)
+        const cdx = this.startX - this.currentX;
+        const cdy = this.startY - this.currentY;
+        const cDist = Math.sqrt(cdx * cdx + cdy * cdy);
+        updateChargingSound(Math.min(cDist / 150, 1));
     }
 
     onPointerUp() {
         this._dragPending = false;
+        stopChargingSound();
         if (!this.isDragging) return;
         this.isDragging = false;
         this.arrowGfx.clear();
@@ -1310,6 +1086,7 @@ export default class AimingSystem {
 
     cancel() {
         this.isDragging = false;
+        stopChargingSound();
         this.arrowGfx.clear();
         this._predictionGfx.clear();
         if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
@@ -1407,30 +1184,16 @@ export default class AimingSystem {
             this._clearLoftUI();
         }
 
-        // Handle keyboard for tabbed style selection (onglets [P]/[T] + 3 styles)
+        // Handle keyboard for style selection (flat list: 2-3 options)
         if (this._modeUI.length > 0 && this._styleBtns) {
-            // P = Pointer, T = Tirer — mnemoniques petanque
-            if (this._keyP && Phaser.Input.Keyboard.JustDown(this._keyP)) {
-                if (this._activeFamily !== 'pointer') {
-                    sfxUIClick();
-                    this._switchFamily('pointer');
-                }
-                return;
-            }
-            if (this._keyT && this._tirerAvailable && Phaser.Input.Keyboard.JustDown(this._keyT)) {
-                if (this._activeFamily !== 'tirer') {
-                    sfxUIClick();
-                    this._switchFamily('tirer');
-                }
-                return;
-            }
+            const maxIdx = this._styleBtns.length - 1;
             // LEFT/RIGHT = navigate between styles
             if (this._keyLeft && Phaser.Input.Keyboard.JustDown(this._keyLeft)) {
                 this._styleSelected = Math.max(0, this._styleSelected - 1);
                 this._updateStyleHighlight();
             }
             if (this._keyRight && Phaser.Input.Keyboard.JustDown(this._keyRight)) {
-                this._styleSelected = Math.min(2, this._styleSelected + 1);
+                this._styleSelected = Math.min(maxIdx, this._styleSelected + 1);
                 this._updateStyleHighlight();
             }
             // SPACE = confirm selected style
@@ -1441,38 +1204,11 @@ export default class AimingSystem {
             if (this._key1 && Phaser.Input.Keyboard.JustDown(this._key1)) {
                 this._selectStyle(0); return;
             }
-            if (this._key2 && Phaser.Input.Keyboard.JustDown(this._key2)) {
+            if (this._key2 && maxIdx >= 1 && Phaser.Input.Keyboard.JustDown(this._key2)) {
                 this._selectStyle(1); return;
             }
-            if (this._key3 && Phaser.Input.Keyboard.JustDown(this._key3)) {
+            if (this._key3 && maxIdx >= 2 && Phaser.Input.Keyboard.JustDown(this._key3)) {
                 this._selectStyle(2); return;
-            }
-            return;
-        }
-
-        // Handle keyboard for loft selection (when no opponent balls)
-        if (this._loftUI.length > 0) {
-            if (this._key1 && Phaser.Input.Keyboard.JustDown(this._key1)) {
-                this._selectLoft(0); return;
-            }
-            if (this._key2 && Phaser.Input.Keyboard.JustDown(this._key2)) {
-                this._selectLoft(1); return;
-            }
-            if (this._key3 && Phaser.Input.Keyboard.JustDown(this._key3)) {
-                this._selectLoft(2); return;
-            }
-            if (!this._keyUp) this._keyUp = this.scene.input.keyboard.addKey('UP');
-            if (!this._keyDown) this._keyDown = this.scene.input.keyboard.addKey('DOWN');
-            if (Phaser.Input.Keyboard.JustDown(this._keyUp)) {
-                this.loftIndex = Math.max(0, this.loftIndex - 1);
-                this._updateLoftHighlight();
-            }
-            if (Phaser.Input.Keyboard.JustDown(this._keyDown)) {
-                this.loftIndex = Math.min(2, this.loftIndex + 1);
-                this._updateLoftHighlight();
-            }
-            if (this._keySpace && Phaser.Input.Keyboard.JustDown(this._keySpace)) {
-                this._selectLoft(this.loftIndex);
             }
             return;
         }

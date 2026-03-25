@@ -127,6 +127,57 @@ function playNoise(duration, volume = 0.15, filterFreq = 2000, filterType = 'low
     source.start(c.currentTime);
 }
 
+// === Charging sound (drag-to-aim tension) ===
+let _chargingOsc = null;
+let _chargingGain = null;
+let _chargingFilter = null;
+
+export function startChargingSound() {
+    if (_muted || _chargingOsc) return;
+    const c = getCtx();
+    if (!c) return;
+    _chargingOsc = c.createOscillator();
+    _chargingGain = c.createGain();
+    _chargingFilter = c.createBiquadFilter();
+    _chargingOsc.type = 'sine';
+    _chargingOsc.frequency.setValueAtTime(120, c.currentTime);
+    _chargingFilter.type = 'lowpass';
+    _chargingFilter.frequency.setValueAtTime(300, c.currentTime);
+    _chargingFilter.Q.setValueAtTime(2, c.currentTime);
+    _chargingGain.gain.setValueAtTime(0, c.currentTime);
+    _chargingOsc.connect(_chargingFilter);
+    _chargingFilter.connect(_chargingGain);
+    _chargingGain.connect(c.destination);
+    _chargingOsc.start();
+}
+
+/** Update charging sound: power 0-1 maps to pitch/volume/filter */
+export function updateChargingSound(power) {
+    if (!_chargingOsc || !_chargingGain || !_chargingFilter) return;
+    const c = getCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    const vol = Math.min(power * 0.12, 0.12) * _masterVolume * _sfxVolume;
+    const freq = 120 + power * 280; // 120Hz → 400Hz
+    const filterFreq = 300 + power * 1200; // 300Hz → 1500Hz
+    _chargingOsc.frequency.setTargetAtTime(freq, t, 0.05);
+    _chargingGain.gain.setTargetAtTime(vol, t, 0.05);
+    _chargingFilter.frequency.setTargetAtTime(filterFreq, t, 0.05);
+}
+
+export function stopChargingSound() {
+    if (_chargingOsc) {
+        const c = getCtx();
+        if (c && _chargingGain) {
+            _chargingGain.gain.setTargetAtTime(0, c.currentTime, 0.02);
+        }
+        try { _chargingOsc.stop(c ? c.currentTime + 0.1 : 0); } catch (e) { /* already stopped */ }
+        _chargingOsc = null;
+        _chargingGain = null;
+        _chargingFilter = null;
+    }
+}
+
 // === SFX exports ===
 
 export function sfxBouleBoule() {

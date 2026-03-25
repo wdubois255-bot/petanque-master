@@ -249,10 +249,9 @@ export default class InGameTutorial {
         ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
         const modes = [
-            { key: '1', name: I18n.t('tutorial.modes.roulette'), color: '#44CC44' },
-            { key: '2', name: I18n.t('tutorial.modes.demi'),     color: '#87CEEB' },
-            { key: '3', name: I18n.t('tutorial.modes.plombee'),  color: '#DDA0DD' },
-            { key: 'T', name: I18n.t('tutorial.modes.tir'),      color: '#CC4444' }
+            { key: '1', name: I18n.t('tutorial.modes.demi'),     color: '#6B8E4E' },
+            { key: '2', name: I18n.t('tutorial.modes.plombee'),  color: '#9B7BB8' },
+            { key: '3', name: I18n.t('tutorial.modes.tir'),      color: '#C44B3F' }
         ];
 
         const modeEls = [];

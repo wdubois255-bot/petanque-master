@@ -416,18 +416,24 @@ export default class PetanqueScene extends Phaser.Scene {
 
         this.engine.startGame();
 
-        // === ARCADE BADGE "Match X/Y" ===
+        // === ARCADE BADGE "Match X/Y" (animated entry) ===
         if (this.arcadeRound) {
             const arcadeData = this.cache.json.get('arcade');
             const totalMatches = arcadeData?.matches?.length ?? '?';
             const badgeText = `Match ${this.arcadeRound}/${totalMatches}`;
             const badgeW = badgeText.length * 6 + 10;
-            const badgeBg = this.add.graphics().setDepth(92);
+            const badgeBg = this.add.graphics().setDepth(92).setAlpha(0);
             badgeBg.fillStyle(0x3A2E28, 0.7);
             badgeBg.fillRoundedRect(4, 36, badgeW, 16, 3);
-            this.add.text(4 + badgeW / 2, 44, badgeText, {
+            const badgeLabel = this.add.text(4 + badgeW / 2, 44, badgeText, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#D4A574'
-            }).setOrigin(0.5).setDepth(92);
+            }).setOrigin(0.5).setDepth(92).setAlpha(0);
+            // Slide in from left
+            badgeBg.setPosition(-badgeW, 0);
+            badgeLabel.setPosition(-badgeW + 4 + badgeW / 2, 44);
+            this.tweens.add({ targets: [badgeBg, badgeLabel], alpha: 1, duration: 300, delay: 500 });
+            this.tweens.add({ targets: badgeBg, x: 0, duration: 400, delay: 500, ease: 'Back.easeOut' });
+            this.tweens.add({ targets: badgeLabel, x: 4 + badgeW / 2, duration: 400, delay: 500, ease: 'Back.easeOut' });
         }
 
         // === Phase 5 — Mene challenges (arcade only) ===
@@ -460,14 +466,14 @@ export default class PetanqueScene extends Phaser.Scene {
             this._inGameTutorial = new InGameTutorial(this);
         }
 
-        // Contextual terrain tooltips (post-tutorial, one-time hints)
-        if (phasesDone.length >= 3) {
+        // Contextual terrain tooltips (one-shot per terrain, for ALL players)
+        {
             const terrainId = this.terrainFullData?.id || 'village';
             const terrainHints = {
-                plage: { id: 'hint_sand', msg: I18n.t('ingame.hint_sand') },
-                parc: { id: 'hint_mixed', msg: I18n.t('ingame.hint_mixed') },
-                colline: { id: 'hint_slope', msg: I18n.t('ingame.hint_slope') },
-                docks: { id: 'hint_walls', msg: I18n.t('ingame.hint_walls') }
+                plage: { id: 'hint_plage', msg: I18n.t('terrain_hints.plage') },
+                parc: { id: 'hint_parc', msg: I18n.t('terrain_hints.parc') },
+                colline: { id: 'hint_colline', msg: I18n.t('terrain_hints.colline') },
+                docks: { id: 'hint_docks', msg: I18n.t('terrain_hints.docks') }
             };
             const hint = terrainHints[terrainId];
             if (hint) {
@@ -613,7 +619,7 @@ export default class PetanqueScene extends Phaser.Scene {
         }
     }
 
-    // === Phase 5 B2 — Pressure indicator ===
+    // === Phase 5 B2 — Pressure indicator (dramatic) ===
     _showPressureIndicator() {
         if (this._pressureActive) return;
         this._pressureActive = true;
@@ -621,6 +627,19 @@ export default class PetanqueScene extends Phaser.Scene {
         const cx = GAME_WIDTH / 2;
         const y = 18;
 
+        // Dramatic vignette overlay (subtle darkening)
+        this._pressureVignette = this.add.graphics().setDepth(3);
+        this._pressureVignette.fillStyle(0x1A1510, 0);
+        // Top vignette
+        this._pressureVignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.25, 0.25, 0, 0);
+        this._pressureVignette.fillRect(0, 0, GAME_WIDTH, 80);
+        // Bottom vignette
+        this._pressureVignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.25, 0.25);
+        this._pressureVignette.fillRect(0, GAME_HEIGHT - 80, GAME_WIDTH, 80);
+        this._pressureVignette.setAlpha(0);
+        this.tweens.add({ targets: this._pressureVignette, alpha: 1, duration: 800 });
+
+        // Badge
         this._pressureBadge = this.add.graphics().setDepth(92);
         this._pressureBadge.fillStyle(PRESSURE_INDICATOR_COLOR, 0.85);
         this._pressureBadge.fillRoundedRect(cx - 50, y - 8, 100, 18, 4);
@@ -637,7 +656,14 @@ export default class PetanqueScene extends Phaser.Scene {
             yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
         });
 
-        this.cameras.main.flash(100, 196, 75, 63);
+        // Dramatic flash + music tension
+        this.cameras.main.flash(200, 196, 75, 63);
+        setMusicTension(true);
+
+        // One-shot commentator reaction
+        if (this._commentator) {
+            this._commentator.say('pression', true);
+        }
     }
 
     // === Phase 5 D1 — Challenge banner ===

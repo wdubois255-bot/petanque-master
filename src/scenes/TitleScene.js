@@ -269,7 +269,7 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     _createVersionTag() {
-        this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v0.5', {
+        this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v1.0', {
             fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
             shadow: SHADOW
         }).setOrigin(1, 1).setAlpha(0.5);
@@ -341,11 +341,25 @@ export default class TitleScene extends Phaser.Scene {
     // MENU SYSTEM (wood buttons)
     // ================================================================
     _showMainMenu() {
-        // Premier lancement (FTUE) : rediriger vers Arcade
+        // Premier lancement (FTUE) : match tutoriel guidé au lieu d'envoyer directement en Arcade
         const save = loadSave();
         if (save.arcadeProgress === 0 && (!save.tutorialPhasesDone || save.tutorialPhasesDone.length === 0)) {
+            // Charger le perso La Choupe comme adversaire tutoriel
+            const charsData = this.cache.json.get('characters');
+            const rookieChar = charsData?.find(c => c.id === 'rookie') || { id: 'rookie', name: 'Le Rookie' };
+            const tutorialOpponent = charsData?.find(c => c.id === 'la_choupe') || { id: 'la_choupe', name: 'La Choupe' };
             this.time.delayedCall(500, () => {
-                fadeToScene(this, 'ArcadeScene');
+                fadeToScene(this, 'PetanqueScene', {
+                    terrain: 'village',
+                    difficulty: 'easy',
+                    format: 'tete_a_tete',
+                    playerCharacter: rookieChar,
+                    playerCharId: 'rookie',
+                    opponentCharacter: tutorialOpponent,
+                    opponentId: 'la_choupe',
+                    opponentName: tutorialOpponent.name || 'La Choupe',
+                    returnScene: 'TitleScene'
+                });
             });
             return;
         }
@@ -683,6 +697,7 @@ export default class TitleScene extends Phaser.Scene {
             { label: `${I18n.t('title.settings.music')} : ${Math.round(settings.musicVolume * 100)}%`, key: 'music' },
             { label: `${I18n.t('title.settings.sfx')} : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
             { label: I18n.t('title.settings.tutorial'), key: 'tuto' },
+            { label: 'CREDITS', key: 'credits' },
             { label: I18n.t('title.settings.close'), key: 'back' }
         ];
 
@@ -761,6 +776,14 @@ export default class TitleScene extends Phaser.Scene {
                 this._settingsItems = null;
             }
             this.scene.start('TutorialScene');
+        }
+        if (key === 'credits') {
+            if (this._settingsModal) {
+                this._settingsModal.close();
+                if (this._settingsItems) this._settingsItems.forEach(o => o.destroy());
+                this._settingsItems = null;
+            }
+            this.scene.start('CreditsScene');
         }
     }
 

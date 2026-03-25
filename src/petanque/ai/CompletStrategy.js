@@ -1,5 +1,5 @@
 import AIStrategy from './AIStrategy.js';
-import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, HIT_PROB_SCALE } from '../../utils/Constants.js';
+import { LOFT_TIR, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, HIT_PROB_SCALE } from '../../utils/Constants.js';
 
 /**
  * Reyes: Le Complet — The smartest player on the boulodrome.
@@ -13,7 +13,7 @@ import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, HIT_PROB_SCALE
  * 3. If last ball → never waste it on a risky shot
  * 4. If opponent has no balls left → point calm, every ball counts as a point
  * 5. If desperate (losing big) → aggressive, take risks
- * 6. Loft: always optimal for distance (close=roulette, mid=demi, far=plombee)
+ * 6. Loft: always optimal for distance (short/mid=demi, far=plombee)
  */
 export default class CompletStrategy extends AIStrategy {
     chooseTarget(cochonnet, sit) {
@@ -209,9 +209,7 @@ export default class CompletStrategy extends AIStrategy {
 
     // --- Choose optimal loft based on throw distance ---
     _optimalLoft(dist) {
-        // Short distance (<120px) → roulette (low arc, rolls to target)
-        if (dist < 120) return LOFT_ROULETTE;
-        // Medium distance (120-220px) → demi-portee (balanced)
+        // Short/medium distance → demi-portee (balanced, default)
         if (dist < 220) return LOFT_DEMI_PORTEE;
         // Long distance (>220px) → plombee (high arc, stops faster)
         return LOFT_PLOMBEE;

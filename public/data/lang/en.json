@@ -11,7 +11,7 @@
       "Each character has unique stats.",
       "The Iron Shot moves opponent balls, but requires precision.",
       "Under pressure (10-10+), your aim trembles!",
-      "Rolling keeps rolling further but is more predictable.",
+      "The Half-Lob is versatile. A great choice for beginners!",
       "The Tournament of Four: 3 matches, 4 legends of the court.",
       "A Carreau is when your ball lands exactly where the other one was.",
       "Pétanque was born in La Ciotat in 1907. \"Pieds tanqués\": play with feet anchored to the ground.",
@@ -25,7 +25,7 @@
     ]
   },
   "title": {
-    "subtitle": "The best bowler in the district — that's you!",
+    "subtitle": "Aim. Throw. Dominate.",
     "press_start": "PRESS SPACE",
     "menu": {
       "play": "PLAY",
@@ -60,7 +60,6 @@
     "aim_sub": "The further you pull, the faster the ball goes.",
     "loft_title": "Choose your trajectory:",
     "modes": {
-      "roulette": "Rolling",
       "demi": "Half-Lob",
       "plombee": "Lob",
       "tir": "Iron Shot"
@@ -96,7 +95,15 @@
     "continue": "CONTINUE",
     "replay": "REPLAY",
     "menu": "MENU",
-    "controls": "Space Continue     Esc Menu"
+    "controls": "Space Continue     Esc Menu",
+    "advice": {
+      "too_long": "Your balls often went too far. Try the plombee — it stops on impact!",
+      "no_tir": "Shooting can displace opponent balls when they lead. Try the tir au fer!",
+      "low_precision": "Aim closer to the jack. The Half-Lob is your best friend!",
+      "no_carreau": "A carreau takes the exact spot of an opponent ball. Go for precise shots!",
+      "pressure_loss": "Under pressure (10-10+), aiming wobbles. Use Focus [F] to steady your aim!",
+      "general": "Every terrain has its tricks. Adapt your throw style to the surface!"
+    }
   },
   "ingame": {
     "score": "SCORE",
@@ -165,25 +172,16 @@
     "retro_off": "[R] Backspin",
     "cochonnet_on": "[B] JACK!",
     "cochonnet_off": "[B] Jack",
-    "tir_devant": "[D] FRONT SHOT!",
-    "tir_devant_msg": "Front shot: lands before the target!",
-    "tir_normal_msg": "Iron shot: direct hit!",
     "spin_label": "Spin"
   },
   "loft": {
-    "roulette": "Rolling",
     "demi": "Half-Lob",
     "plombee": "Lob",
-    "rafle": "Skim Shot",
     "tir": "Iron Shot",
-    "tir_devant": "Front Shot",
     "desc": {
-      "roulette": "Rolls along the ground",
-      "demi": "Medium arc",
+      "demi": "Medium arc, versatile",
       "plombee": "High arc, stops dead",
-      "rafle": "Skims the ground, displaces",
-      "tir": "Direct strike",
-      "tir_devant": "Bounces in front of target"
+      "tir": "Direct strike"
     }
   },
   "terrain_hints": {

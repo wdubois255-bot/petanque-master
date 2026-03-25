@@ -11,7 +11,7 @@
       "Chaque personnage a des stats uniques.",
       "Le tir deplace les boules adverses, mais demande de la precision.",
       "Sous pression (10-10+), la visee tremble !",
-      "La roulette roule plus loin mais est plus previsible.",
+      "La demi-portee est polyvalente. Un bon choix pour debuter !",
       "Le Tournoi des Quatre : 3 matchs, 4 legendes du boulodrome.",
       "Un carreau, c'est quand votre boule prend exactement la place de l'autre.",
       "La petanque est nee a La Ciotat en 1907. \"Pied tanque\" : jouer les pieds ancres au sol.",
@@ -25,7 +25,7 @@
     ]
   },
   "title": {
-    "subtitle": "Le meilleur bouliste du canton, c'est vous !",
+    "subtitle": "Vise. Lance. Domine.",
     "press_start": "APPUYEZ SUR ESPACE",
     "menu": {
       "play": "JOUER",
@@ -60,10 +60,9 @@
     "aim_sub": "Plus vous tirez loin, plus la boule ira vite.",
     "loft_title": "Choisissez votre trajectoire :",
     "modes": {
-      "roulette": "Roulette",
-      "demi": "Demi",
+      "demi": "Demi-portee",
       "plombee": "Plombée",
-      "tir": "Tir"
+      "tir": "Tir au Fer"
     },
     "score_title": "Fin de mene !",
     "score_main": "Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !",
@@ -96,7 +95,15 @@
     "continue": "CONTINUER",
     "replay": "REJOUER",
     "menu": "MENU",
-    "controls": "Espace Continuer     Echap Menu"
+    "controls": "Espace Continuer     Echap Menu",
+    "advice": {
+      "too_long": "Vos boules allaient souvent trop loin. Essayez la plombee, elle s'arrete net !",
+      "no_tir": "Le tir peut deplacer les boules adverses quand il mene. Osez le tir au fer !",
+      "low_precision": "Visez plus pres du cochonnet. La demi-portee est votre meilleur allie !",
+      "no_carreau": "Un carreau prend exactement la place de la boule adverse. Tentez des tirs precis !",
+      "pressure_loss": "Sous pression (10-10+), la visee tremble. Utilisez le Focus [F] pour stabiliser !",
+      "general": "Chaque terrain a ses pieges. Adaptez votre style de lancer au terrain !"
+    }
   },
   "ingame": {
     "score": "SCORE",
@@ -165,25 +172,16 @@
     "retro_off": "[R] Retro",
     "cochonnet_on": "[B] COCHONNET !",
     "cochonnet_off": "[B] Cochonnet",
-    "tir_devant": "[D] TIR DEVANT !",
-    "tir_devant_msg": "Tir devant : atterrit avant la cible !",
-    "tir_normal_msg": "Tir au fer : frappe directe !",
     "spin_label": "Spin"
   },
   "loft": {
-    "roulette": "Roulette",
-    "demi": "Demi",
+    "demi": "Demi-portee",
     "plombee": "Plombée",
-    "rafle": "Rafle",
     "tir": "Tir au Fer",
-    "tir_devant": "Tir Devant",
     "desc": {
-      "roulette": "Roule au sol",
-      "demi": "Arc moyen",
+      "demi": "Arc moyen, polyvalent",
       "plombee": "Arc haut, s'arrête net",
-      "rafle": "Rase le sol, déplace",
-      "tir": "Frappe directe",
-      "tir_devant": "Rebond avant cible"
+      "tir": "Frappe directe"
     }
   },
   "terrain_hints": {

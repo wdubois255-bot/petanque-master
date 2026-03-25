@@ -43,15 +43,13 @@ async function run() {
 
         // Get all presets
         const presets = {};
-        const presetNames = ['roulette', 'demi_portee', 'plombee', 'tir'];
+        const presetNames = ['demi_portee', 'plombee', 'tir'];
 
-        // We need to access the constants - they're in the module scope
-        // Use the scene's aimingSystem which has access to LOFT_PRESETS
+        // Local loft presets for throw technique testing (matches Constants.js)
         const LOFT_PRESETS = [
-            { id: 'roulette', label: 'ROULETTE', landingFactor: 0.15, arcHeight: -6, flyDurationMult: 0.5, rollEfficiency: 1.6 },
-            { id: 'demi_portee', label: 'DEMI-PORTEE', landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 0.8 },
-            { id: 'plombee', label: 'PLOMBEE', landingFactor: 0.90, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.15 },
-            { id: 'tir', label: 'TIR', landingFactor: 0.95, arcHeight: -55, flyDurationMult: 0.5, rollEfficiency: 0.1 }
+            { id: 'demi_portee', label: 'DEMI-PORTEE', landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 1.0 },
+            { id: 'plombee', label: 'PLOMBEE', landingFactor: 0.88, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.85 },
+            { id: 'tir', label: 'TIR', landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 0.3 }
         ];
 
         const output = [];

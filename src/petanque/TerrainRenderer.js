@@ -278,9 +278,10 @@ export default class TerrainRenderer {
                     .setDepth(depth - 0.01);
             }
 
+            let img = null;
             if (hasGrid) {
                 const frameIdx = p.frame !== undefined ? p.frame : decor.pool[Math.floor(this._rng() * decor.pool.length)];
-                const img = s.add.image(px, p.y, decor.key, frameIdx);
+                img = s.add.image(px, p.y, decor.key, frameIdx);
                 img.setDepth(depth);
                 img.setScale(scale);
                 if (p.flipX) img.setFlipX(true);
@@ -288,11 +289,26 @@ export default class TerrainRenderer {
                 // Distance tint for far elements
                 if (p.alpha && p.alpha < 0.5) img.setTint(0xCCCCCC);
             } else if (hasFallback) {
-                const img = s.add.image(px, p.y, decor.fallback);
+                img = s.add.image(px, p.y, decor.fallback);
                 img.setDepth(depth);
                 img.setScale(scale);
                 if (p.flipX) img.setFlipX(true);
                 if (p.alpha !== undefined) img.setAlpha(p.alpha);
+            }
+
+            // Subtle idle sway for organic decor (trees, plants)
+            if (img && ['olive', 'tree', 'willow', 'lavande', 'herbe'].includes(p.type)) {
+                const swayAmount = p.type === 'herbe' ? 1 : 2;
+                const swayDuration = 3000 + Math.floor(this._rng() * 2000);
+                s.tweens.add({
+                    targets: img,
+                    x: img.x + swayAmount,
+                    angle: swayAmount * 0.3,
+                    duration: swayDuration,
+                    yoyo: true, repeat: -1,
+                    ease: 'Sine.easeInOut',
+                    delay: Math.floor(this._rng() * 2000)
+                });
             }
         }
     }

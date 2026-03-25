@@ -283,221 +283,285 @@ export default class ArcadeScene extends Phaser.Scene {
     _showProgressScreen() {
         const matches = this.arcadeData.matches;
         const nextMatch = matches[this.currentRound - 1];
-
-        // === MAP ZONE (0-250) ===
-        const mapBg = this.add.graphics();
-        mapBg.fillGradientStyle(0x87CEEB, 0x87CEEB, 0xF5E6D0, 0xF5E6D0, 1);
-        mapBg.fillRect(0, 0, GAME_WIDTH, 250);
-
-        // Title
-        this.add.text(16, 20, I18n.t('arcade.title'), {
-            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
-            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-        });
-        this.add.text(16, 40, I18n.t('arcade.subtitle'), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
-        });
-
-        // Time of day
-        if (nextMatch?.time_of_day) {
-            this.add.text(GAME_WIDTH - 16, 20, I18n.t('arcade.time_' + nextMatch.time_of_day), {
-                fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
-            }).setOrigin(1, 0.5);
-        }
-
-        // Stars total
         const save = loadSave();
-        const totalStars = Object.values(save.starRatings || {}).reduce((s, v) => s + v, 0);
-        this.add.text(GAME_WIDTH - 16, 55, I18n.t('arcade.stars_total', { n: totalStars }), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
-        }).setOrigin(1, 0.5);
-        if (totalStars >= 15) {
-            this.add.text(GAME_WIDTH - 16, 68, I18n.t('arcade.stars_bonus', { galets: 100 }), {
-                fontFamily: 'monospace', fontSize: '9px', color: '#44CC44'
-            }).setOrigin(1, 0.5);
-        }
 
-        // Node positions (arc across the map)
+        // === PROVENCAL LANDSCAPE BACKGROUND ===
+        this._drawMapBackground();
+
+        // === MAP OVERLAY UI ===
+        // Title (top-left, on dark chip for readability)
+        const titleChip = this.add.graphics().setDepth(5);
+        titleChip.fillStyle(0x1A1510, 0.55);
+        titleChip.fillRoundedRect(8, 8, 220, 48, 6);
+        this.add.text(16, 16, I18n.t('arcade.title'), {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
+            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+        }).setDepth(6);
+        this.add.text(16, 36, I18n.t('arcade.subtitle'), {
+            fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
+        }).setDepth(6);
+
+        // Stars + time (top-right chip)
+        const totalStars = Object.values(save.starRatings || {}).reduce((s, v) => s + v, 0);
+        const infoChip = this.add.graphics().setDepth(5);
+        infoChip.fillStyle(0x1A1510, 0.55);
+        infoChip.fillRoundedRect(GAME_WIDTH - 168, 8, 160, 48, 6);
+        if (nextMatch?.time_of_day) {
+            this.add.text(GAME_WIDTH - 16, 18, I18n.t('arcade.time_' + nextMatch.time_of_day), {
+                fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', shadow: SHADOW
+            }).setOrigin(1, 0).setDepth(6);
+        }
+        this.add.text(GAME_WIDTH - 16, 36, I18n.t('arcade.stars_total', { n: totalStars }), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
+        }).setOrigin(1, 0).setDepth(6);
+
+        // === DIRT PATH between nodes ===
         const NODE_POSITIONS = [
-            { x: 130, y: 130 }, { x: 270, y: 100 }, { x: 416, y: 90 },
-            { x: 560, y: 110 }, { x: 700, y: 140 }
+            { x: 130, y: 145 }, { x: 270, y: 115 }, { x: 416, y: 105 },
+            { x: 560, y: 120 }, { x: 700, y: 150 }
         ];
 
-        // Dashed path between nodes
-        const pathG = this.add.graphics();
-        pathG.lineStyle(2, MAP_PATH_COLOR, 0.6);
+        const pathG = this.add.graphics().setDepth(2);
+        // Thick dirt path (wide brown stroke)
         for (let i = 0; i < NODE_POSITIONS.length - 1; i++) {
             const a = NODE_POSITIONS[i];
             const b = NODE_POSITIONS[i + 1];
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const len = Math.sqrt(dx * dx + dy * dy);
-            const nx = dx / len;
-            const ny = dy / len;
-            let d = 0;
-            while (d < len) {
-                const sx = a.x + nx * d;
-                const sy = a.y + ny * d;
-                const ex = a.x + nx * Math.min(d + MAP_PATH_DASH, len);
-                const ey = a.y + ny * Math.min(d + MAP_PATH_DASH, len);
-                pathG.beginPath();
-                pathG.moveTo(sx, sy);
-                pathG.lineTo(ex, ey);
-                pathG.strokePath();
-                d += MAP_PATH_DASH + 4;
-            }
+            // Brown wide path
+            pathG.lineStyle(8, 0x8B6B3A, 0.5);
+            pathG.beginPath();
+            pathG.moveTo(a.x, a.y);
+            // Slight curve via midpoint offset
+            const mx = (a.x + b.x) / 2;
+            const my = (a.y + b.y) / 2 - 8;
+            pathG.lineTo(mx, my);
+            pathG.lineTo(b.x, b.y);
+            pathG.strokePath();
+            // Lighter center line
+            pathG.lineStyle(3, 0xD4A574, 0.35);
+            pathG.beginPath();
+            pathG.moveTo(a.x, a.y);
+            pathG.lineTo(mx, my);
+            pathG.lineTo(b.x, b.y);
+            pathG.strokePath();
         }
 
-        // Nodes
+        // === CHARACTER PORTRAIT NODES ===
         for (let i = 0; i < matches.length; i++) {
             const pos = NODE_POSITIONS[i];
             const match = matches[i];
             const result = this.matchResults.find(r => r.round === i + 1);
             const isCurrent = (i + 1 === this.currentRound);
-            const nodeG = this.add.graphics();
+            const oppChar = this._getCharById(match.opponent);
+            const spriteKey = oppChar ? this._getSpriteKey(oppChar) : null;
+
+            // Node base (circle platform)
+            const nodeG = this.add.graphics().setDepth(3);
 
             if (result && result.won) {
-                nodeG.fillStyle(0x44CC44, 1);
-                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
-                nodeG.lineStyle(1, 0xFFD700, 1);
-                nodeG.strokeCircle(pos.x, pos.y, MAP_NODE_RADIUS);
-                this.add.text(pos.x, pos.y, '\u2713', {
-                    fontFamily: 'monospace', fontSize: '14px', color: '#FFFFFF'
-                }).setOrigin(0.5);
+                // WON: portrait visible + green ring + checkmark
+                nodeG.fillStyle(0x3A2E28, 0.7);
+                nodeG.fillCircle(pos.x, pos.y, 22);
+                nodeG.lineStyle(2, 0x44CC44, 1);
+                nodeG.strokeCircle(pos.x, pos.y, 22);
+
+                if (spriteKey && this.textures.exists(spriteKey)) {
+                    const spr = this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
+                        .setScale(0.45).setOrigin(0.5).setDepth(4).setTint(0x888888);
+                }
+                // Green checkmark overlay
+                this.add.text(pos.x + 12, pos.y - 14, '\u2713', {
+                    fontFamily: 'monospace', fontSize: '12px', color: '#44CC44',
+                    shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                }).setOrigin(0.5).setDepth(5);
 
                 // Stars under won node
-                const oppId = match.opponent;
-                const stars = save.starRatings?.[oppId] || 0;
-                if (stars > 0) {
-                    for (let s = 0; s < 3; s++) {
-                        const sx = pos.x - 12 + s * 12;
-                        const sy = pos.y + MAP_NODE_RADIUS + 16;
-                        this.add.text(sx, sy, '\u2605', {
-                            fontFamily: 'monospace', fontSize: `${MAP_STAR_SIZE}px`,
-                            color: s < stars ? '#FFD700' : '#5A4A38'
-                        }).setOrigin(0.5);
-                    }
+                const stars = save.starRatings?.[match.opponent] || 0;
+                for (let s = 0; s < 3; s++) {
+                    this.add.text(pos.x - 12 + s * 12, pos.y + 28, '\u2605', {
+                        fontFamily: 'monospace', fontSize: `${MAP_STAR_SIZE}px`,
+                        color: s < stars ? '#FFD700' : '#5A4A38'
+                    }).setOrigin(0.5).setDepth(4);
                 }
 
-                // Hover tooltip on won nodes
-                const zone = this.add.zone(pos.x, pos.y, 30, 30).setInteractive();
-                zone.on('pointerover', () => {
-                    if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
-                    const oppChar = this._getCharById(match.opponent);
-                    const tooltipText = oppChar ? I18n.field(oppChar, 'name') + ' - V' : 'Victoire';
-                    this._mapTooltip = this.add.text(pos.x, pos.y - 28, tooltipText, {
-                        fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0',
-                        backgroundColor: '#3A2E28', padding: { x: 4, y: 2 }
-                    }).setOrigin(0.5).setDepth(60);
-                });
-                zone.on('pointerout', () => {
-                    if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
-                });
-            } else if (result && !result.won) {
-                nodeG.fillStyle(0x5A4A38, 1);
-                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
-                nodeG.lineStyle(1, 0xC44B3F, 1);
-                nodeG.strokeCircle(pos.x, pos.y, MAP_NODE_RADIUS);
             } else if (isCurrent) {
-                nodeG.fillStyle(0xFFD700, 1);
-                nodeG.fillCircle(pos.x, pos.y, MAP_NODE_RADIUS);
+                // CURRENT: large portrait + gold pulsing ring
+                nodeG.fillStyle(0x3A2E28, 0.8);
+                nodeG.fillCircle(pos.x, pos.y, 24);
+                nodeG.lineStyle(3, 0xFFD700, 1);
+                nodeG.strokeCircle(pos.x, pos.y, 24);
+
+                if (spriteKey && this.textures.exists(spriteKey)) {
+                    const spr = this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
+                        .setScale(0.5).setOrigin(0.5).setDepth(4);
+                    this.tweens.add({
+                        targets: spr, y: pos.y - 5, duration: 600,
+                        yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                    });
+                }
+                // Pulse ring
                 this.tweens.add({
                     targets: nodeG, alpha: 0.5,
                     duration: MAP_NODE_PULSE_DURATION, yoyo: true, repeat: -1
                 });
+                // Opponent name
+                this.add.text(pos.x, pos.y + 32, oppChar ? I18n.field(oppChar, 'name') : '???', {
+                    fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
+                    shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+                }).setOrigin(0.5).setDepth(5);
+
             } else {
-                nodeG.fillStyle(0x5A4A38, 0.5);
-                nodeG.fillCircle(pos.x, pos.y, 12);
+                // FUTURE: locked silhouette
+                nodeG.fillStyle(0x3A2E28, 0.6);
+                nodeG.fillCircle(pos.x, pos.y, 18);
+                nodeG.lineStyle(1, 0x5A4A38, 0.6);
+                nodeG.strokeCircle(pos.x, pos.y, 18);
+                this.add.text(pos.x, pos.y, '?', {
+                    fontFamily: 'monospace', fontSize: '16px', color: '#5A4A38'
+                }).setOrigin(0.5).setDepth(4);
             }
 
             // Terrain name under each node
             const terrain = this._getTerrainById(match.terrain);
-            this.add.text(pos.x, pos.y + 26, terrain ? I18n.field(terrain, 'name') : match.terrain, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
-            }).setOrigin(0.5);
+            this.add.text(pos.x, pos.y + (isCurrent ? 44 : (result?.won ? 42 : 26)), terrain ? I18n.field(terrain, 'name') : match.terrain, {
+                fontFamily: 'monospace', fontSize: '8px', color: '#D4A574',
+                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setDepth(4);
+        }
 
-            // Opponent name under current node
-            if (isCurrent) {
-                const oppChar = this._getCharById(match.opponent);
-                this.add.text(pos.x, pos.y + 42, oppChar ? I18n.field(oppChar, 'name') : '???', {
-                    fontFamily: 'monospace', fontSize: '9px', color: '#F5E6D0'
-                }).setOrigin(0.5);
+        // === ROOKIE SPRITE on the map (at current node) ===
+        const rookiePos = NODE_POSITIONS[this.currentRound - 1];
+        const rookieKey = this.playerCharacter ? this._getSpriteKey(this.playerCharacter) : null;
+        if (rookieKey && this.textures.exists(rookieKey)) {
+            const prevRound = this.currentRound - 2;
+            const startPos = prevRound >= 0 && this.lastMatchResult?.won
+                ? NODE_POSITIONS[prevRound]
+                : rookiePos;
+
+            const rookieSpr = this.add.sprite(startPos.x - 30, startPos.y - 14, rookieKey, 0)
+                .setScale(0.45).setOrigin(0.5).setDepth(6);
+
+            // Walk animation from previous node (if just won)
+            if (startPos !== rookiePos) {
+                this.tweens.add({
+                    targets: rookieSpr,
+                    x: rookiePos.x - 30, y: rookiePos.y - 14,
+                    duration: 800, ease: 'Quad.easeInOut',
+                    onComplete: () => {
+                        // Idle bounce after arriving
+                        this.tweens.add({
+                            targets: rookieSpr, y: rookiePos.y - 18,
+                            duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                        });
+                    }
+                });
+            } else {
+                this.tweens.add({
+                    targets: rookieSpr, y: rookiePos.y - 18,
+                    duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                });
             }
         }
 
-        // Decorations
+        // Decorations (organic elements)
         this._drawMapDecorations();
 
-        // === PREVIEW ZONE (270+) ===
+        // === PREVIEW PANEL (bottom half) ===
         const panelY = MAP_PREVIEW_Y;
         const nextOpponent = this._getCharById(nextMatch.opponent);
         const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
-        // Panel background
-        const panelBg = this.add.graphics();
-        panelBg.fillStyle(0x3A2E28, 0.85);
-        panelBg.fillRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+        // Terrain-tinted panel background
+        const terrainTints = { village: 0x3A2E28, parc: 0x2A3A28, colline: 0x3A3228, docks: 0x2A2A30, plage: 0x3A3428 };
+        const panelTint = terrainTints[nextMatch.terrain] || 0x3A2E28;
+        const panelBg = this.add.graphics().setDepth(5);
+        panelBg.fillStyle(panelTint, 0.92);
+        panelBg.fillRoundedRect(GAME_WIDTH / 2 - 300, panelY, 600, 185, 10);
         panelBg.lineStyle(2, 0xD4A574, 0.4);
-        panelBg.strokeRoundedRect(GAME_WIDTH / 2 - 280, panelY, 560, 180, 10);
+        panelBg.strokeRoundedRect(GAME_WIDTH / 2 - 300, panelY, 600, 185, 10);
 
         if (nextOpponent) {
-            this.add.text(GAME_WIDTH / 2, panelY + 18, I18n.t('arcade.next_fight'), {
-                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5);
+            // "PROCHAIN COMBAT" header
+            this.add.text(GAME_WIDTH / 2, panelY + 14, I18n.t('arcade.next_fight'), {
+                fontFamily: 'monospace', fontSize: '12px', color: '#FFD700', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(6);
 
+            // Large opponent sprite (right side)
             const spriteKey = this._getSpriteKey(nextOpponent);
-            if (this.textures.exists(spriteKey)) {
-                this.add.sprite(GAME_WIDTH / 2 - 200, panelY + 100, spriteKey, 0).setScale(CHAR_SCALE_ARCADE).setOrigin(0.5);
-            }
-
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 55, I18n.field(nextOpponent, 'name').toUpperCase(), {
-                fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', shadow: SHADOW
-            }).setOrigin(0, 0.5);
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 80, I18n.field(nextOpponent, 'title'), {
-                fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
-            }).setOrigin(0, 0.5);
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 105, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
-                fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW,
-                wordWrap: { width: 300 }
-            }).setOrigin(0, 0.5);
-
-            if (nextTerrain) {
-                this.add.text(GAME_WIDTH / 2 - 100, panelY + 135, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
-                    fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+            if (spriteKey && this.textures.exists(spriteKey)) {
+                const oppSpr = this.add.sprite(GAME_WIDTH / 2 + 190, panelY + 110, spriteKey, 0)
+                    .setScale(1.3).setOrigin(0.5).setDepth(6);
+                // Idle breathing
+                this.tweens.add({
+                    targets: oppSpr, scaleY: 1.33, scaleX: 1.27,
+                    duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
+                // Shadow under sprite
+                this.add.ellipse(GAME_WIDTH / 2 + 190, panelY + 170, 50, 8, 0x1A1510, 0.3).setDepth(5);
             }
-            this.add.text(GAME_WIDTH / 2 - 100, panelY + 155, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
-                fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
-            });
 
-            // Stats preview
-            const statsX = GAME_WIDTH / 2 + 140;
-            const statsY = panelY + 50;
+            // Info block (left side)
+            const infoX = GAME_WIDTH / 2 - 270;
+            this.add.text(infoX, panelY + 35, I18n.field(nextOpponent, 'name').toUpperCase(), {
+                fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
+            }).setDepth(6);
+            this.add.text(infoX, panelY + 60, I18n.field(nextOpponent, 'title'), {
+                fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+            }).setDepth(6);
+            this.add.text(infoX, panelY + 78, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
+                fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E', shadow: SHADOW,
+                fontStyle: 'italic', wordWrap: { width: 280 }
+            }).setDepth(6);
+
+            // Terrain + difficulty
+            if (nextTerrain) {
+                this.add.text(infoX, panelY + 105, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
+                    fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+                }).setDepth(6);
+            }
+            this.add.text(infoX, panelY + 122, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
+                fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+            }).setDepth(6);
+
+            // Comparative stat bars (player vs opponent)
+            const barX = infoX;
+            const barY = panelY + 142;
             const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
             const statLabels = ['PRE', 'PUI', 'EFF', 'S-F'];
             const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB];
+            const playerStats = this.playerCharacter?.stats || {};
+            const barW = 70;
+            const barG = this.add.graphics().setDepth(6);
+
             for (let i = 0; i < statNames.length; i++) {
-                const sy = statsY + i * 22;
-                this.add.text(statsX, sy, statLabels[i], {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW
-                });
-                const barG = this.add.graphics();
-                barG.fillStyle(0x1A1510, 0.8);
-                barG.fillRect(statsX + 30, sy - 3, 80, 10);
-                barG.fillStyle(statColors[i], 0.8);
-                barG.fillRect(statsX + 30, sy - 3, (nextOpponent.stats[statNames[i]] / 10) * 80, 10);
+                const sx = barX + i * 85;
+                const pVal = playerStats[statNames[i]] || 5;
+                const oVal = nextOpponent.stats[statNames[i]] || 5;
+                // Label
+                this.add.text(sx, barY, statLabels[i], {
+                    fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E'
+                }).setDepth(6);
+                // Background
+                barG.fillStyle(0x1A1510, 0.7);
+                barG.fillRect(sx + 24, barY, barW, 5);
+                barG.fillRect(sx + 24, barY + 8, barW, 5);
+                // Player bar (blue)
+                barG.fillStyle(0x87CEEB, 0.8);
+                barG.fillRect(sx + 24, barY, (pVal / 10) * barW, 5);
+                // Opponent bar (red)
+                barG.fillStyle(0xC44B3F, 0.8);
+                barG.fillRect(sx + 24, barY + 8, (oVal / 10) * barW, 5);
             }
         }
 
-        // COMBATTRE button
+        // COMBATTRE button (centered below panel)
         const btnY = panelY + 190;
-        const btnBg = this.add.graphics();
+        const btnBg = this.add.graphics().setDepth(6);
         btnBg.fillStyle(0xC44B3F, 0.9);
         btnBg.fillRoundedRect(GAME_WIDTH / 2 - 100, btnY, 200, 44, 8);
         const btnText = this.add.text(GAME_WIDTH / 2, btnY + 22, I18n.t('arcade.fight_btn'), {
             fontFamily: 'monospace', fontSize: '22px', color: '#FFFFFF',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
         this.tweens.add({
             targets: [btnBg, btnText], scaleX: 1.03, scaleY: 1.03,
             duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
@@ -508,33 +572,103 @@ export default class ArcadeScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
 
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('arcade.controls'), {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5);
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 14, I18n.t('arcade.controls'), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(6);
+    }
+
+    // Provencal landscape background (same technique as TitleScene)
+    _drawMapBackground() {
+        const bg = this.add.graphics().setDepth(0);
+
+        // Sky gradient: warm provencal blue → golden
+        bg.fillGradientStyle(0x5A94C8, 0x5A94C8, 0xE8B868, 0xE8B868, 1);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.55);
+
+        // Ground: warm ocre → deep brown
+        bg.fillGradientStyle(0xC4954A, 0xC4954A, 0x8B6030, 0x8B6030, 1);
+        bg.fillRect(0, GAME_HEIGHT * 0.55, GAME_WIDTH, GAME_HEIGHT * 0.45);
+
+        // Soft sun glow (upper area)
+        const sunX = GAME_WIDTH * 0.75;
+        const sunY = GAME_HEIGHT * 0.18;
+        for (let r = 120; r > 0; r -= 4) {
+            bg.fillStyle(0xFFE8A0, 0.006 + (120 - r) * 0.0003);
+            bg.fillCircle(sunX, sunY, r);
+        }
+
+        // 3 layered distant hills (sine wave, like TitleScene)
+        const hillLayers = [
+            { color: 0x7BA0B8, alpha: 0.3, baseY: 200, freq: 0.004, amp: 18 },
+            { color: 0x8BAA78, alpha: 0.4, baseY: 215, freq: 0.007, amp: 14 },
+            { color: 0x9B9060, alpha: 0.55, baseY: 230, freq: 0.01, amp: 10 }
+        ];
+        for (const hill of hillLayers) {
+            bg.fillStyle(hill.color, hill.alpha);
+            for (let x = 0; x < GAME_WIDTH; x += 2) {
+                const h = Math.sin(x * hill.freq + 1.5) * hill.amp
+                        + Math.sin(x * hill.freq * 2.3 + 0.7) * hill.amp * 0.4
+                        + hill.baseY;
+                bg.fillRect(x, h, 2, GAME_HEIGHT - h);
+            }
+        }
+
+        // Subtle texture dots on ground
+        for (let i = 0; i < 80; i++) {
+            const gx = Phaser.Math.Between(0, GAME_WIDTH);
+            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.5, GAME_HEIGHT);
+            bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.02, 0.05));
+            bg.fillRect(gx, gy, 1, 1);
+        }
+
+        // Dark bottom gradient for panel readability
+        const panelFade = this.add.graphics().setDepth(1);
+        panelFade.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.85, 0.85);
+        panelFade.fillRect(0, GAME_HEIGHT * 0.5, GAME_WIDTH, GAME_HEIGHT * 0.5);
+
+        // Vignette (frame effect)
+        const vig = this.add.graphics().setDepth(1);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.3, 0.3, 0, 0);
+        vig.fillRect(0, 0, GAME_WIDTH, 50);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.2, 0, 0.2, 0);
+        vig.fillRect(0, 0, 60, GAME_HEIGHT);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.2, 0, 0.2);
+        vig.fillRect(GAME_WIDTH - 60, 0, 60, GAME_HEIGHT);
     }
 
     _drawMapDecorations() {
-        const deco = this.add.graphics().setDepth(1);
-        const olives = [
-            { x: 200, y: 125, s: 5 }, { x: 340, y: 80, s: 4 },
-            { x: 480, y: 95, s: 6 }, { x: 620, y: 120, s: 4 }
+        // Organic decorations using existing decor sprites where available
+        const decorSprites = [
+            { key: 'grid_olive', x: 60, y: 155, scale: 0.8, frame: 0 },
+            { key: 'grid_olive', x: 340, y: 85, scale: 0.7, frame: 4 },
+            { key: 'grid_olive', x: 500, y: 100, scale: 0.9, frame: 1 },
+            { key: 'grid_olive', x: 770, y: 135, scale: 0.7, frame: 5 },
+            { key: 'grid_lavande', x: 180, y: 175, scale: 0.5, frame: 0 },
+            { key: 'grid_lavande', x: 640, y: 160, scale: 0.5, frame: 0 },
         ];
-        for (const o of olives) {
-            deco.fillStyle(0x6B8E4E, 0.4);
-            deco.fillCircle(o.x, o.y, o.s);
-            deco.fillStyle(0x4A6B3A, 0.3);
-            deco.fillCircle(o.x - 1, o.y + 1, o.s * 0.7);
-        }
-        deco.lineStyle(1, 0x87CEEB, 0.25);
-        for (let w = 0; w < 3; w++) {
-            deco.beginPath();
-            const baseY = 160 + w * 12;
-            for (let x = 20; x < 110; x += 4) {
-                const y = baseY + Math.sin(x * 0.08 + w) * 4;
-                if (x === 20) deco.moveTo(x, y);
-                else deco.lineTo(x, y);
+
+        for (const d of decorSprites) {
+            if (this.textures.exists(d.key)) {
+                const img = this.add.image(d.x, d.y, d.key, d.frame)
+                    .setScale(d.scale).setDepth(2).setAlpha(0.7);
+                // Gentle sway
+                this.tweens.add({
+                    targets: img, x: img.x + 1.5, angle: 0.3,
+                    duration: 3000 + Math.random() * 2000,
+                    yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+                    delay: Math.random() * 1500
+                });
             }
-            deco.strokePath();
+        }
+
+        // Fallback procedural decorations if sprites not loaded
+        const deco = this.add.graphics().setDepth(2);
+        // Small ground details (pebbles along path)
+        for (let i = 0; i < 20; i++) {
+            const px = Phaser.Math.Between(100, 730);
+            const py = Phaser.Math.Between(130, 180);
+            deco.fillStyle(0x8B6B3A, Phaser.Math.FloatBetween(0.15, 0.3));
+            deco.fillCircle(px, py, Phaser.Math.Between(1, 3));
         }
     }
 

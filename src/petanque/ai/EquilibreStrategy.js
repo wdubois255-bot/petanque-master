@@ -1,5 +1,5 @@
 import AIStrategy from './AIStrategy.js';
-import { LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE } from '../../utils/Constants.js';
+import { LOFT_TIR, LOFT_DEMI_PORTEE, LOFT_PLOMBEE } from '../../utils/Constants.js';
 
 /**
  * Marcel: Le Vieux Renard (L'Equilibre)

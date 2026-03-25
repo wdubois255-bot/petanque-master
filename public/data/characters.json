@@ -835,7 +835,7 @@
         "angleDev": 3,
         "powerDev": 0.02,
         "shootProbability": 0.05,
-        "loftPref": "roulette",
+        "loftPref": "demi_portee",
         "targetsCocho": false
       },
       "barks": {

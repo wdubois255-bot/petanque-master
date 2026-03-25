@@ -10,8 +10,7 @@ import {
     BALL_RADIUS, BALL_MASS, COCHONNET_MASS,
     TERRAIN_FRICTION, WALL_RESTITUTION,
     RETRO_FRICTION_MULT,
-    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR, LOFT_TIR_DEVANT, LOFT_RAFLE,
-    ALL_LOFT_PRESETS,
+    LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
     LATERAL_SPIN_FRAMES, LATERAL_SPIN_FORCE, LATERAL_SPIN_TERRAIN_MULT,
     TERRAIN_HEIGHT, BALL_CLAMP_MARGIN,
     COCHONNET_MAX_COLLISION_SPEED, puissanceMultiplier
@@ -511,12 +510,6 @@ describe('Retro (backspin) physics', () => {
 // =====================================================
 
 describe('Loft presets physics', () => {
-    it('roulette: 15% fly, 85% roll, no retro', () => {
-        expect(LOFT_ROULETTE.landingFactor).toBe(0.15);
-        expect(LOFT_ROULETTE.rollEfficiency).toBe(1.1);
-        expect(LOFT_ROULETTE.retroAllowed).toBe(false);
-    });
-
     it('demi-portee: 50/50, retro allowed', () => {
         expect(LOFT_DEMI_PORTEE.landingFactor).toBe(0.50);
         expect(LOFT_DEMI_PORTEE.retroAllowed).toBe(true);
@@ -536,16 +529,16 @@ describe('Loft presets physics', () => {
         expect(LOFT_TIR.retroAllowed).toBe(true);
     });
 
-    it('roulette rolls MUCH further than plombee at same power', () => {
-        // Roulette: 85% roll dist, rollEff 1.1
-        // Plombee: 20% roll dist, rollEff 0.85
+    it('demi-portee rolls further than plombee at same power', () => {
+        // Demi-portee: 50% roll dist, rollEff 1.0
+        // Plombee: 12% roll dist, rollEff 0.85
         const power = 0.5;
         const maxDist = TERRAIN_HEIGHT * 0.85;
         const totalDist = power * maxDist;
 
-        const rouletteRoll = totalDist * (1 - 0.15) * 1.1;
-        const plombeeRoll = totalDist * (1 - 0.80) * 0.85;
-        expect(rouletteRoll).toBeGreaterThan(plombeeRoll * 4);
+        const demiRoll = totalDist * (1 - 0.50) * 1.0;
+        const plombeeRoll = totalDist * (1 - 0.88) * 0.85;
+        expect(demiRoll).toBeGreaterThan(plombeeRoll * 3);
     });
 });
 
@@ -841,42 +834,19 @@ describe('Slope timeout', () => {
 });
 
 // =====================================================
-//  AXE A — RAFLE, TIR DEVANT, SPIN LATERAL
+//  SIMPLIFIED LOFT SYSTEM — 3 presets only
 // =====================================================
 
-describe('LOFT_RAFLE — preset validation', () => {
-    it('rafle landingFactor should be < demi-portee landingFactor', () => {
-        expect(LOFT_RAFLE.landingFactor).toBeLessThan(LOFT_DEMI_PORTEE.landingFactor);
+describe('Simplified loft system — 3 presets', () => {
+    it('plombee landingFactor should be between demi and tir', () => {
+        expect(LOFT_PLOMBEE.landingFactor).toBeGreaterThan(LOFT_DEMI_PORTEE.landingFactor);
+        expect(LOFT_PLOMBEE.landingFactor).toBeLessThan(LOFT_TIR.landingFactor);
     });
 
-    it('rafle landingFactor should be 0.20 (rase le sol)', () => {
-        expect(LOFT_RAFLE.landingFactor).toBe(0.20);
-    });
-
-    it('rafle rollDistance fraction (1-landingFactor) should be > plombee (roule plus loin)', () => {
-        // La rafle atterrit tot (landingFactor 0.20) donc 80% de la distance en roulement
-        // La plombee atterrit tard (landingFactor 0.88) donc seulement 12% en roulement
-        const raflRoll = 1 - LOFT_RAFLE.landingFactor;
-        const plombeeRoll = 1 - LOFT_PLOMBEE.landingFactor;
-        expect(raflRoll).toBeGreaterThan(plombeeRoll);
-    });
-
-    it('rafle arcHeight should be minimal (arc quasi nul)', () => {
-        expect(Math.abs(LOFT_RAFLE.arcHeight)).toBeLessThan(Math.abs(LOFT_DEMI_PORTEE.arcHeight));
-    });
-
-    it('rafle retro should be disallowed', () => {
-        expect(LOFT_RAFLE.retroAllowed).toBeFalsy();
-    });
-
-    it('tir devant landingFactor should be between demi and plombee', () => {
-        expect(LOFT_TIR_DEVANT.landingFactor).toBeGreaterThan(LOFT_DEMI_PORTEE.landingFactor);
-        expect(LOFT_TIR_DEVANT.landingFactor).toBeLessThan(LOFT_TIR.landingFactor);
-    });
-
-    it('all 6 loft presets (ALL_LOFT_PRESETS) should have valid structure', () => {
-        expect(ALL_LOFT_PRESETS).toHaveLength(6);
-        for (const p of ALL_LOFT_PRESETS) {
+    it('all 3 loft presets should have valid structure', () => {
+        const ALL_LOFTS = [LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR];
+        expect(ALL_LOFTS).toHaveLength(3);
+        for (const p of ALL_LOFTS) {
             expect(p.id).toBeTruthy();
             expect(p.label).toBeTruthy();
             expect(p.landingFactor).toBeGreaterThanOrEqual(0);

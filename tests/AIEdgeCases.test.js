@@ -158,7 +158,7 @@ describe('Momentum accumulation over 10 shots', () => {
         const MAMIE_DATA = {
             id: 'mamie_josette', archetype: 'pointeur',
             stats: { precision: 7, puissance: 3, effet: 6, sang_froid: 10 },
-            ai: { personality: 'pointeur', angleDev: 2, powerDev: 0.03, shootProbability: 0.05, loftPref: 'roulette', targetsCocho: false }
+            ai: { personality: 'pointeur', angleDev: 2, powerDev: 0.03, shootProbability: 0.05, loftPref: 'demi_portee', targetsCocho: false }
         };
         const ai = new PetanqueAI(mockScene, engine, 'medium', null, MAMIE_DATA);
 

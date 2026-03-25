@@ -6,7 +6,7 @@ import {
     AI_PERSONALITY_MODIFIERS,
     AI_MOMENTUM_SENSITIVITY,
     puissanceMultiplier,
-    LOFT_RAFLE, LATERAL_SPIN_MIN_EFFET,
+    LATERAL_SPIN_MIN_EFFET,
     AI_TELL_DURATION, AI_TELL_POINTER_COLOR, AI_TELL_SHOOTER_COLOR, AI_TELL_ALPHA
 } from '../utils/Constants.js';
 
@@ -190,12 +190,7 @@ export default class PetanqueAI {
         if (isTir) { this._consecutiveShots++; this._consecutivePoints = 0; }
         else { this._consecutivePoints++; this._consecutiveShots = 0; }
 
-        // Rafle : utiliser sur terrain peu friction (dalles/terre), en mode tir
-        // La rafle rase le sol — efficace quand la friction est faible
         let finalLoftPreset = loftPreset;
-        if (isTir && this.engine.frictionMult < 1.5 && Math.random() < 0.35) {
-            finalLoftPreset = LOFT_RAFLE;
-        }
 
         // AI retro decision: use retro on plombee/tir when effet stat is decent
         let retroIntensity = 0;

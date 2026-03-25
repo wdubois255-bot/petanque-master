@@ -8,11 +8,11 @@ import {
     FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
     TERRAIN_HEIGHT,
-    LOFT_DEMI_PORTEE, LOFT_TIR, LOFT_RAFLE,
+    LOFT_DEMI_PORTEE, LOFT_TIR,
     CARREAU_THRESHOLD,
     HITSTOP_BOULE_MS, HITSTOP_CARREAU_MS,
     SCORE_MENE_DELAY, GAME_OVER_REDIRECT_DELAY,
-    DUST_COUNT_ROULETTE, DUST_COUNT_DEMI, DUST_COUNT_PLOMBEE, DUST_COUNT_TIR,
+    DUST_COUNT_DEMI, DUST_COUNT_PLOMBEE, DUST_COUNT_TIR,
     MIN_IMPACT_SPEED, TIR_IMPACT_SPEED, TIR_LANDING_CONTACT_RADIUS,
     COCHONNET_ROLL_MIN, COCHONNET_ROLL_MAX, COCHONNET_SAFE_MARGIN, COCHONNET_CLAMP_MARGIN,
     BALL_CLAMP_MARGIN,
@@ -515,8 +515,7 @@ export default class PetanqueEngine {
         const flyDuration = THROW_FLY_DURATION * loftPreset.flyDurationMult;
         const arcHeight = loftPreset.arcHeight;
         const isPlombee = loftPreset.id === 'plombee';
-        const isRoulette = loftPreset.id === 'roulette';
-        // Roulette = smooth constant speed, Plombee = slow rise then fast drop, Tir = fast linear
+        // Plombee = slow rise then fast drop, Tir = fast linear, Demi = smooth ease
         const ease = isTir ? 'Linear' : isPlombee ? 'Sine.easeIn' : 'Quad.easeOut';
 
         const tween = { t: 0 };
@@ -606,8 +605,8 @@ export default class PetanqueEngine {
                     this.renderer.flashTirImpact(targetX, targetY, ball.radius);
                 }
 
-                // Dust proportional to technique (more for plombee, less for roulette)
-                const dustCount = isRoulette ? DUST_COUNT_ROULETTE : isPlombee ? DUST_COUNT_PLOMBEE : isTir ? DUST_COUNT_TIR : DUST_COUNT_DEMI;
+                // Dust proportional to technique (more for plombee/tir)
+                const dustCount = isPlombee ? DUST_COUNT_PLOMBEE : isTir ? DUST_COUNT_TIR : DUST_COUNT_DEMI;
                 sfxLanding(this.terrainType);
                 this._spawnDust(targetX, targetY, dustCount);
 
@@ -1276,7 +1275,7 @@ export default class PetanqueEngine {
         }
 
         // Analyse du tir contre une seule cible
-        const isTirDevant = this.lastShotLoft?.id === 'tir_devant';
+        const isTirDevant = false; // Tir devant removed from game
         if (hitEnemy.length === 1) {
             const target = hitEnemy[0];
 

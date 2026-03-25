@@ -274,7 +274,6 @@
   "mene_challenges": [
     { "id": "mc_carreau", "text": "Defi : Fais un carreau !", "text_en": "Challenge: Score a carreau!", "stat": "carreaux", "target": 1, "reward": 10 },
     { "id": "mc_3pts", "text": "Defi : Marque 3+ points !", "text_en": "Challenge: Score 3+ points!", "stat": "meneScore", "target": 3, "reward": 10 },
-    { "id": "mc_roulette", "text": "Defi : Gagne en roulette uniquement", "text_en": "Challenge: Win using only roulette", "stat": "onlyRoulette", "target": 1, "reward": 15 },
     { "id": "mc_biberon", "text": "Defi : Fais un biberon !", "text_en": "Challenge: Score a biberon!", "stat": "biberons", "target": 1, "reward": 15 }
   ],
   "milestones": [

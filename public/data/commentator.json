@@ -127,6 +127,18 @@
     "Nothing's decided! Tied!",
     "Both players neck and neck!"
   ],
+  "pression": [
+    "10 partout ! La pression est maximale !",
+    "Chaque boule compte ! Concentration !",
+    "Les mains tremblent... c'est la pression !",
+    "Moment decisif ! Qui va craquer ?"
+  ],
+  "pression_en": [
+    "10 all! Maximum pressure!",
+    "Every ball counts! Focus!",
+    "Hands are shaking... that's pressure!",
+    "Decisive moment! Who will crack?"
+  ],
   "fanny": [
     "13-0 ! La fanny !",
     "Fanny ! Ca c'est de l'humiliation !",

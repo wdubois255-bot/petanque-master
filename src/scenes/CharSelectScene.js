@@ -299,6 +299,20 @@ export default class CharSelectScene extends Phaser.Scene {
         if (availableCells.length === 0) return;
 
         const cell = availableCells[this._selectedIndex % availableCells.length];
+
+        // Selection bounce: scale the selected card container briefly
+        if (cell.container && cell !== this._lastSelectedCell) {
+            this._lastSelectedCell = cell;
+            // Reset all cards to base scale
+            availableCells.forEach(c => {
+                if (c.container) { this.tweens.killTweensOf(c.container); c.container.setScale(1); }
+            });
+            cell.container.setScale(1);
+            this.tweens.add({
+                targets: cell.container,
+                scaleX: 1.08, scaleY: 1.08, duration: 120, yoyo: true, ease: 'Quad.easeOut'
+            });
+        }
         const char = cell.char;
 
         // Update cursor

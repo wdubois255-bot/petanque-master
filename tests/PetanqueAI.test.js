@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
     AI_EASY, AI_HARD,
-    LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE,
+    LOFT_TIR, LOFT_DEMI_PORTEE, LOFT_PLOMBEE,
     TERRAIN_FRICTION
 } from '../src/utils/Constants.js';
 import PetanqueAI from '../src/petanque/PetanqueAI.js';

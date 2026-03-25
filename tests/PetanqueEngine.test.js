@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
     TERRAIN_HEIGHT, TERRAIN_WIDTH,
-    LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR, LOFT_RAFLE, LOFT_TIR_DEVANT,
+    LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
     ALL_LOFT_PRESETS,
     FRICTION_BASE
 } from '../src/utils/Constants.js';
@@ -38,22 +38,22 @@ describe('PetanqueEngine.computeThrowParams', () => {
         expect(high.targetY).toBeLessThan(low.targetY);
     });
 
-    it('roulette should land closer but roll more', () => {
-        const roulette = PetanqueEngine.computeThrowParams(
-            angle, 0.5, originX, originY, bounds, LOFT_ROULETTE, frictionMult
+    it('demi-portee should land closer but roll more than plombee', () => {
+        const demi = PetanqueEngine.computeThrowParams(
+            angle, 0.5, originX, originY, bounds, LOFT_DEMI_PORTEE, frictionMult
         );
         const plombee = PetanqueEngine.computeThrowParams(
             angle, 0.5, originX, originY, bounds, LOFT_PLOMBEE, frictionMult
         );
 
-        // Roulette: 15% landing, 85% roll → lands closer to origin
-        // Plombee: 80% landing, 20% roll → lands further from origin
-        expect(roulette.targetY).toBeGreaterThan(plombee.targetY);
+        // Demi-portee: 50% landing, 50% roll → lands closer to origin
+        // Plombee: 88% landing, 12% roll → lands further from origin
+        expect(demi.targetY).toBeGreaterThan(plombee.targetY);
 
-        // Roulette should have higher roll velocity
-        const rouletteRollSpeed = Math.sqrt(roulette.rollVx ** 2 + roulette.rollVy ** 2);
+        // Demi-portee should have higher roll velocity
+        const demiRollSpeed = Math.sqrt(demi.rollVx ** 2 + demi.rollVy ** 2);
         const plombeeRollSpeed = Math.sqrt(plombee.rollVx ** 2 + plombee.rollVy ** 2);
-        expect(rouletteRollSpeed).toBeGreaterThan(plombeeRollSpeed);
+        expect(demiRollSpeed).toBeGreaterThan(plombeeRollSpeed);
     });
 
     it('tir flyOnly: ball stops where it lands (rollVx/rollVy = 0)', () => {
@@ -112,7 +112,7 @@ describe('PetanqueEngine.computeThrowParams', () => {
 
 describe('PetanqueEngine - Terrain friction consistency', () => {
     it('all loft presets should have valid parameters', () => {
-        const presets = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR];
+        const presets = ALL_LOFT_PRESETS;
 
         for (const p of presets) {
             expect(p.id).toBeTruthy();
@@ -124,36 +124,33 @@ describe('PetanqueEngine - Terrain friction consistency', () => {
         }
     });
 
-    it('roulette should have lowest landingFactor, plombee highest (excl tir)', () => {
-        expect(LOFT_ROULETTE.landingFactor).toBeLessThan(LOFT_DEMI_PORTEE.landingFactor);
+    it('demi-portee should have lowest landingFactor, plombee next, tir highest', () => {
         expect(LOFT_DEMI_PORTEE.landingFactor).toBeLessThan(LOFT_PLOMBEE.landingFactor);
         expect(LOFT_PLOMBEE.landingFactor).toBeLessThan(LOFT_TIR.landingFactor);
     });
 });
 
-describe('PetanqueEngine.computeThrowParams — AXE A (rafle, targetCochonnet, ALL_LOFT_PRESETS)', () => {
+describe('PetanqueEngine.computeThrowParams — loft presets validation', () => {
     const bounds = { x: 326, y: 30, w: TERRAIN_WIDTH, h: TERRAIN_HEIGHT };
     const originX = 416;
     const originY = 430;
     const frictionMult = 1.0;
     const angle = -Math.PI / 2; // Droit vers le haut
 
-    it('computeThrowParams avec LOFT_RAFLE doit atterrir avant LOFT_DEMI_PORTEE', () => {
-        const rafle = PetanqueEngine.computeThrowParams(
-            angle, 0.6, originX, originY, bounds, LOFT_RAFLE, frictionMult
+    it('computeThrowParams avec LOFT_TIR doit atterrir avant LOFT_DEMI_PORTEE (plus loin du lanceur)', () => {
+        const tir = PetanqueEngine.computeThrowParams(
+            angle, 0.6, originX, originY, bounds, LOFT_TIR, frictionMult
         );
         const demi = PetanqueEngine.computeThrowParams(
             angle, 0.6, originX, originY, bounds, LOFT_DEMI_PORTEE, frictionMult
         );
-        // Rafle landingFactor 0.20 vs demi 0.50 — atterrit plus tot (targetY plus grand = plus proche)
-        expect(rafle.targetY).toBeGreaterThan(demi.targetY);
+        // Tir landingFactor 0.95 vs demi 0.50 — atterrit plus loin (targetY plus petit = plus loin)
+        expect(tir.targetY).toBeLessThan(demi.targetY);
     });
 
     it('computeThrowParams avec targetCochonnet : le cochonnet se trouve en haut du terrain', () => {
-        // Simuler un cochonnet a coordonnees connues (y < originY = haut = angle negatif)
-        // Le test verifie juste que computeThrowParams fonctionne avec LOFT_RAFLE
         const params = PetanqueEngine.computeThrowParams(
-            angle, 0.5, originX, originY, bounds, LOFT_RAFLE, frictionMult
+            angle, 0.5, originX, originY, bounds, LOFT_DEMI_PORTEE, frictionMult
         );
         // La target doit etre dans les bounds
         expect(params.targetX).toBeGreaterThanOrEqual(bounds.x + 16);
@@ -162,8 +159,8 @@ describe('PetanqueEngine.computeThrowParams — AXE A (rafle, targetCochonnet, A
         expect(params.targetY).toBeLessThanOrEqual(bounds.y + bounds.h - 16);
     });
 
-    it('ALL_LOFT_PRESETS contient exactement 6 presets valides', () => {
-        expect(ALL_LOFT_PRESETS).toHaveLength(6);
+    it('all 3 loft presets have valid structure', () => {
+        expect(ALL_LOFT_PRESETS).toHaveLength(3);
         for (const p of ALL_LOFT_PRESETS) {
             expect(typeof p.id).toBe('string');
             expect(typeof p.label).toBe('string');
@@ -171,7 +168,6 @@ describe('PetanqueEngine.computeThrowParams — AXE A (rafle, targetCochonnet, A
             expect(p.landingFactor).toBeLessThanOrEqual(1);
             expect(p.flyDurationMult).toBeGreaterThan(0);
             expect(p.rollEfficiency).toBeGreaterThan(0);
-            // Chaque preset doit avoir un arcHeight
             expect(typeof p.arcHeight).toBe('number');
         }
     });

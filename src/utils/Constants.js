@@ -43,15 +43,9 @@ export const THROW_SHAKE_DURATION = 150;
 // Petanque - loft presets (research/25_cahier_des_charges_realisme.md)
 // rollEfficiency = multiplicateur de distance reelle vs distance cible
 // 1.0 = la boule roule exactement la distance prevue, <1 = tombe court, >1 = depasse
-// - Roulette : 15% vol, 85% roulement, arc tres bas (~0.3-0.5m reel)
-// - Demi-portee : 50/50, arc moyen (1.5-2m reel)
+// - Demi-portee : 50/50, arc moyen (1.5-2m reel) — default low loft
 // - Plombee : 80% vol, 20% roulement (PAS une boule morte, roule ~20% de sa trajectoire)
 // - Tir au fer : 95% vol, arc haut (2-3m), impact violent
-export const LOFT_ROULETTE = {
-    id: 'roulette', label: 'ROULETTE',
-    landingFactor: 0.15, arcHeight: -8, flyDurationMult: 0.5, rollEfficiency: 1.1,
-    precisionPenalty: 0, retroAllowed: false
-};
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
     landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 1.0,
@@ -72,20 +66,6 @@ export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
     landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 0.3, flyOnly: true,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
-};
-// Tir devant : atterrit 20-30cm avant la cible, rebondit dedans
-// Moins precis que tir au fer mais plus tolerant sur la distance
-export const LOFT_TIR_DEVANT = {
-    id: 'tir_devant', label: 'TIR DEVANT',
-    landingFactor: 0.85, arcHeight: -50, flyDurationMult: 0.45, rollEfficiency: 10.0,
-    precisionPenalty: 0.7, retroAllowed: true, isTir: true
-};
-// Tir a la rafle : balle rase le sol (arc quasi nul), atterrit tot et roule loin
-// Ideal sur sable/herbe (friction amplifie l'effet)
-export const LOFT_RAFLE = {
-    id: 'rafle', label: 'RAFLE',
-    landingFactor: 0.20, arcHeight: -5, flyDurationMult: 0.3, rollEfficiency: 0.85,
-    precisionPenalty: 0.5, retroAllowed: false, isTir: true
 };
 
 // Spin lateral (effet gauche/droite) — actif apres atterrissage uniquement
@@ -114,9 +94,9 @@ export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
 
 // Palet detection
 export const PALET_THRESHOLD = 50;
-export const LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
+export const LOFT_PRESETS = [LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 // Tous les presets valides (pointer + tir) — pour validation et tests
-export const ALL_LOFT_PRESETS = [LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_RAFLE, LOFT_TIR, LOFT_TIR_DEVANT];
+export const ALL_LOFT_PRESETS = [LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR];
 
 // Petanque - prediction trajectoire
 export const PREDICTION_STEPS = 120;
@@ -143,7 +123,7 @@ export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
 export const AI_POINTEUR = {
     angleDev: 2, powerDev: 0.03,
     personality: 'pointeur', shootProbability: 0.08,
-    loftPref: 'roulette', targetsCocho: false
+    loftPref: 'demi_portee', targetsCocho: false
 };
 export const AI_TIREUR = {
     angleDev: 6, powerDev: 0.10,
@@ -190,7 +170,6 @@ export const AIM_HINT_DURATION = 5000;
 export const BARK_DURATION = 2000;
 export const BARK_PROBABILITY = 0.55; // 40% → 55%
 export const PAUSE_KEY = 'P'; // Pause menu (ESC pris par AimingSystem pour annuler)
-export const DUST_COUNT_ROULETTE = 2;
 export const DUST_COUNT_DEMI = 6;
 export const DUST_COUNT_PLOMBEE = 10;
 export const DUST_COUNT_TIR = 8;
@@ -471,6 +450,9 @@ export const PUISSANCE_RANGE = 0.5;
 export function puissanceMultiplier(puiStat) {
     return PUISSANCE_BASE + (puiStat - 1) / 9 * PUISSANCE_RANGE;
 }
+
+// Plombee unlock threshold (derived from save, no extra field needed)
+export const PLOMBEE_UNLOCK_WINS = 1; // Unlocked after first victory
 
 // Gameplay constants (extracted from inline values)
 export const FOCUS_CHARGES_PER_MATCH = 5;

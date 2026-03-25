@@ -1,5 +1,5 @@
 import {
-    LOFT_TIR, LOFT_ROULETTE, LOFT_DEMI_PORTEE, LOFT_PLOMBEE
+    LOFT_TIR, LOFT_DEMI_PORTEE, LOFT_PLOMBEE
 } from '../../utils/Constants.js';
 
 /**
@@ -101,10 +101,6 @@ export default class AIStrategy {
         const terrain = this.ai.engine.terrainType;
         const p = this.ai.personality;
 
-        if (p.loftPref === 'roulette') {
-            if (terrain === 'sable') return LOFT_DEMI_PORTEE;
-            return LOFT_ROULETTE;
-        }
         if (p.loftPref === 'plombee') {
             return LOFT_PLOMBEE;
         }
@@ -112,9 +108,7 @@ export default class AIStrategy {
             return Math.random() < 0.5 ? LOFT_DEMI_PORTEE : LOFT_PLOMBEE;
         }
         if (p.loftPref === 'adaptatif') {
-            if (terrain === 'terre' || terrain === 'dalles') return LOFT_ROULETTE;
-            if (terrain === 'herbe') return LOFT_DEMI_PORTEE;
-            if (terrain === 'sable') return LOFT_PLOMBEE;
+            if (terrain === 'sable' || terrain === 'herbe') return LOFT_PLOMBEE;
             return LOFT_DEMI_PORTEE;
         }
         return LOFT_DEMI_PORTEE;

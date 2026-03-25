@@ -271,6 +271,12 @@ export default class EngineRenderer {
     // ================================================================
 
     celebrateCarreau(ball) {
+        // === SCREEN SHAKE (3px, 150ms) ===
+        this.scene.cameras.main.shake(150, 0.004);
+
+        // === GOLDEN FLASH at impact ===
+        this.scene.cameras.main.flash(100, 255, 215, 0, true);
+
         // "CARREAU !" text with Phaser 4 glow filter
         const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
@@ -312,18 +318,18 @@ export default class EngineRenderer {
             } catch (_) { /* filter not supported */ }
         }
 
-        // Radial gold sparks
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
+        // Radial gold sparks (12 instead of 8 for more spectacle)
+        for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
             const spark = this.scene.add.graphics().setDepth(64);
             spark.fillStyle(0xFFD700, 1);
             spark.fillCircle(0, 0, 4);
             spark.setPosition(ball.x, ball.y);
             this.scene.tweens.add({
                 targets: spark,
-                x: ball.x + Math.cos(angle) * 36,
-                y: ball.y + Math.sin(angle) * 36,
-                alpha: 0, duration: 500,
+                x: ball.x + Math.cos(angle) * 48,
+                y: ball.y + Math.sin(angle) * 48,
+                alpha: 0, duration: 600,
                 onComplete: () => spark.destroy()
             });
         }

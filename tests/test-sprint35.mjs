@@ -44,7 +44,7 @@ const results = await page.evaluate(async () => {
     await new Promise(r => setTimeout(r, 1500));
 
     // --- Test Constants ---
-    test('LOFT_ROULETTE exists with correct fields', () => {
+    test('LOFT_DEMI_PORTEE exists with correct fields', () => {
         // Access through dynamic import simulation - check if modules loaded
         // We'll check via the game's module system
         const game = window.__PHASER_GAME__;

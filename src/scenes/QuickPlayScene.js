@@ -110,8 +110,8 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Filter owned items
         const save = loadSave();
-        this._ownedBoules = this._allBoules.filter(b => b.unlocked || (save.inventory?.boules && save.inventory.boules.includes(b.id)));
-        this._ownedCochonnets = this._allCochonnets.filter(c => c.unlocked || (save.inventory?.cochonnets && save.inventory.cochonnets.includes(c.id)));
+        this._ownedBoules = this._allBoules.filter(b => b.unlocked || (save.unlockedBoules || []).includes(b.id));
+        this._ownedCochonnets = this._allCochonnets.filter(c => c.unlocked || (save.unlockedCochonnets || []).includes(c.id));
 
         // Fallback: ensure at least 1 boule and 1 cochonnet
         if (this._ownedBoules.length === 0) this._ownedBoules = [this._allBoules[0]];
