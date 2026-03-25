@@ -618,12 +618,14 @@ export default class PetanqueEngine {
                 const traceRadius = isPlombee ? ball.radius + 4 : isTir ? ball.radius + 3 : ball.radius;
                 this._drawImpactTrace(targetX, targetY, traceRadius);
 
-                // flyOnly miss safety: if tir missed everything, give minimal residual roll
-                // (in real petanque a missed tir still bounces forward a little)
+                // flyOnly miss safety: if tir missed everything, give residual roll
+                // (in real petanque a missed tir still bounces forward from landing impact)
+                // Use full MIN_IMPACT_SPEED — 0.5× was too low on high-friction terrains
+                // (sable/herbe: friction ate all speed in 3 frames → ball stopped dead)
                 if (isTir && Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
                     const landAngle = Math.atan2(targetY - startY, targetX - startX);
-                    rollVx = Math.cos(landAngle) * MIN_IMPACT_SPEED * 0.5;
-                    rollVy = Math.sin(landAngle) * MIN_IMPACT_SPEED * 0.5;
+                    rollVx = Math.cos(landAngle) * MIN_IMPACT_SPEED;
+                    rollVy = Math.sin(landAngle) * MIN_IMPACT_SPEED;
                 }
 
                 ball.launch(rollVx, rollVy);
