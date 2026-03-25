@@ -1,47 +1,57 @@
 # GAME DESIGN - Petanque Master
 
 > **ATTENTION** : Ce fichier est la bible de design du jeu.
-> Le roster actuel compte 14 personnages : Rookie, La Choupe, Ley, Foyot, Suchaud, Fazzino, Mamie Josette, Papi Rene, Robineau, Rocher, Sofia, Rizzi, Chai (boss secret), La Loutre.
+> **VISION V2** (25 mars 2026) : Le jeu evolue d'un format "fighting game" vers un **village de petanque vivant**.
+> Pour la vision complete et detaillee : **docs/VISION_V2.md** (document de reference).
+> Le roster actuel compte 12 personnages : Rookie, La Choupe, Ley, Foyot, Suchaud, Fazzino, Mamie Josette, Papi Rene, Robineau, Rocher, Sofia, Rizzi.
 > Pour les stats et donnees reelles : **public/data/characters.json** (source de verite).
-> Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.3.
+> Pour l'etat complet du projet : **CAHIER_DES_CHARGES.md** v2.16.
 
 ## Concept
 
-**Petanque Master** : jeu de petanque competitif en 1v1, style jeu de combat (Street Fighter / Tekken).
-Chaque joueur choisit un personnage avec des stats uniques, un jeu de boules, et s'affronte sur des terrains varies.
+**Petanque Master** : un jeu de petanque ou tu construis ton village provencal, recrutes tes coequipiers parmi des personnages inspires de Pagnol et des legendes de la petanque, et montes jusqu'au tournoi national — en solo avec des PNJ, puis en multi contre d'autres villages.
 
 **Pilliers du jeu :**
 1. Un gameplay petanque solide et satisfaisant (FAIT)
-2. Des personnages charismatiques avec des stats qui impactent le jeu
-3. Des terrains avec des proprietes physiques uniques
-4. Un mode arcade solo + versus local + versus en ligne
+2. Un village personnalisable comme hub central (le coeur emotionnel)
+3. Des personnages avec des personnalites pagnolienne et des relations (pas juste des stats)
+4. Une pyramide competitive : village → inter-villages → Les Pieds Tanques (national)
+5. Multi 1v1 en ligne + village vs village (futur)
+
+**L'ame du jeu :** La petanque est un rituel social, pas un sport. Le jeu honore ca : le silence avant le lancer, la mauvaise foi joyeuse, le terrain qui parle, l'intergenerationnel. Inspiration Pagnol (trilogie marseillaise) + histoire vraie (Jules Lenoir, La Ciotat 1907).
+
+**Ce qui ne change pas :** Le moteur petanque (physique custom, Ball.js), les stats (precision/puissance/effet/sang-froid), l'IA (4 archetypes), les 5 terrains, les boules, le shop, le Quick Play.
 
 ---
 
 ## Modes de jeu
 
-### Mode Arcade (solo)
-- 5 combats enchaines contre l'IA, difficulte croissante
-- Terrain et adversaire imposes a chaque etape
-- Deblocage du **boss secret** en finissant l'arcade
-- Pas de game over : on peut retenter un match perdu
-- Ecran de resultats entre chaque match (score, stats du match)
+### Le Village (mode principal — NOUVEAU V2)
+- **La Place** : overworld 1 ecran (26x15 tiles), camera fixe, WASD
+- PNJ sur la place : dialogues pagnoliens, recrutement, relations
+- Boulodrome : entree vers les matchs de petanque
+- Bar : hub social, narrateur, ambiance
+- Boutique : shop (boules, items, cosmetiques)
+- Le village evolue visuellement avec la progression (4 stades)
+- Voir **docs/VISION_V2.md** pour le detail complet
 
-### Mode Versus (local)
-- 1v1 meme ecran, chacun son tour
-- Choix libre : perso, boules, terrain
-- Formats : tete-a-tete (3 boules), doublette (2v2), triplette (3v3)
+### Concours et Tournois (NOUVEAU V2)
+- **Concours du Village** : matchs locaux contre PNJ, enjeux narratifs
+- **Defis Inter-Villages** : format triplette (toi + 2 coequipiers) vs villages adverses
+- **Les Pieds Tanques** : tournoi national, pyramide competitive
+- Chaque niveau a son ambiance, ses enjeux, sa pression
 
-### Mode Versus En Ligne
-- **Tour par tour asynchrone** (comme un jeu d'echecs en ligne)
-- Systeme de "room code" : tu partages un code a ton pote
-- Chaque joueur joue son coup, l'autre recoit le resultat et joue le sien
-- Tech : Firebase Realtime Database ou API REST simple
-- Phase 2 du developpement
+### Multi 1v1 (NOUVEAU V2)
+- **Tour par tour** via Supabase Realtime (gratuit, zero serveur)
+- Systeme de "room code" (BOULE-XXXX) : partage a un ami
+- Match sur ton terrain ou le sien (avantage domicile)
+- PNJ spectateurs qui commentent en fond
+- Futur : village vs village (triplette 3 joueurs)
 
-### Quick Play
+### Quick Play (conserve)
 - Partie rapide avec configuration libre (existe deja)
 - Choix boules, terrain, difficulte, adversaire, format
+- Accessible depuis le menu principal, independant du village
 
 ---
 
@@ -142,18 +152,19 @@ Chaque terrain a un **look unique** et des **proprietes physiques** qui changent
 
 ---
 
-## Flow du jeu
+## Flow du jeu (V2)
 
 ```
 TITRE
   |
   v
 MENU PRINCIPAL
-  |--- Arcade ---------> Select Perso -> Match 1/5 -> Resultat -> ... -> Match 5/5 -> Fin + Deblocage boss
-  |--- Versus Local ---> Select Perso (J1) -> Select Perso (J2) -> Select Boules -> Select Terrain -> Match -> Resultat
-  |--- Versus En Ligne -> Room Code -> Select Perso -> Select Boules -> Select Terrain -> Match async -> Resultat
-  |--- Quick Play -----> Config rapide -> Match -> Resultat
-  |--- Collection -----> Persos / Boules / Terrains debloques (Phase 2)
+  |--- Le Village -----> (1ere fois : tutoriel + nom village + blason + choix 2 habitants)
+  |                       La Place (overworld) -> Boulodrome -> Match -> Resultat -> La Place
+  |                       Concours du Village -> Defis Inter-Villages -> Les Pieds Tanques
+  |--- Partie Rapide --> Config rapide -> Match -> Resultat
+  |--- Multi 1v1 -----> Code salle -> Match en ligne -> Resultat
+  |--- Options/Stats --> Profil joueur, parametres, collection
 ```
 
 ### Ecran de selection de personnage
@@ -248,26 +259,29 @@ Un defi unique par jour, identique pour tous les joueurs :
 
 ---
 
-## Priorites de developpement
+## Priorites de developpement (V2)
 
-### Phase 1 — Core (actuel)
-1. Ecran de selection de personnage
-2. Systeme de stats (precision, puissance, effet, sang-froid)
-3. 5 terrains avec proprietes physiques (pentes, zones mixtes, rebonds murs)
-4. Mode Arcade complet (5 matchs + boss)
-5. Ecran VS + intro match + ecran resultat
-6. 5 personnages avec sprites + portraits (PixelLab)
+### Phase A — Le Village Solo (priorite immediate)
+1. Tileset village provencal (joueur via PixelLab)
+2. Activer OverworldScene comme hub, tilemap 26x15, camera fixe
+3. Player avec sprites Rookie 8 rotations, PNJ sur la place
+4. Flow : Place → Boulodrome → PetanqueScene → Resultat → retour Place
+5. Ecran "Premiers habitants" (choix 2 parmi 4-5)
+6. Nom du village, blason, surface terrain
+7. Narrateur pagnolien, profil joueur, concours du village
 
-### Phase 2 — Enrichissement
-7. Stats des boules (poids, durete, grip, diametre)
-8. Mode Versus local (2 joueurs meme ecran)
-9. Collection / deblocages
-10. Formats 2v2 (doublette) et 3v3 (triplette)
+### Phase B — Multi 1v1
+8. Supabase Realtime : creer/rejoindre (code salle)
+9. Synchronisation lancers, UI attente, resultat compare
 
-### Phase 3 — Online
-11. Versus en ligne tour par tour asynchrone
-12. Systeme de room code
-13. Classement / stats en ligne
+### Phase C — Profondeur Village
+10. Evolution visuelle du village (4 stades)
+11. Affinites entre coequipiers
+12. Villages adverses PNJ, defis inter-villages (triplette)
+
+### Phase D — Les Pieds Tanques + Multi Village
+13. Pyramide solo complete (village → national)
+14. Village vs Village multi, classement, evenements
 
 ---
 
@@ -373,12 +387,15 @@ Chaque personnage doit avoir :
 ## Ce qui est conserve du projet actuel
 - **Moteur de petanque** : physique custom, IA 3 niveaux, systeme de visee — TOUT est garde
 - **QuickPlayScene** : mode partie rapide — garde tel quel
-- **Assets visuels** : sprites Pipoya, tilesets, SFX — reutilises
+- **Sprites v2_new** : 12 personnages en 8 rotations (124x124), animations, items, boules, UI
 - **Style provencal** : ambiance, palette, humour — c'est l'ADN du jeu
-- **STORY.md** : l'histoire "L'Heritier de la Ciotat" reste en reserve pour un futur mode aventure
+- **Stats et boules** : systeme de stats, boules.json, shop — conserves
 
-## Ce qui change
-- **Plus de monde ouvert** (OverworldScene) comme priorite — c'est reporte
-- **Focus sur le format versus** : selection perso, matchs, arcade
-- **Personnages = gameplay** : chaque perso a des stats qui impactent reellement le jeu
-- **Terrains = stages** : chaque terrain est un challenge different
+## Ce qui change (V2 — mars 2026)
+- **Le Village** remplace l'Arcade comme mode principal
+- **OverworldScene** activee : un ecran, la place du village, camera fixe
+- **Personnages = habitants et coequipiers** (pas juste adversaires)
+- **Narrateur pagnolien** : voix off entre les parties
+- **Profil joueur** : ratio pointer/tirer comme revelateur de personnalite
+- **Multi 1v1** : Supabase Realtime, code salle
+- **Pyramide competitive** : village → inter-villages → Les Pieds Tanques

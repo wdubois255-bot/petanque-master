@@ -12,6 +12,7 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 | Boutique (prix, items) | `public/data/shop.json` | Monnaie = "Galets" (pas "Ecus"). |
 | Sauvegarde (schema, defaults) | `src/utils/SaveManager.js` | Tout passe par SaveManager. Jamais de localStorage direct. |
 | Game design (concept, flow) | `GAME_DESIGN.md` | Bible du design, ne pas contredire. |
+| Vision V2 (village, multi) | `docs/VISION_V2.md` | Direction creative, questions ouvertes, feuille de route. |
 | Etat du projet | `CAHIER_DES_CHARGES.md` | Ce qui est fait, ce qui reste. |
 | Plan d'action | `docs/PLAN_100.md` | Plan initial (5 axes, termine). |
 | Plan phase 2 | `docs/PLAN_PHASE2.md` | Polish post-playtest (3 axes, termine). |
