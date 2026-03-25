@@ -6,21 +6,11 @@
       "label_en": "Balls",
       "items": [
         { "id": "boule_acier", "name": "Boule Acier", "name_en": "Steel Ball", "price": 0, "type": "boule", "description": "Classique et fiable, la premiere boule", "description_en": "Classic and reliable, your first ball", "icon": "ball_acier" },
-        { "id": "boule_bronze", "name": "Boule Bronze", "name_en": "Bronze Ball", "price": 150, "type": "boule", "description": "Alliage chaud, grip naturel", "description_en": "Warm alloy, natural grip", "icon": "ball_bronze" },
-        { "id": "boule_chrome", "name": "Boule Chrome", "name_en": "Chrome Ball", "price": 150, "type": "boule", "description": "Miroir poli, glisse parfaite", "description_en": "Mirror polish, perfect glide", "icon": "ball_chrome" },
-        { "id": "boule_cuivre", "name": "Boule Cuivre", "name_en": "Copper Ball", "price": 200, "type": "boule", "description": "Patine noble, toucher unique", "description_en": "Noble patina, unique feel", "icon": "ball_cuivre" },
-        { "id": "boule_rouge", "name": "Boule Rouge", "name_en": "Red Ball", "price": 200, "type": "boule", "description": "Sportive et rapide", "description_en": "Sporty and fast", "icon": "ball_rouge" },
-        { "id": "boule_rouille", "name": "Boule Rouille", "name_en": "Rust Ball", "price": 200, "type": "boule", "description": "Rustique et accrochante", "description_en": "Rustic and grippy", "icon": "ball_rouille" },
-        { "id": "boule_bleue", "name": "Boule Bleue", "name_en": "Blue Ball", "price": 250, "type": "boule", "description": "Azur mediterraneen", "description_en": "Mediterranean azure", "icon": "ball_bleue" },
-        { "id": "boule_noire", "name": "Boule Noire", "name_en": "Black Ball", "price": 250, "type": "boule", "description": "Acier carbure minimaliste", "description_en": "Minimalist carbide steel", "icon": "ball_noire" },
-        { "id": "boule_sable", "name": "Boule Sable", "name_en": "Sand Ball", "price": 250, "type": "boule", "description": "Teinte dune, esprit provencal", "description_en": "Dune tint, Provençal spirit", "icon": "ball_sable" },
-        { "id": "boule_lavande", "name": "Boule Lavande", "name_en": "Lavender Ball", "price": 300, "type": "boule", "description": "Parfum de Provence", "description_en": "Fragrance of Provence", "icon": "ball_lavande" },
-        { "id": "boule_corail", "name": "Boule Corail", "name_en": "Coral Ball", "price": 300, "type": "boule", "description": "Rose des calanques", "description_en": "Pink of the calanques", "icon": "ball_corail" },
-        { "id": "boule_ivoire", "name": "Boule Ivoire", "name_en": "Ivory Ball", "price": 350, "type": "boule", "description": "Elegance pure, finition nacree", "description_en": "Pure elegance, pearlescent finish", "icon": "ball_ivoire" },
-        { "id": "boule_titane", "name": "Boule Titane", "name_en": "Titanium Ball", "price": 400, "type": "boule", "description": "Ultra-legere et resistante", "description_en": "Ultra-light and resistant", "icon": "ball_titane" },
-        { "id": "boule_emeraude", "name": "Boule Emeraude", "name_en": "Emerald Ball", "price": 400, "type": "boule", "description": "Vert profond, pierre precieuse", "description_en": "Deep green, precious stone", "icon": "ball_emeraude" },
-        { "id": "boule_doree", "name": "Boule Doree", "name_en": "Golden Ball", "price": 500, "type": "boule", "description": "Or pur, le prestige absolu", "description_en": "Pure gold, absolute prestige", "icon": "ball_doree" },
-        { "id": "boule_obsidienne", "name": "Boule Obsidienne", "name_en": "Obsidian Ball", "price": 500, "type": "boule", "description": "Verre volcanique, sombre et fatale", "description_en": "Volcanic glass, dark and deadly", "icon": "ball_obsidienne" }
+        { "id": "boule_bronze", "name": "Boule Bronze", "name_en": "Bronze Ball", "price": 80, "type": "boule", "description": "Lourde et devastatrice, ideale pour le carreau", "description_en": "Heavy and devastating, ideal for carreaux", "icon": "ball_bronze" },
+        { "id": "boule_rouge", "name": "Boule Rouge", "name_en": "Red Ball", "price": 120, "type": "boule", "description": "Stries speciales, meilleur grip au sol", "description_en": "Special grooves, better ground grip", "icon": "ball_rouge" },
+        { "id": "boule_bleue", "name": "Boule Bleue", "name_en": "Blue Ball", "price": 200, "type": "boule", "description": "Ultra-legere, glisse comme une fleche", "description_en": "Ultra-light, glides like an arrow", "icon": "ball_bleue", "minWins": 3 },
+        { "id": "boule_rouille", "name": "Boule Rouille", "name_en": "Rust Ball", "price": 250, "type": "boule", "description": "Grip exceptionnel, brute force maximale", "description_en": "Exceptional grip, maximum brute force", "icon": "ball_rouille", "minWins": 5 },
+        { "id": "boule_doree", "name": "Boule Doree", "name_en": "Golden Ball", "price": 500, "type": "boule", "description": "Or poli grave, le prestige absolu", "description_en": "Engraved polished gold, absolute prestige", "icon": "ball_doree", "minWins": 10 }
       ]
     },
     {
@@ -29,10 +19,7 @@
       "label_en": "Jacks",
       "items": [
         { "id": "cochonnet_bleu", "name": "Cochonnet Bleu", "name_en": "Blue Jack", "price": 50, "type": "cochonnet", "description": "Bleu nuit classique", "description_en": "Classic midnight blue", "icon": "ball_cochonnet_bleu" },
-        { "id": "cochonnet_vert", "name": "Cochonnet Vert", "name_en": "Green Jack", "price": 50, "type": "cochonnet", "description": "Vert olive provencal", "description_en": "Provençal olive green", "icon": "ball_cochonnet_vert" },
-        { "id": "cochonnet_rouge", "name": "Cochonnet Rouge", "name_en": "Red Jack", "price": 100, "type": "cochonnet", "description": "Rouge passion", "description_en": "Passion red", "icon": "ball_cochonnet_rouge" },
-        { "id": "cochonnet_jungle", "name": "Cochonnet Jungle", "name_en": "Jungle Jack", "price": 250, "type": "cochonnet", "description": "Camouflage tropical", "description_en": "Tropical camouflage", "icon": "ball_cochonnet_jungle" },
-        { "id": "cochonnet_multicolor", "name": "Cochonnet Multicolor", "name_en": "Rainbow Jack", "price": 400, "type": "cochonnet", "description": "Arc-en-ciel psychedelique", "description_en": "Psychedelic rainbow", "icon": "ball_cochonnet_multicolor" }
+        { "id": "cochonnet_rouge", "name": "Cochonnet Rouge", "name_en": "Red Jack", "price": 150, "type": "cochonnet", "description": "Rouge passion, impossible a perdre de vue", "description_en": "Passion red, impossible to lose sight of", "icon": "ball_cochonnet_rouge", "minWins": 5 }
       ]
     },
     {
@@ -40,9 +27,10 @@
       "label": "Capacites",
       "label_en": "Abilities",
       "items": [
-        { "id": "focus_extra", "name": "Focus +1", "name_en": "Focus +1", "price": 300, "type": "ability", "description": "6 charges Focus au lieu de 5", "description_en": "6 Focus charges instead of 5", "icon": null },
-        { "id": "charge_extra", "name": "Charge +1", "name_en": "Charge +1", "price": 500, "type": "ability", "description": "+1 charge capacite unique", "description_en": "+1 unique ability charge", "icon": null }
+        { "id": "focus_extra", "name": "Focus +1", "name_en": "Focus +1", "price": 200, "type": "ability", "description": "6 charges Focus au lieu de 5", "description_en": "6 Focus charges instead of 5", "icon": "icon_focus_extra", "minWins": 5 },
+        { "id": "charge_extra", "name": "Charge +1", "name_en": "Charge +1", "price": 350, "type": "ability", "description": "+1 charge capacite unique", "description_en": "+1 unique ability charge", "icon": "icon_charge_extra", "minWins": 10 }
       ]
     }
-  ]
+  ],
+  "note": "Les valeurs physiques sont dans src/utils/Constants.js (source unique de verite)"
 }

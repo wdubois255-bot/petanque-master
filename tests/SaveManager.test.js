@@ -31,7 +31,7 @@ describe('SaveManager', () => {
         it('returns default data when no save exists', () => {
             const save = loadSave();
             expect(save.version).toBe(2);
-            expect(save.galets).toBe(100);
+            expect(save.galets).toBe(50);
             expect(save.rookie.stats.precision).toBe(4);
             expect(save.unlockedCharacters).toContain('rookie');
         });
@@ -40,7 +40,7 @@ describe('SaveManager', () => {
             localStorageMock.getItem.mockReturnValueOnce('not valid json {{{');
             const save = loadSave();
             expect(save.version).toBe(2);
-            expect(save.galets).toBe(100);
+            expect(save.galets).toBe(50);
         });
 
         it('migrates ecus to galets', () => {

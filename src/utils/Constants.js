@@ -422,12 +422,12 @@ export function getCharThrowKey(charId) {
 }
 
 // Galets (monnaie in-game)
-export const GALET_WIN_ARCADE = 100;
-export const GALET_WIN_QUICKPLAY = 40;
+export const GALET_WIN_ARCADE = 70;
+export const GALET_WIN_QUICKPLAY = 30;
 export const GALET_CARREAU_BONUS = 15;
-export const GALET_ARCADE_COMPLETE = 150;
-export const GALET_ARCADE_PERFECT = 300;
-export const GALET_STARTING = 100;
+export const GALET_ARCADE_COMPLETE = 100;
+export const GALET_ARCADE_PERFECT = 200;
+export const GALET_STARTING = 50;
 export const GALET_LOSS = 15;
 export const ROOKIE_XP_LOSS = 1;
 

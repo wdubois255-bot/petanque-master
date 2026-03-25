@@ -8,11 +8,11 @@ function defaultSaveData() {
             totalPoints: 14,
             abilitiesUnlocked: []
         },
-        galets: 100,
+        galets: 50,
         purchases: [],
         unlockedCharacters: ["rookie"],
         unlockedTerrains: ["village", "parc", "colline"],
-        unlockedBoules: ["acier", "chrome"],
+        unlockedBoules: ["acier"],
         unlockedCochonnets: ["classique"],
         badges: [],
         titles: [],

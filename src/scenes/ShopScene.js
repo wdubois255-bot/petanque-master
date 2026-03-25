@@ -184,6 +184,8 @@ export default class ShopScene extends Phaser.Scene {
         const save = this._save;
         const owned = save.purchases.includes(item.id);
         const canAfford = save.galets >= item.price;
+        const totalWins = save.stats?.totalWins || 0;
+        const locked = item.minWins && totalWins < item.minWins;
         const cx = PREVIEW_W / 2;
 
         // Item sprite (large)
@@ -237,6 +239,29 @@ export default class ShopScene extends Phaser.Scene {
                 wordWrap: { width: PREVIEW_W - 30 }, align: 'center'
             }).setOrigin(0.5, 0).setDepth(5)
         );
+
+        // Lock gate indicator
+        if (locked && !owned) {
+            const lockY = 200;
+            const lockBg = this.add.graphics().setDepth(5);
+            lockBg.fillStyle(0x5A1A1A, 0.6);
+            lockBg.fillRoundedRect(cx - 80, lockY - 8, 160, 20, 4);
+            this._previewElements.push(lockBg);
+
+            this._previewElements.push(
+                this.add.text(cx, lockY + 2, `\u{1F512} ${item.minWins} victoires requises`, {
+                    fontFamily: 'monospace', fontSize: '8px',
+                    color: '#C44B3F', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(6)
+            );
+
+            this._previewElements.push(
+                this.add.text(cx, lockY + 18, `(${totalWins}/${item.minWins})`, {
+                    fontFamily: 'monospace', fontSize: '7px',
+                    color: CSS.GRIS, shadow: SHADOW
+                }).setOrigin(0.5).setDepth(6)
+            );
+        }
 
         // Boule stats from boules.json
         if (item.type === 'boule') {
@@ -353,6 +378,28 @@ export default class ShopScene extends Phaser.Scene {
                     );
                 }
             }
+        } else if (locked) {
+            // Locked by progression
+            this._previewElements.push(
+                this.add.text(cx, actionY - 5, `${item.price} Galets`, {
+                    fontFamily: FONT_PIXEL, fontSize: '11px',
+                    color: CSS.GRIS, shadow: SHADOW
+                }).setOrigin(0.5).setDepth(5)
+            );
+
+            const lockBtnBg = this.add.graphics().setDepth(5);
+            lockBtnBg.fillStyle(0x3A2E28, 0.6);
+            lockBtnBg.fillRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
+            lockBtnBg.lineStyle(1, 0x5A4A3A, 0.4);
+            lockBtnBg.strokeRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
+            this._previewElements.push(lockBtnBg);
+
+            this._previewElements.push(
+                this.add.text(cx, actionY + 26, 'VERROUILLE', {
+                    fontFamily: FONT_PIXEL, fontSize: '9px',
+                    color: '#5A4A3A', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(6)
+            );
         } else {
             // Price
             const priceColor = canAfford ? CSS.OR : '#C44B3F';
@@ -440,6 +487,8 @@ export default class ShopScene extends Phaser.Scene {
 
     _createCard(item, index, cx, cy, save) {
         const owned = save.purchases.includes(item.id);
+        const totalWins = save.stats?.totalWins || 0;
+        const locked = item.minWins && totalWins < item.minWins && !owned;
         const isSelected = index === this.selectedIndex;
         const elements = [];
 
@@ -450,9 +499,11 @@ export default class ShopScene extends Phaser.Scene {
 
         // Background color based on state
         if (isSelected) {
-            g.fillStyle(0x4A3A28, 0.95);
+            g.fillStyle(locked ? 0x3A2E28 : 0x4A3A28, 0.95);
         } else if (owned) {
             g.fillStyle(0x2A3A22, 0.8);
+        } else if (locked) {
+            g.fillStyle(0x1A1510, 0.6);
         } else {
             g.fillStyle(0x2A2218, 0.8);
         }
@@ -479,6 +530,7 @@ export default class ShopScene extends Phaser.Scene {
                 ? this.add.sprite(iconX, iconY, item.icon, 0).setScale(0.5).setDepth(6)
                 : this.add.image(iconX, iconY, item.icon).setScale(0.75).setDepth(6);
             icon.setOrigin(0.5);
+            if (locked) icon.setAlpha(0.35);
             elements.push(icon);
         } else {
             const ph = this.add.graphics().setDepth(6);
@@ -511,6 +563,13 @@ export default class ShopScene extends Phaser.Scene {
                 this.add.text(x + 56, cy + 14, '\u2713 Possede', {
                     fontFamily: 'monospace', fontSize: '8px',
                     color: '#44CC44', shadow: SHADOW
+                }).setDepth(6)
+            );
+        } else if (locked) {
+            elements.push(
+                this.add.text(x + 56, cy + 14, `\u{1F512} ${item.minWins} victoires`, {
+                    fontFamily: 'monospace', fontSize: '8px',
+                    color: '#5A4A3A', shadow: SHADOW
                 }).setDepth(6)
             );
         } else {
@@ -760,8 +819,10 @@ export default class ShopScene extends Phaser.Scene {
 
         const save = this._save;
         const owned = save.purchases.includes(item.id);
+        const totalWins = save.stats?.totalWins || 0;
+        const locked = item.minWins && totalWins < item.minWins && !owned;
 
-        if (!owned && save.galets >= item.price) {
+        if (!owned && !locked && save.galets >= item.price) {
             this._purchaseItem(item);
         } else if (owned && (item.type === 'boule' || item.type === 'cochonnet')) {
             sfxUIClick();
