@@ -31,7 +31,7 @@
     "Trois victoires. Pas mal pour un debutant.",
     "",
     "Mais les deux prochains ne sont pas du meme calibre.",
-    "Suchaud, 14 fois champion. Il ne rate jamais.",
+    "Fernand, 14 fois champion. Il ne rate jamais.",
     "Et Ley... il vous attend sur la plage.",
     "",
     "Plus le droit a l'erreur."
@@ -40,7 +40,7 @@
     "Three victories. Not bad for a beginner.",
     "",
     "But the next two are in a different league.",
-    "Suchaud, 14-time champion. He never misses.",
+    "Fernand, 14-time champion. He never misses.",
     "And Ley... he's waiting for you on the beach.",
     "",
     "No more room for mistakes."
@@ -164,18 +164,18 @@
       "difficulty": "hard",
       "difficulty_label": "Difficile",
       "difficulty_label_en": "Hard",
-      "intro_text": "Fazzino, joueur du siecle. Sur la colline, chaque boule est un calcul.",
-      "intro_text_en": "Fazzino, player of the century. On the hill, every throw is a calculation.",
+      "intro_text": "Pasquier, joueur du siecle. Sur la colline, chaque boule est un calcul.",
+      "intro_text_en": "Pasquier, player of the century. On the hill, every throw is a calculation.",
       "preMatchDialogue": [
         { "speaker": "narrator", "text": "La Colline. Le vent souffle dans les oliviers." },
         { "speaker": "fazzino", "text": "J'ai analysé ton style. Probabilité de ta victoire : 23,7%." },
-        { "speaker": "rookie", "text": "Les chiffres ne disent pas tout, Fazzino." },
+        { "speaker": "rookie", "text": "Les chiffres ne disent pas tout, Pasquier." },
         { "speaker": "fazzino", "text": "On verra bien." }
       ],
       "preMatchDialogue_en": [
         { "speaker": "narrator", "text": "The Hill. Wind rustles through the olive trees." },
         { "speaker": "fazzino", "text": "I've analyzed your style. Probability of your victory: 23.7%." },
-        { "speaker": "rookie", "text": "Numbers don't tell the whole story, Fazzino." },
+        { "speaker": "rookie", "text": "Numbers don't tell the whole story, Pasquier." },
         { "speaker": "fazzino", "text": "We'll see." }
       ],
       "postMatchWin": [
@@ -199,8 +199,8 @@
       "difficulty": "hard",
       "difficulty_label": "Tres difficile",
       "difficulty_label_en": "Very Hard",
-      "intro_text": "Suchaud, 14 fois champion. Sur les dalles, ses tirs sont chirurgicaux.",
-      "intro_text_en": "Suchaud, 14-time champion. On the concrete, his shots are surgical.",
+      "intro_text": "Fernand, 14 fois champion. Sur les dalles, ses tirs sont chirurgicaux.",
+      "intro_text_en": "Fernand, 14-time champion. On the concrete, his shots are surgical.",
       "preMatchDialogue": [
         { "speaker": "narrator", "text": "Les Docks. Béton, sel et silence." },
         { "speaker": "suchaud", "text": "..." },

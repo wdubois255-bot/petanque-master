@@ -7,20 +7,8 @@ import { fadeToScene } from '../utils/SceneTransition.js';
 
 const SHADOW = SHADOW_TEXT;
 
-const CHAR_VALUES = [
-    { display: 'Le Rookie', key: 'rookie_animated', sprite: 'rookie_animated', charId: 'rookie' },
-    { display: 'La Choupe', key: 'la_choupe_animated', sprite: 'la_choupe_animated', charId: 'la_choupe' },
-    { display: 'Ley', key: 'ley_animated', sprite: 'ley_animated', charId: 'ley' },
-    { display: 'Foyot', key: 'foyot_animated', sprite: 'foyot_animated', charId: 'foyot' },
-    { display: 'Suchaud', key: 'suchaud_animated', sprite: 'suchaud_animated', charId: 'suchaud' },
-    { display: 'Fazzino', key: 'fazzino_animated', sprite: 'fazzino_animated', charId: 'fazzino' },
-    { display: 'Rocher', key: 'rocher_animated', sprite: 'rocher_animated', charId: 'rocher' },
-    { display: 'Robineau', key: 'robineau_animated', sprite: 'robineau_animated', charId: 'robineau' },
-    { display: 'Mamie Josette', key: 'mamie_josette_animated', sprite: 'mamie_josette_animated', charId: 'mamie_josette' },
-    { display: 'Sofia', key: 'sofia_animated', sprite: 'sofia_animated', charId: 'sofia' },
-    { display: 'Papi Rene', key: 'papi_rene_animated', sprite: 'papi_rene_animated', charId: 'papi_rene' },
-    { display: 'Rizzi', key: 'rizzi_animated', sprite: 'rizzi_animated', charId: 'rizzi' }
-];
+// Built dynamically from characters.json in create() — no hardcoded roster
+let _charValues = [];
 
 const TAB_KEYS = ['personnages', 'equipement', 'terrain', 'reglages'];
 const TAB_LABELS = ['PERSONNAGES', 'EQUIPEMENT', 'TERRAIN', 'REGLAGES'];
@@ -104,6 +92,15 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._charsData = this.cache.json.get('characters') || {};
         const boulesData = this.cache.json.get('boules');
         const terrainsData = this.cache.json.get('terrains');
+
+        // Build character roster dynamically from characters.json (no hardcoded list)
+        const roster = (this._charsData.roster || []).filter(c => !c.hidden);
+        _charValues = roster.map(c => ({
+            display: c.name,
+            key: c.sprite || (c.id + '_animated'),
+            sprite: c.sprite || (c.id + '_animated'),
+            charId: c.id
+        }));
         this._allBoules = boulesData?.sets || [];
         this._allCochonnets = boulesData?.cochonnets || [];
         this._allTerrains = terrainsData?.stages || [];
@@ -159,8 +156,8 @@ export default class QuickPlayScene extends Phaser.Scene {
         );
 
         // VS summary right-aligned: "J1 name  VS  J2 name"
-        const p1Char = CHAR_VALUES[this._p1Index];
-        const p2Char = CHAR_VALUES[this._p2Index];
+        const p1Char = _charValues[this._p1Index];
+        const p2Char = _charValues[this._p2Index];
 
         this._p1NameText = this.add.text(GAME_WIDTH - 220, 14, p1Char.display, {
             fontFamily: 'monospace', fontSize: '10px',
@@ -187,7 +184,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     _updateBannerSprite(side) {
         const isP1 = side === 'p1';
         const idx = isP1 ? this._p1Index : this._p2Index;
-        const char = CHAR_VALUES[idx];
+        const char = _charValues[idx];
 
         // Just update name text in banner
         if (isP1 && this._p1NameText) this._p1NameText.setText(char.display);
@@ -294,7 +291,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const leftSpace = gridX - 24;
         const sideX = 12 + leftSpace / 2;
         const sideY = topY + 14 + cellH; // middle of the 2 rows
-        const p1Char = CHAR_VALUES[this._p1Index];
+        const p1Char = _charValues[this._p1Index];
         const p1GreetKey = `${p1Char.charId}_greeting`;
         const p1AnimKey = `${p1Char.charId}_greet`;
         if (this.textures.exists(p1GreetKey) && this.anims.exists(p1AnimKey)) {
@@ -315,7 +312,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         // J2 preview sprite (right of grid) — animated greeting
         const rightSpace = GAME_WIDTH - 24 - gridX - gridW;
         const rightX = gridX + gridW + 12 + rightSpace / 2;
-        const p2Char = CHAR_VALUES[this._p2Index];
+        const p2Char = _charValues[this._p2Index];
         const p2GreetKey = `${p2Char.charId}_greeting`;
         const p2AnimKey = `${p2Char.charId}_greet`;
         if (this.textures.exists(p2GreetKey) && this.anims.exists(p2AnimKey)) {
@@ -333,12 +330,12 @@ export default class QuickPlayScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
-        for (let i = 0; i < CHAR_VALUES.length; i++) {
+        for (let i = 0; i < _charValues.length; i++) {
             const col = i % gridCols;
             const row = Math.floor(i / gridCols);
             const cx = gridX + col * (cellW + cellGap) + cellW / 2;
             const cy = topY + 14 + row * (cellH + cellGap) + cellH / 2;
-            const char = CHAR_VALUES[i];
+            const char = _charValues[i];
             const isP1 = i === this._p1Index;
             const isP2 = i === this._p2Index;
 
@@ -459,7 +456,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
     _buildCharDetail(x, y, w, charIndex, label, color) {
         const roster = this._charsData?.roster || [];
-        const char = CHAR_VALUES[charIndex];
+        const char = _charValues[charIndex];
         const charData = roster.find(c => c.id === char.charId);
         if (!charData) return;
 
@@ -953,8 +950,8 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     _getSummaryText() {
-        const p1 = CHAR_VALUES[this._p1Index].display;
-        const p2 = CHAR_VALUES[this._p2Index].display;
+        const p1 = _charValues[this._p1Index].display;
+        const p2 = _charValues[this._p2Index].display;
         const terrain = this._allTerrains[this._terrainIndex]?.name || 'Village';
         const mode = MODES[this._modeIndex].key === 'local' ? 'Local' : DIFFICULTIES[this._difficultyIndex].display;
         const format = FORMATS[this._formatIndex].display;
@@ -1037,7 +1034,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         switch (TAB_KEYS[this._activeTab]) {
             case 'personnages':
                 // Left/Right = cycle J1
-                this._p1Index = (this._p1Index + dir + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._p1Index = (this._p1Index + dir + _charValues.length) % _charValues.length;
                 this._updateBannerSprite('p1');
                 this._buildTabContent();
                 this._updateSummary();
@@ -1064,7 +1061,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         sfxUIClick();
         switch (TAB_KEYS[this._activeTab]) {
             case 'personnages':
-                this._p2Index = (this._p2Index + dir + CHAR_VALUES.length) % CHAR_VALUES.length;
+                this._p2Index = (this._p2Index + dir + _charValues.length) % _charValues.length;
                 this._updateBannerSprite('p2');
                 this._buildTabContent();
                 this._updateSummary();
@@ -1100,19 +1097,19 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     get _p1CharId() {
-        return CHAR_VALUES[this._p1Index].charId;
+        return _charValues[this._p1Index].charId;
     }
 
     get _p2CharId() {
-        return CHAR_VALUES[this._p2Index].charId;
+        return _charValues[this._p2Index].charId;
     }
 
     get _p1Name() {
-        return CHAR_VALUES[this._p1Index].display;
+        return _charValues[this._p1Index].display;
     }
 
     get _p2Name() {
-        return CHAR_VALUES[this._p2Index].display;
+        return _charValues[this._p2Index].display;
     }
 
     get _terrainKey() {

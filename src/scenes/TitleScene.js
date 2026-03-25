@@ -638,7 +638,7 @@ export default class TitleScene extends Phaser.Scene {
                 });
             });
         } else if (this._selectedIndex === 1) {
-            this._transitionTo(() => this.scene.start('CharSelectScene', { mode: 'arcade' }));
+            this._transitionTo(() => this.scene.start('ArcadeScene'));
         } else if (this._selectedIndex === 2) {
             this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 3) {

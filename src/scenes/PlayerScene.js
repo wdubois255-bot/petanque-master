@@ -759,7 +759,7 @@ export default class PlayerScene extends Phaser.Scene {
             }).setOrigin(0.5).setDepth(6));
 
             // Opponent name
-            const charNames = { la_choupe: 'La Choupe', mamie_josette: 'Mamie J.', fazzino: 'Fazzino', suchaud: 'Suchaud', ley: 'Ley' };
+            const charNames = { la_choupe: 'La Choupe', mamie_josette: 'Mamie J.', fazzino: 'Pasquier', suchaud: 'Fernand', ley: 'Ley' };
             this._addContent(this.add.text(dx + 14, dy + 34, charNames[match.opponent] || match.opponent, {
                 fontFamily: 'monospace', fontSize: '7px',
                 color: done ? CSS.CREME : CSS.GRIS, shadow: SHADOW
@@ -786,9 +786,9 @@ export default class PlayerScene extends Phaser.Scene {
 
         const charNames = {
             rookie: 'Le Rookie', la_choupe: 'La Choupe', ley: 'Ley',
-            foyot: 'Foyot', suchaud: 'Suchaud', fazzino: 'Fazzino',
-            rocher: 'Rocher', robineau: 'Robineau', mamie_josette: 'Mamie Josette',
-            sofia: 'Sofia', papi_rene: 'Papi Rene', rizzi: 'Rizzi'
+            foyot: 'Balthazar', suchaud: 'Fernand', fazzino: 'Pasquier',
+            rocher: 'Gabin', robineau: 'Berenger', mamie_josette: 'Mamie Josette',
+            sofia: 'Sofia', papi_rene: 'Papi Rene', rizzi: 'Valentini'
         };
 
         const unlocked = save.unlockedCharacters || [];

@@ -55,7 +55,7 @@ export default class ArcadeScene extends Phaser.Scene {
                 rookie.isRookie = true;
                 this.playerCharacter = rookie;
             } else {
-                fadeToScene(this, 'CharSelectScene', { mode: 'arcade' });
+                fadeToScene(this, 'TitleScene');
                 return;
             }
         }

@@ -40,7 +40,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.personality = data.personality || null;
         this.playerCharacter = data.playerCharacter || null;
         this.opponentCharacter = data.opponentCharacter || null;
-        this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'ley';
+        this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'rookie';
         this.opponentId = this.opponentCharacter?.id || data.opponentId?.replace('char_', '')?.replace('quickplay_', '') || null;
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;

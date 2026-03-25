@@ -97,7 +97,7 @@ describe('AI_MOMENTUM_SENSITIVITY (Constants.js)', () => {
 
 describe('Pressure modifier (sang_froid edge cases)', () => {
     const SUCHAUD_DATA = {
-        id: 'suchaud', name: 'Suchaud', archetype: 'tireur',
+        id: 'suchaud', name: 'Fernand', archetype: 'tireur',
         stats: { precision: 9, puissance: 8, effet: 7, sang_froid: 9 },
         ai: { personality: 'tireur', angleDev: 2, powerDev: 0.03, shootProbability: 0.88, loftPref: 'tir', targetsCocho: false }
     };
