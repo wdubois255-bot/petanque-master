@@ -10,7 +10,10 @@
         { "id": "boule_rouge", "name": "Boule Rouge", "name_en": "Red Ball", "price": 120, "type": "boule", "description": "Stries speciales, meilleur grip au sol", "description_en": "Special grooves, better ground grip", "icon": "ball_rouge" },
         { "id": "boule_bleue", "name": "Boule Bleue", "name_en": "Blue Ball", "price": 200, "type": "boule", "description": "Ultra-legere, glisse comme une fleche", "description_en": "Ultra-light, glides like an arrow", "icon": "ball_bleue", "minWins": 3 },
         { "id": "boule_rouille", "name": "Boule Rouille", "name_en": "Rust Ball", "price": 250, "type": "boule", "description": "Grip exceptionnel, brute force maximale", "description_en": "Exceptional grip, maximum brute force", "icon": "ball_rouille", "minWins": 5 },
-        { "id": "boule_doree", "name": "Boule Doree", "name_en": "Golden Ball", "price": 500, "type": "boule", "description": "Or poli grave, le prestige absolu", "description_en": "Engraved polished gold, absolute prestige", "icon": "ball_doree", "minWins": 10 }
+        { "id": "boule_doree", "name": "Boule Doree", "name_en": "Golden Ball", "price": 500, "type": "boule", "description": "Or poli grave, le prestige absolu", "description_en": "Engraved polished gold, absolute prestige", "icon": "ball_doree", "minWins": 10 },
+        { "id": "boule_corail", "name": "Boule Corail", "name_en": "Coral Ball", "price": 100, "type": "boule", "description": "Rose corail des calanques. Vive et joueuse", "description_en": "Pink coral from the calanques. Lively and playful", "icon": "ball_corail" },
+        { "id": "boule_noire", "name": "Boule Noire", "name_en": "Black Ball", "price": 200, "type": "boule", "description": "Compacte et dense. Excellente en carreau", "description_en": "Compact and dense. Excellent for carreaux", "icon": "ball_noire", "minWins": 3 },
+        { "id": "boule_emeraude", "name": "Boule Emeraude", "name_en": "Emerald Ball", "price": 400, "type": "boule", "description": "Precision chirurgicale. La boule des experts", "description_en": "Surgical precision. The expert's ball", "icon": "ball_emeraude", "minWins": 7 }
       ]
     },
     {
@@ -19,7 +22,8 @@
       "label_en": "Jacks",
       "items": [
         { "id": "cochonnet_bleu", "name": "Cochonnet Bleu", "name_en": "Blue Jack", "price": 50, "type": "cochonnet", "description": "Bleu nuit classique", "description_en": "Classic midnight blue", "icon": "ball_cochonnet_bleu" },
-        { "id": "cochonnet_rouge", "name": "Cochonnet Rouge", "name_en": "Red Jack", "price": 150, "type": "cochonnet", "description": "Rouge passion, impossible a perdre de vue", "description_en": "Passion red, impossible to lose sight of", "icon": "ball_cochonnet_rouge", "minWins": 5 }
+        { "id": "cochonnet_rouge", "name": "Cochonnet Rouge", "name_en": "Red Jack", "price": 150, "type": "cochonnet", "description": "Rouge passion, impossible a perdre de vue", "description_en": "Passion red, impossible to lose sight of", "icon": "ball_cochonnet_rouge", "minWins": 5 },
+        { "id": "cochonnet_vert", "name": "Cochonnet Vert", "name_en": "Green Jack", "price": 75, "type": "cochonnet", "description": "Resine verte. Discret et elegant", "description_en": "Green resin. Discreet and elegant", "icon": "ball_cochonnet_vert" }
       ]
     },
     {
