@@ -82,6 +82,7 @@
   "result": {
     "victory": "VICTOIRE !",
     "defeat": "DEFAITE...",
+    "stats_title": "STATISTIQUES",
     "stats": {
       "menes": "Menes",
       "carreaux": "Carreaux",
@@ -190,6 +191,10 @@
     "plage": "🏖️ Le sable freine fort. Lancez plus puissamment !",
     "parc": "🌿 Zones mixtes : herbe (lent) et gravier (rapide). Visez stratégiquement."
   },
+  "overworld": {
+    "blocked_exit": "Vous ne pouvez pas encore aller par la.",
+    "gate_locked": "Il faut d'abord battre le Maitre d'Arene pour continuer !"
+  },
   "arcade": {
     "title": "MODE ARCADE",
     "subtitle": "Le Tournoi de La Ciotat",
@@ -229,6 +234,9 @@
     "defeat_earned": "Galets gagnes : {galets}",
     "defeat_retry": "REJOUER CE MATCH",
     "defeat_continue": "CONTINUER",
-    "defeat_consolation": "+{galets} Galets de consolation"
+    "defeat_consolation": "+{galets} Galets de consolation",
+    "replay": "REJOUER",
+    "bonus_perfect": "Bonus parfait",
+    "bonus_complete": "Bonus completion"
   }
 }

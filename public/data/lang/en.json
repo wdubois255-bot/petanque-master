@@ -82,6 +82,7 @@
   "result": {
     "victory": "VICTORY!",
     "defeat": "DEFEAT...",
+    "stats_title": "MATCH STATS",
     "stats": {
       "menes": "Ends",
       "carreaux": "Carreaux",
@@ -190,6 +191,10 @@
     "plage": "🏖️ Sand slows balls quickly. Throw with more power!",
     "parc": "🌿 Mixed zones: grass (slow) and gravel (fast). Aim strategically."
   },
+  "overworld": {
+    "blocked_exit": "You can't go that way yet.",
+    "gate_locked": "You need to beat the Arena Master first to continue!"
+  },
   "arcade": {
     "title": "ARCADE MODE",
     "subtitle": "The Tournament of La Ciotat",
@@ -229,6 +234,9 @@
     "defeat_earned": "Pebbles earned: {galets}",
     "defeat_retry": "RETRY THIS MATCH",
     "defeat_continue": "CONTINUE",
-    "defeat_consolation": "+{galets} consolation Pebbles"
+    "defeat_consolation": "+{galets} consolation Pebbles",
+    "replay": "REPLAY",
+    "bonus_perfect": "Perfect bonus",
+    "bonus_complete": "Completion bonus"
   }
 }

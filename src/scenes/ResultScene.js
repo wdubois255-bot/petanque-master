@@ -37,96 +37,122 @@ export default class ResultScene extends Phaser.Scene {
         this.cameras.main.resetFX();
         if (this.won) { sfxVictory(); } else { sfxDefeat(); }
 
-        // Background
+        const HEAVY_SHADOW = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true };
+
+        // ════════════════════════════════════════════════════════
+        //  BACKGROUND — warm gradient + subtle atmosphere
+        // ════════════════════════════════════════════════════════
         const bg = this.add.graphics();
         if (this.won) {
-            bg.fillGradientStyle(0x1A2A1A, 0x1A2A1A, 0x2A3A28, 0x2A3A28, 1);
+            // Dark olive → warm brown-gold (victory warmth)
+            bg.fillGradientStyle(0x1A2818, 0x1A2818, 0x2A2A1A, 0x2A2A1A, 1);
         } else {
-            bg.fillGradientStyle(0x2A1A1A, 0x2A1A1A, 0x3A2828, 0x3A2828, 1);
+            // Dark red-brown → muted brown (somber but warm)
+            bg.fillGradientStyle(0x2A1816, 0x2A1816, 0x2A2220, 0x2A2220, 1);
         }
         bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Result title
+        // Subtle radial vignette (darker edges)
+        const vignette = this.add.graphics().setDepth(0);
+        vignette.fillStyle(0x1A1510, 0.3);
+        vignette.fillRect(0, 0, 40, GAME_HEIGHT);
+        vignette.fillRect(GAME_WIDTH - 40, 0, 40, GAME_HEIGHT);
+        vignette.fillStyle(0x1A1510, 0.15);
+        vignette.fillRect(40, 0, 30, GAME_HEIGHT);
+        vignette.fillRect(GAME_WIDTH - 70, 0, 30, GAME_HEIGHT);
+
+        // Horizontal separator line (subtle gold)
+        const sepLine = this.add.graphics().setDepth(1);
+        sepLine.lineStyle(1, this.won ? 0xD4A574 : 0x6B4A3A, 0.3);
+        sepLine.beginPath(); sepLine.moveTo(60, 140); sepLine.lineTo(GAME_WIDTH - 60, 140); sepLine.strokePath();
+
+        // ════════════════════════════════════════════════════════
+        //  TOP ZONE — Title + Score + Stars (0-140px)
+        // ════════════════════════════════════════════════════════
         const titleColor = this.won ? '#FFD700' : '#C44B3F';
-        const titleText = this.won ? 'VICTOIRE !' : 'DEFAITE...';
+        const titleText = this.won
+            ? I18n.t('result.victory') || 'VICTOIRE !'
+            : I18n.t('result.defeat') || 'DEFAITE...';
 
-        // Trophy icon next to victory title
-        if (this.won && this.textures.exists('v2_trophy')) {
-            const trophy = this.add.sprite(GAME_WIDTH / 2 - 140, 40, 'v2_trophy', 0)
-                .setScale(1.0).setOrigin(0.5).setAlpha(0);
-            this.tweens.add({ targets: trophy, alpha: 1, scale: 1.1, duration: 400, ease: 'Back.easeOut', delay: 400 });
-            const trophy2 = this.add.sprite(GAME_WIDTH / 2 + 140, 40, 'v2_trophy', 0)
-                .setScale(1.0).setOrigin(0.5).setAlpha(0).setFlipX(true);
-            this.tweens.add({ targets: trophy2, alpha: 1, scale: 1.1, duration: 400, ease: 'Back.easeOut', delay: 400 });
-        }
-
-        const title = this.add.text(GAME_WIDTH / 2, 40, titleText, {
-            fontFamily: 'monospace', fontSize: '42px', color: titleColor,
+        const title = this.add.text(GAME_WIDTH / 2, 36, titleText, {
+            fontFamily: 'monospace', fontSize: '36px', color: titleColor,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setScale(0);
+        }).setOrigin(0.5).setScale(0).setDepth(10);
 
         this.tweens.add({
             targets: title, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 200,
             onComplete: () => {
                 if (this.won) {
-                    this.cameras.main.flash(100, 255, 215, 0);
+                    this.cameras.main.flash(80, 255, 215, 0);
                     this._spawnConfetti();
                 }
             }
         });
 
-        // Score (starts hidden for sequence)
-        const scoreText = this.add.text(GAME_WIDTH / 2, 90, `${this.scores.player} - ${this.scores.opponent}`, {
-            fontFamily: 'monospace', fontSize: '36px', color: '#F5E6D0',
-            shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setAlpha(0);
-        // Sequence step 1: score appears with title
+        // Score — big, clean
+        const scoreColor = this.won ? '#F5E6D0' : '#D4A574';
+        const scoreText = this.add.text(GAME_WIDTH / 2, 82,
+            `${this.scores.player}  —  ${this.scores.opponent}`, {
+                fontFamily: 'monospace', fontSize: '28px', color: scoreColor,
+                shadow: HEAVY_SHADOW
+            }).setOrigin(0.5).setAlpha(0).setDepth(10);
         this.tweens.add({ targets: scoreText, alpha: 1, duration: 300, delay: 400 });
 
-        // === STAR RATING (only on victory) ===
+        // Stars (victory only)
         if (this.won) {
             const stars = this._calculateStars();
-            this._drawStars(GAME_WIDTH / 2, 120, stars);
+            this._drawStars(GAME_WIDTH / 2, 116, stars);
             this._saveStarRating(stars);
         }
 
-        // === CONTEXTUAL DEFEAT ADVICE (sequence step 2: 800ms) ===
+        // Defeat advice (instead of stars)
         if (!this.won) {
             const advice = this._getDefeatAdvice();
             if (advice) {
-                const adviceText = this.add.text(GAME_WIDTH / 2, 120, advice, {
+                const adviceText = this.add.text(GAME_WIDTH / 2, 116, advice, {
                     fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
-                    shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true },
-                    wordWrap: { width: 400 }, align: 'center'
-                }).setOrigin(0.5).setAlpha(0);
-                this.tweens.add({ targets: adviceText, alpha: 0.9, duration: 400, delay: 800 });
+                    shadow: SHADOW, wordWrap: { width: 500 }, align: 'center',
+                    fontStyle: 'italic'
+                }).setOrigin(0.5).setAlpha(0).setDepth(10);
+                this.tweens.add({ targets: adviceText, alpha: 0.8, duration: 400, delay: 800 });
             }
         }
 
-        // Character sprite + name
+        // ════════════════════════════════════════════════════════
+        //  MIDDLE ZONE — Character (left) + Stats (right) (140-380px)
+        // ════════════════════════════════════════════════════════
         const winner = this.won ? this.playerCharacter : this.opponentCharacter;
+        const charX = 160; // Left zone center
+        const charY = 265;
+
         if (winner) {
-            // Portrait frame behind character
-            if (this.textures.exists('v2_frame_portrait')) {
-                this.add.sprite(GAME_WIDTH / 2 - 200, 200, 'v2_frame_portrait', 0)
-                    .setScale(2.0).setOrigin(0.5).setAlpha(0.7);
-            }
+            // Ground shadow under character
+            const groundShadow = this.add.graphics().setDepth(3);
+            groundShadow.fillStyle(0x1A1510, 0.35);
+            groundShadow.fillEllipse(charX, charY + 60, 90, 14);
+
+            // Large character sprite (no frame — let it breathe)
             const winKey = this._getSpriteKey(winner);
             if (this.textures.exists(winKey)) {
                 const isStatic = CHAR_STATIC_SPRITES.includes(winner.id);
+                const spriteScale = isStatic ? 2.2 : 2.5;
                 const winSprite = isStatic
-                    ? this.add.image(GAME_WIDTH / 2 - 200, 200, winKey).setScale(CHAR_SCALE_RESULT_STATIC).setOrigin(0.5)
-                    : this.add.sprite(GAME_WIDTH / 2 - 200, 200, winKey, 0).setScale(CHAR_SCALE_RESULT).setOrigin(0.5);
+                    ? this.add.image(charX, charY, winKey).setScale(spriteScale).setOrigin(0.5).setDepth(4)
+                    : this.add.sprite(charX, charY, winKey, 0).setScale(spriteScale).setOrigin(0.5).setDepth(4);
+                // Gentle float
                 this.tweens.add({
-                    targets: winSprite, y: 193, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                    targets: winSprite, y: charY - 6, duration: 1200,
+                    yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
             }
-            this.add.text(GAME_WIDTH / 2 - 200, 240, I18n.field(winner, 'name'), {
-                fontFamily: 'monospace', fontSize: '16px',
-                color: this.won ? '#87CEEB' : '#C44B3F', shadow: SHADOW
-            }).setOrigin(0.5);
 
-            // Opponent bark
+            // Character name
+            const nameColor = this.won ? '#87CEEB' : '#C44B3F';
+            this.add.text(charX, charY + 72, I18n.field(winner, 'name'), {
+                fontFamily: 'monospace', fontSize: '14px', color: nameColor, shadow: HEAVY_SHADOW
+            }).setOrigin(0.5).setDepth(5);
+
+            // Opponent bark (speech bubble feel)
             const opponent = this.opponentCharacter;
             if (opponent?.barks) {
                 const barkKey = this.won ? 'post_match_lose' : 'post_match_win';
@@ -134,32 +160,46 @@ export default class ResultScene extends Phaser.Scene {
                 const barks = localizedBarks?.[barkKey] || opponent.barks[barkKey];
                 if (barks?.length) {
                     const bark = barks[Math.floor(Math.random() * barks.length)];
-                    this.add.text(GAME_WIDTH / 2 - 200, 258, `"${bark}"`, {
-                        fontFamily: 'monospace', fontSize: '9px', color: '#D4A574',
+                    const barkBg = this.add.graphics().setDepth(5);
+                    barkBg.fillStyle(0x1A1510, 0.5);
+                    barkBg.fillRoundedRect(charX - 110, charY + 88, 220, 30, 6);
+                    this.add.text(charX, charY + 103, `"${bark}"`, {
+                        fontFamily: 'monospace', fontSize: '8px', color: '#D4A574',
                         shadow: SHADOW, wordWrap: { width: 200 }, align: 'center',
                         fontStyle: 'italic'
-                    }).setOrigin(0.5);
+                    }).setOrigin(0.5).setDepth(6);
                 }
             }
         }
 
-        // === ENRICHED STATS PANEL (sequence step 3: 1200ms) ===
-        const panelX = GAME_WIDTH / 2 + 40;
-        const panelY = 148;
-        const panelW = 340;
-        const panelH = 130;
-        const statsContainer = this.add.container(0, 0).setAlpha(0);
+        // === STATS PANEL (right side) ===
+        const panelX = 530;
+        const panelY = 155;
+        const panelW = 280;
+        const panelH = 200;
+        const statsContainer = this.add.container(0, 0).setAlpha(0).setDepth(5);
 
-        if (this.textures.exists('v2_panel_elegant')) {
-            statsContainer.add(this.add.nineslice(panelX, panelY + panelH / 2, 'v2_panel_elegant', 0, panelW, panelH, 16, 16, 16, 16)
-                .setOrigin(0.5).setAlpha(0.9));
-        } else {
-            const panelGfx = UIFactory.createPanel(this, panelX - panelW / 2, panelY, panelW, panelH, {
-                fillAlpha: 0.85, strokeAlpha: 0.3, strokeWidth: 1
-            });
-            if (panelGfx) statsContainer.add(panelGfx);
-        }
+        // Panel background (clean, dark with subtle border)
+        const panelGfx = this.add.graphics();
+        panelGfx.fillStyle(0x1A1510, 0.75);
+        panelGfx.fillRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
+        panelGfx.lineStyle(1, this.won ? 0xD4A574 : 0x6B4A3A, 0.4);
+        panelGfx.strokeRoundedRect(panelX - panelW / 2, panelY, panelW, panelH, 8);
+        // Inner highlight
+        panelGfx.lineStyle(1, 0xF5E6D0, 0.06);
+        panelGfx.beginPath();
+        panelGfx.moveTo(panelX - panelW / 2 + 12, panelY + 1);
+        panelGfx.lineTo(panelX + panelW / 2 - 12, panelY + 1);
+        panelGfx.strokePath();
+        statsContainer.add(panelGfx);
 
+        // Panel title
+        statsContainer.add(this.add.text(panelX, panelY + 16,
+            I18n.t('result.stats_title') || 'STATISTIQUES', {
+                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
+            }).setOrigin(0.5));
+
+        // Stats grid (2 columns x 3 rows)
         const ms = this.matchStats;
         const bestDist = ms.bestBallDist && ms.bestBallDist < Infinity
             ? `${(ms.bestBallDist * (PIXELS_TO_METERS || 0.036) * 100).toFixed(0)}cm`
@@ -168,36 +208,38 @@ export default class ResultScene extends Phaser.Scene {
         const tirRatio = totalThrows > 0 ? `${Math.round((ms.shots || 0) / totalThrows * 100)}%` : '-';
 
         const stats = [
-            { label: I18n.t('result.stats.menes'), value: ms.menes || '?', col: 0 },
-            { label: I18n.t('result.stats.best_score'), value: ms.bestMene || '0', col: 1 },
-            { label: I18n.t('result.stats.carreaux'), value: ms.carreaux || 0, col: 2 },
-            { label: I18n.t('result.stats.biberons'), value: ms.biberons || 0, col: 0 },
-            { label: I18n.t('result.stats.best_ball'), value: bestDist, col: 1 },
-            { label: I18n.t('result.stats.hit_rate'), value: tirRatio, col: 2 },
+            { label: I18n.t('result.stats.menes'), value: ms.menes || '?', color: '#F5E6D0' },
+            { label: I18n.t('result.stats.best_score'), value: ms.bestMene || '0', color: '#F5E6D0' },
+            { label: I18n.t('result.stats.carreaux'), value: ms.carreaux || 0, color: (ms.carreaux || 0) > 0 ? '#FFD700' : '#F5E6D0' },
+            { label: I18n.t('result.stats.biberons'), value: ms.biberons || 0, color: (ms.biberons || 0) > 0 ? '#FFD700' : '#F5E6D0' },
+            { label: I18n.t('result.stats.best_ball'), value: bestDist, color: '#F5E6D0' },
+            { label: I18n.t('result.stats.hit_rate'), value: tirRatio, color: '#F5E6D0' },
         ];
 
         for (let i = 0; i < stats.length; i++) {
-            const row = i < 3 ? 0 : 1;
-            const col = stats[i].col;
-            const sx = panelX - panelW / 2 + 20 + col * 110;
-            const sy = panelY + 15 + row * 55;
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const sx = panelX - panelW / 2 + 24 + col * (panelW / 2);
+            const sy = panelY + 36 + row * 50;
 
             statsContainer.add(this.add.text(sx, sy, stats[i].label, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574', shadow: SHADOW
+                fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E', shadow: SHADOW
             }));
-            statsContainer.add(this.add.text(sx, sy + 16, `${stats[i].value}`, {
-                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: SHADOW
+            statsContainer.add(this.add.text(sx, sy + 14, `${stats[i].value}`, {
+                fontFamily: 'monospace', fontSize: '20px', color: stats[i].color, shadow: HEAVY_SHADOW
             }));
         }
 
-        // Fanny badge
+        // Fanny badge (inside panel, bottom)
         if (ms.fanny) {
-            statsContainer.add(this.add.text(panelX, panelY + panelH + 8, I18n.t('result.fanny'), {
-                fontFamily: 'monospace', fontSize: '14px', color: '#C44B3F', shadow: SHADOW
-            }).setOrigin(0.5));
+            statsContainer.add(this.add.text(panelX, panelY + panelH - 16,
+                I18n.t('result.fanny'), {
+                    fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F',
+                    shadow: HEAVY_SHADOW
+                }).setOrigin(0.5));
         }
 
-        // Sequence: stats panel slides in at 1200ms
+        // Stats panel slides in
         this.tweens.add({
             targets: statsContainer, alpha: 1, duration: 400, delay: 1200,
             onStart: () => sfxScore()
@@ -214,130 +256,135 @@ export default class ResultScene extends Phaser.Scene {
             bestMeneScore: this.matchStats?.bestMene || 0
         });
 
-        // === GALETS EARNED (sequence step 4: 1800ms) ===
+        // ════════════════════════════════════════════════════════
+        //  REWARDS ZONE — Galets + XP (below stats panel)
+        // ════════════════════════════════════════════════════════
+        const rewardY = panelY + panelH + 18;
         const galetsToGive = this.won ? this.galetsEarned : GALET_LOSS;
         if (galetsToGive > 0) {
             addGalets(galetsToGive);
-            // Galet icon
             if (this.textures.exists('v2_icon_galet')) {
-                const galetIcon = this.add.sprite(GAME_WIDTH / 2 - 70, panelY + panelH + 28, 'v2_icon_galet', 0)
-                    .setScale(0.8).setOrigin(0.5).setAlpha(0);
+                const galetIcon = this.add.sprite(panelX - 50, rewardY, 'v2_icon_galet', 0)
+                    .setScale(0.8).setOrigin(0.5).setAlpha(0).setDepth(6);
                 this.tweens.add({ targets: galetIcon, alpha: 1, duration: 500, ease: 'Back.easeOut', delay: 1800 });
             }
-            const galetText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 28, `+${galetsToGive} Galets`, {
-                fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-            }).setOrigin(0.5).setAlpha(0).setScale(0.5);
-
+            const galetText = this.add.text(panelX, rewardY, `+${galetsToGive} Galets`, {
+                fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: HEAVY_SHADOW
+            }).setOrigin(0.5).setAlpha(0).setScale(0.5).setDepth(6);
             this.tweens.add({
                 targets: galetText, alpha: 1, scale: 1,
                 duration: 500, ease: 'Back.easeOut', delay: 1800
             });
         }
 
-        // Phase 5 D2 — Match challenge verification
+        // Match challenge
         if (this.matchChallenge && this.won) {
             const c = this.matchChallenge;
-            const ms = this.matchStats;
+            const msc = this.matchStats;
             let completed = false;
-            if (c.condition === 'carreaux >= 1' && (ms.carreaux || 0) >= 1) completed = true;
-            if (c.condition === 'shots === 0 && won' && (ms.shots || 0) === 0) completed = true;
+            if (c.condition === 'carreaux >= 1' && (msc.carreaux || 0) >= 1) completed = true;
+            if (c.condition === 'shots === 0 && won' && (msc.shots || 0) === 0) completed = true;
             if (c.condition === 'won && opponentScore <= 5' && this.scores.opponent <= 5) completed = true;
-            if (c.condition === 'won && maxDeficit >= 5' && (ms._maxDeficit || 0) >= 5) completed = true;
+            if (c.condition === 'won && maxDeficit >= 5' && (msc._maxDeficit || 0) >= 5) completed = true;
             if (c.condition === 'won && opponentScore === 0' && this.scores.opponent === 0) completed = true;
             if (completed) {
                 addGalets(c.reward);
-                const ctxt = this.add.text(GAME_WIDTH / 2, 395,
+                const ctxt = this.add.text(panelX, rewardY + 24,
                     I18n.t('arcade.challenge_complete', { galets: c.reward }), {
-                        fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
-                        shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-                    }).setOrigin(0.5).setAlpha(0);
+                        fontFamily: 'monospace', fontSize: '12px', color: '#FFD700',
+                        shadow: HEAVY_SHADOW
+                    }).setOrigin(0.5).setAlpha(0).setDepth(6);
                 this.tweens.add({ targets: ctxt, alpha: 1, duration: 500, delay: 2400 });
             }
         }
 
-        // === ROOKIE XP ===
+        // Rookie XP
         const isRookie = this.playerCharacter?.isRookie || this.playerCharacter?.id === 'rookie';
         let xpEarned = 0;
         if (isRookie) {
             if (this.won) {
                 if (this.arcadeState) {
-                    // In Arcade: only give XP for NEW round progress (no farming)
                     const save = loadSave();
-                    const currentRound = this.arcadeState.currentRound - 1; // round just completed
+                    const currentRound = this.arcadeState.currentRound - 1;
                     xpEarned = currentRound > save.arcadeProgress ? ROOKIE_XP_ARCADE : 0;
                 } else {
                     xpEarned = ROOKIE_XP_QUICKPLAY;
                 }
             } else {
-                // Compensation: small XP even on defeat
                 xpEarned = ROOKIE_XP_LOSS;
             }
             if (xpEarned > 0) {
-                const xpText = this.add.text(GAME_WIDTH / 2, panelY + panelH + 50, `+${xpEarned} pts`, {
-                    fontFamily: 'monospace', fontSize: '16px', color: '#FFD700',
-                    shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-                }).setOrigin(0.5).setAlpha(0);
-
-                this.tweens.add({
-                    targets: xpText, alpha: 1,
-                    duration: 400, ease: 'Sine.easeOut', delay: 2200
-                });
+                const xpText = this.add.text(panelX, rewardY + (galetsToGive > 0 ? 24 : 0),
+                    `+${xpEarned} XP`, {
+                        fontFamily: 'monospace', fontSize: '14px', color: '#9B7BB8',
+                        shadow: HEAVY_SHADOW
+                    }).setOrigin(0.5).setAlpha(0).setDepth(6);
+                this.tweens.add({ targets: xpText, alpha: 1, duration: 400, delay: 2200 });
             }
         }
 
-        // === PROCHAIN OBJECTIF (teaser unlock) ===
         this._showNextUnlockTeaser(isRookie);
 
-        // === ACTION BUTTONS (sequence step 5: 2600ms) ===
-        const btnY = 310;
-        const btnContainer = this.add.container(0, 0).setAlpha(0);
+        // ════════════════════════════════════════════════════════
+        //  BOTTOM ZONE — Buttons (380-480px)
+        // ════════════════════════════════════════════════════════
+        const btnY = GAME_HEIGHT - 80;
+        const btnContainer = this.add.container(0, 0).setAlpha(0).setDepth(10);
 
-        if (this.arcadeState) {
-            const continueLabel = this.won ? I18n.t('result.continue') : I18n.t('arcade.retry');
-            const continueBtn = this.add.text(GAME_WIDTH / 2, btnY, `[ ${continueLabel} ]`, {
-                fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0',
-                backgroundColor: this.won ? '#44CC44' : '#C44B3F',
-                padding: { x: 20, y: 10 }, shadow: SHADOW
-            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        // Main action button (styled rectangle, not text backgroundColor)
+        const mainLabel = this.arcadeState
+            ? (this.won ? I18n.t('result.continue') : I18n.t('arcade.retry'))
+            : I18n.t('result.replay');
+        const mainBtnColor = this.won ? 0x6B8E4E : 0xC44B3F; // olive (victory) or terracotta (defeat)
+        const mainBtnW = 200;
+        const mainBtnH = 44;
+        const mainBtnX = GAME_WIDTH / 2;
 
-            continueBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
-            btnContainer.add(continueBtn);
+        const mainBg = this.add.graphics();
+        mainBg.fillStyle(mainBtnColor, 0.9);
+        mainBg.fillRoundedRect(mainBtnX - mainBtnW / 2, btnY - mainBtnH / 2, mainBtnW, mainBtnH, 6);
+        mainBg.lineStyle(1, 0xF5E6D0, 0.2);
+        mainBg.strokeRoundedRect(mainBtnX - mainBtnW / 2, btnY - mainBtnH / 2, mainBtnW, mainBtnH, 6);
+        // Top highlight
+        mainBg.lineStyle(1, 0xFFFFFF, 0.12);
+        mainBg.beginPath();
+        mainBg.moveTo(mainBtnX - mainBtnW / 2 + 8, btnY - mainBtnH / 2 + 1);
+        mainBg.lineTo(mainBtnX + mainBtnW / 2 - 8, btnY - mainBtnH / 2 + 1);
+        mainBg.strokePath();
+        btnContainer.add(mainBg);
 
-            const menuBtn = this.add.text(GAME_WIDTH / 2, btnY + 50, `[ ${I18n.t('result.menu')} ]`, {
-                fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E',
-                backgroundColor: '#3A2E28', padding: { x: 14, y: 6 }, shadow: SHADOW
-            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const mainBtnText = this.add.text(mainBtnX, btnY, mainLabel.toUpperCase(), {
+            fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: HEAVY_SHADOW
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        mainBtnText.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
+        btnContainer.add(mainBtnText);
 
-            menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
-            btnContainer.add(menuBtn);
-        } else {
-            // Quick Play / other modes
-            const replayBtn = this.add.text(GAME_WIDTH / 2 - 100, btnY, `[ ${I18n.t('result.replay')} ]`, {
-                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
-                backgroundColor: this.won ? '#44CC44' : '#C44B3F', padding: { x: 14, y: 8 }, shadow: SHADOW
-            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        // Subtle pulse on main button
+        this.tweens.add({
+            targets: [mainBg, mainBtnText], scaleX: 1.02, scaleY: 1.02,
+            duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+        });
 
-            replayBtn.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
-            btnContainer.add(replayBtn);
-
-            const menuBtn = this.add.text(GAME_WIDTH / 2 + 100, btnY, `[ ${I18n.t('result.menu')} ]`, {
-                fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0',
-                backgroundColor: '#3A2E28', padding: { x: 14, y: 8 }, shadow: SHADOW
-            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-            menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
-            btnContainer.add(menuBtn);
-        }
+        // Secondary "Menu" button (text only, no background)
+        const menuBtn = this.add.text(mainBtnX, btnY + 34, I18n.t('result.menu'), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        menuBtn.on('pointerover', () => menuBtn.setColor('#D4A574'));
+        menuBtn.on('pointerout', () => menuBtn.setColor('#9E9E8E'));
+        menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+        btnContainer.add(menuBtn);
 
         // Buttons appear last
         this.tweens.add({ targets: btnContainer, alpha: 1, duration: 400, delay: 2600 });
 
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('result.controls'), {
-            fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5);
+        // Controls hint (very subtle, bottom edge)
+        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 10, I18n.t('result.controls'), {
+            fontFamily: 'monospace', fontSize: '9px', color: '#5A4A38', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(1);
 
-        // Post-match dialogue → character unlock celebration → input handlers
+        // ════════════════════════════════════════════════════════
+        //  POST-MATCH FLOW — Dialogue → Unlock → Input
+        // ════════════════════════════════════════════════════════
         const afterEverything = () => {
             this._postDialogDone = true;
             this._addInputHandlers();
@@ -361,7 +408,7 @@ export default class ResultScene extends Phaser.Scene {
             });
         }
 
-        // Safety: if dialogue fails to complete, unblock input after 10s
+        // Safety: unblock input after 10s if dialogue fails
         this.time.delayedCall(10000, () => {
             if (!this._postDialogDone) {
                 this._postDialogDone = true;
@@ -507,7 +554,7 @@ export default class ResultScene extends Phaser.Scene {
         sfxScore();
 
         const overlay = this.add.graphics().setDepth(300);
-        overlay.fillStyle(0x0A0806, 0.85);
+        overlay.fillStyle(0x1A1510, 0.85);
         overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         overlay.setAlpha(0);
         this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
