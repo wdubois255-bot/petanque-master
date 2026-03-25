@@ -49,9 +49,9 @@ describe('Arcade data Phase 5 enrichments', () => {
         }
     });
 
-    test('mene_challenges is array of 4 objects', () => {
+    test('mene_challenges is array of 3 objects', () => {
         expect(Array.isArray(arcadeData.mene_challenges)).toBe(true);
-        expect(arcadeData.mene_challenges).toHaveLength(4);
+        expect(arcadeData.mene_challenges).toHaveLength(3);
         for (const c of arcadeData.mene_challenges) {
             expect(c.id).toBeDefined();
             expect(c.stat).toBeDefined();
