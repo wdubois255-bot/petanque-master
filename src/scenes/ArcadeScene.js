@@ -315,6 +315,11 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(6);
 
+        // Round indicator (centered top)
+        this.add.text(GAME_WIDTH / 2, 14, I18n.t('arcade.round', { n: this.currentRound, total: matches.length }), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0', shadow: SHADOW
+        }).setOrigin(0.5, 0).setDepth(6);
+
         // === DIRT PATH between nodes ===
         const NODE_POSITIONS = [
             { x: 130, y: 145 }, { x: 270, y: 115 }, { x: 416, y: 105 },
@@ -322,27 +327,19 @@ export default class ArcadeScene extends Phaser.Scene {
         ];
 
         const pathG = this.add.graphics().setDepth(2);
-        // Thick dirt path (wide brown stroke)
         for (let i = 0; i < NODE_POSITIONS.length - 1; i++) {
             const a = NODE_POSITIONS[i];
             const b = NODE_POSITIONS[i + 1];
-            // Brown wide path
-            pathG.lineStyle(8, 0x8B6B3A, 0.5);
-            pathG.beginPath();
-            pathG.moveTo(a.x, a.y);
-            // Slight curve via midpoint offset
-            const mx = (a.x + b.x) / 2;
-            const my = (a.y + b.y) / 2 - 8;
-            pathG.lineTo(mx, my);
-            pathG.lineTo(b.x, b.y);
-            pathG.strokePath();
-            // Lighter center line
-            pathG.lineStyle(3, 0xD4A574, 0.35);
-            pathG.beginPath();
-            pathG.moveTo(a.x, a.y);
-            pathG.lineTo(mx, my);
-            pathG.lineTo(b.x, b.y);
-            pathG.strokePath();
+            const segWon = this.matchResults.some(r => r.round === i + 1 && r.won);
+            // Shadow under path
+            pathG.lineStyle(10, 0x3A2E28, 0.15);
+            pathG.beginPath(); pathG.moveTo(a.x, a.y + 3); pathG.lineTo(b.x, b.y + 3); pathG.strokePath();
+            // Main dirt path
+            pathG.lineStyle(6, segWon ? 0xA08050 : 0x6B5530, 0.55);
+            pathG.beginPath(); pathG.moveTo(a.x, a.y); pathG.lineTo(b.x, b.y); pathG.strokePath();
+            // Center highlight
+            pathG.lineStyle(2, segWon ? 0xD4A574 : 0x8B6B3A, 0.3);
+            pathG.beginPath(); pathG.moveTo(a.x, a.y); pathG.lineTo(b.x, b.y); pathG.strokePath();
         }
 
         // === CHARACTER PORTRAIT NODES ===
@@ -354,75 +351,91 @@ export default class ArcadeScene extends Phaser.Scene {
             const oppChar = this._getCharById(match.opponent);
             const spriteKey = oppChar ? this._getSpriteKey(oppChar) : null;
 
-            // Node base (circle platform)
             const nodeG = this.add.graphics().setDepth(3);
+            const R = isCurrent ? 24 : 20; // node radius
+
+            // Wood platform under every node (shadow + base + rim)
+            nodeG.fillStyle(0x3A2E28, 0.4);
+            nodeG.fillEllipse(pos.x, pos.y + R + 4, R * 2.2, 8); // drop shadow
+            nodeG.fillStyle(0x5A4030, 0.85);
+            nodeG.fillCircle(pos.x, pos.y, R);
+            nodeG.lineStyle(2, 0x8B6B3A, 0.7);
+            nodeG.strokeCircle(pos.x, pos.y, R);
 
             if (result && result.won) {
-                // WON: portrait visible + green ring + checkmark
-                nodeG.fillStyle(0x3A2E28, 0.7);
-                nodeG.fillCircle(pos.x, pos.y, 22);
-                nodeG.lineStyle(2, 0x44CC44, 1);
-                nodeG.strokeCircle(pos.x, pos.y, 22);
+                // WON: green outer ring + desaturated portrait + checkmark
+                nodeG.lineStyle(3, 0x44CC44, 0.9);
+                nodeG.strokeCircle(pos.x, pos.y, R + 2);
 
                 if (spriteKey && this.textures.exists(spriteKey)) {
-                    const spr = this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
-                        .setScale(0.45).setOrigin(0.5).setDepth(4).setTint(0x888888);
+                    this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
+                        .setScale(0.4).setOrigin(0.5).setDepth(4).setTint(0x999999);
                 }
-                // Green checkmark overlay
-                this.add.text(pos.x + 12, pos.y - 14, '\u2713', {
-                    fontFamily: 'monospace', fontSize: '12px', color: '#44CC44',
+                this.add.text(pos.x + 14, pos.y - 14, '\u2713', {
+                    fontFamily: 'monospace', fontSize: '14px', color: '#44CC44',
                     shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
                 }).setOrigin(0.5).setDepth(5);
 
-                // Stars under won node
+                // Stars
                 const stars = save.starRatings?.[match.opponent] || 0;
                 for (let s = 0; s < 3; s++) {
-                    this.add.text(pos.x - 12 + s * 12, pos.y + 28, '\u2605', {
+                    this.add.text(pos.x - 12 + s * 12, pos.y + R + 12, '\u2605', {
                         fontFamily: 'monospace', fontSize: `${MAP_STAR_SIZE}px`,
                         color: s < stars ? '#FFD700' : '#5A4A38'
                     }).setOrigin(0.5).setDepth(4);
                 }
 
             } else if (isCurrent) {
-                // CURRENT: large portrait + gold pulsing ring
-                nodeG.fillStyle(0x3A2E28, 0.8);
-                nodeG.fillCircle(pos.x, pos.y, 24);
+                // CURRENT: gold outer glow ring + full-color portrait + pulse
                 nodeG.lineStyle(3, 0xFFD700, 1);
-                nodeG.strokeCircle(pos.x, pos.y, 24);
+                nodeG.strokeCircle(pos.x, pos.y, R + 2);
+                // Outer glow ring (second, wider)
+                const glowRing = this.add.graphics().setDepth(3);
+                glowRing.lineStyle(2, 0xFFD700, 0.3);
+                glowRing.strokeCircle(pos.x, pos.y, R + 6);
+                this.tweens.add({
+                    targets: glowRing, alpha: 0.1,
+                    duration: MAP_NODE_PULSE_DURATION, yoyo: true, repeat: -1
+                });
 
                 if (spriteKey && this.textures.exists(spriteKey)) {
                     const spr = this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
-                        .setScale(0.5).setOrigin(0.5).setDepth(4);
+                        .setScale(0.45).setOrigin(0.5).setDepth(4);
                     this.tweens.add({
-                        targets: spr, y: pos.y - 5, duration: 600,
+                        targets: spr, y: pos.y - 5, duration: 700,
                         yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                     });
                 }
-                // Pulse ring
-                this.tweens.add({
-                    targets: nodeG, alpha: 0.5,
-                    duration: MAP_NODE_PULSE_DURATION, yoyo: true, repeat: -1
-                });
-                // Opponent name
-                this.add.text(pos.x, pos.y + 32, oppChar ? I18n.field(oppChar, 'name') : '???', {
+                // Name in gold chip
+                const nameChip = this.add.graphics().setDepth(4);
+                const name = oppChar ? I18n.field(oppChar, 'name') : '???';
+                nameChip.fillStyle(0x1A1510, 0.6);
+                nameChip.fillRoundedRect(pos.x - 40, pos.y + R + 6, 80, 16, 4);
+                this.add.text(pos.x, pos.y + R + 14, name, {
                     fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
                     shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
                 }).setOrigin(0.5).setDepth(5);
 
             } else {
-                // FUTURE: locked silhouette
-                nodeG.fillStyle(0x3A2E28, 0.6);
-                nodeG.fillCircle(pos.x, pos.y, 18);
-                nodeG.lineStyle(1, 0x5A4A38, 0.6);
-                nodeG.strokeCircle(pos.x, pos.y, 18);
-                this.add.text(pos.x, pos.y, '?', {
-                    fontFamily: 'monospace', fontSize: '16px', color: '#5A4A38'
-                }).setOrigin(0.5).setDepth(4);
+                // FUTURE: dark silhouette with locked icon
+                if (spriteKey && this.textures.exists(spriteKey)) {
+                    this.add.sprite(pos.x, pos.y - 2, spriteKey, 0)
+                        .setScale(0.35).setOrigin(0.5).setDepth(4)
+                        .setTint(0x222222).setAlpha(0.5);
+                }
+                nodeG.lineStyle(1, 0x5A4A38, 0.4);
+                nodeG.strokeCircle(pos.x, pos.y, R + 1);
+                // Lock icon
+                this.add.text(pos.x, pos.y + R - 6, '\uD83D\uDD12', {
+                    fontSize: '10px'
+                }).setOrigin(0.5).setDepth(5).setAlpha(0.6);
             }
 
-            // Terrain name under each node
+            // Terrain name under each node (on dark chip for readability)
             const terrain = this._getTerrainById(match.terrain);
-            this.add.text(pos.x, pos.y + (isCurrent ? 44 : (result?.won ? 42 : 26)), terrain ? I18n.field(terrain, 'name') : match.terrain, {
+            const tName = terrain ? I18n.field(terrain, 'name') : match.terrain;
+            const tY = pos.y + R + (isCurrent ? 24 : (result?.won ? 26 : 14));
+            this.add.text(pos.x, tY, tName, {
                 fontFamily: 'monospace', fontSize: '8px', color: '#D4A574',
                 shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(4);
@@ -465,119 +478,150 @@ export default class ArcadeScene extends Phaser.Scene {
         // Decorations (organic elements)
         this._drawMapDecorations();
 
-        // === PREVIEW PANEL (bottom half) ===
-        const panelY = MAP_PREVIEW_Y;
+        // === PREVIEW PANEL (bottom section — full width, generous height) ===
+        const panelY = 250;
+        const panelH = GAME_HEIGHT - panelY; // fills to bottom
         const nextOpponent = this._getCharById(nextMatch.opponent);
         const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
-        // Terrain-tinted panel background
+        // Full-width dark panel with top border
+        const panelBg = this.add.graphics().setDepth(5);
         const terrainTints = { village: 0x3A2E28, parc: 0x2A3A28, colline: 0x3A3228, docks: 0x2A2A30, plage: 0x3A3428 };
         const panelTint = terrainTints[nextMatch.terrain] || 0x3A2E28;
-        const panelBg = this.add.graphics().setDepth(5);
-        panelBg.fillStyle(panelTint, 0.92);
-        panelBg.fillRoundedRect(GAME_WIDTH / 2 - 300, panelY, 600, 185, 10);
-        panelBg.lineStyle(2, 0xD4A574, 0.4);
-        panelBg.strokeRoundedRect(GAME_WIDTH / 2 - 300, panelY, 600, 185, 10);
+        panelBg.fillStyle(panelTint, 0.95);
+        panelBg.fillRoundedRect(16, panelY, GAME_WIDTH - 32, panelH - 8, 10);
+        panelBg.lineStyle(2, 0xD4A574, 0.35);
+        panelBg.strokeRoundedRect(16, panelY, GAME_WIDTH - 32, panelH - 8, 10);
+        // Inner highlight line at top
+        panelBg.lineStyle(1, 0xFFD700, 0.15);
+        panelBg.beginPath();
+        panelBg.moveTo(30, panelY + 1);
+        panelBg.lineTo(GAME_WIDTH - 30, panelY + 1);
+        panelBg.strokePath();
 
         if (nextOpponent) {
-            // "PROCHAIN COMBAT" header
-            this.add.text(GAME_WIDTH / 2, panelY + 14, I18n.t('arcade.next_fight'), {
-                fontFamily: 'monospace', fontSize: '12px', color: '#FFD700', shadow: SHADOW
-            }).setOrigin(0.5).setDepth(6);
+            // Layout: [Sprite | Info + Stats | Button]
+            const spriteX = 110;
+            const infoX = 210;
+            const btnX = GAME_WIDTH - 140;
 
-            // Large opponent sprite (right side)
+            // "PROCHAIN COMBAT" header (left-aligned)
+            this.add.text(infoX, panelY + 12, I18n.t('arcade.next_fight'), {
+                fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', shadow: SHADOW
+            }).setDepth(6);
+
+            // Opponent sprite (left)
             const spriteKey = this._getSpriteKey(nextOpponent);
             if (spriteKey && this.textures.exists(spriteKey)) {
-                const oppSpr = this.add.sprite(GAME_WIDTH / 2 + 190, panelY + 110, spriteKey, 0)
-                    .setScale(1.3).setOrigin(0.5).setDepth(6);
-                // Idle breathing
+                // Shadow
+                this.add.ellipse(spriteX, panelY + panelH - 30, 60, 10, 0x1A1510, 0.3).setDepth(5);
+                const oppSpr = this.add.sprite(spriteX, panelY + panelH / 2 + 10, spriteKey, 0)
+                    .setScale(1.5).setOrigin(0.5).setDepth(6);
                 this.tweens.add({
-                    targets: oppSpr, scaleY: 1.33, scaleX: 1.27,
-                    duration: 2000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+                    targets: oppSpr, scaleY: 1.53, scaleX: 1.47,
+                    duration: 2500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
                 });
-                // Shadow under sprite
-                this.add.ellipse(GAME_WIDTH / 2 + 190, panelY + 170, 50, 8, 0x1A1510, 0.3).setDepth(5);
             }
 
-            // Info block (left side)
-            const infoX = GAME_WIDTH / 2 - 270;
-            this.add.text(infoX, panelY + 35, I18n.field(nextOpponent, 'name').toUpperCase(), {
-                fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
+            // Name + title + catchphrase
+            this.add.text(infoX, panelY + 30, I18n.field(nextOpponent, 'name').toUpperCase(), {
+                fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', shadow: SHADOW
             }).setDepth(6);
-            this.add.text(infoX, panelY + 60, I18n.field(nextOpponent, 'title'), {
+            this.add.text(infoX, panelY + 58, I18n.field(nextOpponent, 'title'), {
                 fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
             }).setDepth(6);
             this.add.text(infoX, panelY + 78, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E', shadow: SHADOW,
-                fontStyle: 'italic', wordWrap: { width: 280 }
+                fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW,
+                fontStyle: 'italic', wordWrap: { width: 350 }
             }).setDepth(6);
 
-            // Terrain + difficulty
+            // Terrain + difficulty (inline)
+            const metaY = panelY + 102;
             if (nextTerrain) {
-                this.add.text(infoX, panelY + 105, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
+                this.add.text(infoX, metaY, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
                     fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
                 }).setDepth(6);
             }
-            this.add.text(infoX, panelY + 122, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
+            this.add.text(infoX + 220, metaY, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
                 fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
             }).setDepth(6);
 
-            // Comparative stat bars (player vs opponent)
-            const barX = infoX;
-            const barY = panelY + 142;
+            // Comparative stat bars (2 rows of 2 for clarity)
             const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
-            const statLabels = ['PRE', 'PUI', 'EFF', 'S-F'];
-            const statColors = [0xD4A574, 0xC4854A, 0x9B7BB8, 0x87CEEB];
+            const statLabels = ['PREC', 'PUIS', 'EFFT', 'S-FR'];
             const playerStats = this.playerCharacter?.stats || {};
-            const barW = 70;
+            const barW = 80;
             const barG = this.add.graphics().setDepth(6);
+            const barStartX = infoX;
+            const barStartY = panelY + 125;
+
+            // Legend
+            this.add.text(barStartX + 36, barStartY - 2, I18n.t('ingame.you'), {
+                fontFamily: 'monospace', fontSize: '7px', color: '#87CEEB'
+            }).setDepth(6);
+            this.add.text(barStartX + 64, barStartY - 2, I18n.t('ingame.opponent'), {
+                fontFamily: 'monospace', fontSize: '7px', color: '#C44B3F'
+            }).setDepth(6);
 
             for (let i = 0; i < statNames.length; i++) {
-                const sx = barX + i * 85;
+                const col = i % 2;
+                const row = Math.floor(i / 2);
+                const sx = barStartX + col * 180;
+                const sy = barStartY + 10 + row * 24;
                 const pVal = playerStats[statNames[i]] || 5;
                 const oVal = nextOpponent.stats[statNames[i]] || 5;
-                // Label
-                this.add.text(sx, barY, statLabels[i], {
+
+                this.add.text(sx, sy, statLabels[i], {
                     fontFamily: 'monospace', fontSize: '8px', color: '#9E9E8E'
                 }).setDepth(6);
-                // Background
                 barG.fillStyle(0x1A1510, 0.7);
-                barG.fillRect(sx + 24, barY, barW, 5);
-                barG.fillRect(sx + 24, barY + 8, barW, 5);
-                // Player bar (blue)
-                barG.fillStyle(0x87CEEB, 0.8);
-                barG.fillRect(sx + 24, barY, (pVal / 10) * barW, 5);
-                // Opponent bar (red)
-                barG.fillStyle(0xC44B3F, 0.8);
-                barG.fillRect(sx + 24, barY + 8, (oVal / 10) * barW, 5);
+                barG.fillRoundedRect(sx + 32, sy, barW, 5, 2);
+                barG.fillRoundedRect(sx + 32, sy + 8, barW, 5, 2);
+                barG.fillStyle(0x87CEEB, 0.85);
+                barG.fillRoundedRect(sx + 32, sy, Math.max(2, (pVal / 10) * barW), 5, 2);
+                barG.fillStyle(0xC44B3F, 0.85);
+                barG.fillRoundedRect(sx + 32, sy + 8, Math.max(2, (oVal / 10) * barW), 5, 2);
             }
-        }
 
-        // COMBATTRE button (centered below panel)
-        const btnY = panelY + 190;
-        const btnBg = this.add.graphics().setDepth(6);
-        btnBg.fillStyle(0xC44B3F, 0.9);
-        btnBg.fillRoundedRect(GAME_WIDTH / 2 - 100, btnY, 200, 44, 8);
-        const btnText = this.add.text(GAME_WIDTH / 2, btnY + 22, I18n.t('arcade.fight_btn'), {
-            fontFamily: 'monospace', fontSize: '22px', color: '#FFFFFF',
-            shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
-        this.tweens.add({
-            targets: [btnBg, btnText], scaleX: 1.03, scaleY: 1.03,
-            duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-        });
-        btnText.on('pointerdown', () => this._launchNextMatch());
+            // COMBATTRE button (integrated right side of panel)
+            const btnW = 180;
+            const btnH = 50;
+            const btnYPos = panelY + panelH / 2 - btnH / 2 + 10;
+            const btnBg = this.add.graphics().setDepth(6);
+            btnBg.fillStyle(0xC44B3F, 1);
+            btnBg.fillRoundedRect(btnX - btnW / 2, btnYPos, btnW, btnH, 8);
+            btnBg.lineStyle(2, 0xE86050, 0.5);
+            btnBg.strokeRoundedRect(btnX - btnW / 2, btnYPos, btnW, btnH, 8);
+            // Highlight top edge
+            btnBg.lineStyle(1, 0xFFFFFF, 0.15);
+            btnBg.beginPath();
+            btnBg.moveTo(btnX - btnW / 2 + 10, btnYPos + 1);
+            btnBg.lineTo(btnX + btnW / 2 - 10, btnYPos + 1);
+            btnBg.strokePath();
+
+            const btnText = this.add.text(btnX, btnYPos + btnH / 2, I18n.t('arcade.fight_btn'), {
+                fontFamily: 'monospace', fontSize: '20px', color: '#FFFFFF',
+                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
+
+            this.tweens.add({
+                targets: [btnBg, btnText], scaleX: 1.02, scaleY: 1.02,
+                duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+            });
+            btnText.on('pointerdown', () => this._launchNextMatch());
+
+            // Controls hint (inside panel, bottom)
+            this.add.text(btnX, btnYPos + btnH + 14, I18n.t('arcade.controls'), {
+                fontFamily: 'monospace', fontSize: '9px', color: '#8A7A5A', shadow: SHADOW
+            }).setOrigin(0.5).setDepth(6);
+        }
 
         this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
-
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 14, I18n.t('arcade.controls'), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E', shadow: SHADOW
-        }).setOrigin(0.5).setDepth(6);
     }
 
-    // Provencal landscape background (same technique as TitleScene)
+    // Provencal landscape background (TitleScene technique + enhancements)
     _drawMapBackground() {
         const bg = this.add.graphics().setDepth(0);
 
@@ -589,19 +633,37 @@ export default class ArcadeScene extends Phaser.Scene {
         bg.fillGradientStyle(0xC4954A, 0xC4954A, 0x8B6030, 0x8B6030, 1);
         bg.fillRect(0, GAME_HEIGHT * 0.55, GAME_WIDTH, GAME_HEIGHT * 0.45);
 
-        // Soft sun glow (upper area)
-        const sunX = GAME_WIDTH * 0.75;
-        const sunY = GAME_HEIGHT * 0.18;
-        for (let r = 120; r > 0; r -= 4) {
-            bg.fillStyle(0xFFE8A0, 0.006 + (120 - r) * 0.0003);
+        // Soft sun glow (upper-right)
+        const sunX = GAME_WIDTH * 0.78;
+        const sunY = GAME_HEIGHT * 0.12;
+        for (let r = 150; r > 0; r -= 3) {
+            bg.fillStyle(0xFFE8A0, 0.005 + (150 - r) * 0.00025);
             bg.fillCircle(sunX, sunY, r);
         }
 
-        // 3 layered distant hills (sine wave, like TitleScene)
+        // Diagonal light rays from sun (animated)
+        const rays = this.add.graphics().setDepth(1);
+        for (let i = 0; i < 6; i++) {
+            const angle = -0.8 + i * 0.28;
+            const length = 400;
+            rays.fillStyle(0xFFE8A0, 0.012);
+            rays.beginPath();
+            rays.moveTo(sunX, sunY);
+            rays.lineTo(sunX + Math.cos(angle) * length, sunY + Math.sin(angle) * length);
+            rays.lineTo(sunX + Math.cos(angle + 0.05) * length, sunY + Math.sin(angle + 0.05) * length);
+            rays.closePath();
+            rays.fillPath();
+        }
+        this.tweens.add({
+            targets: rays, alpha: 0.4, duration: 3000,
+            yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+        });
+
+        // 3 layered distant hills
         const hillLayers = [
-            { color: 0x7BA0B8, alpha: 0.3, baseY: 200, freq: 0.004, amp: 18 },
-            { color: 0x8BAA78, alpha: 0.4, baseY: 215, freq: 0.007, amp: 14 },
-            { color: 0x9B9060, alpha: 0.55, baseY: 230, freq: 0.01, amp: 10 }
+            { color: 0x7BA0B8, alpha: 0.25, baseY: 195, freq: 0.003, amp: 20 },
+            { color: 0x8BAA78, alpha: 0.35, baseY: 212, freq: 0.006, amp: 16 },
+            { color: 0x9B9060, alpha: 0.5, baseY: 228, freq: 0.009, amp: 12 }
         ];
         for (const hill of hillLayers) {
             bg.fillStyle(hill.color, hill.alpha);
@@ -613,62 +675,64 @@ export default class ArcadeScene extends Phaser.Scene {
             }
         }
 
-        // Subtle texture dots on ground
-        for (let i = 0; i < 80; i++) {
+        // Subtle texture grain on ground
+        for (let i = 0; i < 100; i++) {
             const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.5, GAME_HEIGHT);
-            bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.02, 0.05));
+            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.45, GAME_HEIGHT);
+            bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.01, 0.04));
             bg.fillRect(gx, gy, 1, 1);
         }
 
+        // Golden dust particles (floating, like TitleScene)
+        this._dustParticles = UIFactory.createDustParticles(this, 25, { depth: 2 });
+
         // Dark bottom gradient for panel readability
         const panelFade = this.add.graphics().setDepth(1);
-        panelFade.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.85, 0.85);
-        panelFade.fillRect(0, GAME_HEIGHT * 0.5, GAME_WIDTH, GAME_HEIGHT * 0.5);
+        panelFade.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.88, 0.88);
+        panelFade.fillRect(0, GAME_HEIGHT * 0.48, GAME_WIDTH, GAME_HEIGHT * 0.52);
 
         // Vignette (frame effect)
         const vig = this.add.graphics().setDepth(1);
-        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.3, 0.3, 0, 0);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.35, 0.35, 0, 0);
         vig.fillRect(0, 0, GAME_WIDTH, 50);
-        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.2, 0, 0.2, 0);
-        vig.fillRect(0, 0, 60, GAME_HEIGHT);
-        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.2, 0, 0.2);
-        vig.fillRect(GAME_WIDTH - 60, 0, 60, GAME_HEIGHT);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.25, 0, 0.25, 0);
+        vig.fillRect(0, 0, 70, GAME_HEIGHT);
+        vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.25, 0, 0.25);
+        vig.fillRect(GAME_WIDTH - 70, 0, 70, GAME_HEIGHT);
     }
 
     _drawMapDecorations() {
-        // Organic decorations using existing decor sprites where available
+        // Olive trees placed to NOT overlap nodes (between them, behind them)
         const decorSprites = [
-            { key: 'grid_olive', x: 60, y: 155, scale: 0.8, frame: 0 },
-            { key: 'grid_olive', x: 340, y: 85, scale: 0.7, frame: 4 },
-            { key: 'grid_olive', x: 500, y: 100, scale: 0.9, frame: 1 },
-            { key: 'grid_olive', x: 770, y: 135, scale: 0.7, frame: 5 },
-            { key: 'grid_lavande', x: 180, y: 175, scale: 0.5, frame: 0 },
-            { key: 'grid_lavande', x: 640, y: 160, scale: 0.5, frame: 0 },
+            { key: 'grid_olive', x: 55, y: 170, scale: 0.65, frame: 0 },
+            { key: 'grid_olive', x: 195, y: 90, scale: 0.55, frame: 4 },
+            { key: 'grid_olive', x: 480, y: 80, scale: 0.6, frame: 1 },
+            { key: 'grid_olive', x: 635, y: 105, scale: 0.5, frame: 5 },
+            { key: 'grid_olive', x: 790, y: 155, scale: 0.6, frame: 8 },
         ];
 
         for (const d of decorSprites) {
             if (this.textures.exists(d.key)) {
                 const img = this.add.image(d.x, d.y, d.key, d.frame)
-                    .setScale(d.scale).setDepth(2).setAlpha(0.7);
+                    .setScale(d.scale).setDepth(2).setAlpha(0.55);
                 // Gentle sway
                 this.tweens.add({
-                    targets: img, x: img.x + 1.5, angle: 0.3,
-                    duration: 3000 + Math.random() * 2000,
+                    targets: img, x: img.x + 1, angle: 0.2,
+                    duration: 3500 + Math.random() * 2000,
                     yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-                    delay: Math.random() * 1500
+                    delay: Math.random() * 2000
                 });
             }
         }
 
-        // Fallback procedural decorations if sprites not loaded
+        // Ground pebbles along path for texture
         const deco = this.add.graphics().setDepth(2);
-        // Small ground details (pebbles along path)
-        for (let i = 0; i < 20; i++) {
-            const px = Phaser.Math.Between(100, 730);
-            const py = Phaser.Math.Between(130, 180);
-            deco.fillStyle(0x8B6B3A, Phaser.Math.FloatBetween(0.15, 0.3));
-            deco.fillCircle(px, py, Phaser.Math.Between(1, 3));
+        for (let i = 0; i < 30; i++) {
+            const px = Phaser.Math.Between(100, 740);
+            const py = Phaser.Math.Between(120, 185);
+            deco.fillStyle(Phaser.Math.Between(0, 1) ? 0x8B6B3A : 0x6B5530,
+                Phaser.Math.FloatBetween(0.1, 0.25));
+            deco.fillCircle(px, py, Phaser.Math.Between(1, 2));
         }
     }
 
@@ -1099,7 +1163,15 @@ export default class ArcadeScene extends Phaser.Scene {
         });
     }
 
+    update(time, delta) {
+        // Animate golden dust particles
+        if (this._dustParticles) {
+            UIFactory.updateParticles(this._dustParticles, delta);
+        }
+    }
+
     _shutdown() {
+        this._dustParticles = null;
         this.input.keyboard.removeAllListeners();
         if (this._mapTooltip) { this._mapTooltip.destroy(); this._mapTooltip = null; }
         this.tweens.killAll();
