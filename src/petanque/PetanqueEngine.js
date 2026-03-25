@@ -8,6 +8,7 @@ import {
     FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
     TERRAIN_HEIGHT,
+    THROW_RANGE_FACTOR, THROW_RANGE_FACTOR_TIR, TERRAIN_ROLL_COMPENSATION,
     LOFT_DEMI_PORTEE, LOFT_TIR,
     CARREAU_THRESHOLD,
     HITSTOP_BOULE_MS, HITSTOP_CARREAU_MS,
@@ -365,7 +366,7 @@ export default class PetanqueEngine {
         const isTir = loftPreset.id === 'tir';
         // Puissance stat affects max distance (source: Constants.puissanceMultiplier)
         const puissanceMult = puissanceMultiplier(puissanceStat);
-        const maxDist = TERRAIN_HEIGHT * (isTir ? 0.95 : 0.85) * puissanceMult;
+        const maxDist = TERRAIN_HEIGHT * (isTir ? THROW_RANGE_FACTOR_TIR : THROW_RANGE_FACTOR) * puissanceMult;
         const totalDist = power * maxDist;
         const landDist = totalDist * loftPreset.landingFactor;
         const rollDist = totalDist * (1 - loftPreset.landingFactor);
@@ -376,11 +377,14 @@ export default class PetanqueEngine {
         const targetX = Phaser.Math.Clamp(rawTargetX, bounds.x + BALL_CLAMP_MARGIN, bounds.x + bounds.w - BALL_CLAMP_MARGIN);
         const targetY = Phaser.Math.Clamp(rawTargetY, bounds.y + BALL_CLAMP_MARGIN, bounds.y + bounds.h - BALL_CLAMP_MARGIN);
 
-        const perFrameFriction = FRICTION_BASE * frictionMult;
+        // Partial terrain friction compensation: TERRAIN_ROLL_COMPENSATION controls how much
+        // terrain friction is pre-compensated. 1.0 = same distance everywhere, 0.0 = full terrain effect.
+        // With 0.6: terre=100%, herbe=80%, sable=76%, dalles=115% of base roll distance.
+        const compensatedFriction = FRICTION_BASE * Math.pow(frictionMult, TERRAIN_ROLL_COMPENSATION);
         // flyOnly: ball stops where it lands (tir au fer — carreau naturel via collision physics)
         const rollingSpeed = loftPreset.flyOnly
             ? 0
-            : Math.sqrt(2 * perFrameFriction * rollDist * loftPreset.rollEfficiency);
+            : Math.sqrt(2 * compensatedFriction * rollDist * loftPreset.rollEfficiency);
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 

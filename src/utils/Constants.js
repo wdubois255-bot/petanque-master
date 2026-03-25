@@ -53,7 +53,7 @@ export const LOFT_DEMI_PORTEE = {
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.88, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 0.85,
+    landingFactor: 0.72, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 1.10,
     precisionPenalty: 2.0, retroAllowed: true
 };
 // Tir au fer : la boule vole ~95% puis frappe a ~2.5x la vitesse du pointage
@@ -70,10 +70,11 @@ export const LOFT_TIR = {
 
 // Spin lateral (effet gauche/droite) — actif apres atterrissage uniquement
 // Force = LATERAL_SPIN_FORCE * (effetStat / 10) * spinIntensity * terrainMult
-export const LATERAL_SPIN_FORCE = 0.045;
-export const LATERAL_SPIN_FRAMES = 25;
+// Avec effet 6 sur terre: deviation ~5px (visible). Effet 10 sur sable: ~20px (strategique).
+export const LATERAL_SPIN_FORCE = 0.15;
+export const LATERAL_SPIN_FRAMES = 35;
 export const LATERAL_SPIN_MIN_SPEED = 0.5;  // Arrete le spin quand la boule est quasi immobile
-export const LATERAL_SPIN_MIN_EFFET = 4;    // Stat Effet minimum pour activer le spin
+export const LATERAL_SPIN_MIN_EFFET = 3;    // Stat Effet minimum pour activer le spin
 export const LATERAL_SPIN_TERRAIN_MULT = {
     terre:  1.0,
     herbe:  1.3,
@@ -91,6 +92,17 @@ export const RETRO_TERRAIN_EFF = {
     terre: 1.0, herbe: 1.3, sable: 2.0, dalles: 0.6
 };
 export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
+
+// Throw range: fraction of TERRAIN_HEIGHT atteignable a pleine puissance
+// Pointer: 92% du terrain (was 85% hardcoded), Tir: 95%
+export const THROW_RANGE_FACTOR = 0.92;
+export const THROW_RANGE_FACTOR_TIR = 0.95;
+
+// Terrain roll compensation: controle combien la friction terrain est compensee
+// dans le calcul de vitesse de roule. 1.0 = totalement compensee (meme distance partout),
+// 0.0 = pas compensee (friction affecte pleinement la distance).
+// 0.6 → terre=100%, herbe=80%, sable=76%, dalles=115%
+export const TERRAIN_ROLL_COMPENSATION = 0.6;
 
 // Palet detection
 export const PALET_THRESHOLD = 50;
