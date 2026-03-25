@@ -1275,7 +1275,6 @@ export default class PetanqueEngine {
         }
 
         // Analyse du tir contre une seule cible
-        const isTirDevant = false; // Tir devant removed from game
         if (hitEnemy.length === 1) {
             const target = hitEnemy[0];
 
@@ -1292,7 +1291,7 @@ export default class PetanqueEngine {
             if (targetDisplacement < CASQUETTE_MAX_DISPLACEMENT) {
                 sfxCasquette();
                 this.scene.time.delayedCall(200, () => sfxCrowdGasp());
-                this._showShotLabel(ball, isTirDevant ? 'Court... Casquette' : 'Casquette...', '#888888', 12);
+                this._showShotLabel(ball, 'Casquette...', '#888888', 12);
                 if (this.onShotResult) this.onShotResult('casquette', ball);
                 this._shotCollisions = [];
                 return;
@@ -1300,7 +1299,7 @@ export default class PetanqueEngine {
 
             // Blessee : cible a un peu bouge mais pas assez (<32px)
             if (targetDisplacement < BLESSEE_MAX_DISPLACEMENT) {
-                this._showShotLabel(ball, isTirDevant ? 'Court... Blessee' : 'Blessee...', '#AA8866', 12);
+                this._showShotLabel(ball, 'Blessee...', '#AA8866', 12);
                 this._shotCollisions = [];
                 return;
             }
