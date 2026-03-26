@@ -404,7 +404,7 @@ describe('Boule-cochonnet collisions', () => {
         expect(RESTITUTION_COCHONNET).toBe(0.50);
     });
 
-    it('light cochonnet absorbs energy: moves faster than boule post-collision', () => {
+    it('light cochonnet absorbs energy: moves but is capped', () => {
         const boule = new Ball(mockScene, 100, 200, { mass: BALL_MASS, radius: BALL_RADIUS });
         const cochonnet = new Ball(mockScene, 100 + 16, 200, { mass: COCHONNET_MASS, radius: 8 });
         boule.launch(5, 0);
@@ -413,8 +413,9 @@ describe('Boule-cochonnet collisions', () => {
 
         const bouleSpeed = Math.sqrt(boule.vx ** 2 + boule.vy ** 2);
         const cochSpeed = Math.sqrt(cochonnet.vx ** 2 + cochonnet.vy ** 2);
-        // Cochonnet is lighter → absorbs proportionally more speed
-        expect(cochSpeed).toBeGreaterThan(bouleSpeed);
+        // Cochonnet moves significantly but is capped to stay in play zone
+        expect(cochSpeed).toBeGreaterThan(0);
+        expect(cochSpeed).toBeLessThanOrEqual(COCHONNET_MAX_COLLISION_SPEED);
         // Boule barely slows (700g vs 30g = boule keeps most of its momentum)
         expect(bouleSpeed).toBeGreaterThan(3);
     });

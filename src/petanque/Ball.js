@@ -3,7 +3,7 @@ import {
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
     RETRO_FRICTION_MULT, RETRO_PHASE1_MULT, RETRO_PHASE1_FRAMES, RETRO_PHASE2_FRAMES,
-    RETRO_TERRAIN_EFF, WALL_RESTITUTION,
+    RETRO_TERRAIN_EFF, WALL_RESTITUTION, POINT_COLLISION_DAMPING,
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
@@ -452,6 +452,15 @@ export default class Ball {
         let impulse = (1 + restitution) * dvn / totalMass;
         // Apply knockback bonus (e.g. Bronze hits harder)
         impulse *= (a.knockbackMult || 1) * (b.knockbackMult || 1);
+
+        // Pointed balls collide softly — a gentle roll shouldn't blast targets away
+        // Only the actively moving ball matters (higher speed = the thrower)
+        const aSpeed = a.vx * a.vx + a.vy * a.vy;
+        const bSpeed = b.vx * b.vx + b.vy * b.vy;
+        const mover = aSpeed > bSpeed ? a : b;
+        if (mover.isPoint) {
+            impulse *= POINT_COLLISION_DAMPING;
+        }
 
         // === PUISSANCE impacts ejection distance ===
         // The thrower's puissance stat amplifies how far the target gets pushed

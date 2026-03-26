@@ -186,6 +186,9 @@ export const DUST_COUNT_DEMI = 6;
 export const DUST_COUNT_PLOMBEE = 10;
 export const DUST_COUNT_TIR = 8;
 export const WALL_RESTITUTION = 0.35; // Bois/metal reel ~0.30-0.40
+// Pointage: attenuation de l'impulse de collision (une boule roulee doucement
+// ne doit pas ejecter les autres comme un tir). 0.4 = 40% de l'impulse normale.
+export const POINT_COLLISION_DAMPING = 0.4;
 export const COLLISION_SPARK_COUNT = 5;
 export const CARREAU_SPARK_COUNT = 8;
 export const CARREAU_SPARK_RADIUS = 36;
@@ -193,8 +196,8 @@ export const CARREAU_SPARK_RADIUS = 36;
 // Petanque - throw animation
 export const MIN_IMPACT_SPEED = 2.0;
 // Tir au fer: vitesse d'impact a l'atterrissage (simule l'energie cinetique de la chute)
-// Avec COR 0.62 et masses egales: cible recoit ~81% → ejectee a ~5.7 px/frame
-export const TIR_IMPACT_SPEED = 7.0;
+// Avec COR 0.62 et masses egales: cible recoit ~81% → ejectee a ~7.3 px/frame
+export const TIR_IMPACT_SPEED = 9.0;
 // Rayon de detection de contact au tir (px) — plus large car la boule tombe d'en haut
 export const TIR_LANDING_CONTACT_RADIUS = 10;
 export const COCHONNET_ROLL_MIN = 0.15;
@@ -357,7 +360,7 @@ export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
 export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
-export const COCHONNET_MAX_COLLISION_SPEED = 10.0; // ~83% de MAX_THROW_SPEED — réaliste, le cochonnet se déplace significativement
+export const COCHONNET_MAX_COLLISION_SPEED = 5.0; // Cochonnet se deplace moderement — reste dans la zone de jeu
 
 // Screen shake (carreau)
 export const CARREAU_SHAKE_DURATION = 250;
@@ -422,13 +425,13 @@ export function getCharThrowKey(charId) {
 }
 
 // Galets (monnaie in-game)
-export const GALET_WIN_ARCADE = 70;
-export const GALET_WIN_QUICKPLAY = 30;
-export const GALET_CARREAU_BONUS = 15;
-export const GALET_ARCADE_COMPLETE = 100;
-export const GALET_ARCADE_PERFECT = 200;
-export const GALET_STARTING = 50;
-export const GALET_LOSS = 15;
+export const GALET_WIN_ARCADE = 40;
+export const GALET_WIN_QUICKPLAY = 15;
+export const GALET_CARREAU_BONUS = 10;
+export const GALET_ARCADE_COMPLETE = 60;
+export const GALET_ARCADE_PERFECT = 120;
+export const GALET_STARTING = 30;
+export const GALET_LOSS = 5;
 export const ROOKIE_XP_LOSS = 1;
 
 // Rookie progression
@@ -453,7 +456,7 @@ export const TUTORIAL_PHASE_SCORE = 3;
 export const TUTORIAL_PHASE_TURN_RULE = 4; // "l'équipe la plus loin rejoue"
 
 // Daily challenge
-export const GALET_DAILY_REWARD = 75;
+export const GALET_DAILY_REWARD = 40;
 
 // Puissance stat multiplier — source unique, utilisée partout
 // Pui 1 = 0.8x, Pui 5 ≈ 1.02x, Pui 10 = 1.3x
@@ -520,7 +523,7 @@ export const MAP_PREVIEW_Y = 270;                         // px debut panel prev
 
 // Defi de mene
 export const CHALLENGE_BANNER_DURATION = 2500;            // ms affichage
-export const CHALLENGE_REWARD_GALETS = 10;                // galets par defi reussi
+export const CHALLENGE_REWARD_GALETS = 5;                 // galets par defi reussi
 export const CHALLENGE_PROBABILITY = 0.6;                 // 60% chance qu'un defi apparaisse
 
 // Zone doree
@@ -540,7 +543,7 @@ export const CROWD_INTENSITY_BY_ROUND = [0.03, 0.04, 0.05, 0.07, 0.10];
 export const SHOP_EXPRESS_MIN_GALETS = 40;                // ne pas afficher si budget < ce seuil
 
 // Defeat safety valve
-export const DEFEAT_CONSOLATION_GALETS = 15;              // galets de consolation apres defaite
+export const DEFEAT_CONSOLATION_GALETS = 5;               // galets de consolation apres defaite
 export const DEFEAT_RETRY_ENABLED = true;                 // autoriser le retry du meme match
 
 // Commentator sequencing

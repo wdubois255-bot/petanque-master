@@ -216,7 +216,7 @@
     "continue": "CONTINUER",
     "retry": "REESSAYER",
     "menu": "MENU PRINCIPAL",
-    "controls": "Espace Combattre     Echap Menu",
+    "controls": "Espace Combattre     Echap Quitter",
     "time_matin": "Matin",
     "time_fin_matinee": "Fin de matinee",
     "time_midi": "Midi",
@@ -240,6 +240,8 @@
     "defeat_continue": "CONTINUER",
     "defeat_consolation": "+{galets} Galets de consolation",
     "replay": "REJOUER",
+    "restart": "RECOMMENCER",
+    "quit": "QUITTER",
     "bonus_perfect": "Bonus parfait",
     "bonus_complete": "Bonus completion"
   }

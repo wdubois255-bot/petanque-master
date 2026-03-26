@@ -331,14 +331,14 @@ export default class CharSelectScene extends Phaser.Scene {
         this._previewTitle.setText(I18n.field(char, 'title'));
         this._previewCatchphrase.setText(`"${I18n.field(char, 'catchphrase')}"`);
 
+        // Truncate description to leave room for ability info
+        const desc = I18n.field(char, 'description');
+        this._previewDesc.setText(desc.length > 92 ? desc.substring(0, 92) + '...' : desc);
+
         if (char.isRookie && char.abilities_unlock?.length) {
-            // Truncate description to leave room for abilities
-            const desc = I18n.field(char, 'description');
-            this._previewDesc.setText(desc.length > 92 ? desc.substring(0, 92) + '...' : desc);
             this._updateRookieAbilities(char);
         } else {
-            this._previewDesc.setText(I18n.field(char, 'description'));
-            this._clearAbilitiesSection();
+            this._updateCharAbility(char);
         }
 
         // Stat bars
@@ -458,19 +458,51 @@ export default class CharSelectScene extends Phaser.Scene {
 
     _updateRookieAbilities(char) {
         const unlockedIds = this._save?.rookie?.abilitiesUnlocked || [];
-        this._abilitiesLabel.setText('— CAPACITÉS —');
+        this._abilitiesLabel.setText('\u2014 CAPACIT\u00c9S \u2014');
         char.abilities_unlock.forEach((unlock, i) => {
             if (!this._abilityTexts[i]) return;
             const isUnlocked = unlockedIds.includes(unlock.id);
             this._abilityTexts[i].setColor(isUnlocked ? '#6B8E4E' : '#D4A574');
             this._abilityTexts[i].setText(
-                `${isUnlocked ? '✓' : '•'} ${unlock.threshold}pts — ${unlock.ability.name}\n  ${unlock.ability.description}`
+                `${isUnlocked ? '\u2713' : '\u2022'} ${unlock.threshold}pts \u2014 ${I18n.field(unlock.ability, 'name')}\n  ${I18n.field(unlock.ability, 'description')}`
             );
         });
     }
 
+    _updateCharAbility(char) {
+        const archetypeLabels = {
+            tireur: 'Tireur', pointeur: 'Pointeur', equilibre: '\u00c9quilibr\u00e9',
+            complet: 'Complet', milieu: 'Milieu', adaptable: 'Adaptable', glisseur: 'Glisseur'
+        };
+        const archetypeColors = {
+            tireur: '#C44B3F', pointeur: '#87CEEB', equilibre: '#D4A574',
+            complet: '#6B8E4E', milieu: '#D4A574', adaptable: '#FFD700', glisseur: '#9B7BB8'
+        };
+
+        // Line 0: Archetype
+        const archLabel = archetypeLabels[char.archetype] || char.archetype;
+        const archColor = archetypeColors[char.archetype] || '#D4A574';
+        this._abilitiesLabel.setText(`\u2014 ${archLabel.toUpperCase()} \u2014`);
+        this._abilitiesLabel.setColor(archColor);
+
+        // Line 1: Ability name + charges
+        if (char.ability) {
+            const charges = char.ability.charges > 0 ? ` (${char.ability.charges}x)` : ' (Passif)';
+            this._abilityTexts[0].setColor('#FFD700');
+            this._abilityTexts[0].setText(`\u26A1 ${I18n.field(char.ability, 'name')}${charges}`);
+
+            // Line 2: Ability description
+            this._abilityTexts[1].setColor('#F5E6D0');
+            this._abilityTexts[1].setText(I18n.field(char.ability, 'description'));
+        } else {
+            this._abilityTexts[0].setText('');
+            this._abilityTexts[1].setText('');
+        }
+        this._abilityTexts[2].setText('');
+    }
+
     _clearAbilitiesSection() {
-        if (this._abilitiesLabel) this._abilitiesLabel.setText('');
+        if (this._abilitiesLabel) { this._abilitiesLabel.setText(''); this._abilitiesLabel.setColor('#FFD700'); }
         if (this._abilityTexts) this._abilityTexts.forEach(t => t.setText(''));
     }
 

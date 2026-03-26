@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, ROOKIE_MAX_POINTS
 import { loadSave, setSelectedBoule, setSelectedCochonnet, formatPlaytime, getStats } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -495,11 +496,21 @@ export default class PlayerScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.OR, shadow: SHADOW
         }).setDepth(5));
 
-        const abilities = [
-            { key: 'instinct', name: "L'Instinct", pts: 18, desc: 'Slow-mo 2s sur chaque tir', icon: '\u26A1', color: '#FFD700' },
-            { key: 'determination', name: 'Determination', pts: 26, desc: '-50% wobble apres une defaite', icon: '\uD83D\uDCAA', color: '#FF8844' },
-            { key: 'naturel', name: 'Le Naturel', pts: 34, desc: 'Un tir parfait par match', icon: '\u2728', color: '#87CEEB' }
-        ];
+        // Read abilities from characters.json (source of truth)
+        const abIcons = { instinct: '\u26A1', determination: '\uD83D\uDCAA', naturel: '\u2728' };
+        const abColors = { instinct: '#FFD700', determination: '#FF8844', naturel: '#87CEEB' };
+        const charsData = this.cache.json.get('characters');
+        const rookieData = charsData?.roster?.find(c => c.id === 'rookie');
+        const abilities = (rookieData?.abilities_unlock || []).map(u => ({
+            key: u.id,
+            name: I18n.field(u.ability, 'name'),
+            pts: u.threshold,
+            desc: I18n.field(u.ability, 'description'),
+            type: u.ability.type,
+            charges: u.ability.charges,
+            icon: abIcons[u.id] || '\u2726',
+            color: abColors[u.id] || '#D4A574'
+        }));
 
         abilities.forEach((ab, i) => {
             const ax = x + i * ((CONTENT_W - 40) / 3);
@@ -507,10 +518,10 @@ export default class PlayerScene extends Phaser.Scene {
 
             const abg = this.add.graphics().setDepth(5);
             abg.fillStyle(unlocked ? 0x2A3A1A : 0x1A1510, 0.7);
-            abg.fillRoundedRect(ax, abY + 16, (CONTENT_W - 60) / 3, 50, 4);
+            abg.fillRoundedRect(ax, abY + 16, (CONTENT_W - 60) / 3, 58, 4);
             if (unlocked) {
                 abg.lineStyle(1, parseInt(ab.color.replace('#', ''), 16), 0.5);
-                abg.strokeRoundedRect(ax, abY + 16, (CONTENT_W - 60) / 3, 50, 4);
+                abg.strokeRoundedRect(ax, abY + 16, (CONTENT_W - 60) / 3, 58, 4);
             }
             this._addContent(abg);
 
@@ -519,11 +530,25 @@ export default class PlayerScene extends Phaser.Scene {
                 color: unlocked ? ab.color : '#4A4A3A', shadow: SHADOW
             }).setDepth(6));
 
-            this._addContent(this.add.text(ax + 8, abY + 38, unlocked ? ab.desc : `Deverrouille a ${ab.pts} pts`, {
-                fontFamily: 'monospace', fontSize: '7px',
-                color: unlocked ? CSS.CREME : '#3A3A2A', shadow: SHADOW,
-                wordWrap: { width: (CONTENT_W - 80) / 3 }
-            }).setDepth(6));
+            const cardW3 = (CONTENT_W - 80) / 3;
+            if (unlocked) {
+                const typeLabel = ab.type === 'passive' ? 'Passif' : `Actif (${ab.charges}x)`;
+                this._addContent(this.add.text(ax + 8, abY + 36, typeLabel, {
+                    fontFamily: 'monospace', fontSize: '7px',
+                    color: ab.type === 'passive' ? '#9B7BB8' : '#87CEEB', shadow: SHADOW
+                }).setDepth(6));
+                this._addContent(this.add.text(ax + 8, abY + 46, ab.desc, {
+                    fontFamily: 'monospace', fontSize: '7px',
+                    color: CSS.CREME, shadow: SHADOW,
+                    wordWrap: { width: cardW3 }
+                }).setDepth(6));
+            } else {
+                this._addContent(this.add.text(ax + 8, abY + 38, `Deverrouille a ${ab.pts} pts`, {
+                    fontFamily: 'monospace', fontSize: '7px',
+                    color: '#3A3A2A', shadow: SHADOW,
+                    wordWrap: { width: cardW3 }
+                }).setDepth(6));
+            }
         });
     }
 

@@ -463,6 +463,8 @@ export default class PetanqueEngine {
         // Resolve loft preset
         const isTir = shotMode === 'tirer';
         const loft = loftPreset || (isTir ? LOFT_TIR : LOFT_DEMI_PORTEE);
+        // Flag pointage vs tir — used to reduce collision impact for pointed balls
+        ball.isPoint = !isTir;
         this.lastShotLoft = loft;
 
         // Get puissance stat from the team's character

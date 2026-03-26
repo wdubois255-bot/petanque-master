@@ -4,6 +4,7 @@ import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js'
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import I18n from '../utils/I18n.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -359,19 +360,19 @@ export default class QuickPlayScene extends Phaser.Scene {
             const greetKeyGrid = `${char.charId}_greeting`;
             if (this.textures.exists(greetKeyGrid)) {
                 const spr = this.add.sprite(cx, cy - 6, greetKeyGrid, 0)
-                    .setScale(0.7).setDepth(UI.DEPTH_PANEL + 3);
+                    .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
                 this._tabObjects.push(spr);
             } else if (this.textures.exists(char.sprite)) {
                 const spr = this.add.sprite(cx, cy - 6, char.sprite, 0)
-                    .setScale(0.7).setDepth(UI.DEPTH_PANEL + 3);
+                    .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
                 this._tabObjects.push(spr);
             }
 
             // Name
             const shortName = char.display.length > 10 ? char.display.substring(0, 9) + '.' : char.display;
             this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
-                fontFamily: 'monospace', fontSize: '7px',
-                color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : CSS.GRIS,
+                fontFamily: FONT_PIXEL, fontSize: '7.5px',
+                color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : '#F5E6D0',
                 shadow: SHADOW
             }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
 
@@ -462,13 +463,13 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Label + name
         this._tabObjects.push(this.add.text(x, y, `${label}: ${char.display}`, {
-            fontFamily: FONT_PIXEL, fontSize: '8px', color, shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '10px', color, shadow: SHADOW
         }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
 
         // Catchphrase
         if (charData.catchphrase) {
-            this._tabObjects.push(this.add.text(x, y + 14, `"${charData.catchphrase}"`, {
-                fontFamily: 'monospace', fontSize: '8px', color: CSS.OCRE, shadow: SHADOW
+            this._tabObjects.push(this.add.text(x, y + 16, `"${I18n.field(charData, 'catchphrase')}"`, {
+                fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.OCRE, shadow: SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
         }
 
@@ -476,24 +477,48 @@ export default class QuickPlayScene extends Phaser.Scene {
         if (charData.stats) {
             const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
             const barW = Math.min(w - 80, 140);
-            const barX = x + 32;
-            const barStartY = y + 30;
+            const barX = x + 36;
+            const barStartY = y + 34;
 
             for (let i = 0; i < STAT_NAMES.length; i++) {
                 const val = charData.stats[STAT_NAMES[i]] || 0;
                 const sy = barStartY + i * 16;
 
                 this._tabObjects.push(this.add.text(barX - 4, sy + 3, STAT_LABELS[i], {
-                    fontFamily: 'monospace', fontSize: '7px', color: CSS.GRIS, shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.GRIS, shadow: SHADOW
                 }).setOrigin(1, 0.5).setDepth(UI.DEPTH_PANEL + 3));
 
-                UIFactory.drawStatBar(gfx, barX, sy, barW, 6, val, 10, STAT_COLORS[i]);
+                UIFactory.drawStatBar(gfx, barX, sy, barW, 7, val, 10, STAT_COLORS[i]);
 
-                this._tabObjects.push(this.add.text(barX + barW + 6, sy + 3, `${val}`, {
-                    fontFamily: 'monospace', fontSize: '7px', color: CSS.CREME, shadow: SHADOW
+                this._tabObjects.push(this.add.text(barX + barW + 8, sy + 3, `${val}`, {
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.CREME, shadow: SHADOW
                 }).setOrigin(0, 0.5).setDepth(UI.DEPTH_PANEL + 3));
             }
             this._tabObjects.push(gfx);
+
+            // Ability info (right of stat bars)
+            const ability = charData.ability || (charData.abilities_unlock?.[0]?.ability);
+            if (ability) {
+                const abX = barX + barW + 30;
+                const abY = barStartY - 14;
+                const abName = I18n.field(ability, 'name');
+                const abDesc = I18n.field(ability, 'description');
+                const charges = ability.charges > 0 ? `Actif (${ability.charges}x)` : 'Passif';
+
+                this._tabObjects.push(this.add.text(abX, abY, `\u26A1 ${abName}`, {
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: '#FFD700', shadow: SHADOW
+                }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
+
+                this._tabObjects.push(this.add.text(abX, abY + 13, charges, {
+                    fontFamily: FONT_PIXEL, fontSize: '8px',
+                    color: ability.charges > 0 ? '#87CEEB' : '#9B7BB8', shadow: SHADOW
+                }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
+
+                this._tabObjects.push(this.add.text(abX, abY + 26, abDesc, {
+                    fontFamily: FONT_PIXEL, fontSize: '8px', color: '#F5E6D0', shadow: SHADOW,
+                    wordWrap: { width: w - (abX - x) - 10 }, lineSpacing: 2
+                }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
+            }
         }
     }
 

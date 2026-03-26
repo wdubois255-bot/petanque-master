@@ -634,6 +634,31 @@ export default class ArcadeScene extends Phaser.Scene {
             }).setOrigin(0.5).setDepth(6);
         }
 
+        // === BOTTOM BUTTONS: QUITTER + RECOMMENCER ===
+        const bottomY = GAME_HEIGHT - 20;
+
+        const quitBtn = this.add.text(50, bottomY, I18n.t('arcade.quit'), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: { x: 8, y: 4 }, shadow: SHADOW
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setDepth(8);
+        quitBtn.on('pointerover', () => quitBtn.setColor('#F5E6D0'));
+        quitBtn.on('pointerout', () => quitBtn.setColor('#9E9E8E'));
+        quitBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
+
+        const restartBtn = this.add.text(140, bottomY, I18n.t('arcade.restart'), {
+            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: { x: 8, y: 4 }, shadow: SHADOW
+        }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setDepth(8);
+        restartBtn.on('pointerover', () => restartBtn.setColor('#F5E6D0'));
+        restartBtn.on('pointerout', () => restartBtn.setColor('#9E9E8E'));
+        restartBtn.on('pointerdown', () => {
+            const s = loadSave();
+            s.arcadeProgress = 0;
+            s.arcadePerfect = false;
+            saveSave(s);
+            fadeToScene(this, 'ArcadeScene', { playerCharacter: this.playerCharacter });
+        });
+
         this.input.keyboard.on('keydown-SPACE', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ENTER', () => this._launchNextMatch());
         this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
@@ -909,12 +934,15 @@ export default class ArcadeScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
         replayBtn.on('pointerdown', () => {
+            // Reset arcade progress so it starts fresh
+            const s = loadSave();
+            s.arcadeProgress = 0;
+            s.arcadePerfect = false;
+            saveSave(s);
             fadeToScene(this, 'ArcadeScene', { playerCharacter: this.playerCharacter });
         });
         menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
-        this.input.keyboard.on('keydown-SPACE', () => {
-            fadeToScene(this, 'ArcadeScene', { playerCharacter: this.playerCharacter });
-        });
+        this.input.keyboard.on('keydown-SPACE', () => replayBtn.emit('pointerdown'));
         this.input.keyboard.on('keydown-ESC', () => fadeToScene(this, 'TitleScene'));
     }
 

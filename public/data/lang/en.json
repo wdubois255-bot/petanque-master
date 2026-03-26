@@ -216,7 +216,7 @@
     "continue": "CONTINUE",
     "retry": "RETRY",
     "menu": "MAIN MENU",
-    "controls": "Space Fight     Esc Menu",
+    "controls": "Space Fight     Esc Quit",
     "time_matin": "Morning",
     "time_fin_matinee": "Late morning",
     "time_midi": "Noon",
@@ -240,6 +240,8 @@
     "defeat_continue": "CONTINUE",
     "defeat_consolation": "+{galets} consolation Pebbles",
     "replay": "REPLAY",
+    "restart": "RESTART",
+    "quit": "QUIT",
     "bonus_perfect": "Perfect bonus",
     "bonus_complete": "Completion bonus"
   }
