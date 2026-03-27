@@ -683,6 +683,8 @@ export default class TitleScene extends Phaser.Scene {
         this._settingsValues = getAudioSettings();
 
         this._settingsModal = UIFactory.createModalOverlay(this, 420, 340, () => {
+            if (this._settingsItems) { this._settingsItems.forEach(o => o.destroy()); this._settingsItems = null; }
+            if (this._settingsCursor) { this._settingsCursor.destroy(); this._settingsCursor = null; }
             this._settingsModal = null;
             this._mode = 'main';
             this._inputEnabled = true;

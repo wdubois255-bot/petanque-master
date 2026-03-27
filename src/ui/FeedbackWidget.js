@@ -193,34 +193,41 @@ export default class FeedbackWidget {
             commentText = domInput.value;
         });
 
-        // === Send button ===
+        // === Send button (DOM — above canvas like textarea) ===
         const sendY = py + ph - 48;
         const sendW = pw - 32;
         const sendH = 32;
-        const sendGfx = scene.add.graphics().setDepth(DEPTH + 2);
-        const drawSendN = () => {
-            sendGfx.clear();
-            sendGfx.fillStyle(0x2A5A2A, 0.9);
-            sendGfx.fillRoundedRect(px + 16, sendY, sendW, sendH, 6);
-            sendGfx.lineStyle(1, 0x44CC44, 0.7);
-            sendGfx.strokeRoundedRect(px + 16, sendY, sendW, sendH, 6);
+        const domSendBtn = document.createElement('button');
+        domSendBtn.textContent = I18n.t('feedback.send');
+        domSendBtn.style.cssText = `
+            position: absolute; z-index: 1001; cursor: pointer;
+            background: rgba(42,90,42,0.9); color: #44FF44;
+            border: 1px solid #44CC44; border-radius: 6px;
+            font-family: monospace; font-size: 13px; font-weight: bold;
+            box-sizing: border-box; outline: none;
+            transition: background 0.15s;
+        `;
+        domSendBtn.addEventListener('mouseenter', () => {
+            domSendBtn.style.background = 'rgba(58,122,58,1)';
+        });
+        domSendBtn.addEventListener('mouseleave', () => {
+            domSendBtn.style.background = 'rgba(42,90,42,0.9)';
+        });
+        const updateSendPosition = () => {
+            const canvas = scene.game.canvas;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = rect.width / GAME_WIDTH;
+            const scaleY = rect.height / GAME_HEIGHT;
+            domSendBtn.style.left = `${rect.left + (px + 16) * scaleX}px`;
+            domSendBtn.style.top = `${rect.top + sendY * scaleY}px`;
+            domSendBtn.style.width = `${sendW * scaleX}px`;
+            domSendBtn.style.height = `${sendH * scaleY}px`;
+            domSendBtn.style.fontSize = `${Math.max(11, 13 * scaleY)}px`;
         };
-        const drawSendH = () => {
-            sendGfx.clear();
-            sendGfx.fillStyle(0x3A7A3A, 1);
-            sendGfx.fillRoundedRect(px + 16, sendY, sendW, sendH, 6);
-            sendGfx.lineStyle(1, 0x44CC44, 1);
-            sendGfx.strokeRoundedRect(px + 16, sendY, sendW, sendH, 6);
-        };
-        drawSendN();
-        const sendLbl = scene.add.text(CX, sendY + sendH / 2, I18n.t('feedback.send'), {
-            fontFamily: 'monospace', fontSize: '13px', color: '#44FF44'
-        }).setOrigin(0.5).setDepth(DEPTH + 3);
-        const sendZone = scene.add.zone(CX, sendY + sendH / 2, sendW, sendH)
-            .setInteractive({ useHandCursor: true }).setDepth(DEPTH + 4);
-        sendZone.on('pointerover', () => { drawSendH(); sfxUIHover(); });
-        sendZone.on('pointerout', drawSendN);
-        sendZone.on('pointerdown', () => {
+        updateSendPosition();
+        document.body.appendChild(domSendBtn);
+
+        domSendBtn.addEventListener('click', () => {
             sfxUIClick();
             const entry = {
                 rating: selectedRating || 'none',
@@ -231,10 +238,8 @@ export default class FeedbackWidget {
             FeedbackWidget._store(entry);
             FeedbackWidget._sendToWebhook(entry);
             cleanup();
-            // Show confirmation
             FeedbackWidget._showConfirmation(scene);
         });
-        elements.push(sendGfx, sendLbl, sendZone);
 
         // === Close / cancel (small X top-right) ===
         const closeBtn = scene.add.text(px + pw - 14, py + 8, 'X', {
@@ -250,6 +255,7 @@ export default class FeedbackWidget {
         const cleanup = () => {
             elements.forEach(el => { if (el?.active !== false) el.destroy(); });
             if (domInput.parentNode) domInput.parentNode.removeChild(domInput);
+            if (domSendBtn.parentNode) domSendBtn.parentNode.removeChild(domSendBtn);
             scene._feedbackWidgetActive = false;
         };
 
@@ -303,15 +309,19 @@ export default class FeedbackWidget {
 
     // ================================================================
     // WEBHOOK SEND (best-effort, no error shown if it fails)
-    // Uses sendBeacon (handles redirects + works even on page close).
+    // Google Apps Script redirects (302) — the POST body is received
+    // before the redirect. The browser CORS error on the redirect
+    // response is expected and harmless (data already processed).
     // Feedback is always saved locally first — webhook is bonus.
     // ================================================================
     static _sendToWebhook(entry) {
         if (!FEEDBACK_URL || FEEDBACK_URL.includes('PLACEHOLDER')) return;
         try {
-            const blob = new Blob([JSON.stringify(entry)], { type: 'text/plain' });
-            navigator.sendBeacon(FEEDBACK_URL, blob);
-        } catch (_) { /* sendBeacon not available — silent fail */ }
+            fetch(FEEDBACK_URL, {
+                method: 'POST',
+                body: JSON.stringify(entry)
+            }).catch(() => { /* CORS error on redirect — expected, data was received */ });
+        } catch (_) { /* fetch not available */ }
     }
 
     // ================================================================
