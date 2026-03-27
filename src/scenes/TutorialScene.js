@@ -370,17 +370,16 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const techniques = [
-            { key: '1', name: 'ROULETTE', desc: 'La boule roule au sol. Tres precise.', color: '#87CEEB', arcH: 5 },
-            { key: '2', name: 'DEMI-PORTEE', desc: 'Mi-vol, mi-roulement. Polyvalente.', color: '#D4A574', arcH: 30 },
-            { key: '3', name: 'PLOMBEE', desc: 'La boule vole haut et s\'arrete court.', color: '#9B7BB8', arcH: 55 },
-            { key: 'T', name: 'TIR', desc: 'Frappe directe sur une boule adverse.', color: '#C44B3F', arcH: 40 }
+            { key: '1', name: 'DEMI-PORTEE', desc: 'Mi-vol, mi-roulement. Polyvalente.', color: '#D4A574', arcH: 30 },
+            { key: '2', name: 'PLOMBEE', desc: 'La boule vole haut et s\'arrete court.', color: '#9B7BB8', arcH: 55 },
+            { key: '3', name: 'TIR', desc: 'Frappe directe sur une boule adverse.', color: '#C44B3F', arcH: 40 }
         ];
 
-        const startY = CONTENT_Y + 70;
+        const startY = CONTENT_Y + 85;
         const gfx = this.add.graphics();
 
         techniques.forEach((tech, i) => {
-            const y = startY + i * 72;
+            const y = startY + i * 90;
 
             // Key badge
             gfx.fillStyle(Phaser.Display.Color.HexStringToColor(tech.color).color, 0.2);

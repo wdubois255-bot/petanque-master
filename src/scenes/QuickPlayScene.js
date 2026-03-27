@@ -96,18 +96,25 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Build character roster dynamically from characters.json (no hardcoded list)
         const roster = (this._charsData.roster || []).filter(c => !c.hidden);
+        const arcadeData = this.cache.json.get('arcade') || {};
+        const arcadeOpponentIds = (arcadeData.matches || []).map(m => m.opponent);
+        const save = loadSave();
+        const unlockedChars = save.unlockedCharacters || ['rookie'];
         _charValues = roster.map(c => ({
             display: c.name,
             key: c.sprite || (c.id + '_animated'),
             sprite: c.sprite || (c.id + '_animated'),
-            charId: c.id
+            charId: c.id,
+            locked: arcadeOpponentIds.includes(c.id) && !unlockedChars.includes(c.id)
         }));
+        // Ensure default P1/P2 indices land on unlocked characters
+        if (_charValues[this._p1Index]?.locked) this._p1Index = this._nextUnlockedIndex(this._p1Index, 1);
+        if (_charValues[this._p2Index]?.locked) this._p2Index = this._nextUnlockedIndex(this._p2Index, 1);
+        if (this._p1Index === this._p2Index) this._p2Index = this._nextUnlockedIndex(this._p2Index, 1);
+
         this._allBoules = boulesData?.sets || [];
         this._allCochonnets = boulesData?.cochonnets || [];
         this._allTerrains = terrainsData?.stages || [];
-
-        // Filter owned items
-        const save = loadSave();
         this._ownedBoules = this._allBoules.filter(b => b.unlocked || (save.unlockedBoules || []).includes(b.id));
         this._ownedCochonnets = this._allCochonnets.filter(c => c.unlocked || (save.unlockedCochonnets || []).includes(c.id));
 
@@ -186,10 +193,11 @@ export default class QuickPlayScene extends Phaser.Scene {
         const isP1 = side === 'p1';
         const idx = isP1 ? this._p1Index : this._p2Index;
         const char = _charValues[idx];
+        const displayName = char.locked ? '???' : char.display;
 
         // Just update name text in banner
-        if (isP1 && this._p1NameText) this._p1NameText.setText(char.display);
-        if (!isP1 && this._p2NameText) this._p2NameText.setText(char.display);
+        if (isP1 && this._p1NameText) this._p1NameText.setText(displayName);
+        if (!isP1 && this._p2NameText) this._p2NameText.setText(displayName);
     }
 
     // ================================================================
@@ -337,44 +345,71 @@ export default class QuickPlayScene extends Phaser.Scene {
             const cx = gridX + col * (cellW + cellGap) + cellW / 2;
             const cy = topY + 14 + row * (cellH + cellGap) + cellH / 2;
             const char = _charValues[i];
-            const isP1 = i === this._p1Index;
-            const isP2 = i === this._p2Index;
+            const isLocked = char.locked;
+            const isP1 = !isLocked && i === this._p1Index;
+            const isP2 = !isLocked && i === this._p2Index;
 
             // Cell background
             const cellGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 2);
-            cellGfx.fillStyle(isP1 ? 0x2A3A5A : isP2 ? 0x5A2A2A : 0x2A2218, 0.8);
-            cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-            if (isP1) {
-                cellGfx.lineStyle(2, 0x5B9BD5, 0.9);
-                cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-            } else if (isP2) {
-                cellGfx.lineStyle(2, 0xC44B3F, 0.9);
+            if (isLocked) {
+                cellGfx.fillStyle(0x1A1510, 0.9);
+                cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                cellGfx.lineStyle(1, 0x3A2E28, 0.4);
                 cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
             } else {
-                cellGfx.lineStyle(1, 0xD4A574, 0.2);
-                cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                cellGfx.fillStyle(isP1 ? 0x2A3A5A : isP2 ? 0x5A2A2A : 0x2A2218, 0.8);
+                cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                if (isP1) {
+                    cellGfx.lineStyle(2, 0x5B9BD5, 0.9);
+                    cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                } else if (isP2) {
+                    cellGfx.lineStyle(2, 0xC44B3F, 0.9);
+                    cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                } else {
+                    cellGfx.lineStyle(1, 0xD4A574, 0.2);
+                    cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                }
             }
             this._tabObjects.push(cellGfx);
 
-            // Character sprite — greeting frame 0 (static) if available, else canvas frame 0
-            const greetKeyGrid = `${char.charId}_greeting`;
-            if (this.textures.exists(greetKeyGrid)) {
-                const spr = this.add.sprite(cx, cy - 6, greetKeyGrid, 0)
-                    .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
-                this._tabObjects.push(spr);
-            } else if (this.textures.exists(char.sprite)) {
-                const spr = this.add.sprite(cx, cy - 6, char.sprite, 0)
-                    .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
-                this._tabObjects.push(spr);
-            }
+            if (isLocked) {
+                // Locked: dark silhouette + "?" + lock icon
+                const silGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+                silGfx.fillStyle(0x2A2218, 0.6);
+                silGfx.fillEllipse(cx, cy - 8, 28, 36);
+                this._tabObjects.push(silGfx);
+                this._tabObjects.push(this.add.text(cx, cy - 8, '?', {
+                    fontFamily: FONT_PIXEL, fontSize: '18px', color: '#3A2E28', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+                // Lock icon
+                this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 22, '\uD83D\uDD12', {
+                    fontSize: '10px'
+                }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+                // Hidden name
+                this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, '???', {
+                    fontFamily: FONT_PIXEL, fontSize: '7.5px', color: '#5A4A3A', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+            } else {
+                // Character sprite — greeting frame 0 (static) if available, else canvas frame 0
+                const greetKeyGrid = `${char.charId}_greeting`;
+                if (this.textures.exists(greetKeyGrid)) {
+                    const spr = this.add.sprite(cx, cy - 6, greetKeyGrid, 0)
+                        .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
+                    this._tabObjects.push(spr);
+                } else if (this.textures.exists(char.sprite)) {
+                    const spr = this.add.sprite(cx, cy - 6, char.sprite, 0)
+                        .setScale(0.85).setDepth(UI.DEPTH_PANEL + 3);
+                    this._tabObjects.push(spr);
+                }
 
-            // Name
-            const shortName = char.display.length > 10 ? char.display.substring(0, 9) + '.' : char.display;
-            this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
-                fontFamily: FONT_PIXEL, fontSize: '7.5px',
-                color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : '#F5E6D0',
-                shadow: SHADOW
-            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+                // Name
+                const shortName = char.display.length > 10 ? char.display.substring(0, 9) + '.' : char.display;
+                this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
+                    fontFamily: FONT_PIXEL, fontSize: '7.5px',
+                    color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : '#F5E6D0',
+                    shadow: SHADOW
+                }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
+            }
 
             // P1/P2 badge
             if (isP1) {
@@ -390,39 +425,59 @@ export default class QuickPlayScene extends Phaser.Scene {
 
             // Interactive hit zone
             const zone = this.add.zone(cx, cy, cellW, cellH)
-                .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(UI.DEPTH_PANEL + 5);
-            zone.on('pointerdown', () => {
-                sfxUIClick();
-                // Left click = J1, right click or shift+click = J2
-                if (this.input.activePointer.event?.shiftKey || this.input.activePointer.rightButtonDown()) {
-                    this._p2Index = i;
-                    this._updateBannerSprite('p2');
-                } else {
-                    this._p1Index = i;
-                    this._updateBannerSprite('p1');
-                }
-                this._buildTabContent();
-                this._updateSummary();
-            });
-            zone.on('pointerover', () => {
-                if (!isP1 && !isP2) {
+                .setOrigin(0.5).setInteractive({ useHandCursor: !isLocked }).setDepth(UI.DEPTH_PANEL + 5);
+            if (isLocked) {
+                zone.on('pointerdown', () => {
+                    this._showLockedMessage(cx, cy);
+                });
+                zone.on('pointerover', () => {
                     cellGfx.clear();
-                    cellGfx.fillStyle(0x3A3228, 0.9);
+                    cellGfx.fillStyle(0x2A2018, 0.9);
                     cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-                    cellGfx.lineStyle(1, 0xD4A574, 0.5);
+                    cellGfx.lineStyle(1, 0x5A4A3A, 0.5);
                     cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-                    sfxUIHover();
-                }
-            });
-            zone.on('pointerout', () => {
-                if (!isP1 && !isP2) {
+                });
+                zone.on('pointerout', () => {
                     cellGfx.clear();
-                    cellGfx.fillStyle(0x2A2218, 0.8);
+                    cellGfx.fillStyle(0x1A1510, 0.9);
                     cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-                    cellGfx.lineStyle(1, 0xD4A574, 0.2);
+                    cellGfx.lineStyle(1, 0x3A2E28, 0.4);
                     cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
-                }
-            });
+                });
+            } else {
+                zone.on('pointerdown', () => {
+                    sfxUIClick();
+                    // Left click = J1, right click or shift+click = J2
+                    if (this.input.activePointer.event?.shiftKey || this.input.activePointer.rightButtonDown()) {
+                        this._p2Index = i;
+                        this._updateBannerSprite('p2');
+                    } else {
+                        this._p1Index = i;
+                        this._updateBannerSprite('p1');
+                    }
+                    this._buildTabContent();
+                    this._updateSummary();
+                });
+                zone.on('pointerover', () => {
+                    if (!isP1 && !isP2) {
+                        cellGfx.clear();
+                        cellGfx.fillStyle(0x3A3228, 0.9);
+                        cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                        cellGfx.lineStyle(1, 0xD4A574, 0.5);
+                        cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                        sfxUIHover();
+                    }
+                });
+                zone.on('pointerout', () => {
+                    if (!isP1 && !isP2) {
+                        cellGfx.clear();
+                        cellGfx.fillStyle(0x2A2218, 0.8);
+                        cellGfx.fillRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                        cellGfx.lineStyle(1, 0xD4A574, 0.2);
+                        cellGfx.strokeRoundedRect(cx - cellW / 2, cy - cellH / 2, cellW, cellH, 4);
+                    }
+                });
+            }
             this._tabObjects.push(zone);
         }
 
@@ -460,6 +515,17 @@ export default class QuickPlayScene extends Phaser.Scene {
         const char = _charValues[charIndex];
         const charData = roster.find(c => c.id === char.charId);
         if (!charData) return;
+
+        // Locked character: show minimal info
+        if (char.locked) {
+            this._tabObjects.push(this.add.text(x, y, `${label}: ???`, {
+                fontFamily: FONT_PIXEL, fontSize: '10px', color: '#5A4A3A', shadow: SHADOW
+            }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
+            this._tabObjects.push(this.add.text(x, y + 18, I18n.t('locked_arcade_detail', '\uD83D\uDD12 A debloquer en mode Arcade'), {
+                fontFamily: FONT_PIXEL, fontSize: '9px', color: '#7A6A5A', shadow: SHADOW
+            }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
+            return;
+        }
 
         // Label + name
         this._tabObjects.push(this.add.text(x, y, `${label}: ${char.display}`, {
@@ -1058,8 +1124,8 @@ export default class QuickPlayScene extends Phaser.Scene {
         sfxUIClick();
         switch (TAB_KEYS[this._activeTab]) {
             case 'personnages':
-                // Left/Right = cycle J1
-                this._p1Index = (this._p1Index + dir + _charValues.length) % _charValues.length;
+                // Left/Right = cycle J1 (skip locked)
+                this._p1Index = this._nextUnlockedIndex(this._p1Index, dir);
                 this._updateBannerSprite('p1');
                 this._buildTabContent();
                 this._updateSummary();
@@ -1086,7 +1152,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         sfxUIClick();
         switch (TAB_KEYS[this._activeTab]) {
             case 'personnages':
-                this._p2Index = (this._p2Index + dir + _charValues.length) % _charValues.length;
+                this._p2Index = this._nextUnlockedIndex(this._p2Index, dir);
                 this._updateBannerSprite('p2');
                 this._buildTabContent();
                 this._updateSummary();
@@ -1104,6 +1170,31 @@ export default class QuickPlayScene extends Phaser.Scene {
                 }
                 break;
         }
+    }
+
+    // ================================================================
+    // LOCKED CHARACTER HELPERS
+    // ================================================================
+    _nextUnlockedIndex(current, dir) {
+        const len = _charValues.length;
+        let next = (current + dir + len) % len;
+        let tries = 0;
+        while (_charValues[next].locked && tries < len) {
+            next = (next + dir + len) % len;
+            tries++;
+        }
+        return next;
+    }
+
+    _showLockedMessage(x, y) {
+        const msg = this.add.text(x, y - 20, I18n.t('locked_arcade', 'A debloquer en Arcade'), {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#C44B3F',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 10).setAlpha(1);
+        this.tweens.add({
+            targets: msg, y: y - 40, alpha: 0, duration: 1200, ease: 'Power2',
+            onComplete: () => msg.destroy()
+        });
     }
 
     // ================================================================

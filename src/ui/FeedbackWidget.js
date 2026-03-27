@@ -170,6 +170,9 @@ export default class FeedbackWidget {
         `;
         domInput.maxLength = 300;
         domInput.placeholder = I18n.t('feedback.comment_placeholder');
+        // Prevent Phaser from capturing keyboard events while typing
+        domInput.addEventListener('keydown', (e) => e.stopPropagation());
+        domInput.addEventListener('keyup', (e) => e.stopPropagation());
 
         // Position the DOM input to match the canvas coordinates
         const updateInputPosition = () => {
@@ -300,20 +303,15 @@ export default class FeedbackWidget {
 
     // ================================================================
     // WEBHOOK SEND (best-effort, no error shown if it fails)
-    // Google Apps Script redirects POST (302), so we use no-cors mode.
+    // Uses sendBeacon (handles redirects + works even on page close).
     // Feedback is always saved locally first — webhook is bonus.
     // ================================================================
     static _sendToWebhook(entry) {
         if (!FEEDBACK_URL || FEEDBACK_URL.includes('PLACEHOLDER')) return;
         try {
-            fetch(FEEDBACK_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify(entry),
-                redirect: 'follow'
-            }).catch(() => { /* silent — feedback already saved locally */ });
-        } catch (_) { /* fetch not available */ }
+            const blob = new Blob([JSON.stringify(entry)], { type: 'text/plain' });
+            navigator.sendBeacon(FEEDBACK_URL, blob);
+        } catch (_) { /* sendBeacon not available — silent fail */ }
     }
 
     // ================================================================

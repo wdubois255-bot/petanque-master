@@ -153,16 +153,14 @@ export default class InGameTutorial {
         if (this.completed) return;
 
         // Phase 1 trigger: player about to throw their first boule
-        // Must wait for GOAL and terrain hint to be dismissed first
+        // Shows immediately when it's the player's turn (no gap delay)
         if ((state === 'FIRST_BALL' || state === 'PLAY_LOOP') &&
             this.engine.currentTeam === 'player' &&
             !this._phaseDone(TUTORIAL_PHASE_AIM) &&
             !this._phase1Active &&
             !this._terrainHintActive &&
             !this._goalActive) {
-            if (this._canStartNewPhase()) {
-                this._showPhase1_Aim();
-            }
+            this._showPhase1_Aim();
         }
 
         // Phase 1 close: player launched the ball (dragged and released)
@@ -301,13 +299,14 @@ export default class InGameTutorial {
         // Direction arrow (appears on release — shows ball going UP)
         const throwArrow = s.add.graphics().setDepth(DEPTH).setAlpha(0);
 
-        // --- Text (bottom of screen) ---
-        const main = s.add.text(cx, GAME_HEIGHT - 52,
+        // --- Text (centered, below finger animation area) ---
+        const textY = endY + 40;
+        const main = s.add.text(cx, textY,
             I18n.t('tutorial.aim'),
             { ...TEXT_STYLE, fontSize: '13px' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
-        const sub = s.add.text(cx, GAME_HEIGHT - 32,
+        const sub = s.add.text(cx, textY + 22,
             I18n.t('tutorial.aim_sub'),
             { ...HINT_STYLE, fontSize: '11px', color: '#87CEEB' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
