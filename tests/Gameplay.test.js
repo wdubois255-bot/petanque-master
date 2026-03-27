@@ -399,9 +399,9 @@ describe('Boule-cochonnet collisions', () => {
         expect(cochonnet.vx).toBeGreaterThan(boule.vx);
     });
 
-    it('COR 0.50 for boule-cochonnet (wood/steel)', () => {
+    it('COR 0.60 for boule-cochonnet (wood/steel)', () => {
         // Verify the constant
-        expect(RESTITUTION_COCHONNET).toBe(0.50);
+        expect(RESTITUTION_COCHONNET).toBe(0.60);
     });
 
     it('light cochonnet absorbs energy: moves but is capped', () => {
