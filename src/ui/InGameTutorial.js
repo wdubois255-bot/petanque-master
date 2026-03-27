@@ -153,8 +153,8 @@ export default class InGameTutorial {
         if (this.completed) return;
 
         // Phase 1 trigger: player about to throw their first boule
-        // Shows immediately when it's the player's turn (no gap delay)
-        if ((state === 'FIRST_BALL' || state === 'PLAY_LOOP') &&
+        // Catches all states where it becomes the player's turn to aim
+        if ((state === 'FIRST_BALL' || state === 'SECOND_TEAM_FIRST' || state === 'PLAY_LOOP') &&
             this.engine.currentTeam === 'player' &&
             !this._phaseDone(TUTORIAL_PHASE_AIM) &&
             !this._phase1Active &&
