@@ -21,7 +21,7 @@ export const COCHONNET_MAX_DIST = 280;
 export const FRICTION_BASE = 0.15;
 export const SPEED_THRESHOLD = 0.3;
 export const RESTITUTION_BOULE = 0.62;     // Acier sur acier (reel: 0.60-0.65)
-export const RESTITUTION_COCHONNET = 0.50; // Bois/synthétique sur acier
+export const RESTITUTION_COCHONNET = 0.60; // Bois/synthétique sur acier
 export const MAX_THROW_SPEED = 12;
 export const LANDING_FACTOR_POINT = 0.65;
 export const LANDING_FACTOR_TIR = 0.3;
@@ -188,7 +188,7 @@ export const DUST_COUNT_TIR = 8;
 export const WALL_RESTITUTION = 0.35; // Bois/metal reel ~0.30-0.40
 // Pointage: attenuation de l'impulse de collision (une boule roulee doucement
 // ne doit pas ejecter les autres comme un tir). 0.4 = 40% de l'impulse normale.
-export const POINT_COLLISION_DAMPING = 0.4;
+export const POINT_COLLISION_DAMPING = 0.5;
 export const COLLISION_SPARK_COUNT = 5;
 export const CARREAU_SPARK_COUNT = 8;
 export const CARREAU_SPARK_RADIUS = 36;
@@ -360,7 +360,7 @@ export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
 export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
-export const COCHONNET_MAX_COLLISION_SPEED = 5.0; // Cochonnet se deplace moderement — reste dans la zone de jeu
+export const COCHONNET_MAX_COLLISION_SPEED = 6.0; // Cochonnet se deplace moderement — reste dans la zone de jeu
 
 // Screen shake (carreau)
 export const CARREAU_SHAKE_DURATION = 250;
@@ -454,6 +454,7 @@ export const TUTORIAL_PHASE_AIM = 1;
 export const TUTORIAL_PHASE_LOFT = 2;
 export const TUTORIAL_PHASE_SCORE = 3;
 export const TUTORIAL_PHASE_TURN_RULE = 4; // "l'équipe la plus loin rejoue"
+export const TUTORIAL_PHASE_GOAL = 0; // "objectif du jeu" — affiché avant Phase 1
 
 // Daily challenge
 export const GALET_DAILY_REWARD = 40;

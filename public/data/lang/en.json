@@ -56,6 +56,7 @@
     "locked": "???"
   },
   "tutorial": {
+    "goal": "Throw your balls as close as possible to the Jack (the small ball) to score!",
     "aim": "Swipe down to aim, release to throw!",
     "aim_sub": "The further you pull, the faster the ball goes.",
     "loft_title": "Choose your trajectory:",

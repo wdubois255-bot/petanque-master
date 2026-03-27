@@ -56,6 +56,7 @@
     "locked": "???"
   },
   "tutorial": {
+    "goal": "Lancez vos boules le plus pres possible du cochonnet (la petite boule) pour marquer !",
     "aim": "Glissez vers le bas pour viser, relâchez pour lancer !",
     "aim_sub": "Plus vous tirez loin, plus la boule ira vite.",
     "loft_title": "Choisissez votre trajectoire :",

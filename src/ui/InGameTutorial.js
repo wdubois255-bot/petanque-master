@@ -2,7 +2,7 @@ import { loadSave, saveSave } from '../utils/SaveManager.js';
 import {
     GAME_WIDTH, GAME_HEIGHT,
     TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
-    TUTORIAL_PHASE_TURN_RULE
+    TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL
 } from '../utils/Constants.js';
 import I18n from '../utils/I18n.js';
 
@@ -56,6 +56,12 @@ export default class InGameTutorial {
         // Show terrain hint before any tutorial phase (one-shot per terrain)
         const terrainId = scene.terrainFullData?.id || null;
         this._maybeShowTerrainHint(terrainId);
+
+        // Phase 0 (GOAL): show game objective before anything else (one-shot)
+        this._goalActive = false;
+        if (!this._phaseDone(TUTORIAL_PHASE_GOAL) && !this._terrainHintActive) {
+            this._showPhase0_Goal();
+        }
 
         // If all phases already done, do nothing more
         if (this._phaseDone(TUTORIAL_PHASE_AIM) &&
@@ -142,10 +148,54 @@ export default class InGameTutorial {
     }
 
     // ================================================================
+    // PHASE 0: GOAL — objectif du jeu (non-bloquant, auto-dismiss)
+    // ================================================================
+    _showPhase0_Goal() {
+        if (this._goalActive) return;
+        this._goalActive = true;
+
+        const cx = GAME_WIDTH / 2;
+
+        const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        bg.fillStyle(0x1A1510, 0.55);
+        bg.fillRect(0, 0, GAME_WIDTH, 80);
+
+        const icon = this.scene.add.text(cx, 22, '\u{1F3AF}', {
+            fontSize: '20px'
+        }).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+
+        const main = this.scene.add.text(cx, 50,
+            I18n.t('tutorial.goal'),
+            { ...TEXT_STYLE, fontSize: '13px', wordWrap: { width: 560 } }
+        ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+
+        this.scene.tweens.add({
+            targets: [bg, icon, main], alpha: 1, duration: 400, ease: 'Sine.easeOut'
+        });
+
+        this._elements.push(bg, icon, main);
+
+        // Auto-dismiss after 5s or when player starts dragging (Phase 1 trigger)
+        const timer = this.scene.time.delayedCall(5000, () => {
+            this._dismissGoal();
+        });
+        this._elements.push({ destroy: () => timer.destroy() });
+    }
+
+    _dismissGoal() {
+        if (!this._goalActive) return;
+        this._goalActive = false;
+        this._markPhaseDone(TUTORIAL_PHASE_GOAL);
+        this._fadeOutElements();
+    }
+
+    // ================================================================
     // PHASE 1: VISER — premier lancer
     // ================================================================
     _showPhase1_Aim() {
         if (this._phase1Active) return;
+        // Dismiss goal overlay if still showing
+        if (this._goalActive) this._dismissGoal();
         this._phase1Active = true;
         this._clearElements();
 

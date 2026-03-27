@@ -393,18 +393,27 @@ export default class TerrainRenderer {
         const hasTexture = texKey && this.scene.textures.exists(texKey);
 
         if (hasTexture) {
-            // Tile the seamless texture across the terrain surface
-            const ts = this.scene.add.tileSprite(
-                this.tx + TERRAIN_WIDTH / 2,
-                this.ty + TERRAIN_HEIGHT / 2,
-                TERRAIN_WIDTH, TERRAIN_HEIGHT,
-                texKey
-            ).setDepth(2);
+            // Canvas-based tiling avoids tileSprite seam artifacts in pixel art mode
+            const tiledKey = `terrain_tiled_${this.terrainId}`;
+            if (this.scene.textures.exists(tiledKey)) this.scene.textures.remove(tiledKey);
+            const tiledTex = this.scene.textures.createCanvas(tiledKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+            const tiledCtx = tiledTex.getContext();
+
+            const srcImage = this.scene.textures.get(texKey).getSourceImage();
+            const pattern = tiledCtx.createPattern(srcImage, 'repeat');
+            tiledCtx.fillStyle = pattern;
+            tiledCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
 
             // Tint colline warmer to differentiate from village (same terre texture)
             if (this.terrainId === 'colline') {
-                ts.setTint(0xDDCC88);
+                tiledCtx.globalCompositeOperation = 'multiply';
+                tiledCtx.fillStyle = '#DDCC88';
+                tiledCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+                tiledCtx.globalCompositeOperation = 'source-over';
             }
+
+            tiledTex.refresh();
+            this.scene.add.image(this.tx + TERRAIN_WIDTH / 2, this.ty + TERRAIN_HEIGHT / 2, tiledKey).setDepth(2);
 
             // Overlay docks with blue-gray to neutralize warm reddish tones from dalles texture
             if (this.terrainId === 'docks') {

@@ -9,7 +9,7 @@
 
 ## 1. LE CONCEPT EN UNE PHRASE
 
-**Un jeu de petanque ou tu construis ton village, recrutes tes coequipiers, et montes jusqu'au tournoi national — en solo avec des PNJ pagnoliens, puis en multi contre d'autres villages.**
+**Un jeu de petanque ou tu construis ton village, recrutes tes coequipiers, et montes jusqu'au tournoi national — en solo avec des PNJ, puis en multi contre d'autres villages.**
 
 ---
 

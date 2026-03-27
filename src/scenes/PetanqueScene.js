@@ -71,8 +71,11 @@ export default class PetanqueScene extends Phaser.Scene {
         this._challengeCompleted = false;
         this._challengeBanner = null;
         this._challengePool = null;
+        this._menesSinceLastChallenge = 0;
         // Phase 5 — Match galets tracking
         this._matchGaletsEarned = 0;
+        // Visibility change handler (pause on tab switch / app background)
+        this._boundVisibilityChange = null;
         // Phase 5 — Golden zone
         this._goldenZone = null;
         this._goldenZoneActive = false;
@@ -388,6 +391,14 @@ export default class PetanqueScene extends Phaser.Scene {
         // Iris wipe opening (circle expands from center)
         this._playIrisOpen();
 
+        // Auto-pause when player switches tab or app goes to background
+        this._boundVisibilityChange = () => {
+            if (document.hidden && !this._gamePaused) {
+                this._openPauseMenu();
+            }
+        };
+        document.addEventListener('visibilitychange', this._boundVisibilityChange);
+
         this.engine.startGame();
 
         // === ARCADE BADGE "Match X/Y" (top-left, aligned with score panel) ===
@@ -468,7 +479,11 @@ export default class PetanqueScene extends Phaser.Scene {
         this.engine.onMeneStart = (meneNumber) => {
             if (!this.arcadeState || !this._challengePool?.length) return;
             if (meneNumber <= 1) return;
-            if (Math.random() > CHALLENGE_PROBABILITY) return;
+            this._menesSinceLastChallenge++;
+            // Force challenge every 3 mènes max, otherwise use probability
+            const forceChallenge = this._menesSinceLastChallenge >= 3;
+            if (!forceChallenge && Math.random() > CHALLENGE_PROBABILITY) return;
+            this._menesSinceLastChallenge = 0;
             const challenge = this._challengePool[Math.floor(Math.random() * this._challengePool.length)];
             this._currentChallenge = challenge;
             this._challengeCompleted = false;
@@ -679,38 +694,52 @@ export default class PetanqueScene extends Phaser.Scene {
         return container;
     }
 
-    // === Phase 5 D1 — Mene challenge banner (right side, below match challenge) ===
+    // === Phase 5 D1 — Mene challenge banner (centered, full-width, highly visible) ===
     _showChallengeBanner(text) {
         if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
 
-        const bx = GAME_WIDTH - 148 + 71; // aligned with challenge panel
-        const y = 124;
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const pw = 320;
+        const ph = 60;
 
-        const container = this.add.container(bx, y).setDepth(95).setAlpha(0);
+        const container = this.add.container(cx, cy).setDepth(95).setAlpha(0).setScale(0.7);
 
+        // Dark backdrop
         const bg = this.add.graphics();
-        bg.fillStyle(0x3A2E28, 0.9);
-        bg.fillRoundedRect(-71, -14, 142, 28, 4);
-        bg.lineStyle(1, 0xFFD700, 0.5);
-        bg.strokeRoundedRect(-71, -14, 142, 28, 4);
+        bg.fillStyle(0x3A2E28, 0.92);
+        bg.fillRoundedRect(-pw / 2, -ph / 2, pw, ph, 8);
+        bg.lineStyle(2, 0xFFD700, 0.7);
+        bg.strokeRoundedRect(-pw / 2, -ph / 2, pw, ph, 8);
         container.add(bg);
 
-        const label = this.add.text(0, 0, text, {
-            fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
-            wordWrap: { width: 130 }, align: 'center',
+        // "DEFI" header
+        const header = this.add.text(0, -ph / 2 + 14, I18n.t('arcade.challenge_label') || 'DEFI', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5);
+        container.add(header);
+
+        // Challenge text
+        const label = this.add.text(0, 6, text, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0',
+            wordWrap: { width: pw - 24 }, align: 'center',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
         container.add(label);
 
         this._challengeBanner = container;
 
+        // Pop-in animation (scale + fade)
         this.tweens.add({
-            targets: container, alpha: 1, duration: 300, ease: 'Sine.easeOut',
+            targets: container, alpha: 1, scaleX: 1, scaleY: 1,
+            duration: 400, ease: 'Back.easeOut',
             onComplete: () => {
                 this.time.delayedCall(CHALLENGE_BANNER_DURATION, () => {
                     if (container.active) {
                         this.tweens.add({
-                            targets: container, alpha: 0, duration: 400,
+                            targets: container, alpha: 0, scaleX: 0.8, scaleY: 0.8,
+                            duration: 400, ease: 'Sine.easeIn',
                             onComplete: () => { if (container.active) container.destroy(); }
                         });
                     }
@@ -749,6 +778,11 @@ export default class PetanqueScene extends Phaser.Scene {
         PortalSDK.gameplayStop();
 
         try {
+            // Remove visibility change listener
+            if (this._boundVisibilityChange) {
+                document.removeEventListener('visibilitychange', this._boundVisibilityChange);
+                this._boundVisibilityChange = null;
+            }
             if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
             this._gamePaused = false;
             if (this.input?.keyboard) this.input.keyboard.removeAllListeners();
@@ -1011,10 +1045,11 @@ export default class PetanqueScene extends Phaser.Scene {
         const circleY = this.throwCircleY + 20;
 
         // Watcher positions (where the non-active player stands)
-        // Keep close to terrain border; visibility ensured by high depth + halo
-        this._playerWatchX = this.terrainX - 30;
+        // Placed far enough from terrain to avoid overlapping tree/decor sprites
+        // (worst case: plage willow extends to x≈146, colline tree to x≈684)
+        this._playerWatchX = 120;
         this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.35;
-        this._opponentWatchX = this.terrainX + TERRAIN_WIDTH + 30;
+        this._opponentWatchX = GAME_WIDTH - 120;
         this._opponentWatchY = this.terrainY + 100;
 
         // Halo behind watchers — ensures visibility against tree foliage
