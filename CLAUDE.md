@@ -18,6 +18,7 @@ Tu dois toujours challenger mes idées, questionner, essayer d'aller plus loin a
 | Plan phase 2 | `docs/PLAN_PHASE2.md` | Polish post-playtest (3 axes, termine). |
 | Plan phase 3 | `docs/PLAN_PHASE3.md` | Profondeur technique (6 axes). |
 | Plan phase 4 | `docs/PLAN_PHASE4.md` | Completude pre-publication (8 axes). |
+| Lancement | `docs/lancement/README.md` | Dossier complet : checklist, fiche itch.io, metriques, quick wins. |
 
 ## Interdictions absolues
 
@@ -80,7 +81,7 @@ npx vitest run    # Tests unitaires
   /docs
     PLAN_100.md            # Plan initial (5 axes, termine)
     PLAN_PHASE2.md         # Polish post-playtest (3 axes, termine)
-    ITCH_IO.md             # Fiche publication itch.io
+    /lancement             # Dossier publication (README, checklist, fiche itch.io, quick wins)
     /archive               # Documents historiques et plans termines
   /src
     main.js, config.js
@@ -90,7 +91,7 @@ npx vitest run    # Tests unitaires
     /petanque/             # Ball, Cochonnet, PetanqueEngine, PetanqueAI,
                            #   AimingSystem, EngineRenderer, TerrainRenderer,
                            #   Commentator, CharacterTextures, ModularCharacter, ai/
-    /ui/                   # UIFactory, ScorePanel, DialogBox, InGameTutorial
+    /ui/                   # UIFactory, ScorePanel, DialogBox, InGameTutorial, FeedbackWidget
     /utils/                # Constants, SaveManager, SoundManager, I18n,
                            #   SceneTransition, PortraitGenerator, PortalSDK
     /world/                # MapManager, NPCManager, SpriteGenerator, TilesetGenerator

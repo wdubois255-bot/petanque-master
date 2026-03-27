@@ -27,14 +27,19 @@ const HINT_STYLE = {
     wordWrap: { width: 360 }
 };
 
+// Minimum delay between consecutive tutorial phases (ms)
+const PHASE_GAP = 2500;
+
 /**
- * In-game tutorial — 3 phases guidées.
- * Phase 1 (VISER)  : premier lancer boule — overlay visée.
- * Phase 2 (LOFT)   : 2e lancer — mini overlay trajectoires.
- * Phase 3 (SCORE)  : fin 1ère mène — explication score + bouton "Compris!".
+ * In-game tutorial — guided phases with proper sequencing.
+ * Phase 0 (GOAL)      : game objective (auto-dismiss 4s)
+ * Phase 1 (AIM)       : first throw — drag to aim
+ * Phase 1.5 (TURN)    : turn rule — furthest replays
+ * Phase 2 (LOFT)      : trajectory modes (auto-dismiss 8s or OK button)
+ * Phase 3 (SCORE)     : end of first mène — scoring explained (blocking)
  *
- * Persistence via SaveManager.tutorialPhasesDone[].
- * Non-bloquant sauf Phase 3 ("Compris !" requis).
+ * Timing guarantee: no two phases overlap; minimum PHASE_GAP between them.
+ * Barks are suppressed while any tutorial phase is visible (scene._tutorialActive flag).
  */
 export default class InGameTutorial {
     constructor(scene) {
@@ -43,11 +48,16 @@ export default class InGameTutorial {
         this.completed = false;
         this._elements = [];
         this._tweens = [];
+        this._goalActive = false;
         this._phase1Active = false;
         this._phase1_5Active = false;
         this._phase2Active = false;
         this._phase3Active = false;
         this._terrainHintActive = false;
+        this._lastPhaseEndTime = 0;
+
+        // Flag for PetanqueScene to suppress barks during tutorial
+        scene._tutorialActive = true;
 
         // Safety: destroy on scene shutdown (register early, before any return)
         this._onShutdown = () => this.destroy();
@@ -57,8 +67,8 @@ export default class InGameTutorial {
         const terrainId = scene.terrainFullData?.id || null;
         this._maybeShowTerrainHint(terrainId);
 
-        // Phase 0 (GOAL): show game objective before anything else (one-shot)
-        this._goalActive = false;
+        // Phase 0 (GOAL): show game objective
+        // If terrain hint is active, GOAL will be shown after it ends
         if (!this._phaseDone(TUTORIAL_PHASE_GOAL) && !this._terrainHintActive) {
             this._showPhase0_Goal();
         }
@@ -69,6 +79,7 @@ export default class InGameTutorial {
             this._phaseDone(TUTORIAL_PHASE_SCORE) &&
             this._phaseDone(TUTORIAL_PHASE_TURN_RULE)) {
             this.completed = true;
+            scene._tutorialActive = false;
             return;
         }
 
@@ -86,9 +97,36 @@ export default class InGameTutorial {
             if (team === 'opponent' &&
                 !this._phaseDone(TUTORIAL_PHASE_TURN_RULE) &&
                 !this._phase1_5Active) {
-                this._showPhase1_5_TurnRule();
+                // Delay turn rule: let the player process Phase 1 dismissal first
+                this.scene.time.delayedCall(4000, () => {
+                    if (this._phase1_5Active || this._phaseDone(TUTORIAL_PHASE_TURN_RULE)) return;
+                    if (this._isAnyPhaseActive()) return;
+                    this._showPhase1_5_TurnRule();
+                });
             }
         };
+    }
+
+    // ================================================================
+    // SEQUENCING HELPERS
+    // ================================================================
+    _isAnyPhaseActive() {
+        return this._goalActive || this._terrainHintActive ||
+               this._phase1Active || this._phase1_5Active ||
+               this._phase2Active || this._phase3Active;
+    }
+
+    _canStartNewPhase() {
+        if (this._isAnyPhaseActive()) return false;
+        return Date.now() - this._lastPhaseEndTime >= PHASE_GAP;
+    }
+
+    _onPhaseEnd() {
+        this._lastPhaseEndTime = Date.now();
+        // Update bark suppression flag
+        if (this.scene) {
+            this.scene._tutorialActive = this._isAnyPhaseActive();
+        }
     }
 
     // ================================================================
@@ -115,13 +153,16 @@ export default class InGameTutorial {
         if (this.completed) return;
 
         // Phase 1 trigger: player about to throw their first boule
-        // Wait for terrain hint to dismiss first if active
+        // Must wait for GOAL and terrain hint to be dismissed first
         if ((state === 'FIRST_BALL' || state === 'PLAY_LOOP') &&
             this.engine.currentTeam === 'player' &&
             !this._phaseDone(TUTORIAL_PHASE_AIM) &&
             !this._phase1Active &&
-            !this._terrainHintActive) {
-            this._showPhase1_Aim();
+            !this._terrainHintActive &&
+            !this._goalActive) {
+            if (this._canStartNewPhase()) {
+                this._showPhase1_Aim();
+            }
         }
 
         // Phase 1 close: player launched the ball (dragged and released)
@@ -130,12 +171,18 @@ export default class InGameTutorial {
                 this._phase1Active = false;
                 this._markPhaseDone(TUTORIAL_PHASE_AIM);
                 this._fadeOutElements();
+                this._onPhaseEnd();
             }
             // Phase 2 trigger: after Phase 1 is done (2nd+ player throw)
+            // Delayed to avoid info overload; also waits for Phase 1.5 to end
             else if (this._phaseDone(TUTORIAL_PHASE_AIM) &&
                      !this._phaseDone(TUTORIAL_PHASE_LOFT) &&
                      !this._phase2Active) {
-                this._showPhase2_Loft();
+                this.scene.time.delayedCall(3500, () => {
+                    if (this._phase2Active || this._phaseDone(TUTORIAL_PHASE_LOFT)) return;
+                    if (this._isAnyPhaseActive()) return;
+                    this._showPhase2_Loft();
+                });
             }
         }
 
@@ -143,40 +190,59 @@ export default class InGameTutorial {
         if (state === 'SCORE_MENE' &&
             !this._phaseDone(TUTORIAL_PHASE_SCORE) &&
             !this._phase3Active) {
+            // Clear any lingering phase before showing the modal
+            if (this._isAnyPhaseActive()) {
+                this._phase1_5Active = false;
+                this._phase2Active = false;
+                this._clearElements();
+            }
             this._showPhase3_Score();
         }
     }
 
     // ================================================================
-    // PHASE 0: GOAL — objectif du jeu (non-bloquant, auto-dismiss)
+    // PHASE 0: GOAL — objectif du jeu (non-bloquant, auto-dismiss 4s)
     // ================================================================
     _showPhase0_Goal() {
         if (this._goalActive) return;
         this._goalActive = true;
+        if (this.scene) this.scene._tutorialActive = true;
 
         const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const pw = 480;
+        const ph = 80;
 
-        const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
-        bg.fillStyle(0x1A1510, 0.55);
-        bg.fillRect(0, 0, GAME_WIDTH, 80);
+        // Full-screen dim
+        const dim = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        dim.fillStyle(0x1A1510, 0.5);
+        dim.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        const icon = this.scene.add.text(cx, 22, '\u{1F3AF}', {
-            fontSize: '20px'
+        // Centered panel
+        const panel = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        panel.fillStyle(0x3A2E28, 0.92);
+        panel.fillRoundedRect(cx - pw / 2, cy - ph / 2, pw, ph, 8);
+        panel.lineStyle(2, 0xD4A574, 0.7);
+        panel.strokeRoundedRect(cx - pw / 2, cy - ph / 2, pw, ph, 8);
+
+        const icon = this.scene.add.text(cx, cy - 16, '\u25C9', {
+            fontFamily: 'monospace', fontSize: '22px',
+            color: '#FFD700', stroke: '#1A1510', strokeThickness: 2
         }).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
-        const main = this.scene.add.text(cx, 50,
+        const main = this.scene.add.text(cx, cy + 14,
             I18n.t('tutorial.goal'),
-            { ...TEXT_STYLE, fontSize: '13px', wordWrap: { width: 560 } }
+            { ...TEXT_STYLE, fontSize: '13px', wordWrap: { width: pw - 40 } }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
         this.scene.tweens.add({
-            targets: [bg, icon, main], alpha: 1, duration: 400, ease: 'Sine.easeOut'
+            targets: [dim, panel, icon, main], alpha: 1, duration: 400, ease: 'Sine.easeOut'
         });
 
-        this._elements.push(bg, icon, main);
+        this._elements.push(dim, panel, icon, main);
 
-        // Auto-dismiss after 5s or when player starts dragging (Phase 1 trigger)
-        const timer = this.scene.time.delayedCall(5000, () => {
+        // Auto-dismiss after 6s
+        const timer = this.scene.time.delayedCall(6000, () => {
             this._dismissGoal();
         });
         this._elements.push({ destroy: () => timer.destroy() });
@@ -187,61 +253,169 @@ export default class InGameTutorial {
         this._goalActive = false;
         this._markPhaseDone(TUTORIAL_PHASE_GOAL);
         this._fadeOutElements();
+        this._onPhaseEnd();
     }
 
     // ================================================================
-    // PHASE 1: VISER — premier lancer
+    // PHASE 1: VISER — animation de doigt press-drag-release
     // ================================================================
     _showPhase1_Aim() {
         if (this._phase1Active) return;
-        // Dismiss goal overlay if still showing
         if (this._goalActive) this._dismissGoal();
         this._phase1Active = true;
+        if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();
 
+        const s = this.scene;
         const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const dragDist = 90; // px the finger travels down
+        const startY = cy - 20;
+        const endY = startY + dragDist;
 
-        // Semi-transparent top overlay strip
-        const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
-        bg.fillStyle(0x1A1510, 0.5);
-        bg.fillRect(0, 0, GAME_WIDTH, 88);
+        // Semi-transparent full-screen dim
+        const dim = s.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
+        dim.fillStyle(0x1A1510, 0.45);
+        dim.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // Animated arrow pointing down (direction of drag)
-        const arrow = this.scene.add.text(cx, 22, '▼', {
-            fontFamily: 'monospace', fontSize: '26px',
-            color: '#FFD700', stroke: '#1A1510', strokeThickness: 2
-        }).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
+        // --- Finger graphic (container) ---
+        const fingerCt = s.add.container(cx, startY).setDepth(DEPTH + 1).setAlpha(0);
 
-        const arrowTween = this.scene.tweens.add({
-            targets: arrow, y: 34,
-            duration: 550, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-        });
+        const finger = s.add.graphics();
+        // Finger body (points down)
+        finger.fillStyle(0xF5E6D0, 0.95);
+        finger.fillRoundedRect(-7, -32, 14, 36, 5);
+        finger.lineStyle(1.5, 0x8B7B6A, 0.8);
+        finger.strokeRoundedRect(-7, -32, 14, 36, 5);
+        // Nail highlight
+        finger.fillStyle(0xFFEEDD, 0.7);
+        finger.fillRoundedRect(-4, -30, 8, 7, 2);
+        fingerCt.add(finger);
 
-        const main = this.scene.add.text(cx, 53,
+        // Touch ripple (expands on press)
+        const ripple = s.add.circle(cx, startY, 6, 0xFFD700, 0).setDepth(DEPTH);
+
+        // Drag trail line (redrawn during drag)
+        const trail = s.add.graphics().setDepth(DEPTH);
+
+        // Direction arrow (appears on release — shows ball going UP)
+        const throwArrow = s.add.graphics().setDepth(DEPTH).setAlpha(0);
+
+        // --- Text (bottom of screen) ---
+        const main = s.add.text(cx, GAME_HEIGHT - 52,
             I18n.t('tutorial.aim'),
-            TEXT_STYLE
+            { ...TEXT_STYLE, fontSize: '13px' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
-        const sub = this.scene.add.text(cx, 74,
+        const sub = s.add.text(cx, GAME_HEIGHT - 32,
             I18n.t('tutorial.aim_sub'),
             { ...HINT_STYLE, fontSize: '11px', color: '#87CEEB' }
         ).setOrigin(0.5).setDepth(DEPTH).setAlpha(0);
 
-        // Fade in
-        this.scene.tweens.add({
-            targets: [bg, arrow, main, sub], alpha: 1, duration: 350, ease: 'Sine.easeOut'
+        // Fade in everything
+        s.tweens.add({
+            targets: [dim, fingerCt, main, sub], alpha: 1, duration: 400, ease: 'Sine.easeOut'
         });
 
-        this._elements.push(bg, arrow, main, sub);
-        this._tweens.push(arrowTween);
+        this._elements.push(dim, fingerCt, ripple, trail, throwArrow, main, sub);
+
+        // --- Looping animation sequence ---
+        const runCycle = () => {
+            if (!this._phase1Active || !s.scene.isActive()) return;
+
+            // Reset state
+            fingerCt.setPosition(cx, startY).setAlpha(1).setScale(1);
+            ripple.setPosition(cx, startY).setAlpha(0).setScale(1);
+            trail.clear();
+            throwArrow.clear().setAlpha(0);
+
+            // Step 1: Press (ripple + finger scale)
+            s.tweens.add({
+                targets: ripple, alpha: 0.5, scaleX: 2.5, scaleY: 2.5,
+                duration: 350, ease: 'Sine.easeOut',
+                onComplete: () => {
+                    s.tweens.add({
+                        targets: ripple, alpha: 0, duration: 300
+                    });
+                }
+            });
+            s.tweens.add({
+                targets: fingerCt, scaleX: 0.92, scaleY: 0.92,
+                duration: 200, ease: 'Sine.easeOut',
+                onComplete: () => {
+                    // Step 2: Drag down (finger moves, trail draws)
+                    s.tweens.add({
+                        targets: fingerCt, y: endY, scaleX: 1, scaleY: 1,
+                        duration: 1200, ease: 'Sine.easeInOut',
+                        onUpdate: () => {
+                            // Draw dashed trail from start to current finger position
+                            trail.clear();
+                            trail.lineStyle(2, 0xFFD700, 0.4);
+                            const curY = fingerCt.y;
+                            for (let py = startY; py < curY; py += 8) {
+                                trail.fillStyle(0xFFD700, 0.35);
+                                trail.fillCircle(cx, py, 1.5);
+                            }
+                            // Power indicator dot at finger
+                            trail.fillStyle(0xFFD700, 0.6);
+                            trail.fillCircle(cx, curY, 4);
+                        },
+                        onComplete: () => {
+                            // Step 3: Pause at bottom
+                            s.time.delayedCall(400, () => {
+                                if (!this._phase1Active) return;
+
+                                // Step 4: Release — finger lifts, arrow shoots UP
+                                s.tweens.add({
+                                    targets: fingerCt, y: endY - 20, alpha: 0, scaleX: 1.1, scaleY: 1.1,
+                                    duration: 250, ease: 'Sine.easeOut'
+                                });
+                                trail.clear();
+
+                                // Throw direction arrow (goes UP from touch origin)
+                                throwArrow.clear();
+                                throwArrow.lineStyle(3, 0xFFD700, 0.8);
+                                throwArrow.lineBetween(cx, startY, cx, startY - 50);
+                                // Arrowhead
+                                throwArrow.fillStyle(0xFFD700, 0.8);
+                                throwArrow.fillTriangle(
+                                    cx, startY - 58,
+                                    cx - 6, startY - 46,
+                                    cx + 6, startY - 46
+                                );
+                                throwArrow.setAlpha(0);
+                                s.tweens.add({
+                                    targets: throwArrow, alpha: 1, duration: 200,
+                                    onComplete: () => {
+                                        s.tweens.add({
+                                            targets: throwArrow, alpha: 0, y: '-=15',
+                                            duration: 600, ease: 'Sine.easeIn',
+                                            onComplete: () => {
+                                                throwArrow.y = 0; // reset position offset
+                                                // Step 5: Pause then restart
+                                                s.time.delayedCall(800, runCycle);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+        };
+
+        // Start first cycle after a short delay
+        s.time.delayedCall(500, runCycle);
     }
 
     // ================================================================
-    // PHASE 1.5: TURN RULE — l'équipe la plus loin rejoue (non-bloquant)
+    // PHASE 1.5: TURN RULE — l'equipe la plus loin rejoue (non-bloquant)
     // ================================================================
     _showPhase1_5_TurnRule() {
         if (this._phase1_5Active) return;
         this._phase1_5Active = true;
+        if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();
 
         const cx = GAME_WIDTH / 2;
@@ -266,10 +440,11 @@ export default class InGameTutorial {
 
         this._elements.push(bg, main, sub);
 
-        const timer = this.scene.time.delayedCall(4000, () => {
+        const timer = this.scene.time.delayedCall(6000, () => {
             this._markPhaseDone(TUTORIAL_PHASE_TURN_RULE);
             this._phase1_5Active = false;
             this._fadeOutElements();
+            this._onPhaseEnd();
         });
         this._elements.push({ destroy: () => timer.destroy() });
     }
@@ -280,6 +455,7 @@ export default class InGameTutorial {
     _showPhase2_Loft() {
         if (this._phase2Active || this._phaseDone(TUTORIAL_PHASE_LOFT)) return;
         this._phase2Active = true;
+        if (this.scene) this.scene._tutorialActive = true;
 
         const cx = GAME_WIDTH / 2;
         const y = GAME_HEIGHT - 65;
@@ -325,7 +501,7 @@ export default class InGameTutorial {
 
         this._elements.push(bg, title, ...modeEls);
 
-        // Bouton OK (60×24) — dismiss immédiat
+        // Bouton OK (60x24) — dismiss immediat
         const btnW = 60, btnH = 24;
         const btnX = cx + 200, btnY = y + 16;
         const btnBg = this.scene.add.graphics().setDepth(DEPTH + 1).setAlpha(0);
@@ -355,6 +531,7 @@ export default class InGameTutorial {
             this._markPhaseDone(TUTORIAL_PHASE_LOFT);
             this._phase2Active = false;
             this._fadeOutElements();
+            this._onPhaseEnd();
         });
 
         this.scene.tweens.add({
@@ -362,11 +539,12 @@ export default class InGameTutorial {
         });
         this._elements.push(btnBg, btnText);
 
-        // Auto-dismiss after 8s
-        const timer = this.scene.time.delayedCall(8000, () => {
+        // Auto-dismiss after 12s
+        const timer = this.scene.time.delayedCall(12000, () => {
             this._markPhaseDone(TUTORIAL_PHASE_LOFT);
             this._phase2Active = false;
             this._fadeOutElements();
+            this._onPhaseEnd();
         });
         this._elements.push({ destroy: () => timer.destroy() });
     }
@@ -377,6 +555,7 @@ export default class InGameTutorial {
     _showPhase3_Score() {
         if (this._phase3Active) return;
         this._phase3Active = true;
+        if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();
 
         const cx = GAME_WIDTH / 2;
@@ -397,7 +576,7 @@ export default class InGameTutorial {
         panel.lineStyle(2, 0xD4A574, 0.85);
         panel.strokeRoundedRect(panelX, panelY, panelW, panelH, 8);
 
-        // Titre "Fin de mène !"
+        // Titre "Fin de mene !"
         const titleTxt = this.scene.add.text(cx, panelY + 22, I18n.t('tutorial.score_title'), {
             fontFamily: 'monospace', fontSize: '13px',
             color: '#FFD700', stroke: '#1A1510', strokeThickness: 2
@@ -446,6 +625,7 @@ export default class InGameTutorial {
             this._phase3Active = false;
             this._markComplete();
             this._fadeOutElements();
+            this._onPhaseEnd();
         });
 
         // Fade in
@@ -461,7 +641,7 @@ export default class InGameTutorial {
     }
 
     // ================================================================
-    // TERRAIN HINT — one-shot, avant Phase 1
+    // TERRAIN HINT — one-shot, avant Phase 0
     // ================================================================
     _maybeShowTerrainHint(terrainId) {
         if (!terrainId) return;
@@ -499,25 +679,28 @@ export default class InGameTutorial {
 
         this._elements.push(bg, main);
 
-        const timer = this.scene.time.delayedCall(4000, () => {
+        const timer = this.scene.time.delayedCall(6000, () => {
             this._terrainHintActive = false;
             this._fadeOutElements();
+            this._onPhaseEnd();
+            // Chain: show GOAL after terrain hint if not already done
+            if (!this._phaseDone(TUTORIAL_PHASE_GOAL)) {
+                this.scene.time.delayedCall(PHASE_GAP, () => this._showPhase0_Goal());
+            }
         });
         this._elements.push({ destroy: () => timer.destroy() });
     }
 
     // ================================================================
-    // CONTEXTUAL HINT (static) — appelé depuis PetanqueScene
+    // CONTEXTUAL HINT (static) — appele depuis PetanqueScene
     // ================================================================
-    /**
-     * Affiche un tooltip contextuel une seule fois par save.
-     * hintId : identifiant unique du hint
-     * message : texte à afficher
-     */
     static showContextualHint(scene, hintId, message) {
         const save = loadSave();
         if (!save.hintsShown) save.hintsShown = {};
         if (save.hintsShown[hintId]) return;
+
+        // Don't show contextual hints while tutorial is active
+        if (scene._tutorialActive) return;
 
         save.hintsShown[hintId] = true;
         saveSave(save);
@@ -531,7 +714,7 @@ export default class InGameTutorial {
         bg.lineStyle(1, 0xD4A574, 0.5);
         bg.strokeRoundedRect(cx - 200, y - 20, 400, 44, 6);
 
-        const icon = scene.add.text(cx - 185, y, '✨', { fontSize: '16px' })
+        const icon = scene.add.text(cx - 185, y, '\u2728', { fontSize: '16px' })
             .setOrigin(0, 0.5).setDepth(HINT_DEPTH + 1);
 
         const text = scene.add.text(cx - 165, y, message, {
@@ -557,6 +740,7 @@ export default class InGameTutorial {
     // ================================================================
     _markComplete() {
         this.completed = true;
+        if (this.scene) this.scene._tutorialActive = false;
         const save = loadSave();
         // Only mark as fully seen when ALL 3 phases are done
         const phases = save.tutorialPhasesDone || [];
@@ -604,6 +788,7 @@ export default class InGameTutorial {
         if (this.scene && this._onShutdown) {
             this.scene.events.off('shutdown', this._onShutdown);
         }
+        if (this.scene) this.scene._tutorialActive = false;
         this._clearElements();
 
         if (this.engine) {

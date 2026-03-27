@@ -22,7 +22,8 @@
     "test:report": "npx playwright show-report",
     "test:all": "vitest run && npx playwright test",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix"
+    "lint:fix": "eslint src/ --fix",
+    "feedback": "node scripts/analyze-feedback.js"
   },
   "dependencies": {
     "phaser": "^4.0.0-rc.6"

@@ -11,7 +11,8 @@ import {
     PRESSURE_INDICATOR_COLOR, PRESSURE_WOBBLE_AMPLITUDE, PRESSURE_WOBBLE_SPEED,
     CHALLENGE_BANNER_DURATION, CHALLENGE_REWARD_GALETS, CHALLENGE_PROBABILITY,
     CROWD_INTENSITY_BY_ROUND, COMMENTATOR_COOLDOWN,
-    FOCUS_CHARGES_PER_MATCH
+    FOCUS_CHARGES_PER_MATCH,
+    FEEDBACK_URL
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -26,6 +27,7 @@ import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
+import FeedbackWidget from '../ui/FeedbackWidget.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -59,7 +61,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this._watchdogFired = false;
         // Phase 5 — Momentum indicator
         this._momentumGlow = null;
-        this._momentumLabel = null;
+        // _momentumLabel removed — glow-only indicator
         this._momentumShakeTween = null;
         this._lastMomentumValue = null;
         // Phase 5 — Pressure indicator
@@ -131,6 +133,10 @@ export default class PetanqueScene extends Phaser.Scene {
         this._createBallTextures();
         this._ensureSprites();
 
+        // Tutorial: opponent starts first so player can observe before playing
+        const preSave = loadSave();
+        const isTutorialMatch = (preSave.tutorialPhasesDone || []).length < 3;
+
         // Engine
         this.engine = new PetanqueEngine(this, {
             terrainType: surfaceType,
@@ -142,7 +148,8 @@ export default class PetanqueScene extends Phaser.Scene {
                 y: this.terrainY,
                 w: TERRAIN_WIDTH,
                 h: TERRAIN_HEIGHT
-            }
+            },
+            startTeam: isTutorialMatch ? 'opponent' : 'player'
         });
 
         // HORS JEU feedback when a ball goes out of bounds
@@ -557,7 +564,6 @@ export default class PetanqueScene extends Phaser.Scene {
 
         if (Math.abs(m) < MOMENTUM_INDICATOR_THRESHOLD) {
             if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
-            if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
             if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
             return;
         }
@@ -566,6 +572,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const color = isFire ? MOMENTUM_INDICATOR_FIRE_COLOR : MOMENTUM_INDICATOR_TILT_COLOR;
         const intensity = Math.min(1, (Math.abs(m) - MOMENTUM_INDICATOR_THRESHOLD) / (1 - MOMENTUM_INDICATOR_THRESHOLD));
 
+        // Glow halo only — no text label to keep the screen clean
         if (!this._momentumGlow) {
             this._momentumGlow = this.add.graphics().setDepth(45);
         }
@@ -575,20 +582,6 @@ export default class PetanqueScene extends Phaser.Scene {
             this.opponentSprite.x, this.opponentSprite.y,
             MOMENTUM_INDICATOR_RADIUS + intensity * 8
         );
-
-        const labelText = isFire
-            ? I18n.t('arcade.momentum_fire')
-            : I18n.t('arcade.momentum_tilt');
-        if (!this._momentumLabel) {
-            this._momentumLabel = this.add.text(0, 0, '', {
-                fontFamily: 'monospace', fontSize: '8px',
-                color: isFire ? '#FF6644' : '#6688CC',
-                shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
-            }).setOrigin(0.5).setDepth(46);
-        }
-        this._momentumLabel.setText(labelText);
-        this._momentumLabel.setColor(isFire ? '#FF6644' : '#6688CC');
-        this._momentumLabel.setPosition(this.opponentSprite.x, this.opponentSprite.y - 28);
 
         if (isFire && intensity > 0.5 && !this._momentumShakeTween) {
             this._momentumShakeTween = this.tweens.add({
@@ -803,7 +796,6 @@ export default class PetanqueScene extends Phaser.Scene {
             if (this.engine?.renderer) this.engine.renderer.destroy();
             // Phase 5 cleanup
             if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
-            if (this._momentumLabel) { this._momentumLabel.destroy(); this._momentumLabel = null; }
             if (this._momentumShakeTween) { this._momentumShakeTween.destroy(); this._momentumShakeTween = null; }
             if (this._pressureBadge) { this._pressureBadge.destroy(); this._pressureBadge = null; }
             if (this._pressureText) { this._pressureText.destroy(); this._pressureText = null; }
@@ -1044,13 +1036,21 @@ export default class PetanqueScene extends Phaser.Scene {
         const circleX = this.throwCircleX;
         const circleY = this.throwCircleY + 20;
 
-        // Watcher positions (where the non-active player stands)
-        // Placed far enough from terrain to avoid overlapping tree/decor sprites
-        // (worst case: plage willow extends to x≈146, colline tree to x≈684)
-        this._playerWatchX = 120;
-        this._playerWatchY = this.terrainY + TERRAIN_HEIGHT * 0.35;
-        this._opponentWatchX = GAME_WIDTH - 120;
-        this._opponentWatchY = this.terrainY + 100;
+        // Fixed watcher positions per terrain — avoids all decor sprites
+        // X computed from tree canopy extents, Y chosen in gaps between decor clusters
+        const terrainId = this.terrainFullData?.id || 'village';
+        const WATCHER_POS = {
+            village:  { leftX: 170, leftY: 290, rightX: 650, rightY: 390 },
+            parc:     { leftX: 190, leftY: 350, rightX: 650, rightY: 370 },
+            colline:  { leftX: 140, leftY: 270, rightX: 700, rightY: 400 },
+            plage:    { leftX: 130, leftY: 300, rightX: 670, rightY: 420 },
+            docks:    { leftX: 205, leftY: 310, rightX: 660, rightY: 400 },
+        };
+        const wp = WATCHER_POS[terrainId] || WATCHER_POS.village;
+        this._playerWatchX = wp.leftX;
+        this._playerWatchY = wp.leftY;
+        this._opponentWatchX = wp.rightX;
+        this._opponentWatchY = wp.rightY;
 
         // Halo behind watchers — ensures visibility against tree foliage
         this._playerHalo = this.add.ellipse(this._playerWatchX, this._playerWatchY, 48, 24, 0xF5E6D0, 0.25)
@@ -1138,19 +1138,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _updateWatchPositions() {
-        // Opponent watcher follows cochonnet Y if alive
-        if (this.engine.cochonnet && this.engine.cochonnet.isAlive) {
-            this._opponentWatchY = Math.max(this.terrainY + 60,
-                Math.min(this.engine.cochonnet.y + 10, this.terrainY + TERRAIN_HEIGHT - 40));
-            this._playerWatchY = this._opponentWatchY;
-        }
-        // Move halos to match watcher positions
-        if (this._playerHalo) {
-            this._playerHalo.setPosition(this._playerWatchX, this._playerWatchY + 16);
-        }
-        if (this._opponentHalo) {
-            this._opponentHalo.setPosition(this._opponentWatchX, this._opponentWatchY + 16);
-        }
+        // Fixed positions per terrain — no cochonnet tracking
+        // Halos stay at their init positions (set in _createPlayerSprites)
     }
 
     _animateToCircle(team) {
@@ -1394,6 +1383,8 @@ export default class PetanqueScene extends Phaser.Scene {
     // === BARKS SYSTEM (contextual character dialogue bubbles) ===
 
     _showBark(team, barkType) {
+        // Suppress barks during tutorial to avoid info overload
+        if (this._tutorialActive) return;
         const charData = team === 'player' ? this.playerCharacter : this.opponentCharacter;
         if (!charData?.barks?.[barkType]) return;
 
@@ -1860,6 +1851,17 @@ export default class PetanqueScene extends Phaser.Scene {
             const nv = Math.min(1, s.masterVolume + 0.1);
             setMasterVolume(nv);
             volBar.setText(`Vol: ${'█'.repeat(Math.round(nv * 10))}${'░'.repeat(10 - Math.round(nv * 10))}`);
+        });
+
+        // Feedback button
+        makeBtn(I18n.t('title.settings.feedback'), py + 228, '#2A2040', '#3A3060', '#9B7BB8', () => {
+            FeedbackWidget.open(this, {
+                scene: 'PetanqueScene',
+                terrain: this.terrainType,
+                scores: this.engine?.scores,
+                opponent: this.opponentCharacter?.name,
+                mene: this.engine?.meneNumber
+            });
         });
 
         // Séparateur avant boutons principaux

@@ -45,7 +45,8 @@
       "music": "Musique",
       "sfx": "Effets",
       "tutorial": "Tutoriel",
-      "close": "Fermer"
+      "close": "Fermer",
+      "feedback": "Donner un avis"
     }
   },
   "charselect": {
@@ -245,5 +246,16 @@
     "quit": "QUITTER",
     "bonus_perfect": "Bonus parfait",
     "bonus_complete": "Bonus completion"
+  },
+  "feedback": {
+    "title": "Votre avis compte !",
+    "how_fun": "Comment trouvez-vous le jeu ?",
+    "rating_good": "Super !",
+    "rating_ok": "Correct",
+    "rating_bad": "Bof...",
+    "comment_label": "Un commentaire ? (optionnel)",
+    "comment_placeholder": "Bug, suggestion, ce que vous aimez...",
+    "send": "Envoyer",
+    "thanks": "Merci pour votre retour !"
   }
 }

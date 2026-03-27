@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_
 import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import FeedbackWidget from '../ui/FeedbackWidget.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
 
@@ -365,6 +366,20 @@ export default class ResultScene extends Phaser.Scene {
         menuBtn.on('pointerout', () => menuBtn.setColor('#5A4A38'));
         menuBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
         btnContainer.add(menuBtn);
+
+        // Feedback link — discreet, next to Menu
+        const fbBtn = this.add.text(GAME_WIDTH - 16, 30, I18n.t('title.settings.feedback'), {
+            fontFamily: 'monospace', fontSize: '10px', color: '#9B7BB8', shadow: SHADOW
+        }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
+        fbBtn.on('pointerover', () => fbBtn.setColor('#C49BE8'));
+        fbBtn.on('pointerout', () => fbBtn.setColor('#9B7BB8'));
+        fbBtn.on('pointerdown', () => FeedbackWidget.open(this, {
+            scene: 'ResultScene',
+            terrain: this.terrainName,
+            scores: this.scores,
+            opponent: this.opponentCharacter?.name
+        }));
+        btnContainer.add(fbBtn);
 
         // Buttons appear last
         this.tweens.add({ targets: btnContainer, alpha: 1, duration: 400, delay: 2600 });

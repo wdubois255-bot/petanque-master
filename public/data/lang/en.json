@@ -45,7 +45,8 @@
       "music": "Music",
       "sfx": "Effects",
       "tutorial": "Tutorial",
-      "close": "Close"
+      "close": "Close",
+      "feedback": "Give feedback"
     }
   },
   "charselect": {
@@ -245,5 +246,16 @@
     "quit": "QUIT",
     "bonus_perfect": "Perfect bonus",
     "bonus_complete": "Completion bonus"
+  },
+  "feedback": {
+    "title": "Your feedback matters!",
+    "how_fun": "How are you enjoying the game?",
+    "rating_good": "Great!",
+    "rating_ok": "It's OK",
+    "rating_bad": "Meh...",
+    "comment_label": "Any comment? (optional)",
+    "comment_placeholder": "Bug, suggestion, what you liked...",
+    "send": "Send",
+    "thanks": "Thanks for your feedback!"
   }
 }

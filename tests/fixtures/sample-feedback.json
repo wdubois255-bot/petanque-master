@@ -1,0 +1,54 @@
+[
+  {
+    "rating": "good",
+    "comment": "Super physique !",
+    "timestamp": "2026-03-27T20:00:00Z",
+    "context": {
+      "scene": "ResultScene",
+      "terrain": "village",
+      "scores": { "player": 13, "opponent": 8 },
+      "device": "desktop",
+      "screen": "1920x1080",
+      "lang": "fr",
+      "arcadeProgress": 3,
+      "totalMatches": 5,
+      "totalWins": 3,
+      "playtime": 1200,
+      "errors": []
+    }
+  },
+  {
+    "rating": "bad",
+    "comment": "Je comprends pas le cochonnet",
+    "timestamp": "2026-03-27T20:10:00Z",
+    "context": {
+      "scene": "PetanqueScene",
+      "terrain": "plage",
+      "scores": { "player": 2, "opponent": 7 },
+      "device": "mobile",
+      "screen": "375x812",
+      "lang": "en",
+      "arcadeProgress": 1,
+      "totalMatches": 2,
+      "totalWins": 0,
+      "playtime": 300,
+      "errors": [{ "msg": "Cannot read property x of null" }]
+    }
+  },
+  {
+    "rating": "ok",
+    "comment": "",
+    "timestamp": "2026-03-27T20:20:00Z",
+    "context": {
+      "scene": "TitleScene",
+      "device": "desktop",
+      "screen": "1440x900",
+      "lang": "fr",
+      "arcadeProgress": 0,
+      "totalMatches": 0,
+      "totalWins": 0,
+      "playtime": 60,
+      "errors": []
+    }
+  }
+]

@@ -4,6 +4,7 @@ import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '..
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
+import FeedbackWidget from '../ui/FeedbackWidget.js';
 import I18n from '../utils/I18n.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 
@@ -705,6 +706,7 @@ export default class TitleScene extends Phaser.Scene {
             { label: `${I18n.t('title.settings.sfx')} : ${Math.round(settings.sfxVolume * 100)}%`, key: 'sfx' },
             { label: I18n.t('title.settings.tutorial'), key: 'tuto' },
             { label: 'CREDITS', key: 'credits' },
+            { label: I18n.t('title.settings.feedback'), key: 'feedback' },
             { label: I18n.t('title.settings.close'), key: 'back' }
         ];
 
@@ -791,6 +793,9 @@ export default class TitleScene extends Phaser.Scene {
                 this._settingsItems = null;
             }
             this.scene.start('CreditsScene');
+        }
+        if (key === 'feedback') {
+            FeedbackWidget.open(this, { scene: 'TitleScene' });
         }
     }
 

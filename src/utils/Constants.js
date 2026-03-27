@@ -491,6 +491,9 @@ export const TOUCH_PADDING = 8;       // Padding invisible autour des boutons in
 export const DUST_MAX_SIMULTANEOUS_DESKTOP = 5;  // Limite groupes dust simultanés (desktop)
 export const DUST_MAX_SIMULTANEOUS_MOBILE = 4;   // Limite groupes dust simultanés (mobile)
 
+// Feedback — URL Google Apps Script (voir scripts/feedback-sheets-setup.js pour le setup)
+export const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbzpHkCOgogf-WYigDUk54Mchps2s7wBZ47oGk-D-g9frWopU-SQIyV6z9V70VfY1y18/exec';
+
 // === PHASE 5 — Arcade Vivante ===
 
 // Momentum indicator (visible on AI sprite)
