@@ -157,13 +157,13 @@ export default class EngineRenderer {
         }
     }
 
-    spawnCollisionSparks(x, y) {
+    spawnCollisionSparks(x, y, count = 5) {
         // Phaser 4 glow flash on impact point
         if (this._hasWebGL) {
             this._flashGlowAt(x, y);
         }
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < count; i++) {
             const angle = Math.random() * Math.PI * 2;
             const dist = 6 + Math.random() * 12;
             const spark = this._getPooledGraphics().setDepth(55);

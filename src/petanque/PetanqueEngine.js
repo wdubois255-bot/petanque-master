@@ -57,7 +57,8 @@ export default class PetanqueEngine {
         this.state = null;
         this.balls = [];
         this.cochonnet = null;
-        this.currentTeam = 'player';
+        this._startTeam = config.startTeam || 'player';
+        this.currentTeam = this._startTeam;
         this.lastTeamPlayed = null;
 
         // Balls per player based on format
@@ -160,8 +161,8 @@ export default class PetanqueEngine {
         };
 
         // FIPJP: l'equipe qui a GAGNE la mene precedente lance le cochonnet
-        // (mene 1 = toujours player)
-        this._cochonnetTeam = this.meneWinner || 'player';
+        // (mene 1 = startTeam from config, default player)
+        this._cochonnetTeam = this.meneWinner || this._startTeam || 'player';
         this.meneWinner = null;
 
         this.setState(STATES.COCHONNET_THROW);
@@ -999,6 +1000,10 @@ export default class PetanqueEngine {
                     if (allBodies[i].isAlive && allBodies[j].isAlive) {
                         const ax = allBodies[i].x, ay = allBodies[i].y;
                         const bx = allBodies[j].x, by = allBodies[j].y;
+                        // Pre-collision relative speed for proportional feedback
+                        const relVx = allBodies[i].vx - allBodies[j].vx;
+                        const relVy = allBodies[i].vy - allBodies[j].vy;
+                        const impactSpeed = Math.sqrt(relVx * relVx + relVy * relVy);
 
                         const collided = Ball.resolveCollision(allBodies[i], allBodies[j]);
 
@@ -1008,14 +1013,20 @@ export default class PetanqueEngine {
                                 sfxBouleCochonnet();
                             } else {
                                 sfxBouleBoule();
-                                // Hit stop: brief freeze on boule-boule collision
-                                this._hitstopUntil = Math.max(this._hitstopUntil, Date.now() + HITSTOP_BOULE_MS);
+                                // Hit stop proportional to impact speed (soft=24ms, normal=80ms, hard=120ms)
+                                const hitstopScale = Math.min(1.5, Math.max(0.3, impactSpeed / 6));
+                                this._hitstopUntil = Math.max(this._hitstopUntil, Date.now() + Math.round(HITSTOP_BOULE_MS * hitstopScale));
                             }
                             const mx = (allBodies[i].x + allBodies[j].x) / 2;
                             const my = (allBodies[i].y + allBodies[j].y) / 2;
-                            this._spawnCollisionSparks(mx, my);
-                            // Screen shake on boule-boule impact
-                            this.scene.cameras.main.shake(60, 0.003);
+                            // Sparks proportional to impact force (2-8 based on speed)
+                            const sparkCount = Math.max(2, Math.min(8, Math.round(impactSpeed)));
+                            this._spawnCollisionSparks(mx, my, sparkCount);
+                            // Screen shake proportional to impact speed (skip gentle bumps)
+                            if (impactSpeed > 2) {
+                                const shakeIntensity = Math.min(0.006, 0.001 + impactSpeed * 0.0004);
+                                this.scene.cameras.main.shake(60, shakeIntensity);
+                            }
                             // Dust at collision point
                             if (this._spawnDust) this._spawnDust(mx, my, 3);
                         }
@@ -1405,8 +1416,8 @@ export default class PetanqueEngine {
         this.renderer.spawnDust(x, y, count, this.terrainType);
     }
 
-    _spawnCollisionSparks(x, y) {
-        this.renderer.spawnCollisionSparks(x, y);
+    _spawnCollisionSparks(x, y, count) {
+        this.renderer.spawnCollisionSparks(x, y, count);
     }
 
     _spawnRollTrail(ball) {

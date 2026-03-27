@@ -463,19 +463,23 @@ export default class Ball {
         }
 
         // === PUISSANCE impacts ejection distance ===
-        // The thrower's puissance stat amplifies how far the target gets pushed
+        // The mover's (thrower's) puissance stat amplifies how far the TARGET gets pushed
         // Pui 1 = 0.8x, Pui 5 ≈ 1.02x, Pui 10 = 1.3x (source: Constants.puissanceMultiplier)
-        const throwerPui = a.puissanceStat || b.puissanceStat || 0;
-        const puissanceBoost = throwerPui > 0 ? puissanceMultiplier(throwerPui) : 1.0;
+        const moverPui = mover.puissanceStat || 0;
+        const puissanceBoost = moverPui > 0 ? puissanceMultiplier(moverPui) : 1.0;
 
         // Carreau Instinct (Ley): 50% stronger ejection on TARGET ball only
         const carreauBoostB = (a.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
         const carreauBoostA = (b.carreauInstinct && !isBouleVsCochonnet) ? 1.5 : 1.0;
 
-        a.vx -= impulse * b.mass * nx * carreauBoostA;
-        a.vy -= impulse * b.mass * ny * carreauBoostA;
-        b.vx += impulse * a.mass * nx * carreauBoostB * puissanceBoost;
-        b.vy += impulse * a.mass * ny * carreauBoostB * puissanceBoost;
+        // puissanceBoost amplifies the TARGET (non-mover), not the thrower's recoil
+        const puiA = (mover === b) ? puissanceBoost : 1.0;
+        const puiB = (mover === a) ? puissanceBoost : 1.0;
+
+        a.vx -= impulse * b.mass * nx * carreauBoostA * puiA;
+        a.vy -= impulse * b.mass * ny * carreauBoostA * puiA;
+        b.vx += impulse * a.mass * nx * carreauBoostB * puiB;
+        b.vy += impulse * a.mass * ny * carreauBoostB * puiB;
 
         // Cap cochonnet post-collision velocity to prevent ejection from terrain
         if (isBouleVsCochonnet) {
@@ -499,8 +503,10 @@ export default class Ball {
         a.isMoving = true;
         b.isMoving = true;
 
-        a._squashTimer = 6;
-        b._squashTimer = 6;
+        // Squash proportional to impact force (gentle=3f, normal=6f, hard=8f)
+        const squashFrames = Math.max(3, Math.min(8, Math.round(dvn * 1.2)));
+        a._squashTimer = squashFrames;
+        b._squashTimer = squashFrames;
 
         return true;
     }
