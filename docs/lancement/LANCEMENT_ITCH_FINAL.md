@@ -110,35 +110,25 @@ Voir [section 12](#12-analytics-in-game-optionnel) pour les details. En resume :
 
 ---
 
-## 4. PHASE 2 — FICHIERS TECHNIQUES BLOQUANTS (J-5)
+## 4. PHASE 2 — FICHIERS TECHNIQUES BLOQUANTS ✅ COMPLET
 
-> Ces fichiers sont obligatoires pour un lancement professionnel. Sans eux, pas de CrazyGames/Poki plus tard, et la page itch.io fait amateur.
+> Tous les fichiers techniques sont en place.
 
-- [ ] **2.1 — Scene Credits** (`src/scenes/CreditsScene.js`)
-  Obligatoire pour tout portail de jeux. Montre le professionnalisme et respecte les licences. Contenu : developpeur, outils utilises (Phaser 4, Vite), licences, inspirations, remerciements. Accessible depuis le menu Parametres.
-  *Temps estime : 1h*
+- [x] **2.1 — Scene Credits** (`src/scenes/CreditsScene.js`)
+  Developpeur, outils (Phaser 4, Vite), licences, inspirations. Accessible depuis le menu Parametres.
 
-- [ ] **2.2 — Privacy Policy** (`public/privacy.html`)
-  Obligatoire pour la conformite RGPD, et requis par CrazyGames et Poki. Contenu a indiquer : le jeu utilise localStorage uniquement (pas de cookies), pas de tracking, pas de donnees personnelles collectees, pas de serveur externe.
-  *Temps estime : 30 min*
+- [x] **2.2 — Privacy Policy** (`public/privacy.html`)
+  localStorage uniquement, pas de cookies, pas de tracking, pas de donnees personnelles.
 
-- [ ] **2.3 — Licence** (`LICENSE` a la racine)
-  Standard professionnel. Protege ton travail juridiquement. Choisir une licence adaptee (MIT si open source, ou All Rights Reserved si proprietaire).
-  *Temps estime : 10 min*
+- [x] **2.3 — Licence** (`LICENSE` a la racine)
+  En place.
 
-- [ ] **2.4 — Meta og:tags** (dans `index.html`)
-  Quand quelqu'un partage le lien du jeu sur Twitter, Discord, Reddit ou Facebook, les og:tags definissent ce qui s'affiche : titre, description, image de preview. Sans ca, c'est un lien nu et moche que personne ne clique.
-  ```html
-  <meta property="og:title" content="Petanque Master">
-  <meta property="og:description" content="Pixel art petanque with custom physics, 12 characters, and provencal charm">
-  <meta property="og:image" content="URL_DU_COVER_ART">
-  <meta property="og:type" content="website">
-  ```
-  *Temps estime : 20 min*
+- [x] **2.4 — Meta og:tags** (dans `index.html`)
+  og:title, og:description, og:image, og:type configures.
+  > Note : mettre a jour og:image avec l'URL du cover art une fois uploade sur itch.io.
 
-- [ ] **2.5 — Version 1.0.0** (dans `package.json`)
-  Passer de la version actuelle a 1.0.0. Signal de maturite : "ce n'est plus un prototype, c'est un jeu fini". Coherence avec le lancement public.
-  *Temps estime : 5 min*
+- [x] **2.5 — Version 1.0.0** (dans `package.json`)
+  Version 1.0.0 en place.
 
 ---
 
@@ -194,7 +184,7 @@ Voir [section 12](#12-analytics-in-game-optionnel) pour les details. En resume :
   ```bash
   npm run build && npx vitest run
   ```
-  Verifier : 0 erreurs de build, tous les tests passent (570/570 actuellement). Le dossier `dist/` contient le jeu complet pret a uploader.
+  Verifier : 0 erreurs de build, tous les tests passent (570/570 au 28 mars 2026). Le dossier `dist/` contient le jeu complet pret a uploader.
 
 - [ ] **4.2 — Zipper le contenu de dist/**
   IMPORTANT : zipper le CONTENU de dist/, pas le dossier lui-meme. Si le ZIP contient un dossier "dist" a la racine, itch.io ne trouvera pas l'index.html.

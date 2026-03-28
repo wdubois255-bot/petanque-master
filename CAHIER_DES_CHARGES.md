@@ -1,5 +1,5 @@
 # Cahier des Charges — PETANQUE MASTER
-> Version 2.16 — 24 mars 2026 (i18n ~95% + DX setup complet — 344 tests, 16 suites, 319 commits)
+> Version 2.17 — 28 mars 2026 (pret publication — 570 tests, 18 suites, 372 commits)
 > Ce document est la **reference stricte** de tout ce qui existe et tout ce qui doit etre implemente.
 
 ---
@@ -183,7 +183,8 @@
 
 > Plans termines : `docs/PLAN_100.md` + `docs/PLAN_PHASE2.md`
 > **Phase 3 terminee** : `docs/PLAN_PHASE3.md` (AXE A ✅ AXE B ✅ AXE C ✅ AXE D ✅ AXE E ✅ AXE F ✅)
-> Voir aussi : `docs/PLAN_PHASE4.md` (completude finale)
+> **Phase 4 Tier 1** : `docs/PLAN_PHASE4.md` (G ✅ I ✅ L ✅ N ✅ — reste H, J, K partiels)
+> Voir aussi : `docs/PLAN_PHASE4.md` (completude finale, Tier 2/3 post-lancement)
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
 - [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
@@ -193,23 +194,27 @@
 - [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions, Commentator.js 55 phrases)
 - [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
 
-### 3.1 Sprite Rookie
-- [ ] Sprite de base via PixelLab (128x128, 4 directions, animations)
+### 3.1 Sprite Rookie (post-lancement)
 - [ ] Systeme de couches pour customisation (accessoires superposables)
 - [ ] Items cosmetiques : lunettes, chaine, casquette, t-shirt champion, etc.
+- Note : sprite de base Rookie existe deja (V2, 4 directions)
 
-### 3.2 Uniformisation assets
-- [ ] Regenerer les 5 boules pixel-art (acier, bronze, chrome, noire, rouge) en style 3D realiste
+### 3.2 Uniformisation assets (post-lancement)
+- [x] Boules v3 — 16 couleurs pixel art avec 6-frame roll animation (384x64)
+- [ ] Portraits HD 128x128 (actuellement portraits proceduraux via PortraitGenerator.js)
 
 ### 3.3 Polish restant
 - [x] VSIntroScene : Tekken style (Bounce VS, MATCH!, typewriter)
 - [x] CharSelectScene : verrous, Rookie en premier
 - [x] TitleScene : menu Boutique + Tuto
-- [ ] Portraits HD (128x128 au lieu des cercles proceduraux)
+- [x] Transitions fade entre scenes (fadeToScene, 44+ usages)
+- [x] Score bounce + confettis victoire (ScorePanel._pulseText + ResultScene._spawnConfetti)
+- [x] Loading bar BootScene (barre gradient + tips + pourcentage)
+- [ ] Charges d'abilities visibles en match (HUD)
 - [ ] Traces d'impact (verifier RenderTexture)
 
 ### 3.4 Tests automatises
-- [x] Vitest : 273 tests unitaires (physique, collisions, IA, terrains, slopes, walls, match flow, aiming, scene reuse) — **273/273 PASS**
+- [x] Vitest : 570 tests unitaires, 18 suites — **570/570 PASS**
 - [x] Playwright e2e : 85 tests (navigation, health, performance, stress, visual regression)
   - **67/67 tests fonctionnels PASS** (game, health, performance, stress)
   - **18 tests visual regression** : baselines a regenerer apres chaque changement visuel

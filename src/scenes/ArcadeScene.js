@@ -178,13 +178,13 @@ export default class ArcadeScene extends Phaser.Scene {
         // Parchment background — nearly full screen
         if (this.textures.exists('v2_dialog_bg')) {
             const parch = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
-                .setDisplaySize(GAME_WIDTH - 40, GAME_HEIGHT - 60).setAlpha(0);
-            this.tweens.add({ targets: parch, alpha: 0.55, duration: 800, ease: 'Sine.easeOut' });
+                .setDisplaySize(GAME_WIDTH - 20, GAME_HEIGHT - 30).setAlpha(0);
+            this.tweens.add({ targets: parch, alpha: 0.65, duration: 800, ease: 'Sine.easeOut' });
         }
 
         const lineObjects = [];
         const lineSpacing = 28;
-        const startY = GAME_HEIGHT / 2 - (lines.length * lineSpacing) / 2;
+        const startY = GAME_HEIGHT / 2 - (lines.length * lineSpacing) / 2 + 12;
 
         // Typewriter: reveal each line character by character
         let charIndex = 0;

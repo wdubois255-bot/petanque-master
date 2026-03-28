@@ -4,6 +4,7 @@
 > un multi solide, et une rejouabilite qui ramene les joueurs chaque jour.
 > **Prerequis** : PLAN_PHASE3 ✅ (273 tests, 6 axes completes)
 > **Organisation** : 3 tiers par urgence, 15 axes (G-U), executables par Sonnet 4.6
+> **MAJ 28 mars 2026** : Tier 1 quasi-complet (G ✅ I ✅ L ✅ N ✅ — reste H, J, K partiels). 570 tests, 372 commits.
 
 ---
 
@@ -23,24 +24,23 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 
 > Sans ca, le jeu n'est pas publiable sur CrazyGames/Poki.
 
-## AXE G — SPRITES & ANIMATIONS MANQUANTS (~4h)
+## AXE G — SPRITES & ANIMATIONS ✅ COMPLET (12/12 persos)
 
-### G1. Throw animations : papi_rene, fazzino, rizzi
-- `src/utils/Constants.js` : CHAR_THROW_MAP — 3 entrees manquantes
-- Generer via `/sprite` ou creer 2-frame manuellement (bras leve → bras etendu)
-- Charger dans `src/scenes/BootScene.js`
+### G1. Throw animations ✅
+- 12/12 personnages dans CHAR_THROW_MAP (Constants.js)
+- Spritesheets 512x128 dans `public/assets/sprites/v2_new/throw_anims/sheets/`
 
-### G2. Greeting animations : 3 manquantes
-- Identifier dans BootScene section greeting anims
-- Meme approche : 2-frame ou PixelLab
+### G2. Greeting animations ✅
+- 12/12 personnages charges dans BootScene.js (lignes 228-237)
+- Animations 4-frame creees dans create() (lignes 350-365)
 
-### G3. Marcel sprite a regenerer
-- Qualite insuffisante (documente dans memoire)
-- Regenerer avec memes parametres que le reste du roster
+### G3. Marcel — N/A (pas dans le roster)
+- Marcel n'est pas dans les 12 personnages jouables
+- Sprites legacy (marcel_animated.png 185K) conserves pour futur usage
 
-### G4. Portraits 128x128 (optionnel)
-- 12 portraits dedies pour CharSelect, boutique, VS screen
-- Impact visuel fort pour peu d'effort
+### G4. Portraits 128x128 (optionnel — post-lancement)
+- Portraits proceduraux existants via PortraitGenerator.js
+- Upgrade vers portraits dedies = nice-to-have visuel
 
 ---
 
@@ -134,28 +134,31 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 
 ---
 
-## AXE L — POLISH VISUEL (~4h)
+## AXE L — POLISH VISUEL ✅ QUASI-COMPLET (3/4)
 
-### L1. Transitions fade entre scenes
-- fadeOut(300) avant chaque scene.start(), fadeIn(300) dans create()
+### L1. Transitions fade entre scenes ✅
+- `fadeToScene()` dans SceneTransition.js, utilise 44+ fois dans le codebase
 
-### L2. Score bounce + confettis victoire
-- ScorePanel : tween scale 1.3x quand score change
-- ResultScene : 40 particules palette provencale si victoire
+### L2. Score bounce + confettis victoire ✅
+- ScorePanel._pulseText() : tween scale 1.3x + glow dore (lignes 285-293)
+- ScorePanel._animateScoreCount() : compteur anime (lignes 296-307)
+- ScorePanel._blinkMatchPoint() : clignotement match point (lignes 309-319)
+- ResultScene._spawnConfetti() : 40 particules palette provencale (lignes 806-831)
 
-### L3. Loading bar (BootScene)
-- this.load.on('progress', value => { barre + pourcentage })
+### L3. Loading bar (BootScene) ✅
+- Barre gradient D4A574/FFD700 avec pourcentage + tips rotatifs (BootScene.js lignes 22-66)
 
 ### L4. Charges d'abilities visibles en match
 - HUD coin : "[Instinct: 1/1]" avec keybind
+- Non implemente — nice-to-have
 
 ---
 
-## AXE N — LEGAL & CREDITS (~2h)
+## AXE N — LEGAL & CREDITS ✅ COMPLET
 
-### N1. Scene Credits (developpeur, outils, licences, inspirations)
-### N2. public/privacy.html (localStorage, pas de cookies, pas de tracking)
-### N3. LICENSE a la racine
+### N1. Scene Credits ✅ — `src/scenes/CreditsScene.js` (developpeur, outils, licences, inspirations)
+### N2. Privacy Policy ✅ — `public/privacy.html` (localStorage, pas de cookies, pas de tracking)
+### N3. LICENSE ✅ — `LICENSE` a la racine
 
 ---
 
@@ -298,21 +301,24 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 # ORDRE D'EXECUTION
 
 ```
-DEMAIN — Tier 1 (publication quality) :
-  Session 1 (Sonnet) : G (sprites) + H (tutorial)
-  Session 2 (Sonnet) : I (i18n) — gros morceau
-  Session 3 (Sonnet) : K (equilibrage + arcade enrichi)
-  Session 4 (Sonnet) : L (polish) + J (accessibilite) + N (legal)
+FAIT — Tier 1 (publication quality) :
+  ✅ G (sprites 12/12) + I (i18n FR/EN) + L (polish 3/4) + N (legal 3/3)
 
-SEMAINE 2 — Tier 2 (multi + rejouabilite) :
-  Session 5 (Sonnet) : O (local 1v1)
-  Session 6 (Sonnet) : P (doublette 2v2 strategie)
-  Session 7 (Sonnet) : Q (defis + async + boss rush) + R (achievements)
+AVANT LANCEMENT (optionnel) :
+  Session ? : H (tutorial avance — phases 4-5, hints tir)
+  Session ? : J (accessibilite — daltonien, audio mobile)
+  Session ? : K (arcade enrichi — selection perso, difficulte)
+  Session ? : L4 (HUD charges abilities)
 
-SEMAINE 3 — Tier 3 (ambition) :
-  Session 8 (Sonnet) : S (replays)
-  Session 9 (Sonnet) : T (roguelite gauntlet)
-  Session 10 (Sonnet) : U (meteo + party mode)
+POST-LANCEMENT — Tier 2 (multi + rejouabilite) :
+  Session ? : O (local 1v1)
+  Session ? : P (doublette 2v2 strategie)
+  Session ? : Q (defis + async + boss rush) + R (achievements)
+
+POST-LANCEMENT — Tier 3 (ambition) :
+  Session ? : S (replays)
+  Session ? : T (roguelite gauntlet)
+  Session ? : U (meteo + party mode)
 ```
 
 **Parallelisable** :

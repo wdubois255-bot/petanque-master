@@ -1,7 +1,7 @@
 # Dossier Lancement — Petanque Master
 
-> **Derniere MAJ** : 27 mars 2026 (Session 37)
-> **Statut** : Pret pour playtest, pre-publication itch.io
+> **Derniere MAJ** : 28 mars 2026 (Session 42)
+> **Statut** : Pret pour publication — tous les fichiers techniques OK, ne reste que les assets visuels humains
 
 ---
 

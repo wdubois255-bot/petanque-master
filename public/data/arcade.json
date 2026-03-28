@@ -4,28 +4,22 @@
   "description": "Le Rookie debarque au boulodrome de La Ciotat. Cinq joueurs reguliers l'attendent. Pour gagner sa place, il devra tous les battre.",
   "description_en": "The Rookie arrives at La Ciotat's boulodrome. Five regular players await. To earn his place, he must beat them all.",
   "intro_narrative": [
-    "Un coffret poussiéreux au fond du grenier...",
-    "Les boules de ton grand-père Auguste.",
+    "Dimanche matin. La Ciotat.",
+    "Le vieux boulodrome du village.",
     "",
-    "On dit qu'il était le meilleur joueur de La Ciotat.",
-    "Champion du Carreau d'Or trois fois de suite.",
+    "Cinq joueurs règnent ici depuis des années.",
+    "Personne n'ose les défier.",
     "",
-    "Le Tournoi annuel commence aujourd'hui.",
-    "C'est le moment de prouver que tu es digne de son héritage.",
-    "",
-    "Montre-leur de quoi les Bertolini sont capables."
+    "Jusqu'à aujourd'hui."
   ],
   "intro_narrative_en": [
-    "A dusty old case at the back of the attic...",
-    "Your grandfather Auguste's boules.",
+    "Sunday morning. La Ciotat.",
+    "The old village boulodrome.",
     "",
-    "They say he was the best player in La Ciotat.",
-    "Champion of the Carreau d'Or three times in a row.",
+    "Five players have ruled here for years.",
+    "Nobody dares challenge them.",
     "",
-    "The annual Tournament begins today.",
-    "Now's the time to prove you're worthy of his legacy.",
-    "",
-    "Show them what the Bertolinis are made of."
+    "Until today."
   ],
   "mid_narrative_after_3": [
     "Trois victoires. Pas mal pour un debutant.",
