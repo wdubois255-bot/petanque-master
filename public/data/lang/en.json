@@ -69,6 +69,8 @@
     },
     "plombee_unlock": "High arc, the ball stops quickly.\nUnlike the Half-Lob which rolls far,\nthe Lob lands and brakes hard.",
     "plombee_hint": "LOB unlocked! High arc, less roll. Perfect near the jack.",
+    "focus_title": "Tip: Focus [F]",
+    "focus_desc": "Press F to stabilize your aim. Less wobble, more precision!",
     "score_title": "End of Round!",
     "score_main": "Every ball closer to the Jack\nthan the opponent's best = 1 point!",
     "score_sub": "First to 13 points wins the game.",

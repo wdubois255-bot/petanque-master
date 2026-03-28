@@ -368,7 +368,7 @@ export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 // Cochonnet speed caps differencies par contexte (point vs tir)
 export const COCHONNET_MAX_SPEED_POINT = 3.5; // Pointage: cochonnet se deplace moderement (~39px max)
-export const COCHONNET_MAX_SPEED_TIR = 10.0;  // Tir: cochonnet vole (~330px). Wall bounce empeche la sortie.
+export const COCHONNET_MAX_SPEED_TIR = 8.0;   // Tir: cochonnet vole (~210px). -20% du 10.0 initial.
 
 // Screen shake (carreau)
 export const CARREAU_SHAKE_DURATION = 250;
@@ -463,6 +463,7 @@ export const TUTORIAL_PHASE_LOFT = 2;
 export const TUTORIAL_PHASE_SCORE = 3;
 export const TUTORIAL_PHASE_TURN_RULE = 4; // "l'équipe la plus loin rejoue"
 export const TUTORIAL_PHASE_GOAL = 0; // "objectif du jeu" — affiché avant Phase 1
+export const TUTORIAL_PHASE_FOCUS = 5; // "touche Respire (F)" — 3e lancer du joueur
 
 // Daily challenge
 export const GALET_DAILY_REWARD = 40;

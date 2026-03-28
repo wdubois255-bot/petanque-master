@@ -2,7 +2,7 @@ import { loadSave, saveSave } from '../utils/SaveManager.js';
 import {
     GAME_WIDTH, GAME_HEIGHT,
     TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
-    TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL,
+    TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL, TUTORIAL_PHASE_FOCUS,
     PLOMBEE_UNLOCK_WINS
 } from '../utils/Constants.js';
 import I18n from '../utils/I18n.js';
@@ -54,6 +54,7 @@ export default class InGameTutorial {
         this._phase1_5Active = false;
         this._phase2Active = false;
         this._phase3Active = false;
+        this._phaseFocusActive = false;
         this._terrainHintActive = false;
         this._lastPhaseEndTime = 0;
 
@@ -114,7 +115,8 @@ export default class InGameTutorial {
     _isAnyPhaseActive() {
         return this._goalActive || this._terrainHintActive ||
                this._phase1Active || this._phase1_5Active ||
-               this._phase2Active || this._phase3Active;
+               this._phase2Active || this._phase3Active ||
+               this._phaseFocusActive;
     }
 
     _canStartNewPhase() {
@@ -174,6 +176,19 @@ export default class InGameTutorial {
                     this._showPhase2_Loft();
                 });
             }
+        }
+
+        // Focus phase trigger: player's 3rd throw (remaining === 1)
+        if (state === 'PLAY_LOOP' &&
+            this.engine.currentTeam === 'player' &&
+            this.engine.remaining.player === 1 &&
+            !this._phaseDone(TUTORIAL_PHASE_FOCUS) &&
+            !this._phaseFocusActive) {
+            this.scene.time.delayedCall(1500, () => {
+                if (this._phaseFocusActive || this._phaseDone(TUTORIAL_PHASE_FOCUS)) return;
+                if (this._isAnyPhaseActive()) return;
+                this._showPhase_Focus();
+            });
         }
 
         // Phase 3 trigger: first mène scored
@@ -549,6 +564,94 @@ export default class InGameTutorial {
         const timer = this.scene.time.delayedCall(12000, () => {
             this._markPhaseDone(TUTORIAL_PHASE_LOFT);
             this._phase2Active = false;
+            this._fadeOutElements();
+            this._onPhaseEnd();
+        });
+        this._elements.push({ destroy: () => timer.destroy() });
+    }
+
+    // ================================================================
+    // PHASE FOCUS: RESPIRE — touche F pour stabiliser la visee (non-bloquant)
+    // ================================================================
+    _showPhase_Focus() {
+        if (this._phaseFocusActive || this._phaseDone(TUTORIAL_PHASE_FOCUS)) return;
+        this._phaseFocusActive = true;
+        if (this.scene) this.scene._tutorialActive = true;
+
+        const cx = GAME_WIDTH / 2;
+        const y = GAME_HEIGHT - 65;
+
+        // Mini panel en bas (same style as Phase 2)
+        const bg = this.scene.add.graphics().setDepth(DEPTH).setAlpha(0);
+        bg.fillStyle(0x3A2E28, 0.92);
+        bg.fillRoundedRect(cx - 220, y - 20, 440, 52, 6);
+        bg.lineStyle(1, 0x87CEEB, 0.55);
+        bg.strokeRoundedRect(cx - 220, y - 20, 440, 52, 6);
+
+        const title = this.scene.add.text(cx, y - 4,
+            I18n.t('tutorial.focus_title'), {
+                fontFamily: 'monospace', fontSize: '11px',
+                color: '#87CEEB', stroke: '#1A1510', strokeThickness: 2
+            }
+        ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
+
+        const desc = this.scene.add.text(cx, y + 16,
+            I18n.t('tutorial.focus_desc'), {
+                fontFamily: 'monospace', fontSize: '10px',
+                color: '#F5E6D0', stroke: '#1A1510', strokeThickness: 1,
+                align: 'center'
+            }
+        ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
+
+        // Fade in
+        this.scene.tweens.add({
+            targets: [bg, title, desc], alpha: 1, duration: 300
+        });
+
+        this._elements.push(bg, title, desc);
+
+        // Bouton OK
+        const btnW = 60, btnH = 24;
+        const btnX = cx + 180, btnY = y + 16;
+        const btnBg = this.scene.add.graphics().setDepth(DEPTH + 1).setAlpha(0);
+        btnBg.fillStyle(0xC4854A, 1);
+        btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        btnBg.lineStyle(1, 0x87CEEB, 0.5);
+        btnBg.strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+
+        const btnText = this.scene.add.text(btnX, btnY, 'OK', {
+            fontFamily: 'monospace', fontSize: '11px',
+            color: '#F5E6D0', stroke: '#1A1510', strokeThickness: 2
+        }).setOrigin(0.5).setDepth(DEPTH + 2).setAlpha(0)
+          .setInteractive({ useHandCursor: true });
+
+        btnText.on('pointerover', () => {
+            btnBg.clear();
+            btnBg.fillStyle(0xD4954A, 1);
+            btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        });
+        btnText.on('pointerout', () => {
+            btnBg.clear();
+            btnBg.fillStyle(0xC4854A, 1);
+            btnBg.fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 4);
+        });
+        btnText.on('pointerdown', () => {
+            timer.remove();
+            this._markPhaseDone(TUTORIAL_PHASE_FOCUS);
+            this._phaseFocusActive = false;
+            this._fadeOutElements();
+            this._onPhaseEnd();
+        });
+
+        this.scene.tweens.add({
+            targets: [btnBg, btnText], alpha: 1, duration: 300, delay: 200
+        });
+        this._elements.push(btnBg, btnText);
+
+        // Auto-dismiss after 8s
+        const timer = this.scene.time.delayedCall(8000, () => {
+            this._markPhaseDone(TUTORIAL_PHASE_FOCUS);
+            this._phaseFocusActive = false;
             this._fadeOutElements();
             this._onPhaseEnd();
         });

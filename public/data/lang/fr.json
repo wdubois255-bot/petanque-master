@@ -69,6 +69,8 @@
     },
     "plombee_unlock": "Arc haut, la boule s'arrete vite.\nContrairement a la demi-portee qui roule\nlongtemps, la plombee atterrit et freine net.",
     "plombee_hint": "PLOMBEE disponible ! Arc haut, roule peu. Ideal pres du cochonnet.",
+    "focus_title": "Astuce : Respire [F]",
+    "focus_desc": "Appuyez sur F pour stabiliser la visee. Moins de tremblement, plus de precision !",
     "score_title": "Fin de mene !",
     "score_main": "Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !",
     "score_sub": "Premier a 13 points gagne la partie.",

@@ -425,16 +425,6 @@ export default class TerrainRenderer {
                 ).setDepth(2.05);
             }
 
-            // v2_terrain_terre overlay: adds gravel/debris detail on terre-based terrains
-            if ((this.terrainId === 'village' || this.terrainId === 'colline') &&
-                this.scene.textures.exists('v2_terrain_terre')) {
-                this.scene.add.image(
-                    this.tx + TERRAIN_WIDTH / 2,
-                    this.ty + TERRAIN_HEIGHT / 2,
-                    'v2_terrain_terre'
-                ).setDisplaySize(TERRAIN_WIDTH, TERRAIN_HEIGHT).setDepth(2).setAlpha(0.25);
-            }
-
             // Transparent canvas overlay for zones, slope, vignette
             const overlayKey = `terrain_overlay_${this.terrainId}`;
             if (this.scene.textures.exists(overlayKey)) this.scene.textures.remove(overlayKey);
