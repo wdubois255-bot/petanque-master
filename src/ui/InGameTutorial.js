@@ -152,16 +152,7 @@ export default class InGameTutorial {
     _handleStateChange(state) {
         if (this.completed) return;
 
-        // Phase 1 trigger: player about to throw their first boule
-        // Catches all states where it becomes the player's turn to aim
-        if ((state === 'FIRST_BALL' || state === 'SECOND_TEAM_FIRST' || state === 'PLAY_LOOP') &&
-            this.engine.currentTeam === 'player' &&
-            !this._phaseDone(TUTORIAL_PHASE_AIM) &&
-            !this._phase1Active &&
-            !this._terrainHintActive &&
-            !this._goalActive) {
-            this._showPhase1_Aim();
-        }
+        // Phase 1 is chained from _dismissGoal — no state trigger needed here
 
         // Phase 1 close: player launched the ball (dragged and released)
         if (state === 'WAITING_STOP' && this.engine.currentTeam === 'player') {
@@ -252,6 +243,14 @@ export default class InGameTutorial {
         this._markPhaseDone(TUTORIAL_PHASE_GOAL);
         this._fadeOutElements();
         this._onPhaseEnd();
+        // Chain: show finger animation immediately after rule text
+        if (!this._phaseDone(TUTORIAL_PHASE_AIM) && !this._phase1Active) {
+            this.scene.time.delayedCall(600, () => {
+                if (!this._phase1Active && !this._phaseDone(TUTORIAL_PHASE_AIM)) {
+                    this._showPhase1_Aim();
+                }
+            });
+        }
     }
 
     // ================================================================
@@ -259,7 +258,6 @@ export default class InGameTutorial {
     // ================================================================
     _showPhase1_Aim() {
         if (this._phase1Active) return;
-        if (this._goalActive) this._dismissGoal();
         this._phase1Active = true;
         if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();

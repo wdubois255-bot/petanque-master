@@ -81,6 +81,8 @@ export default class PetanqueScene extends Phaser.Scene {
         // Phase 5 — Golden zone
         this._goldenZone = null;
         this._goldenZoneActive = false;
+        // Tutorial — cochonnet highlight
+        this._cochonnetHighlight = null;
         // Phase 5 — Match challenge
         this._matchChallenge = null;
         this._matchChallengePanel = null;
@@ -406,6 +408,24 @@ export default class PetanqueScene extends Phaser.Scene {
         };
         document.addEventListener('visibilitychange', this._boundVisibilityChange);
 
+        // In-game tutorial — MUST be created BEFORE startGame() so it catches
+        // the initial state changes (COCHONNET_THROW → FIRST_BALL → SECOND_TEAM_FIRST)
+        const tutSave = loadSave();
+        const phasesDone = tutSave.tutorialPhasesDone || [];
+        if (phasesDone.length < 3) {
+            this._inGameTutorial = new InGameTutorial(this);
+
+            // Cochonnet highlight: subtle pulsing glow so the player notices it
+            const _prevStateChange = this.engine.onStateChange;
+            this.engine.onStateChange = (state) => {
+                if (_prevStateChange) _prevStateChange(state);
+                if ((state === 'FIRST_BALL' || state === 'SECOND_TEAM_FIRST') &&
+                    this.engine.cochonnet && !this._cochonnetHighlight) {
+                    this._showCochonnetHighlight();
+                }
+            };
+        }
+
         this.engine.startGame();
 
         // === ARCADE BADGE "Match X/Y" (top-left, aligned with score panel) ===
@@ -444,13 +464,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 const cReward = this._matchChallenge.reward || CHALLENGE_REWARD_GALETS;
                 this._matchChallengePanel = this._createChallengePanel(cName, cDesc, cReward);
             }
-        }
-
-        // In-game tutorial — 3 phases (VISER, LOFT, SCORE), persistées via tutorialPhasesDone
-        const tutSave = loadSave();
-        const phasesDone = tutSave.tutorialPhasesDone || [];
-        if (phasesDone.length < 3) {
-            this._inGameTutorial = new InGameTutorial(this);
         }
 
         // Contextual terrain tooltips (one-shot per terrain, for ALL players)
@@ -552,6 +565,28 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this._goldenZone?.gfx) { this._goldenZone.gfx.destroy(); }
         this._goldenZone = null;
         this._goldenZoneActive = false;
+    }
+
+    // Tutorial: subtle pulsing ring around the cochonnet so the player spots it
+    _showCochonnetHighlight() {
+        const c = this.engine.cochonnet;
+        if (!c || !c.sprite) return;
+
+        const ring = this.add.graphics().setDepth(9);
+        ring.lineStyle(1.5, 0xFFD700, 0.7);
+        ring.strokeCircle(c.x, c.y, 12);
+        ring.fillStyle(0xFFD700, 0.08);
+        ring.fillCircle(c.x, c.y, 12);
+        this._cochonnetHighlight = ring;
+
+        this.tweens.add({
+            targets: ring, alpha: 0.25,
+            duration: 800, yoyo: true, repeat: 3, ease: 'Sine.easeInOut',
+            onComplete: () => {
+                if (ring.active) ring.destroy();
+                this._cochonnetHighlight = null;
+            }
+        });
     }
 
     // === Phase 5 B1 — Momentum indicator ===
@@ -776,6 +811,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 document.removeEventListener('visibilitychange', this._boundVisibilityChange);
                 this._boundVisibilityChange = null;
             }
+            if (this._cochonnetHighlight) { this._cochonnetHighlight.destroy(); this._cochonnetHighlight = null; }
             if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
             this._gamePaused = false;
             if (this.input?.keyboard) this.input.keyboard.removeAllListeners();
