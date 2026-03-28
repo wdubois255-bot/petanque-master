@@ -54,6 +54,9 @@ L'arcade actuel est **narrativement excellent mais fondamentalement superficiel*
 - "[E] = spin lateral, [R] = retro. Plus ton Effet est eleve, plus c'est fort."
 
 ### H3. Hints contextuels one-shot
+- ✅ Premier match avec plombee : hint contextuel "Arc haut, roule peu. Ideal pres du cochonnet."
+- ✅ Phase LOFT coherente : ne montre que les modes disponibles (pas plombee au 1er match)
+- ✅ Panneau deblocage plombee enrichi : arcs visuels comparatifs + texte explicatif
 - Premier tir au fer : "Essaie la Rafle [4] !"
 - Premier match Plage : "Le sable ralentit. La Plombee est ideale."
 - Premier match Docks : "Les murs rebondissent !"
