@@ -412,7 +412,7 @@ export default class ResultScene extends Phaser.Scene {
             };
 
             if (justUnlockedPlombee) {
-                this._showTechniqueUnlock('PLOMBEE', 'Lancer en cloche — la boule roule moins !', 0x9B7BB8, afterUnlocks);
+                this._showTechniqueUnlock('PLOMBEE', I18n.t('tutorial.plombee_unlock'), 0x9B7BB8, afterUnlocks);
             } else {
                 afterUnlocks();
             }
@@ -666,7 +666,7 @@ export default class ResultScene extends Phaser.Scene {
         overlay.setAlpha(0);
         this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
 
-        const panelW = 380, panelH = 120;
+        const panelW = 420, panelH = 180;
         const panelX = GAME_WIDTH / 2 - panelW / 2;
         const panelY = GAME_HEIGHT / 2 - panelH / 2;
 
@@ -678,39 +678,77 @@ export default class ResultScene extends Phaser.Scene {
         panel.setScale(0);
         this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
-        const title = this.add.text(GAME_WIDTH / 2, panelY + 28, '★ NOUVELLE TECHNIQUE ★', {
+        const title = this.add.text(GAME_WIDTH / 2, panelY + 24, '\u2605 NOUVELLE TECHNIQUE \u2605', {
             fontFamily: 'monospace', fontSize: '16px', color: colorHex,
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setScale(0);
         this.tweens.add({ targets: title, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
 
-        const nameText = this.add.text(GAME_WIDTH / 2, panelY + 58, name, {
+        const nameText = this.add.text(GAME_WIDTH / 2, panelY + 54, name, {
             fontFamily: 'monospace', fontSize: '26px', color: '#F5E6D0',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: nameText, alpha: 1, duration: 400, delay: 300 });
 
-        const descText = this.add.text(GAME_WIDTH / 2, panelY + 88, description, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+        // Mini trajectory arcs: demi-portée (low) vs plombée (high)
+        const arcGfx = this.add.graphics().setDepth(303).setAlpha(0);
+        const arcCx = GAME_WIDTH / 2;
+        const arcY = panelY + 84;
+        // Demi-portée arc (low, olive)
+        arcGfx.lineStyle(2, 0x6B8E4E, 0.7);
+        arcGfx.beginPath();
+        for (let t = 0; t <= 1; t += 0.05) {
+            const ax = arcCx - 80 + t * 70;
+            const ay = arcY - Math.sin(t * Math.PI) * 14;
+            if (t === 0) arcGfx.moveTo(ax, ay); else arcGfx.lineTo(ax, ay);
+        }
+        arcGfx.strokePath();
+        // Plombée arc (high, lavande)
+        arcGfx.lineStyle(2, 0x9B7BB8, 0.9);
+        arcGfx.beginPath();
+        for (let t = 0; t <= 1; t += 0.05) {
+            const ax = arcCx + 10 + t * 70;
+            const ay = arcY - Math.sin(t * Math.PI) * 32;
+            if (t === 0) arcGfx.moveTo(ax, ay); else arcGfx.lineTo(ax, ay);
+        }
+        arcGfx.strokePath();
+        // Labels for arcs
+        const demiLabel = this.add.text(arcCx - 50, arcY + 6, 'Demi', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#6B8E4E'
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        const plomLabel = this.add.text(arcCx + 45, arcY + 6, 'Plombee', {
+            fontFamily: 'monospace', fontSize: '9px', color: '#9B7BB8'
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: [arcGfx, demiLabel, plomLabel], alpha: 1, duration: 400, delay: 400 });
+
+        const descText = this.add.text(GAME_WIDTH / 2, panelY + 118, description, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW,
+            align: 'center', lineSpacing: 2
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: descText, alpha: 1, duration: 300, delay: 500 });
+
+        const keyHint = this.add.text(GAME_WIDTH / 2, panelY + 160, '[2] en match pour l\'utiliser', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#87CEEB', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(303).setAlpha(0);
+        this.tweens.add({ targets: keyHint, alpha: 0.8, duration: 300, delay: 600 });
 
         const hint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, '~ Appuyez sur Espace ~', {
             fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: hint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
 
+        const allEls = [overlay, panel, title, nameText, arcGfx, demiLabel, plomLabel, descText, keyHint, hint];
         let dismissed = false;
         const dismiss = () => {
             if (dismissed) return;
             dismissed = true;
             this.tweens.add({
-                targets: [overlay, panel, title, nameText, descText, hint],
+                targets: allEls,
                 alpha: 0, duration: 300, ease: 'Quad.easeIn',
                 onComplete: () => onDone()
             });
         };
-        this.time.delayedCall(3000, dismiss);
+        this.time.delayedCall(5000, dismiss);
         this.input.keyboard.once('keydown-SPACE', dismiss);
         this.input.keyboard.once('keydown-ENTER', dismiss);
         this.input.once('pointerdown', dismiss);

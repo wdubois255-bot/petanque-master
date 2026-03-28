@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
     FRICTION_BASE, SPEED_THRESHOLD, RESTITUTION_BOULE,
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
-    COCHONNET_MASS, COCHONNET_MAX_COLLISION_SPEED, MAX_THROW_SPEED
+    COCHONNET_MASS, COCHONNET_MAX_SPEED_TIR, COCHONNET_MAX_SPEED_POINT, MAX_THROW_SPEED
 } from '../src/utils/Constants.js';
 
 // We test Ball physics logic without rendering (mock scene)
@@ -186,9 +186,9 @@ describe('Ball - Collision', () => {
 
         Ball.resolveCollision(boule, cochonnet);
 
-        // Cochonnet moves significantly but is capped by COCHONNET_MAX_COLLISION_SPEED
+        // Cochonnet moves significantly but is capped (tir cap — no isPoint set)
         expect(cochonnet.vx).toBeGreaterThan(0);
-        expect(cochonnet.vx).toBeLessThanOrEqual(COCHONNET_MAX_COLLISION_SPEED);
+        expect(cochonnet.vx).toBeLessThanOrEqual(COCHONNET_MAX_SPEED_TIR);
     });
 
     it('should not collide when balls are far apart', () => {

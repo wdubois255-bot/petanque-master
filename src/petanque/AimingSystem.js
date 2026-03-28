@@ -6,6 +6,7 @@ import {
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
     LATERAL_SPIN_MIN_EFFET,
+    RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET,
     IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
 import { loadSave } from '../utils/SaveManager.js';
@@ -13,6 +14,7 @@ import PetanqueEngine from './PetanqueEngine.js';
 import I18n from '../utils/I18n.js';
 import { sfxUIClick, startChargingSound, updateChargingSound, stopChargingSound } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
+import InGameTutorial from '../ui/InGameTutorial.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -245,6 +247,14 @@ export default class AimingSystem {
         const panelH = btnH + 36;
         const panelTop = baseY - panelH / 2;
 
+        // === PLOMBEE first-time hint (one-shot) ===
+        if (styles.some(s => s.loftObj === LOFT_PLOMBEE)) {
+            InGameTutorial.showContextualHint(
+                this.scene, 'plombee_first',
+                I18n.t('tutorial.plombee_hint')
+            );
+        }
+
         // === PANEL FRAME (only build once) ===
         if (this._modeUI.length === 0) {
             const bg = this.scene.add.graphics().setDepth(95);
@@ -373,16 +383,19 @@ export default class AimingSystem {
         const effetStat = this.charStats.effet || 6;
         const spinAvail = effetStat >= LATERAL_SPIN_MIN_EFFET;
 
+        // Retro is now automatic for effet >= 8 (passive ability)
+        this.retroActive = effetStat >= RETRO_MIN_EFFET_STAT && !!style.loftObj.retroAllowed;
+
         if (style.mode === 'tirer') {
             this.shotMode = 'tirer';
             this.loftPreset = style.loftObj;
             this._highlightOpponentBalls();
-            this._showTogglePanel({ retro: !!style.loftObj.retroAllowed, cochonnet: true, spin: spinAvail });
+            this._showTogglePanel({ retro: false, cochonnet: true, spin: spinAvail });
             this.engine._showMessage(`${style.loftObj.label} - Visez une boule adverse !`);
         } else {
             this.shotMode = 'pointer';
             this.loftPreset = style.loftObj;
-            this._showTogglePanel({ retro: !!this.loftPreset.retroAllowed, cochonnet: false, spin: spinAvail });
+            this._showTogglePanel({ retro: false, cochonnet: false, spin: spinAvail });
             this.engine._showMessage(`${this.loftPreset.label} - Visez pres du cochonnet !`);
         }
         this.engine.aimingEnabled = true;
@@ -397,48 +410,42 @@ export default class AimingSystem {
         this._currentStyles = null;
     }
 
-    // === UNIFIED TOGGLE PANEL (Retro [R], Cochonnet [B], Spin [E]) ===
+    // === TOGGLE PANEL (Spin [E] only — Retro is automatic, Cochonnet removed) ===
 
     _showTogglePanel(opts = { retro: false, cochonnet: false, spin: false }) {
         this._clearTogglePanel();
+        this._togglePanelRows = [];
 
         const W = this.scene.scale.width;
         const H = this.scene.scale.height;
-        const loftPanelTop = H - AIMING_UI_BOTTOM_OFFSET - 43; // top edge of loft panel
-        const panelW = 102, panelH = 3 * 22 + 16;
-        const panelX = W - panelW - 6;
-        const panelY = loftPanelTop - 6 - panelH;
 
-        const gfx = this.scene.add.graphics().setDepth(96);
-        gfx.fillStyle(0x3A2E28, 0.88);
-        gfx.fillRoundedRect(panelX, panelY, panelW, panelH, 6);
-        gfx.lineStyle(1, 0xD4A574, 0.3);
-        gfx.strokeRoundedRect(panelX, panelY, panelW, panelH, 6);
-        this._togglePanelGfx = gfx;
+        // Only show spin panel if available (effet >= 8)
+        if (opts.spin) {
+            const loftPanelTop = H - AIMING_UI_BOTTOM_OFFSET - 43;
+            const panelW = 120, panelH = 1 * 22 + 16;
+            const panelX = W - panelW - 6;
+            const panelY = loftPanelTop - 6 - panelH;
 
-        const rowDefs = [
-            { key: 'R', label: 'Retro',      color: '#9B7BB8', dotColor: 0x9B7BB8, avail: opts.retro },
-            { key: 'B', label: 'Cochonnet',  color: '#FFD700', dotColor: 0xFFD700, avail: opts.cochonnet },
-            { key: 'E', label: 'Spin',       color: '#9E9E8E', dotColor: 0x9E9E8E, avail: opts.spin },
-        ];
+            const gfx = this.scene.add.graphics().setDepth(96);
+            gfx.fillStyle(0x3A2E28, 0.88);
+            gfx.fillRoundedRect(panelX, panelY, panelW, panelH, 6);
+            gfx.lineStyle(1, 0xD4A574, 0.3);
+            gfx.strokeRoundedRect(panelX, panelY, panelW, panelH, 6);
+            this._togglePanelGfx = gfx;
 
-        this._togglePanelRows = [];
-        for (let i = 0; i < rowDefs.length; i++) {
-            const row = rowDefs[i];
-            const rowCY = panelY + 8 + i * 22 + 11;
+            const row = { key: 'E', label: 'Spin', color: '#9E9E8E', dotColor: 0x9E9E8E, avail: true };
+            const rowCY = panelY + 8 + 11;
             const dotX = panelX + 10;
 
             const dotGfx = this.scene.add.graphics().setDepth(97);
-            dotGfx.fillStyle(row.avail ? row.dotColor : 0x5A5050, row.avail ? 0.6 : 0.25);
+            dotGfx.fillStyle(row.dotColor, 0.6);
             dotGfx.fillCircle(dotX, rowCY, 4);
 
             const labelText = this.scene.add.text(
                 panelX + 20, rowCY,
                 `[${row.key}] ${row.label}`,
-                { fontFamily: 'monospace', fontSize: '11px', color: row.avail ? row.color : '#5A5050', shadow: SHADOW }
-            ).setOrigin(0, 0.5).setDepth(97).setAlpha(row.avail ? 0.55 : 0.3);
-
-            if (row.avail) labelText.setInteractive({ useHandCursor: true });
+                { fontFamily: 'monospace', fontSize: '11px', color: row.color, shadow: SHADOW }
+            ).setOrigin(0, 0.5).setDepth(97).setAlpha(0.55).setInteractive({ useHandCursor: true });
 
             row.dotGfx = dotGfx;
             row.labelText = labelText;
@@ -446,25 +453,12 @@ export default class AimingSystem {
             row.dotX = dotX;
 
             this._togglePanelRows.push(dotGfx, labelText);
-        }
-        this._toggleRowDefs = rowDefs;
+            this._toggleRowDefs = [row];
 
-        // Key bindings
-        this._keyR = this.scene.input.keyboard.addKey('R');
-        if (opts.cochonnet) {
-            this._keyB = this.scene.input.keyboard.addKey('B');
-            this._keyB.on('down', () => this._toggleCochonnet());
-        }
-        if (opts.spin) {
             this._keyE = this.scene.input.keyboard.addKey('E');
             this._keyE.on('down', () => this._toggleSpinLateral());
+            labelText.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleSpinLateral(); });
         }
-
-        // Pointer callbacks
-        const [, retroLabel, , cochLabel, , spinLabel] = this._togglePanelRows;
-        if (opts.retro) retroLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleRetro(); });
-        if (opts.cochonnet) cochLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleCochonnet(); });
-        if (opts.spin) spinLabel.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleSpinLateral(); });
 
         // === BACK BUTTON (return to style selector) ===
         const backBtnY = H - AIMING_UI_BOTTOM_OFFSET;
@@ -487,45 +481,21 @@ export default class AimingSystem {
 
     _refreshTogglePanel() {
         if (!this._toggleRowDefs) return;
-        const defs = this._toggleRowDefs;
         const spinKey = String(this._lateralSpin);
         const spinColors = { '0': '#9E9E8E', '-1': '#87CEEB', '1': '#C44B3F' };
         const spinDots  = { '0': 0x9E9E8E,  '-1': 0x87CEEB,  '1': 0xC44B3F };
-        const spinLabels = { '0': 'Spin', '-1': '← Gauche !', '1': '→ Droite !' };
+        const spinLabels = { '0': 'Spin', '-1': '\u2190 Gauche !', '1': '\u2192 Droite !' };
 
-        const states = [
-            {
-                active: this.retroActive,
-                activeText: I18n.t('aiming.retro_on'), inactiveText: I18n.t('aiming.retro_off'),
-                activeColor: '#D4A574', inactiveColor: '#9B7BB8',
-                activeDot: 0xD4A574,    inactiveDot: 0x9B7BB8
-            },
-            {
-                active: this._targetCochonnet,
-                activeText: I18n.t('aiming.cochonnet_on'), inactiveText: I18n.t('aiming.cochonnet_off'),
-                activeColor: '#FFD700', inactiveColor: '#FFD700',
-                activeDot: 0xFFD700,   inactiveDot: 0xFFD700
-            },
-            {
-                active: this._lateralSpin !== 0,
-                activeText: `[E] ${spinLabels[spinKey]}`, inactiveText: '[E] Spin',
-                activeColor: spinColors[spinKey], inactiveColor: '#9E9E8E',
-                activeDot: spinDots[spinKey],    inactiveDot: 0x9E9E8E
-            },
-        ];
-
-        for (let i = 0; i < defs.length; i++) {
-            const row = defs[i];
-            if (!row.avail) continue;
-            const st = states[i];
-            const dotC = st.active ? st.activeDot : st.inactiveDot;
-            row.dotGfx.clear();
-            row.dotGfx.fillStyle(dotC, st.active ? 1 : 0.6);
-            row.dotGfx.fillCircle(row.dotX, row.rowCY, 4);
-            row.labelText.setText(st.active ? st.activeText : st.inactiveText);
-            row.labelText.setColor(st.active ? st.activeColor : st.inactiveColor);
-            row.labelText.setAlpha(st.active ? 1 : 0.55);
-        }
+        const row = this._toggleRowDefs[0];
+        if (!row?.avail) return;
+        const active = this._lateralSpin !== 0;
+        const dotC = active ? spinDots[spinKey] : spinDots['0'];
+        row.dotGfx.clear();
+        row.dotGfx.fillStyle(dotC, active ? 1 : 0.6);
+        row.dotGfx.fillCircle(row.dotX, row.rowCY, 4);
+        row.labelText.setText(active ? `[E] ${spinLabels[spinKey]}` : '[E] Spin');
+        row.labelText.setColor(active ? spinColors[spinKey] : '#9E9E8E');
+        row.labelText.setAlpha(active ? 1 : 0.55);
     }
 
     _clearTogglePanel() {
@@ -542,14 +512,9 @@ export default class AimingSystem {
     _showCochonnetToggle() {}
     _showSpinLateralToggle() {}
 
-    _toggleRetro() {
-        this.retroActive = !this.retroActive;
-        sfxUIClick();
-        this._refreshTogglePanel();
-    }
+    _toggleRetro() {}
 
     _clearRetroUI() {
-        // Panel destroyed here (state changes / throw / destroy paths)
         this._clearTogglePanel();
         this._retroLabel = null;
         if (this._keyR) { this._keyR.removeAllListeners(); this._keyR = null; }
@@ -1016,9 +981,9 @@ export default class AimingSystem {
         } else {
             // In local multiplayer, use the current team (could be 'opponent')
             const team = this.engine.currentTeam || 'player';
-            // Retro intensity scales with effet stat (effet 1 = 10%, effet 10 = 100%)
+            // Retro is automatic for effet >= 8, intensity by palier (8=70%, 9=85%, 10=100%)
             const effetStat = this.charStats.effet || 6;
-            const retroIntensity = this.retroActive ? (0.1 + (effetStat - 1) / 9 * 0.9) : 0;
+            const retroIntensity = this.retroActive ? (RETRO_INTENSITY_BY_EFFET[effetStat] || (effetStat >= RETRO_MIN_EFFET_STAT ? 0.70 : 0)) : 0;
 
             let finalPower = power;
 
@@ -1178,10 +1143,7 @@ export default class AimingSystem {
             return;
         }
 
-        // Handle retro toggle [R] during aiming phase
-        if (this._keyR && Phaser.Input.Keyboard.JustDown(this._keyR)) {
-            this._toggleRetro();
-        }
+        // Retro is now automatic (no toggle needed)
 
         // Update pressure tremble + precision wobble
         this._updatePressureTremble();

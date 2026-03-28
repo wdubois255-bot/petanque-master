@@ -74,6 +74,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this._challengeBanner = null;
         this._challengePool = null;
         this._menesSinceLastChallenge = 0;
+        this._galetExplainShown = false;
         // Phase 5 — Match galets tracking
         this._matchGaletsEarned = 0;
         // Visibility change handler (pause on tab switch / app background)
@@ -507,6 +508,16 @@ export default class PetanqueScene extends Phaser.Scene {
             const challenge = this._challengePool[Math.floor(Math.random() * this._challengePool.length)];
             this._currentChallenge = challenge;
             this._challengeCompleted = false;
+
+            // First challenge of first arcade match: explain Galets & shop
+            if (!this._galetExplainShown && this.arcadeRound === 1) {
+                this._galetExplainShown = true;
+                this._showGaletExplanation(() => {
+                    this._showChallengeBanner(I18n.field(challenge, 'text'));
+                });
+                return;
+            }
+
             this._showChallengeBanner(I18n.field(challenge, 'text'));
         };
 
@@ -720,6 +731,54 @@ export default class PetanqueScene extends Phaser.Scene {
         });
 
         return container;
+    }
+
+    // === Galet/Shop explanation (first arcade challenge only) ===
+    _showGaletExplanation(onComplete) {
+        const cx = GAME_WIDTH / 2;
+        const cy = GAME_HEIGHT / 2;
+        const pw = 340;
+        const ph = 72;
+
+        const container = this.add.container(cx, cy).setDepth(95).setAlpha(0).setScale(0.7);
+
+        const bg = this.add.graphics();
+        bg.fillStyle(0x3A2E28, 0.92);
+        bg.fillRoundedRect(-pw / 2, -ph / 2, pw, ph, 8);
+        bg.lineStyle(2, 0xD4A574, 0.7);
+        bg.strokeRoundedRect(-pw / 2, -ph / 2, pw, ph, 8);
+        container.add(bg);
+
+        const icon = this.add.text(0, -ph / 2 + 14, I18n.t('shop.galets_icon') || '\u25C9', {
+            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5);
+        container.add(icon);
+
+        const msg = I18n.t('galet_explain') || 'Les defis rapportent des Galets.\nDepense-les a la Boutique entre les matchs !';
+        const label = this.add.text(0, 8, msg, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+            wordWrap: { width: pw - 24 }, align: 'center', lineSpacing: 2,
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0.5);
+        container.add(label);
+
+        this.tweens.add({
+            targets: container, alpha: 1, scaleX: 1, scaleY: 1,
+            duration: 400, ease: 'Back.easeOut',
+            onComplete: () => {
+                this.time.delayedCall(3000, () => {
+                    this.tweens.add({
+                        targets: container, alpha: 0, scaleX: 0.8, scaleY: 0.8,
+                        duration: 400, ease: 'Sine.easeIn',
+                        onComplete: () => {
+                            container.destroy();
+                            if (onComplete) onComplete();
+                        }
+                    });
+                });
+            }
+        });
     }
 
     // === Phase 5 D1 — Mene challenge banner (centered, full-width, highly visible) ===

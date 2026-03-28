@@ -74,7 +74,9 @@ export const LOFT_TIR = {
 export const LATERAL_SPIN_FORCE = 0.15;
 export const LATERAL_SPIN_FRAMES = 35;
 export const LATERAL_SPIN_MIN_SPEED = 0.5;  // Arrete le spin quand la boule est quasi immobile
-export const LATERAL_SPIN_MIN_EFFET = 3;    // Stat Effet minimum pour activer le spin
+export const LATERAL_SPIN_MIN_EFFET = 8;    // Stat Effet minimum pour activer le spin
+// Duree du spin par palier: effet 8 = base, 9 = +20%, 10 = +40%
+export const LATERAL_SPIN_FRAMES_BY_EFFET = { 8: 35, 9: 42, 10: 49 };
 export const LATERAL_SPIN_TERRAIN_MULT = {
     terre:  1.0,
     herbe:  1.3,
@@ -91,7 +93,9 @@ export const RETRO_PHASE2_FRAMES = 18;
 export const RETRO_TERRAIN_EFF = {
     terre: 1.0, herbe: 1.3, sable: 2.0, dalles: 0.6
 };
-export const RETRO_MIN_EFFET_STAT = 1;   // Minimum effet stat to use retro
+export const RETRO_MIN_EFFET_STAT = 8;   // Minimum effet stat to use retro (auto-applied)
+// Retro intensity by palier: effet 8 = 70%, 9 = 85%, 10 = 100%
+export const RETRO_INTENSITY_BY_EFFET = { 8: 0.70, 9: 0.85, 10: 1.0 };
 
 // Throw range: fraction of TERRAIN_HEIGHT atteignable a pleine puissance
 // Pointer: 92% du terrain (was 85% hardcoded), Tir: 95%
@@ -186,9 +190,11 @@ export const DUST_COUNT_DEMI = 6;
 export const DUST_COUNT_PLOMBEE = 10;
 export const DUST_COUNT_TIR = 8;
 export const WALL_RESTITUTION = 0.35; // Bois/metal reel ~0.30-0.40
-// Pointage: attenuation de l'impulse de collision (une boule roulee doucement
-// ne doit pas ejecter les autres comme un tir). 0.4 = 40% de l'impulse normale.
-export const POINT_COLLISION_DAMPING = 0.5;
+// Boule-boule: PAS de damping — COR 0.62 gere naturellement l'energie.
+// Cochonnet: deux regimes differents (point vs tir) car ratio masse 43:1
+// rend le cochonnet trop sensible au moindre contact en pointage.
+export const COCHONNET_POINT_DAMPING = 0.55; // Pointage→cochonnet: 55% impulse (biberon doux)
+// (Boule-boule: aucun damping, devant de boule fonctionne naturellement)
 export const COLLISION_SPARK_COUNT = 5;
 export const CARREAU_SPARK_COUNT = 8;
 export const CARREAU_SPARK_RADIUS = 36;
@@ -360,7 +366,9 @@ export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
 export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
-export const COCHONNET_MAX_COLLISION_SPEED = 6.0; // Cochonnet se deplace moderement — reste dans la zone de jeu
+// Cochonnet speed caps differencies par contexte (point vs tir)
+export const COCHONNET_MAX_SPEED_POINT = 3.5; // Pointage: cochonnet se deplace moderement (~39px max)
+export const COCHONNET_MAX_SPEED_TIR = 10.0;  // Tir: cochonnet vole (~330px). Wall bounce empeche la sortie.
 
 // Screen shake (carreau)
 export const CARREAU_SHAKE_DURATION = 250;

@@ -61,11 +61,14 @@
     "aim": "Swipe down to aim, release to throw!",
     "aim_sub": "The further you pull, the faster the ball goes.",
     "loft_title": "Choose your trajectory:",
+    "loft_tir_note": "The Iron Shot appears when the opponent has balls on the court.",
     "modes": {
       "demi": "Half-Lob",
       "plombee": "Lob",
       "tir": "Iron Shot"
     },
+    "plombee_unlock": "High arc, the ball stops quickly.\nUnlike the Half-Lob which rolls far,\nthe Lob lands and brakes hard.",
+    "plombee_hint": "LOB unlocked! High arc, less roll. Perfect near the jack.",
     "score_title": "End of Round!",
     "score_main": "Every ball closer to the Jack\nthan the opponent's best = 1 point!",
     "score_sub": "First to 13 points wins the game.",
@@ -225,6 +228,7 @@
     "time_apres_midi": "Afternoon",
     "time_coucher_soleil": "Sunset",
     "challenge_title": "CHALLENGE!",
+    "galet_explain": "Challenges earn you Pebbles.\nSpend them at the Shop between matches!",
     "challenge_complete": "Challenge complete! +{galets} Pebbles",
     "challenge_failed": "Challenge failed...",
     "mene_challenge": "Round challenge",

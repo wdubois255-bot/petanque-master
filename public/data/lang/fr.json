@@ -61,11 +61,14 @@
     "aim": "Glissez vers le bas pour viser, relâchez pour lancer !",
     "aim_sub": "Plus vous tirez loin, plus la boule ira vite.",
     "loft_title": "Choisissez votre trajectoire :",
+    "loft_tir_note": "Le Tir au Fer apparait quand l'adversaire a des boules sur le terrain.",
     "modes": {
       "demi": "Demi-portee",
       "plombee": "Plombée",
       "tir": "Tir au Fer"
     },
+    "plombee_unlock": "Arc haut, la boule s'arrete vite.\nContrairement a la demi-portee qui roule\nlongtemps, la plombee atterrit et freine net.",
+    "plombee_hint": "PLOMBEE disponible ! Arc haut, roule peu. Ideal pres du cochonnet.",
     "score_title": "Fin de mene !",
     "score_main": "Chaque boule plus proche du cochonnet\nque la meilleure adverse = 1 point !",
     "score_sub": "Premier a 13 points gagne la partie.",
@@ -225,6 +228,7 @@
     "time_apres_midi": "Apres-midi",
     "time_coucher_soleil": "Coucher de soleil",
     "challenge_title": "DEFI !",
+    "galet_explain": "Les defis rapportent des Galets.\nDepense-les a la Boutique entre les matchs !",
     "challenge_complete": "Defi reussi ! +{galets} Galets",
     "challenge_failed": "Defi echoue...",
     "mene_challenge": "Defi de mene",

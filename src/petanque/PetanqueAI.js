@@ -6,7 +6,7 @@ import {
     AI_PERSONALITY_MODIFIERS,
     AI_MOMENTUM_SENSITIVITY,
     puissanceMultiplier,
-    LATERAL_SPIN_MIN_EFFET,
+    LATERAL_SPIN_MIN_EFFET, RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET,
     AI_TELL_DURATION, AI_TELL_POINTER_COLOR, AI_TELL_SHOOTER_COLOR, AI_TELL_ALPHA
 } from '../utils/Constants.js';
 
@@ -192,22 +192,18 @@ export default class PetanqueAI {
 
         let finalLoftPreset = loftPreset;
 
-        // AI retro decision: use retro on plombee/tir when effet stat is decent
+        // AI retro: automatic for effet >= 8, intensity by palier
         let retroIntensity = 0;
-        if (finalLoftPreset.retroAllowed && this._charStats.effet >= 4) {
-            const effetStat = this._charStats.effet;
-            const retroChance = (effetStat - 3) / 7;
-            if (Math.random() < retroChance) {
-                retroIntensity = 0.1 + (effetStat - 1) / 9 * 0.9;
-            }
+        const effetStat = this._charStats.effet;
+        if (finalLoftPreset.retroAllowed && effetStat >= RETRO_MIN_EFFET_STAT) {
+            retroIntensity = RETRO_INTENSITY_BY_EFFET[effetStat] || 0.70;
         }
 
-        // Spin lateral : si effet >= 6, chance proportionnelle au stat
+        // Spin lateral: only for effet >= 8, chance scales with stat
         let lateralSpin = 0;
-        const effetStat = this._charStats.effet;
-        if (effetStat >= LATERAL_SPIN_MIN_EFFET && effetStat >= 6) {
-            const spinChance = (effetStat - 5) / 5; // effet 6 = 20%, effet 10 = 100%
-            if (Math.random() < spinChance * 0.4) { // Max 40% de chance pour garder IA lisible
+        if (effetStat >= LATERAL_SPIN_MIN_EFFET) {
+            const spinChance = (effetStat - 7) / 3; // effet 8 = 33%, 9 = 67%, 10 = 100%
+            if (Math.random() < spinChance * 0.4) { // Max 40% pour garder IA lisible
                 lateralSpin = Math.random() < 0.5 ? -1 : 1;
             }
         }

@@ -3,13 +3,15 @@ import {
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
     RETRO_FRICTION_MULT, RETRO_PHASE1_MULT, RETRO_PHASE1_FRAMES, RETRO_PHASE2_FRAMES,
-    RETRO_TERRAIN_EFF, WALL_RESTITUTION, POINT_COLLISION_DAMPING,
+    RETRO_TERRAIN_EFF, WALL_RESTITUTION,
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
-    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE, COCHONNET_MAX_COLLISION_SPEED,
+    BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE,
+    COCHONNET_POINT_DAMPING, COCHONNET_MAX_SPEED_POINT, COCHONNET_MAX_SPEED_TIR,
     puissanceMultiplier,
-    LATERAL_SPIN_FORCE, LATERAL_SPIN_FRAMES, LATERAL_SPIN_MIN_SPEED, LATERAL_SPIN_TERRAIN_MULT
+    LATERAL_SPIN_FORCE, LATERAL_SPIN_FRAMES, LATERAL_SPIN_FRAMES_BY_EFFET,
+    LATERAL_SPIN_MIN_SPEED, LATERAL_SPIN_TERRAIN_MULT
 } from '../utils/Constants.js';
 
 export default class Ball {
@@ -181,7 +183,8 @@ export default class Ball {
         if (spinDir === 0) return;
         this._lateralSpin = spinDir;
         this._effetStat = effetStat;
-        this._lateralFrames = LATERAL_SPIN_FRAMES;
+        // Duration scales by palier: effet 8 = 35f, 9 = 42f, 10 = 49f
+        this._lateralFrames = LATERAL_SPIN_FRAMES_BY_EFFET[effetStat] || LATERAL_SPIN_FRAMES;
         this._lateralIntensity = 1.0;
         this._lateralTerrainMult = LATERAL_SPIN_TERRAIN_MULT[terrainType] ?? 1.0;
     }
@@ -453,13 +456,14 @@ export default class Ball {
         // Apply knockback bonus (e.g. Bronze hits harder)
         impulse *= (a.knockbackMult || 1) * (b.knockbackMult || 1);
 
-        // Pointed balls collide softly — a gentle roll shouldn't blast targets away
-        // Only the actively moving ball matters (higher speed = the thrower)
+        // Identify mover (higher speed = the thrower) for puissance/ability boosts
         const aSpeed = a.vx * a.vx + a.vy * a.vy;
         const bSpeed = b.vx * b.vx + b.vy * b.vy;
         const mover = aSpeed > bSpeed ? a : b;
-        if (mover.isPoint) {
-            impulse *= POINT_COLLISION_DAMPING;
+
+        // Cochonnet-specific: pointage = damping (biberon doux), tir = plein impact
+        if (isBouleVsCochonnet && mover.isPoint) {
+            impulse *= COCHONNET_POINT_DAMPING;
         }
 
         // === PUISSANCE impacts ejection distance ===
@@ -481,12 +485,13 @@ export default class Ball {
         b.vx += impulse * a.mass * nx * carreauBoostB * puiB;
         b.vy += impulse * a.mass * ny * carreauBoostB * puiB;
 
-        // Cap cochonnet post-collision velocity to prevent ejection from terrain
+        // Cap cochonnet post-collision velocity — different caps for point vs tir
         if (isBouleVsCochonnet) {
             const lighter = a.mass < b.mass ? a : b;
+            const maxSpeed = mover.isPoint ? COCHONNET_MAX_SPEED_POINT : COCHONNET_MAX_SPEED_TIR;
             const speed = Math.sqrt(lighter.vx * lighter.vx + lighter.vy * lighter.vy);
-            if (speed > COCHONNET_MAX_COLLISION_SPEED) {
-                const ratio = COCHONNET_MAX_COLLISION_SPEED / speed;
+            if (speed > maxSpeed) {
+                const ratio = maxSpeed / speed;
                 lighter.vx *= ratio;
                 lighter.vy *= ratio;
             }

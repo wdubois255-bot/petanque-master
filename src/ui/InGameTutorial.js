@@ -2,7 +2,8 @@ import { loadSave, saveSave } from '../utils/SaveManager.js';
 import {
     GAME_WIDTH, GAME_HEIGHT,
     TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
-    TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL
+    TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL,
+    PLOMBEE_UNLOCK_WINS
 } from '../utils/Constants.js';
 import I18n from '../utils/I18n.js';
 
@@ -471,15 +472,23 @@ export default class InGameTutorial {
             }
         ).setOrigin(0.5).setDepth(DEPTH + 1).setAlpha(0);
 
+        // Build modes dynamically based on unlock state
+        const save = loadSave();
+        const plombeeUnlocked = (save.stats?.totalWins || 0) >= PLOMBEE_UNLOCK_WINS;
+
         const modes = [
-            { key: '1', name: I18n.t('tutorial.modes.demi'),     color: '#6B8E4E' },
-            { key: '2', name: I18n.t('tutorial.modes.plombee'),  color: '#9B7BB8' },
-            { key: '3', name: I18n.t('tutorial.modes.tir'),      color: '#C44B3F' }
+            { key: '1', name: I18n.t('tutorial.modes.demi'), color: '#6B8E4E' }
         ];
+        if (plombeeUnlocked) {
+            modes.push({ key: '2', name: I18n.t('tutorial.modes.plombee'), color: '#9B7BB8' });
+        }
+        modes.push({ key: `${modes.length + 1}`, name: I18n.t('tutorial.modes.tir'), color: '#C44B3F' });
 
         const modeEls = [];
+        const spacing = modes.length <= 2 ? 120 : 84;
+        const totalModesW = (modes.length - 1) * spacing;
         modes.forEach((m, i) => {
-            const ox = cx - 160 + i * 84;
+            const ox = cx - totalModesW / 2 + i * spacing;
             const keyT = this.scene.add.text(ox - 14, y + 16, `[${m.key}]`, {
                 fontFamily: 'monospace', fontSize: '10px', color: m.color,
                 stroke: '#1A1510', strokeThickness: 2

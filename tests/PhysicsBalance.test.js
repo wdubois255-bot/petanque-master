@@ -158,8 +158,8 @@ describe('Lateral spin balance', () => {
         expect(LATERAL_SPIN_FORCE).toBeGreaterThanOrEqual(0.10);
     });
 
-    it('spin activates at effet 3 or lower (accessible)', () => {
-        expect(LATERAL_SPIN_MIN_EFFET).toBeLessThanOrEqual(3);
+    it('spin activates at effet 8 (technique players only)', () => {
+        expect(LATERAL_SPIN_MIN_EFFET).toBe(8);
     });
 
     it('spin lasts enough frames to be visible (>= 25)', () => {

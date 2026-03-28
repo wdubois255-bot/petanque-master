@@ -13,7 +13,7 @@ import {
     LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
     LATERAL_SPIN_FRAMES, LATERAL_SPIN_FORCE, LATERAL_SPIN_TERRAIN_MULT,
     TERRAIN_HEIGHT, BALL_CLAMP_MARGIN,
-    COCHONNET_MAX_COLLISION_SPEED, puissanceMultiplier
+    COCHONNET_MAX_SPEED_TIR, COCHONNET_MAX_SPEED_POINT, COCHONNET_POINT_DAMPING, puissanceMultiplier
 } from '../src/utils/Constants.js';
 
 const mockScene = {
@@ -415,7 +415,7 @@ describe('Boule-cochonnet collisions', () => {
         const cochSpeed = Math.sqrt(cochonnet.vx ** 2 + cochonnet.vy ** 2);
         // Cochonnet moves significantly but is capped to stay in play zone
         expect(cochSpeed).toBeGreaterThan(0);
-        expect(cochSpeed).toBeLessThanOrEqual(COCHONNET_MAX_COLLISION_SPEED);
+        expect(cochSpeed).toBeLessThanOrEqual(COCHONNET_MAX_SPEED_TIR);
         // Boule barely slows (700g vs 30g = boule keeps most of its momentum)
         expect(bouleSpeed).toBeGreaterThan(3);
     });
@@ -765,11 +765,12 @@ describe('Puissance stat extremes', () => {
 // =====================================================
 
 describe('Cochonnet collision cap', () => {
-    it('cochonnet speed capped at COCHONNET_MAX_COLLISION_SPEED after hard hit', () => {
+    it('cochonnet speed capped after hard tir hit', () => {
         const ball = new Ball(mockScene, 200, 200, { isCochonnet: false });
         ball.vx = 12; // MAX_THROW_SPEED — moving right
         ball.vy = 0;
         ball.isMoving = true;
+        ball.isPoint = false; // tir
 
         // Cochonnet to the right, within collision range (distance=15 < minDist=20)
         const cochonnet = new Ball(mockScene, 215, 200, { isCochonnet: true, mass: 16 });
@@ -782,7 +783,7 @@ describe('Cochonnet collision cap', () => {
 
         const speed = Math.sqrt(cochonnet.vx ** 2 + cochonnet.vy ** 2);
         expect(speed).toBeGreaterThan(0); // cochonnet actually moved
-        expect(speed).toBeLessThanOrEqual(COCHONNET_MAX_COLLISION_SPEED + 0.01); // but capped
+        expect(speed).toBeLessThanOrEqual(COCHONNET_MAX_SPEED_TIR + 0.01); // tir cap
     });
 
     it('cochonnet still moves after a light hit', () => {
