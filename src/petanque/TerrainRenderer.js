@@ -399,29 +399,24 @@ export default class TerrainRenderer {
             const tiledTex = this.scene.textures.createCanvas(tiledKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
             const tiledCtx = tiledTex.getContext();
 
-            // Disable smoothing to prevent visible seams between tiled tiles
+            // Disable smoothing — pixel art mode
             tiledCtx.imageSmoothingEnabled = false;
 
             const srcImage = this.scene.textures.get(texKey).getSourceImage();
             const tw = srcImage.width;
             const th = srcImage.height;
 
-            // Two-pass tiling: base layer + half-offset layer to hide seams
-            // Pass 1: normal grid
+            // Tile the texture across the terrain canvas
             for (let tly = 0; tly < TERRAIN_HEIGHT; tly += th) {
                 for (let tlx = 0; tlx < TERRAIN_WIDTH; tlx += tw) {
                     tiledCtx.drawImage(srcImage, tlx, tly);
                 }
             }
-            // Pass 2: half-offset tiles at reduced opacity — breaks visible seam lines
-            tiledCtx.globalAlpha = 0.35;
-            const halfW = Math.floor(tw / 2);
-            const halfH = Math.floor(th / 2);
-            for (let tly = -halfH; tly < TERRAIN_HEIGHT; tly += th) {
-                for (let tlx = -halfW; tlx < TERRAIN_WIDTH; tlx += tw) {
-                    tiledCtx.drawImage(srcImage, tlx, tly);
-                }
-            }
+
+            // Darken overlay: base color wash hides tiling seams + gives depth
+            tiledCtx.globalAlpha = 0.18;
+            tiledCtx.fillStyle = this.vis.surfaceBase;
+            tiledCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
             tiledCtx.globalAlpha = 1;
 
             // Tint colline warmer to differentiate from village (same terre texture)
