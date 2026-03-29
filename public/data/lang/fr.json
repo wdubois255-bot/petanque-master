@@ -264,6 +264,7 @@
     "time_midi": "Midi",
     "time_apres_midi": "Apres-midi",
     "time_coucher_soleil": "Coucher de soleil",
+    "challenge_label": "DEFI",
     "challenge_title": "DEFI !",
     "galet_explain": "Les defis rapportent des Galets.\nDepense-les a la Boutique entre les matchs !",
     "challenge_complete": "Defi reussi ! +{galets} Galets",

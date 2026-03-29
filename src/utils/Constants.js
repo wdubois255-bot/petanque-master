@@ -8,12 +8,15 @@ export const PLAYER_MOVE_DURATION = 200;
 export const PLAYER_ANIM_FPS = 8;
 
 // Petanque - terrain (vertical: player bottom, cochonnet top)
-// Display: narrow & tall, ratio ~15:4 FIPJP
+// Display: narrow & tall, terrain 13m (FIPJP 12-15m)
 export const TERRAIN_WIDTH = 180;
 export const TERRAIN_HEIGHT = 420;
-// 6m = 168px, 10m = 280px (terrain 420px = 15m)
-export const COCHONNET_MIN_DIST = 168;
-export const COCHONNET_MAX_DIST = 280;
+export const TERRAIN_LENGTH_METERS = 13;
+// Conversion px <-> metres (terrain 420px = 13m)
+export const PX_PER_METER = TERRAIN_HEIGHT / TERRAIN_LENGTH_METERS;  // ~32.3 px/m
+// Cochonnet: 6-10m from throw circle (FIPJP)
+export const COCHONNET_MIN_DIST = Math.round(6 * PX_PER_METER);   // ~194px
+export const COCHONNET_MAX_DIST = Math.round(10 * PX_PER_METER);  // ~323px
 
 // Petanque - physique
 // Valeurs basees sur la physique reelle (acier sur acier COR ~0.60-0.65, bois sur acier ~0.50)
@@ -132,7 +135,7 @@ export const BLESSEE_MAX_DISPLACEMENT = 32;    // px — cible bougee mais pas a
 export const RECUL_MIN_BACKWARD_PX = 5;        // px — seuil minimal de recul arriere (COR 0.62 → ~5-6px naturel)
 
 // Petanque - lisibilite
-export const PIXELS_TO_METERS = 15 / 420; // ~0.036 m/px (doubled terrain)
+export const PIXELS_TO_METERS = TERRAIN_LENGTH_METERS / TERRAIN_HEIGHT; // ~0.031 m/px
 
 // Petanque - IA personnalites (fallback quand pas de characterData)
 // Valeurs alignees avec characters.json

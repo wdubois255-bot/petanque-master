@@ -264,6 +264,7 @@
     "time_midi": "Noon",
     "time_apres_midi": "Afternoon",
     "time_coucher_soleil": "Sunset",
+    "challenge_label": "CHALLENGE",
     "challenge_title": "CHALLENGE!",
     "galet_explain": "Challenges earn you Pebbles.\nSpend them at the Shop between matches!",
     "challenge_complete": "Challenge complete! +{galets} Pebbles",

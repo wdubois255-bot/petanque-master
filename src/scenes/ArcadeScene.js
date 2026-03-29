@@ -622,10 +622,8 @@ export default class ArcadeScene extends Phaser.Scene {
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
 
-            this.tweens.add({
-                targets: [btnBg, btnText], scaleX: 1.02, scaleY: 1.02,
-                duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-            });
+            btnText.on('pointerover', () => { btnText.setScale(1.03); });
+            btnText.on('pointerout', () => { btnText.setScale(1); });
             btnText.on('pointerdown', () => this._launchNextMatch());
 
             // Controls hint (inside panel, bottom)

@@ -1,4 +1,4 @@
-import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY, IS_MOBILE, DUST_MAX_SIMULTANEOUS_DESKTOP, DUST_MAX_SIMULTANEOUS_MOBILE } from '../utils/Constants.js';
+import { SHADOW_TEXT, BARK_DURATION, FILTER_GLOW_PLAYER, FILTER_GLOW_OPPONENT, FILTER_GLOW_STRENGTH, FILTER_GLOW_QUALITY, IS_MOBILE, DUST_MAX_SIMULTANEOUS_DESKTOP, DUST_MAX_SIMULTANEOUS_MOBILE, COCHONNET_MIN_DIST, COCHONNET_MAX_DIST, PX_PER_METER, COLORS } from '../utils/Constants.js';
 import I18n from '../utils/I18n.js';
 
 /**
@@ -475,6 +475,189 @@ export default class EngineRenderer {
         return overlay;
     }
 
+    // ================================================================
+    // COCHONNET ZONE (6-10m valid zone during cochonnet throw)
+    // ================================================================
+
+    /**
+     * Show the valid 6-10m zone with subtle dashed lines and a soft gradient fill.
+     * Called when state enters COCHONNET_THROW.
+     */
+    showCochonnetZone() {
+        this.hideCochonnetZone(true);
+
+        const bounds = this.engine.bounds;
+        const circleY = this.scene.throwCircleY;
+        const left = bounds.x + 4;
+        const right = bounds.x + bounds.w - 4;
+        const w = right - left;
+
+        // Y positions for 6m and 10m lines (throw goes upward → subtract)
+        const y6m = circleY - COCHONNET_MIN_DIST;
+        const y10m = circleY - COCHONNET_MAX_DIST;
+
+        // Container for all zone visuals
+        this._zoneContainer = this.scene.add.container(0, 0).setDepth(5).setAlpha(0);
+
+        // --- Soft gradient fill between 6m and 10m ---
+        const gradGfx = this.scene.add.graphics();
+        const zoneH = y6m - y10m;
+        const steps = 12;
+        const stepH = zoneH / steps;
+        for (let i = 0; i < steps; i++) {
+            // Fade: strongest in center, weaker at edges
+            const t = i / (steps - 1);
+            const centerDist = Math.abs(t - 0.5) * 2; // 0 at center, 1 at edges
+            const alpha = 0.06 * (1 - centerDist * 0.6);
+            gradGfx.fillStyle(COLORS.OCRE, alpha);
+            gradGfx.fillRect(left, y10m + i * stepH, w, stepH + 1);
+        }
+        this._zoneContainer.add(gradGfx);
+
+        // --- Dashed lines at 6m and 10m ---
+        const lineGfx = this.scene.add.graphics();
+        const dashLen = 6;
+        const gapLen = 5;
+
+        // 10m line (top) — slightly brighter
+        this._drawDashedLine(lineGfx, left, y10m, right, y10m,
+            dashLen, gapLen, COLORS.OCRE, 0.35, 1.2);
+        // 6m line (bottom) — subtler
+        this._drawDashedLine(lineGfx, left, y6m, right, y6m,
+            dashLen, gapLen, COLORS.OCRE, 0.25, 1.0);
+        this._zoneContainer.add(lineGfx);
+
+        // --- Distance labels ---
+        const labelStyle = {
+            fontFamily: 'monospace', fontSize: '9px',
+            color: '#D4A574', align: 'right',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        };
+        const label6 = this.scene.add.text(right + 5, y6m - 5, '6m', labelStyle).setAlpha(0.5);
+        const label10 = this.scene.add.text(right + 5, y10m - 5, '10m', labelStyle).setAlpha(0.5);
+        this._zoneContainer.add([label6, label10]);
+
+        // Fade in
+        this.scene.tweens.add({
+            targets: this._zoneContainer,
+            alpha: 1,
+            duration: 300,
+            ease: 'Quad.easeOut'
+        });
+    }
+
+    _drawDashedLine(gfx, x1, y1, x2, y2, dashLen, gapLen, color, alpha, lineWidth) {
+        gfx.lineStyle(lineWidth, color, alpha);
+        const dx = x2 - x1;
+        const totalLen = Math.abs(dx);
+        const step = dashLen + gapLen;
+        let pos = 0;
+        while (pos < totalLen) {
+            const startX = x1 + (pos / totalLen) * dx;
+            const endPos = Math.min(pos + dashLen, totalLen);
+            const endX = x1 + (endPos / totalLen) * dx;
+            gfx.beginPath();
+            gfx.moveTo(startX, y1);
+            gfx.lineTo(endX, y2);
+            gfx.strokePath();
+            pos += step;
+        }
+    }
+
+    /**
+     * Hide the zone with a fade-out (or instant if immediate=true).
+     */
+    hideCochonnetZone(immediate = false) {
+        if (!this._zoneContainer) return;
+        if (immediate) {
+            this._zoneContainer.destroy(true);
+            this._zoneContainer = null;
+            return;
+        }
+        const container = this._zoneContainer;
+        this._zoneContainer = null;
+        this.scene.tweens.add({
+            targets: container,
+            alpha: 0,
+            duration: 400,
+            ease: 'Quad.easeIn',
+            onComplete: () => container.destroy(true)
+        });
+    }
+
+    // ================================================================
+    // COCHONNET DISTANCE (flash near cochonnet + persistent badge in ScorePanel)
+    // ================================================================
+
+    /**
+     * Show distance from throw circle to cochonnet in meters.
+     * 1) Brief floating label near the cochonnet (2s then fade out)
+     * 2) Persistent badge in ScorePanel
+     */
+    showCochonnetDistance() {
+        this._cleanupDistFlash();
+
+        const cochonnet = this.engine.cochonnet;
+        if (!cochonnet || !cochonnet.isAlive) return;
+
+        const circleX = this.scene.throwCircleX;
+        const circleY = this.scene.throwCircleY;
+        const dx = cochonnet.x - circleX;
+        const dy = cochonnet.y - circleY;
+        const distPx = Math.sqrt(dx * dx + dy * dy);
+        const distM = distPx / PX_PER_METER;
+        const label = `${distM.toFixed(1)}m`;
+
+        // --- 1) Floating flash near cochonnet (temporary) ---
+        const baseX = cochonnet.x + 16;
+        const baseY = cochonnet.y - 4;
+
+        const txt = this.scene.add.text(baseX, baseY, label, {
+            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 2, fill: true }
+        }).setOrigin(0, 0.5).setDepth(50).setAlpha(0);
+
+        this._distFlash = txt;
+
+        // Slide in + hold 2s + float up & fade out
+        this.scene.tweens.add({
+            targets: txt,
+            alpha: 1, x: baseX,
+            duration: 300, ease: 'Back.easeOut',
+            onComplete: () => {
+                this.scene.time.delayedCall(1800, () => {
+                    if (!txt.active) return;
+                    this.scene.tweens.add({
+                        targets: txt,
+                        alpha: 0, y: baseY - 20,
+                        duration: 500, ease: 'Cubic.easeOut',
+                        onComplete: () => { if (txt.active) txt.destroy(); }
+                    });
+                });
+            }
+        });
+        txt.setX(baseX + 12);
+
+        // --- 2) Persistent badge in ScorePanel ---
+        if (this.scene.scorePanel) {
+            this.scene.scorePanel.setCochonnetDistance(distM);
+        }
+    }
+
+    hideCochonnetDistance() {
+        this._cleanupDistFlash();
+        if (this.scene.scorePanel) {
+            this.scene.scorePanel.clearCochonnetDistance();
+        }
+    }
+
+    _cleanupDistFlash() {
+        if (this._distFlash?.active) {
+            this._distFlash.destroy();
+        }
+        this._distFlash = null;
+    }
+
     destroy() {
         // Kill pulse tween to prevent orphaned infinite loop
         if (this._bestPulse && this.scene?.tweens) {
@@ -486,6 +669,10 @@ export default class EngineRenderer {
         }
         if (this._bestGfx) { this._bestGfx.destroy(); this._bestGfx = null; }
         if (this._msgText) { this._msgText.destroy(); this._msgText = null; }
+
+        // Cleanup cochonnet zone & distance
+        this.hideCochonnetZone(true);
+        this.hideCochonnetDistance();
 
         // Vider le pool de Graphics
         for (const g of this._pool) {

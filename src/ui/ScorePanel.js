@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI, SCORE_PANEL_COMPACT_W, SCORE_PANEL_COMPACT_H } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI, SCORE_PANEL_COMPACT_W, SCORE_PANEL_COMPACT_H, PX_PER_METER } from '../utils/Constants.js';
 import UIFactory from './UIFactory.js';
 import I18n from '../utils/I18n.js';
 
@@ -128,6 +128,33 @@ export default class ScorePanel {
             fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', align: 'center'
         }).setOrigin(0.5, 1).setDepth(90).setAlpha(0.5);
 
+        // === COCHONNET DISTANCE BADGE (under compact panel) ===
+        this._distBadgeVisible = false;
+        const dbW = 52;
+        const dbH = 18;
+        const dbX = this.compactX + (cw - dbW) / 2;
+        const dbY = this.compactY + ch + 3;
+
+        this._distBg = scene.add.graphics().setDepth(90).setAlpha(0);
+        this._drawDistBadge(this._distBg, dbX, dbY, dbW, dbH);
+
+        // Cochonnet icon (small gold dot)
+        this._distDot = scene.add.graphics().setDepth(91).setAlpha(0);
+        this._distDot.fillStyle(0xFFD700, 0.9);
+        this._distDot.fillCircle(dbX + 10, dbY + dbH / 2, 3);
+        this._distDot.fillStyle(0xFFFFFF, 0.3);
+        this._distDot.fillCircle(dbX + 9, dbY + dbH / 2 - 1, 1);
+
+        this._distText = scene.add.text(dbX + 18, dbY + dbH / 2, '', {
+            fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0',
+            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+        }).setOrigin(0, 0.5).setDepth(91).setAlpha(0);
+
+        this._distBadgeX = dbX;
+        this._distBadgeY = dbY;
+        this._distBadgeW = dbW;
+        this._distBadgeH = dbH;
+
         this._tabKey = scene.input.keyboard.addKey('TAB');
 
         // All expanded panel objects for tween toggling
@@ -173,6 +200,18 @@ export default class ScorePanel {
             gfx.fillStyle(0xFFFFFF, 0.3);
             gfx.fillRect(nx - 1, ny - 1, 1, 1);
         }
+    }
+
+    _drawDistBadge(gfx, x, y, w, h) {
+        // Mini wood badge — same style as compact panel but smaller
+        gfx.fillStyle(0x1A1510, 0.3);
+        gfx.fillRoundedRect(x + 1, y + 1, w, h, 4);
+        gfx.fillStyle(0x6B4F2D, 0.92);
+        gfx.fillRoundedRect(x, y, w, h, 4);
+        gfx.fillStyle(0xA08050, 0.15);
+        gfx.fillRoundedRect(x + 2, y + 2, w - 4, 6, { tl: 2, tr: 2, bl: 0, br: 0 });
+        gfx.lineStyle(1, 0x8B6B3D, 0.5);
+        gfx.strokeRoundedRect(x, y, w, h, 4);
     }
 
     _drawFullPanel(gfx, x, y, w, h) {
@@ -274,6 +313,9 @@ export default class ScorePanel {
         }
 
         this._drawBallDots(e);
+
+        // Update cochonnet distance live (if cochonnet was hit and moved)
+        this.updateCochonnetDistance();
 
         // TAB : expand/collapse
         const tabDown = this._tabKey.isDown;
@@ -427,6 +469,61 @@ export default class ScorePanel {
         }
     }
 
+    // ================================================================
+    // COCHONNET DISTANCE
+    // ================================================================
+
+    /**
+     * Show/update the cochonnet distance badge under the compact panel.
+     * @param {number} distMeters — distance in meters (e.g. 7.2)
+     */
+    setCochonnetDistance(distMeters) {
+        const label = `${distMeters.toFixed(1)}m`;
+        this._distText.setText(label);
+
+        if (!this._distBadgeVisible) {
+            this._distBadgeVisible = true;
+            // Slide down + fade in
+            const targets = [this._distBg, this._distDot, this._distText];
+            for (const t of targets) t.setY((t.y || 0) - 8);
+            this.scene.tweens.add({
+                targets,
+                alpha: 1,
+                y: '+=8',
+                duration: 350,
+                ease: 'Back.easeOut'
+            });
+        }
+    }
+
+    /**
+     * Update the distance live (e.g. when cochonnet is hit and moves).
+     * Called from engine update loop.
+     */
+    updateCochonnetDistance() {
+        if (!this._distBadgeVisible) return;
+        const e = this.engine;
+        if (!e.cochonnet || !e.cochonnet.isAlive) {
+            this.clearCochonnetDistance();
+            return;
+        }
+        const dx = e.cochonnet.x - this.scene.throwCircleX;
+        const dy = e.cochonnet.y - this.scene.throwCircleY;
+        const distM = Math.sqrt(dx * dx + dy * dy) / PX_PER_METER;
+        this._distText.setText(`${distM.toFixed(1)}m`);
+    }
+
+    clearCochonnetDistance() {
+        if (!this._distBadgeVisible) return;
+        this._distBadgeVisible = false;
+        this.scene.tweens.add({
+            targets: [this._distBg, this._distDot, this._distText],
+            alpha: 0,
+            duration: 250,
+            ease: 'Quad.easeIn'
+        });
+    }
+
     destroy() {
         if (this._tabKey) {
             this.scene.input.keyboard.removeKey('TAB');
@@ -454,5 +551,9 @@ export default class ScorePanel {
         this._rankGfx.destroy();
         this._rankHint.destroy();
         for (const label of this._rankLabels) label.destroy();
+        // Distance badge
+        if (this._distBg) this._distBg.destroy();
+        if (this._distDot) this._distDot.destroy();
+        if (this._distText) this._distText.destroy();
     }
 }

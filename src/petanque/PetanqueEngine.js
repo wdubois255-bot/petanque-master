@@ -183,6 +183,9 @@ export default class PetanqueEngine {
             case STATES.COCHONNET_THROW:
                 // L'equipe qui a gagne la mene precedente lance le cochonnet
                 this.currentTeam = this._cochonnetTeam || 'player';
+                // Show 6-10m valid zone
+                this.renderer.hideCochonnetDistance();
+                this.renderer.showCochonnetZone();
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
                     this._showMessage(I18n.t('ingame.throw_cochonnet'));
@@ -196,6 +199,9 @@ export default class PetanqueEngine {
 
             case STATES.FIRST_BALL:
                 // Meme equipe que le cochonnet lance la premiere boule
+                // Hide zone, show distance label
+                this.renderer.hideCochonnetZone();
+                this.renderer.showCochonnetDistance();
                 this.currentTeam = this._cochonnetTeam || 'player';
                 if (this.currentTeam === 'player') {
                     this.aimingEnabled = true;
@@ -661,6 +667,7 @@ export default class PetanqueEngine {
         if (this.cochonnet && this.cochonnet.isAlive && this.cochonnet.checkOutOfBounds(this.bounds)) {
             const cx = this.cochonnet.x, cy = this.cochonnet.y;
             this.cochonnet.kill();
+            this.renderer.hideCochonnetDistance();
             if (this.onBallDead) this.onBallDead(cx, cy);
         }
     }
