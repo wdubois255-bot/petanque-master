@@ -310,7 +310,13 @@
         "palet_success": ["Palet avec style !", "Je reste, et j'ai la classe !", "Quelle position !"],
         "contre_self": ["Le coup de theatre rate...", "Le public retient son souffle.", "Pas mon meilleur acte."],
         "fanny_win": ["FANNY ! Le show total !", "Zero point, adversaire ! C'est du grand Balthazar !"],
-        "fanny_lose": ["La chute dramatique... le public adore quand meme.", "Fanny. Au moins c'est spectaculaire."]
+        "fanny_lose": ["La chute dramatique... le public adore quand meme.", "Fanny. Au moins c'est spectaculaire."],
+        "pressure_tied": ["Le public retient son souffle... Moi aussi.", "Egalite ? Parfait pour un twist dramatique !"],
+        "fanny_imminent_winning": ["FANNY ! Le final en apothéose !", "Le public va exploser !"],
+        "fanny_imminent_losing": ["... Meme les plus grands ont leurs mauvais jours.", "Le rideau tombe... sans rappel."],
+        "comeback_self": ["QUEL RETOURNEMENT ! Le show continue !", "Balthazar revient sur scene !"],
+        "opponent_comeback": ["Le public aime les surprises...", "Un rival qui monte, c'est du bon spectacle."],
+        "dominant_lead": ["Le one-man show ! Admirez !", "Le public en redemande !"]
       },
       "barks_en": {
         "good_shot": ["Now THAT'S a show!", "Behold.", "Balthazar. Simply.", "Class."],
@@ -331,7 +337,13 @@
         "palet_success": ["Palet with style!", "I stay, and I look great!", "What a position!"],
         "contre_self": ["The failed plot twist...", "The crowd holds its breath.", "Not my finest act."],
         "fanny_win": ["FANNY! Total showstopper!", "Zero points, opponent! That's peak Balthazar!"],
-        "fanny_lose": ["The dramatic fall... the crowd loves it anyway.", "Fanny. At least it's spectacular."]
+        "fanny_lose": ["The dramatic fall... the crowd loves it anyway.", "Fanny. At least it's spectacular."],
+        "pressure_tied": ["The crowd holds its breath... So do I.", "Tied? Perfect for a dramatic twist!"],
+        "fanny_imminent_winning": ["FANNY! A grand finale!", "The crowd is going to explode!"],
+        "fanny_imminent_losing": ["...Even the greatest have their off days.", "The curtain falls... no encore."],
+        "comeback_self": ["WHAT A TWIST! The show goes on!", "Balthazar is back on stage!"],
+        "opponent_comeback": ["The crowd loves a surprise...", "A rival rising — that's good theater."],
+        "dominant_lead": ["The one-man show! Behold!", "The crowd wants more!"]
       },
       "ability": { "name": "Le Show", "name_en": "The Show", "charges": 2, "description": "Intimide l'adversaire, sa visee tremble davantage", "description_en": "Intimidates the opponent, making their aim shakier" },
       "sprite": "foyot_animated",
@@ -553,7 +565,13 @@
         "palet_success": ["Palet !", "Je reste la, easy.", "Neuf titres, j'sais me placer."],
         "contre_self": ["Lol. Non.", "Ma propre boule... sigh.", "C'est pas arrive."],
         "fanny_win": ["FANNY ! Trop marrant.", "Zero ! La releve elle punit."],
-        "fanny_lose": ["Fanny... ca arrive.", "Zero point. Mince."]
+        "fanny_lose": ["Fanny... ca arrive.", "Zero point. Mince."],
+        "pressure_tied": ["C'est la que les champions se revelent.", "Egalite. Game on."],
+        "fanny_imminent_winning": ["FANNY ! La releve punit sans pitie.", "13-0. Easy game."],
+        "fanny_imminent_losing": ["... OK, ca c'est une premiere.", "La nouvelle gen apprend aussi de ses erreurs."],
+        "comeback_self": ["La remontee ! Je le savais.", "Le prodige se reveille."],
+        "opponent_comeback": ["Hmm, il revient.", "T'emballe pas trop."],
+        "dominant_lead": ["Tu vois la difference ?", "Neuf titres, c'est pas pour rien."]
       },
       "barks_en": {
         "good_shot": ["Easy.", "Just like that.", "Nine titles.", "Clean."],
@@ -574,7 +592,13 @@
         "palet_success": ["Palet!", "Still here, easy.", "Nine titles, I know how to place."],
         "contre_self": ["Lol. Nope.", "My own boule... sigh.", "That didn't happen."],
         "fanny_win": ["FANNY! Too funny.", "Zero! The new gen punishes hard."],
-        "fanny_lose": ["Fanny... it happens.", "Zero points. Dang."]
+        "fanny_lose": ["Fanny... it happens.", "Zero points. Dang."],
+        "pressure_tied": ["This is where champions are made.", "Tied. Game on."],
+        "fanny_imminent_winning": ["FANNY! The new gen shows no mercy.", "13-0. Easy game."],
+        "fanny_imminent_losing": ["...OK, that's a first.", "The new gen learns from its mistakes too."],
+        "comeback_self": ["The comeback! Knew it.", "The prodigy wakes up."],
+        "opponent_comeback": ["Hmm, he's coming back.", "Don't get too hyped."],
+        "dominant_lead": ["See the difference?", "Nine titles don't come from nowhere."]
       },
       "ability": { "name": "Prodige", "name_en": "Prodigy", "charges": 2, "description": "Ameliore temporairement toutes les stats pendant un tour", "description_en": "Temporarily boosts all stats for one round" },
       "sprite": "rocher_animated",
@@ -626,7 +650,13 @@
         "palet_success": ["Palet.", "Je tiens.", "La."],
         "contre_self": ["Erreur.", "Non.", "Mauvais angle."],
         "fanny_win": ["Fanny.", "Zero pour toi."],
-        "fanny_lose": ["Fanny.", "Zero. Ca recommence."]
+        "fanny_lose": ["Fanny.", "Zero. Ca recommence."],
+        "pressure_tied": ["Egalite. Parfait.", "C'est la que le froid gagne."],
+        "fanny_imminent_winning": ["Fanny. Logique.", "Zero. Methodique."],
+        "fanny_imminent_losing": ["... Inadmissible.", "Ca ne se reproduira pas."],
+        "comeback_self": ["Le tir revient.", "Correction appliquee."],
+        "opponent_comeback": ["Il remonte. Peu importe.", "Concentration."],
+        "dominant_lead": ["Methodique.", "Tir apres tir."]
       },
       "barks_en": {
         "good_shot": ["Done.", "Dry.", "Efficient.", "Simple."],
@@ -647,7 +677,13 @@
         "palet_success": ["Palet.", "Holding.", "There."],
         "contre_self": ["Mistake.", "No.", "Wrong angle."],
         "fanny_win": ["Fanny.", "Zero for you."],
-        "fanny_lose": ["Fanny.", "Zero. Here we go again."]
+        "fanny_lose": ["Fanny.", "Zero. Here we go again."],
+        "pressure_tied": ["Tied. Perfect.", "This is where cold wins."],
+        "fanny_imminent_winning": ["Fanny. Expected.", "Zero. Methodical."],
+        "fanny_imminent_losing": ["...Unacceptable.", "Won't happen again."],
+        "comeback_self": ["The shot returns.", "Correction applied."],
+        "opponent_comeback": ["He's climbing. Irrelevant.", "Focus."],
+        "dominant_lead": ["Methodical.", "Shot after shot."]
       },
       "ability": { "name": "Tir Instinctif", "name_en": "Instinctive Shot", "charges": 2, "description": "Le prochain tir se corrige tout seul, bien plus precis", "description_en": "Next shot self-corrects, much more accurate" },
       "sprite": "robineau_animated",
@@ -784,7 +820,13 @@
         "palet_success": ["Palet prevu.", "Je reste dans la zone.", "Exactement la."],
         "contre_self": ["Variable non anticipee.", "L'angle.", "Repositionnement du plan."],
         "fanny_win": ["Fanny. Une partie en trois coups d'avance.", "Zero. Comme prevu depuis le debut."],
-        "fanny_lose": ["Fanny... Le plan avait une faille.", "Zero point. Correction totale du plan."]
+        "fanny_lose": ["Fanny... Le plan avait une faille.", "Zero point. Correction totale du plan."],
+        "pressure_tied": ["Egalite. Le moment decisif approche.", "C'est exactement ce que j'avais anticipe."],
+        "fanny_imminent_winning": ["13-0. Le plan parfait.", "Fanny. Chaque coup etait calcule."],
+        "fanny_imminent_losing": ["... Erreur d'analyse fondamentale.", "Le modele entier est a revoir."],
+        "comeback_self": ["Le plan B fonctionne.", "Ajustement reussi."],
+        "opponent_comeback": ["Variable imprevue.", "Il s'adapte. Interessant."],
+        "dominant_lead": ["Tout est sous controle.", "Le plan se deroule parfaitement."]
       },
       "barks_en": {
         "good_shot": ["As planned.", "Placement.", "Exactly.", "Three moves ahead."],
@@ -805,7 +847,13 @@
         "palet_success": ["Palet as planned.", "Staying in the zone.", "Exactly there."],
         "contre_self": ["Unanticipated variable.", "The angle.", "Replanning."],
         "fanny_win": ["Fanny. A game played three moves ahead.", "Zero. As planned from the start."],
-        "fanny_lose": ["Fanny... The plan had a flaw.", "Zero points. Complete plan overhaul."]
+        "fanny_lose": ["Fanny... The plan had a flaw.", "Zero points. Complete plan overhaul."],
+        "pressure_tied": ["Tied. The decisive moment approaches.", "Exactly as I anticipated."],
+        "fanny_imminent_winning": ["13-0. The perfect plan.", "Fanny. Every shot was calculated."],
+        "fanny_imminent_losing": ["...Fundamental analysis error.", "The entire model needs revision."],
+        "comeback_self": ["Plan B is working.", "Adjustment successful."],
+        "opponent_comeback": ["Unforeseen variable.", "He's adapting. Interesting."],
+        "dominant_lead": ["Everything under control.", "The plan unfolds perfectly."]
       },
       "ability": { "name": "Strategie", "name_en": "Strategy", "charges": 2, "description": "Montre la trajectoire complete de la boule avant de lancer", "description_en": "Shows the full ball trajectory before throwing" },
       "sprite": "sofia_animated",
@@ -857,7 +905,13 @@
         "palet_success": ["Palet solide.", "Je tiens ma position.", "Bien place."],
         "contre_self": ["Mauvais angle.", "Correction necessaire.", "Ca ne se reproduira pas."],
         "fanny_win": ["Fanny ! Impeccable.", "Zero point. C'est le niveau champion."],
-        "fanny_lose": ["Fanny. Inacceptable.", "Zero. Je dois revoir ma strategie."]
+        "fanny_lose": ["Fanny. Inacceptable.", "Zero. Je dois revoir ma strategie."],
+        "pressure_tied": ["C'est la que l'experience parle, fiston.", "Du calme. J'ai vu pire."],
+        "fanny_imminent_winning": ["Fanny. Impitoyable, mais juste.", "13-0. Le niveau champion, fiston."],
+        "fanny_imminent_losing": ["... A mon age, ca pique.", "Inacceptable. Ca ne se reproduira plus."],
+        "comeback_self": ["Le vieux lion rugit encore.", "L'experience fait la difference."],
+        "opponent_comeback": ["Il a du caractere, celui-la.", "Pas mal, fiston. Pas mal."],
+        "dominant_lead": ["Voila ce que 40 ans de petanque donnent.", "Le champion est toujours la."]
       },
       "barks_en": {
         "good_shot": ["There.", "Precisely.", "As expected.", "In the zone."],
@@ -878,7 +932,13 @@
         "palet_success": ["Solid palet.", "Holding my position.", "Well placed."],
         "contre_self": ["Wrong angle.", "Correction required.", "Won't happen again."],
         "fanny_win": ["Fanny! Impeccable.", "Zero points. That's champion level."],
-        "fanny_lose": ["Fanny. Unacceptable.", "Zero. I need to rethink my strategy."]
+        "fanny_lose": ["Fanny. Unacceptable.", "Zero. I need to rethink my strategy."],
+        "pressure_tied": ["This is where experience talks, son.", "Easy now. I've seen worse."],
+        "fanny_imminent_winning": ["Fanny. Ruthless, but fair.", "13-0. Champion level, son."],
+        "fanny_imminent_losing": ["...At my age, that stings.", "Unacceptable. Won't happen again."],
+        "comeback_self": ["The old lion still roars.", "Experience makes the difference."],
+        "opponent_comeback": ["He's got character, that one.", "Not bad, son. Not bad."],
+        "dominant_lead": ["That's what 40 years of petanque gives you.", "The champion is still here."]
       },
       "ability": { "name": "Sagesse", "name_en": "Wisdom", "charges": 3, "description": "Supprime le tremblement de la visee quand le score est serre", "description_en": "Removes aim shake when the score is tight" },
       "sprite": "papi_rene_animated",
@@ -930,7 +990,13 @@
         "palet_success": ["Palet con stile !", "Resto li ! Eleganza !", "Magnifico."],
         "contre_self": ["Madonna !", "La mia propria boule !", "Mamma mia, che errore."],
         "fanny_win": ["FANNY ! Vittoria totale !", "Zero ! Italia sempre !"],
-        "fanny_lose": ["Fanny... Madonna.", "Zero. L'Italie peut mieux faire."]
+        "fanny_lose": ["Fanny... Madonna.", "Zero. L'Italie peut mieux faire."],
+        "pressure_tied": ["Che tensione ! C'est maintenant.", "Egalite. L'elegance sous pression."],
+        "fanny_imminent_winning": ["FANNY ! Vittoria con stile !", "13-0 ! L'Italie ne pardonne pas !"],
+        "fanny_imminent_losing": ["... Madonna, che disastro.", "L'Italie se releve toujours."],
+        "comeback_self": ["La remontada ! Forza !", "L'Italie ne meurt jamais !"],
+        "opponent_comeback": ["Il revient... rispetto.", "Calma, calma."],
+        "dominant_lead": ["Eleganza totale !", "L'Italie domine, naturalmente."]
       },
       "barks_en": {
         "good_shot": ["Eleganza.", "Perfetto.", "Just like that, yes.", "Bellissimo."],
@@ -951,7 +1017,13 @@
         "palet_success": ["Palet con stile!", "Resto li! Eleganza!", "Magnifico."],
         "contre_self": ["Madonna!", "La mia propria boule!", "Mamma mia, che errore."],
         "fanny_win": ["FANNY! Vittoria totale!", "Zero! Italia sempre!"],
-        "fanny_lose": ["Fanny... Madonna.", "Zero. Italy can do better."]
+        "fanny_lose": ["Fanny... Madonna.", "Zero. Italy can do better."],
+        "pressure_tied": ["Che tensione! This is the moment.", "Tied. Elegance under pressure."],
+        "fanny_imminent_winning": ["FANNY! Vittoria con stile!", "13-0! Italy shows no mercy!"],
+        "fanny_imminent_losing": ["...Madonna, che disastro.", "Italy always rises again."],
+        "comeback_self": ["La remontada! Forza!", "Italy never dies!"],
+        "opponent_comeback": ["He's coming back... rispetto.", "Calma, calma."],
+        "dominant_lead": ["Eleganza totale!", "Italy dominates, naturalmente."]
       },
       "ability": { "name": "Eleganza", "name_en": "Eleganza", "charges": 2, "description": "Double l'effet de courbe, la boule tourne beaucoup plus", "description_en": "Doubles the curve effect, ball curves much more" },
       "sprite": "rizzi_animated",
@@ -1003,7 +1075,13 @@
         "palet_success": ["Je reste.", "Palet zen.", "Sabai."],
         "contre_self": ["Aie.", "Mai pen rai... enfin.", "Pas prevu ca."],
         "fanny_win": ["FANNY ! Kop khun krap !", "Zero point. La meditation aide."],
-        "fanny_lose": ["Fanny... Mai pen rai.", "Zero. Le souffle s'est trompe de chemin."]
+        "fanny_lose": ["Fanny... Mai pen rai.", "Zero. Le souffle s'est trompe de chemin."],
+        "pressure_tied": ["Sabai sabai. Le souffle est la.", "Concentration. Mai pen rai."],
+        "fanny_imminent_winning": ["13-0 ? Le souffle ne ment pas.", "FANNY ! Kop khun krap !"],
+        "fanny_imminent_losing": ["Zero... le souffle s'eteint.", "Mai pen rai. Enfin..."],
+        "comeback_self": ["Le souffle revient !", "Patience paye. Sabai."],
+        "opponent_comeback": ["Il remonte. Reste zen.", "Concentration."],
+        "dominant_lead": ["Le souffle guide tout.", "Naturel. Dee mak."]
       },
       "barks_en": {
         "good_shot": ["Dee mak.", "That's good.", "Sabai sabai.", "Perfect."],
@@ -1024,7 +1102,13 @@
         "palet_success": ["Staying put.", "Zen palet.", "Sabai."],
         "contre_self": ["Ouch.", "Mai pen rai... well, kind of.", "Didn't see that coming."],
         "fanny_win": ["FANNY! Kop khun krap!", "Zero points. Meditation helps."],
-        "fanny_lose": ["Fanny... Mai pen rai.", "Zero. The breath took a wrong turn."]
+        "fanny_lose": ["Fanny... Mai pen rai.", "Zero. The breath took a wrong turn."],
+        "pressure_tied": ["Sabai sabai. The breath is here.", "Focus. Mai pen rai."],
+        "fanny_imminent_winning": ["13-0? The breath doesn't lie.", "FANNY! Kop khun krap!"],
+        "fanny_imminent_losing": ["Zero... the breath fades.", "Mai pen rai. Well..."],
+        "comeback_self": ["The breath returns!", "Patience pays off. Sabai."],
+        "opponent_comeback": ["He's climbing back. Stay zen.", "Focus."],
+        "dominant_lead": ["The breath guides everything.", "Natural. Dee mak."]
       },
       "ability": { "name": "Thai Focus", "name_en": "Thai Focus", "charges": 2, "description": "Zen total : aucun tremblement de la visee pendant 2 tours", "description_en": "Total zen: no aim shake for 2 rounds" },
       "sprite": "chai_animated",
@@ -1077,7 +1161,13 @@
         "palet_success": ["Palet ! Je reste plante la.", "La Loutre tient sa position.", "Glisse et reste."],
         "contre_self": ["NON ! Pas ma propre boule !", "La courbe etait de trop...", "Pierrot, regarde pas."],
         "fanny_win": ["FANNY ! Zero pour toi !", "Glisse et ecrase. C'est La Loutre."],
-        "fanny_lose": ["Fanny... zero point.", "Ca arrive. Meme aux meilleures loutres."]
+        "fanny_lose": ["Fanny... zero point.", "Ca arrive. Meme aux meilleures loutres."],
+        "pressure_tied": ["Respire. La courbe est la.", "C'est maintenant qu'on glisse."],
+        "fanny_imminent_winning": ["13-0 ! La glisse parfaite !", "FANNY ! Pierrot, on fete ca !"],
+        "fanny_imminent_losing": ["Zero... la loutre coule.", "Meme les loutres ont des mauvais jours."],
+        "comeback_self": ["La Loutre revient !", "Je retrouve ma courbe !"],
+        "opponent_comeback": ["Il remonte. Pas de panique.", "Reste fluide."],
+        "dominant_lead": ["La glisse, c'est tout !", "On flotte vers la victoire !"]
       },
       "barks_en": {
         "good_shot": ["Fluid.", "There we go.", "Like water.", "Pierrot, you see that?!"],
@@ -1098,7 +1188,13 @@
         "palet_success": ["Palet! Staying right here.", "La Loutre holds position.", "Glide and stay."],
         "contre_self": ["NO! Not my own boule!", "Too much curve...", "Pierrot, don't look."],
         "fanny_win": ["FANNY! Zero for you!", "Glide and crush. That's La Loutre."],
-        "fanny_lose": ["Fanny... zero points.", "It happens. Even to the best otters."]
+        "fanny_lose": ["Fanny... zero points.", "It happens. Even to the best otters."],
+        "pressure_tied": ["Breathe. The curve is here.", "Now we glide."],
+        "fanny_imminent_winning": ["13-0! The perfect glide!", "FANNY! Pierrot, we're celebrating!"],
+        "fanny_imminent_losing": ["Zero... the otter sinks.", "Even otters have bad days."],
+        "comeback_self": ["La Loutre is back!", "Found my curve again!"],
+        "opponent_comeback": ["He's climbing back. No panic.", "Stay fluid."],
+        "dominant_lead": ["The glide is everything!", "Floating toward victory!"]
       },
       "ability": { "name": "La Glisse", "name_en": "The Glide", "charges": 2, "description": "Double la courbe pendant 1 tour, la boule contourne les obstacles", "description_en": "Doubles curve for 1 round, ball curves around obstacles" },
       "sprite": "la_loutre_animated",
