@@ -88,6 +88,12 @@ export default class SpriteTestScene extends Phaser.Scene {
 
         // Auto-start first cycle after 1s
         this.time.delayedCall(1000, () => this._startThrowCycle());
+
+        // Cleanup on shutdown (prevents listener leaks on scene reuse)
+        this.events.on('shutdown', () => {
+            this.input.keyboard.removeAllListeners();
+            this.tweens.killAll();
+        });
     }
 
     _createBodyTexture(key, colors) {

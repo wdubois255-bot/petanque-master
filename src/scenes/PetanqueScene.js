@@ -261,7 +261,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 if (c.stat === 'carreaux' && (ms.carreaux || 0) >= c.target) completed = true;
                 if (c.stat === 'meneScore' && winner === 'player' && points >= c.target) completed = true;
                 if (c.stat === 'biberons' && (ms.biberons || 0) >= c.target) completed = true;
-                if (c.stat === 'onlyRoulette' && winner === 'player' && !ms._usedNonRoulette) completed = true;
+                // onlyRoulette challenge removed (throw style no longer exists)
                 if (completed) {
                     this._challengeCompleted = true;
                     const reward = c.reward || CHALLENGE_REWARD_GALETS;
@@ -998,7 +998,7 @@ export default class PetanqueScene extends Phaser.Scene {
     _showTutorialStep(step) {
         const steps = [
             {
-                text: 'BIENVENUE !\n\nVous devez lancer le cochonnet\n(la petite boule jaune).\n\nGlissez et relachez pour viser.',
+                text: 'BIENVENUE !\n\nVous devez lancer le cochonnet\n(la petite boule verte).\n\nGlissez et relachez pour viser.',
                 y: GAME_HEIGHT / 2
             },
             {
@@ -1006,7 +1006,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 y: GAME_HEIGHT / 2
             },
             {
-                text: 'TECHNIQUES :\n\nRouler = Roulette (basse)\nDemi-hauteur = Demi-portee\nHaut = Plombee (arretez court)\n\nAppuyez sur R pour changer.',
+                text: 'TECHNIQUES :\n\nDemi-portee = mi-hauteur\nPlombee = haute (arrete court)\nTir = tendu (chasse l\'adversaire)\n\nAppuyez sur R pour changer.',
                 y: GAME_HEIGHT / 2
             },
             {

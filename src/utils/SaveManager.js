@@ -21,7 +21,7 @@ function defaultSaveData() {
         arcadeIntroSeen: false,
         milestonesUnlocked: [],
         selectedBoule: "acier",
-        selectedCochonnet: "classique",
+        selectedCochonnet: "vert",
         tutorialSeen: false,
         tutorialInGameSeen: false,
         tutorialComplete: false,

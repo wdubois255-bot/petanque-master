@@ -4,7 +4,7 @@ import { POINTEUR_DESPERATION_CHANCE } from '../../utils/Constants.js';
 /**
  * Le Magicien: Le Pointeur (Le Chirurgien)
  * Never shoots except in absolute desperation.
- * Places balls surgically with smart offsets. Roulette obsessive.
+ * Places balls surgically with smart offsets. Precision obsessive.
  */
 export default class PointeurStrategy extends AIStrategy {
     chooseTarget(cochonnet, sit) {
