@@ -266,12 +266,12 @@ describe('Phase 3C — PetanqueScene', () => {
     });
 
     describe('Cochonnet distance — regles FIPJP', () => {
-        it('COCHONNET_MIN_DIST = 168px (6m)', () => {
-            expect(Constants.COCHONNET_MIN_DIST).toBe(168);
+        it('COCHONNET_MIN_DIST = 6m on 13m terrain', () => {
+            expect(Constants.COCHONNET_MIN_DIST).toBe(Math.round(6 * (420 / 13)));
         });
 
-        it('COCHONNET_MAX_DIST = 280px (10m)', () => {
-            expect(Constants.COCHONNET_MAX_DIST).toBe(280);
+        it('COCHONNET_MAX_DIST = 10m on 13m terrain', () => {
+            expect(Constants.COCHONNET_MAX_DIST).toBe(Math.round(10 * (420 / 13)));
         });
 
         it('TERRAIN_HEIGHT = 420px (15m)', () => {
