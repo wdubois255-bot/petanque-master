@@ -84,7 +84,16 @@
     "page2_title": "COMMENT LANCER",
     "page3_title": "TECHNIQUES DE LANCER",
     "page4_title": "COMMENT MARQUER",
-    "page5_title": "ASTUCES"
+    "page5_title": "ASTUCES",
+    "welcome_line1": "Salut fiston ! Moi c'est Papi Rene.",
+    "welcome_line2": "Je vais te montrer les bases. C'est simple : lance ta boule le plus pres du cochonnet !",
+    "welcome_line3": "Allez, on y va. Regarde la petite boule doree la-bas, c'est le cochonnet !",
+    "cochonnet_hint": "La petite boule doree, c'est le cochonnet. Visez-le !",
+    "strategy_hint": "Pointer = placer pres du cochonnet. Tirer [3] = frapper la boule adverse !",
+    "retro_hint": "Trop loin ? Maintenez [R] pour le backspin : la boule freine a l'atterrissage.",
+    "ability_hint": "Appuyez sur [C] pour activer votre capacite speciale !",
+    "tab_hint": "Appuyez sur [TAB] pour voir les distances de chaque boule.",
+    "encourage_first_mene": "Pas mal pour un debut ! Continue comme ca."
   },
   "result": {
     "victory": "VICTOIRE !",

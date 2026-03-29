@@ -347,11 +347,11 @@ export default class TitleScene extends Phaser.Scene {
         // Premier lancement (FTUE) : match tutoriel guidé au lieu d'envoyer directement en Arcade
         const save = loadSave();
         if (save.arcadeProgress === 0 && (!save.tutorialPhasesDone || save.tutorialPhasesDone.length === 0)) {
-            // Charger le perso La Choupe comme adversaire tutoriel
+            // Charger Papi René comme adversaire tutoriel (mentor bienveillant)
             const charsData = this.cache.json.get('characters');
             const roster = charsData?.roster || charsData || [];
             const rookieChar = roster.find?.(c => c.id === 'rookie') || { id: 'rookie', name: 'Le Rookie' };
-            const tutorialOpponent = roster.find?.(c => c.id === 'la_choupe') || { id: 'la_choupe', name: 'La Choupe' };
+            const tutorialOpponent = roster.find?.(c => c.id === 'papi_rene') || { id: 'papi_rene', name: 'Papi René' };
             this.time.delayedCall(500, () => {
                 fadeToScene(this, 'PetanqueScene', {
                     terrain: 'village',
@@ -360,9 +360,10 @@ export default class TitleScene extends Phaser.Scene {
                     playerCharacter: rookieChar,
                     playerCharId: 'rookie',
                     opponentCharacter: tutorialOpponent,
-                    opponentId: 'la_choupe',
-                    opponentName: tutorialOpponent.name || 'La Choupe',
-                    returnScene: 'TitleScene'
+                    opponentId: 'papi_rene',
+                    opponentName: tutorialOpponent.name || 'Papi René',
+                    returnScene: 'TitleScene',
+                    isFTUE: true
                 });
             });
             return;

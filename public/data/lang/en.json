@@ -84,7 +84,16 @@
     "page2_title": "HOW TO THROW",
     "page3_title": "THROW TECHNIQUES",
     "page4_title": "HOW TO SCORE",
-    "page5_title": "TIPS"
+    "page5_title": "TIPS",
+    "welcome_line1": "Hey kid! I'm Papi Rene.",
+    "welcome_line2": "I'll show you the basics. It's simple: throw your ball as close to the jack as you can!",
+    "welcome_line3": "Let's go. See that little golden ball over there? That's the jack!",
+    "cochonnet_hint": "The little golden ball is the jack. Aim for it!",
+    "strategy_hint": "Point = place near the jack. Shoot [3] = knock the opponent's ball away!",
+    "retro_hint": "Too far? Hold [R] for backspin: the ball brakes on landing.",
+    "ability_hint": "Press [C] to activate your special ability!",
+    "tab_hint": "Press [TAB] to see each ball's distance.",
+    "encourage_first_mene": "Not bad for a first try! Keep it up."
   },
   "result": {
     "victory": "VICTORY!",

@@ -23,6 +23,7 @@ import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmbiance, stopCrowdAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMasterVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
 import { loadSave, saveSave, addGalets } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
+import DialogBox from '../ui/DialogBox.js';
 import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
@@ -53,6 +54,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.postMatchWin = data.postMatchWin || null;
         this.postMatchLose = data.postMatchLose || null;
         this.unlocksOnWin = data.unlocksOnWin || null;
+        this.isFTUE = data.isFTUE || false;
         // Pause menu state (reset on each scene init — CLAUDE.md rule)
         this._gamePaused = false;
         this._pauseContainer = null;
@@ -84,6 +86,8 @@ export default class PetanqueScene extends Phaser.Scene {
         this._goldenZoneActive = false;
         // Tutorial — cochonnet highlight
         this._cochonnetHighlight = null;
+        // Tutorial — welcome dialog (FTUE)
+        this._welcomeDialog = null;
         // Phase 5 — Match challenge
         this._matchChallenge = null;
         this._matchChallengePanel = null;
@@ -427,7 +431,24 @@ export default class PetanqueScene extends Phaser.Scene {
             };
         }
 
-        this.engine.startGame();
+        // FTUE welcome dialog: Papi René greets the player before the game starts
+        if (this.isFTUE) {
+            this._welcomeDialog = new DialogBox(this);
+            this._welcomeDialog.show([
+                I18n.t('tutorial.welcome_line1'),
+                I18n.t('tutorial.welcome_line2'),
+                I18n.t('tutorial.welcome_line3')
+            ], this.opponentName, () => {
+                this._welcomeDialog.destroy();
+                this._welcomeDialog = null;
+                this.engine.startGame();
+            });
+        } else {
+            this.engine.startGame();
+        }
+
+        // Contextual onboarding hints (one-shot, tracked in SaveManager)
+        this._setupOnboardingHints();
 
         // === ARCADE BADGE "Match X/Y" (top-left, aligned with score panel) ===
         if (this.arcadeRound) {
@@ -598,6 +619,88 @@ export default class PetanqueScene extends Phaser.Scene {
                 this._cochonnetHighlight = null;
             }
         });
+    }
+
+    // === Onboarding contextual hints (one-shot, SaveManager-tracked) ===
+    _setupOnboardingHints() {
+        this._onboardingMeneCount = 0;
+        this._onboardingPlayerThrows = 0;
+
+        // Hook onScore: mène-level hints (chain with existing)
+        const origOnScore = this.engine.onScore;
+        this.engine.onScore = (scores, winner, points) => {
+            if (origOnScore) origOnScore(scores, winner, points);
+            if (points === 0) return; // skip zero-point calls
+            this._onboardingMeneCount++;
+
+            // After mène 2: strategy hint (pointer vs tirer)
+            if (this._onboardingMeneCount === 2) {
+                this.time.delayedCall(3000, () => {
+                    InGameTutorial.showContextualHint(
+                        this, 'hint_strategy', I18n.t('tutorial.strategy_hint')
+                    );
+                });
+            }
+
+            // After mène 1 in FTUE: encouragement
+            if (this._onboardingMeneCount === 1 && this.isFTUE) {
+                this.time.delayedCall(2500, () => {
+                    InGameTutorial.showContextualHint(
+                        this, 'hint_encourage', I18n.t('tutorial.encourage_first_mene')
+                    );
+                });
+            }
+        };
+
+        // Hook onThrow: TAB hint after 4th player throw
+        const origOnThrow = this.engine.onThrow;
+        this.engine.onThrow = (team) => {
+            if (origOnThrow) origOnThrow(team);
+            if (team === 'player') {
+                this._onboardingPlayerThrows++;
+                if (this._onboardingPlayerThrows === 4) {
+                    this.time.delayedCall(2000, () => {
+                        InGameTutorial.showContextualHint(
+                            this, 'hint_tab', I18n.t('tutorial.tab_hint')
+                        );
+                    });
+                }
+            }
+        };
+
+        // Hook onAfterStop: retro hint when player ball overshoots cochonnet
+        const origOnAfterStop = this.engine.onAfterStop;
+        this.engine.onAfterStop = (lastTeam) => {
+            if (origOnAfterStop) origOnAfterStop(lastTeam);
+            if (lastTeam !== 'player' || !this.engine.cochonnet) return;
+            const save = loadSave();
+            if (save.hintsShown?.hint_retro) return;
+            // Find last player ball (most recently added)
+            const playerBalls = this.engine.balls.filter(b => b.team === 'player' && b.isAlive);
+            const lastBall = playerBalls[playerBalls.length - 1];
+            if (!lastBall) return;
+            // If ball went past cochonnet by > 80px (upward = smaller Y), suggest retro
+            if (lastBall.y < this.engine.cochonnet.y - 80) {
+                this.time.delayedCall(1500, () => {
+                    InGameTutorial.showContextualHint(
+                        this, 'hint_retro', I18n.t('tutorial.retro_hint')
+                    );
+                });
+            }
+        };
+
+        // Ability hint: after some play, remind about C key
+        if (this.aimingSystem && this.aimingSystem._abilityCharges > 0) {
+            this.time.delayedCall(15000, () => {
+                const save = loadSave();
+                if (save.hintsShown?.hint_ability) return;
+                if (this.aimingSystem && this.aimingSystem._abilityCharges > 0) {
+                    InGameTutorial.showContextualHint(
+                        this, 'hint_ability', I18n.t('tutorial.ability_hint')
+                    );
+                }
+            });
+        }
     }
 
     // === Phase 5 B1 — Momentum indicator ===
@@ -870,6 +973,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 document.removeEventListener('visibilitychange', this._boundVisibilityChange);
                 this._boundVisibilityChange = null;
             }
+            if (this._welcomeDialog) { this._welcomeDialog.destroy(); this._welcomeDialog = null; }
             if (this._cochonnetHighlight) { this._cochonnetHighlight.destroy(); this._cochonnetHighlight = null; }
             if (this._pauseContainer) { this._pauseContainer.destroy(true); this._pauseContainer = null; }
             this._gamePaused = false;
@@ -2126,6 +2230,8 @@ export default class PetanqueScene extends Phaser.Scene {
 
     update(time, delta) {
         if (this._gamePaused) return;
+        // Welcome dialog captures input before game starts
+        if (this._welcomeDialog) { this._welcomeDialog.update(); return; }
         if (this.engine) this.engine.update(delta);
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
