@@ -115,7 +115,7 @@ const TERRAIN_DECOR = {
         { type: 'olive',   x: -58,    y: 234, scale: 2.0,  depth: 0.50, frame: 14 },
         { type: 'olive',   x: 'R+73', y: 221, scale: 1.85, depth: 0.50, frame: 10 },
         { type: 'olive',   x: 'R+72', y: 160, scale: 1.85, depth: 0.30, frame: 10 },
-        { type: 'olive',   x: 'R+62', y: 102, scale: 2.0,  depth: 0.50, frame: 14 },
+        { type: 'olive',   x: 'R+80', y: 102, scale: 2.0,  depth: 0.50, frame: 14 },
         { type: 'banc_td', x: 29,     y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
         { type: 'banc_td', x: 87,     y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
         { type: 'banc_td', x: 152,    y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
