@@ -668,27 +668,6 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         };
 
-        // Hook onAfterStop: retro hint when player ball overshoots cochonnet
-        const origOnAfterStop = this.engine.onAfterStop;
-        this.engine.onAfterStop = (lastTeam) => {
-            if (origOnAfterStop) origOnAfterStop(lastTeam);
-            if (lastTeam !== 'player' || !this.engine.cochonnet) return;
-            const save = loadSave();
-            if (save.hintsShown?.hint_retro) return;
-            // Find last player ball (most recently added)
-            const playerBalls = this.engine.balls.filter(b => b.team === 'player' && b.isAlive);
-            const lastBall = playerBalls[playerBalls.length - 1];
-            if (!lastBall) return;
-            // If ball went past cochonnet by > 80px (upward = smaller Y), suggest retro
-            if (lastBall.y < this.engine.cochonnet.y - 80) {
-                this.time.delayedCall(1500, () => {
-                    InGameTutorial.showContextualHint(
-                        this, 'hint_retro', I18n.t('tutorial.retro_hint')
-                    );
-                });
-            }
-        };
-
         // Ability hint: after some play, remind about C key
         if (this.aimingSystem && this.aimingSystem._abilityCharges > 0) {
             this.time.delayedCall(15000, () => {

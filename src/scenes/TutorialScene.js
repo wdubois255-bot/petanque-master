@@ -188,7 +188,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const desc = this.add.text(cx, CONTENT_Y + 65,
-            'Placez vos boules le plus pres possible du cochonnet\n(la petite boule doree).', {
+            I18n.t('tutorial.page1_desc'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0',
             align: 'center', shadow: SHADOW, lineSpacing: 4
         }).setOrigin(0.5);
@@ -208,7 +208,7 @@ export default class TutorialScene extends Phaser.Scene {
         gfx.fillCircle(diagX - 1, diagY - 1, 2);
 
         // Label cochonnet
-        const cochLabel = this.add.text(diagX, diagY - 18, 'Cochonnet', {
+        const cochLabel = this.add.text(diagX, diagY - 18, I18n.t('tutorial.page1_cochonnet'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
         this._contentContainer.add(cochLabel);
@@ -239,12 +239,12 @@ export default class TutorialScene extends Phaser.Scene {
         gfx.strokePath();
 
         // Distance labels
-        const distClose = this.add.text((diagX + p1x) / 2 - 15, (diagY + p1y) / 2, 'Proche !', {
+        const distClose = this.add.text((diagX + p1x) / 2 - 15, (diagY + p1y) / 2, I18n.t('tutorial.page1_close'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#87CEEB', shadow: SHADOW
         }).setOrigin(0.5);
         this._contentContainer.add(distClose);
 
-        const distFar = this.add.text((diagX + o1x) / 2 + 15, (diagY + o1y) / 2, 'Loin...', {
+        const distFar = this.add.text((diagX + o1x) / 2 + 15, (diagY + o1y) / 2, I18n.t('tutorial.page1_far'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5);
         this._contentContainer.add(distFar);
@@ -253,14 +253,14 @@ export default class TutorialScene extends Phaser.Scene {
         const legendY = diagY + 85;
         gfx.fillStyle(0x5B8ED4, 1);
         gfx.fillCircle(cx - 80, legendY, 6);
-        const leg1 = this.add.text(cx - 68, legendY, 'Vous', {
+        const leg1 = this.add.text(cx - 68, legendY, I18n.t('tutorial.page1_you'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#87CEEB', shadow: SHADOW
         }).setOrigin(0, 0.5);
         this._contentContainer.add(leg1);
 
         gfx.fillStyle(0xC44B3F, 1);
         gfx.fillCircle(cx + 30, legendY, 6);
-        const leg2 = this.add.text(cx + 42, legendY, 'Adversaire', {
+        const leg2 = this.add.text(cx + 42, legendY, I18n.t('tutorial.page1_opponent'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0, 0.5);
         this._contentContainer.add(leg2);
@@ -280,7 +280,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const desc = this.add.text(cx, CONTENT_Y + 80,
-            'Glissez depuis le cercle de lancer vers votre cible.\nPlus vous glissez loin, plus la boule ira loin.\nLa direction du glissement determine la trajectoire.', {
+            I18n.t('tutorial.page2_desc'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
             align: 'center', shadow: SHADOW, lineSpacing: 6
         }).setOrigin(0.5);
@@ -300,7 +300,7 @@ export default class TutorialScene extends Phaser.Scene {
         gfx.fillCircle(arrowStartX, arrowStartY, 18);
 
         // "Glissez" label near circle
-        const glissez = this.add.text(arrowStartX + 35, arrowStartY, 'Glissez ici', {
+        const glissez = this.add.text(arrowStartX + 35, arrowStartY, I18n.t('tutorial.page2_slide'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0, 0.5);
         this._contentContainer.add(glissez);
@@ -328,7 +328,7 @@ export default class TutorialScene extends Phaser.Scene {
         gfx.fillCircle(arrowEndX, arrowEndY - 10, 2);
 
         // "Direction" label
-        const dirLabel = this.add.text(arrowEndX + 30, arrowEndY - 10, 'Direction', {
+        const dirLabel = this.add.text(arrowEndX + 30, arrowEndY - 10, I18n.t('tutorial.page2_direction'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0, 0.5);
         this._contentContainer.add(dirLabel);
@@ -350,7 +350,7 @@ export default class TutorialScene extends Phaser.Scene {
             gfx.fillStyle(color, 0.8);
             gfx.fillRect(barX + 2, barY + barH - (i + 1) * (barH / steps), 10, barH / steps);
         }
-        const powLabel = this.add.text(barX + 7, barY - 10, 'Force', {
+        const powLabel = this.add.text(barX + 7, barY - 10, I18n.t('tutorial.page2_power'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
         this._contentContainer.add(powLabel);
@@ -370,9 +370,9 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const techniques = [
-            { key: '1', name: 'DEMI-PORTEE', desc: 'Mi-vol, mi-roulement. Polyvalente.', color: '#D4A574', arcH: 30 },
-            { key: '2', name: 'PLOMBEE', desc: 'La boule vole haut et s\'arrete court.', color: '#9B7BB8', arcH: 55 },
-            { key: '3', name: 'TIR', desc: 'Frappe directe sur une boule adverse.', color: '#C44B3F', arcH: 40 }
+            { key: '1', name: I18n.t('tutorial.page3_demi_name'), desc: I18n.t('tutorial.page3_demi_desc'), color: '#D4A574', arcH: 30 },
+            { key: '2', name: I18n.t('tutorial.page3_plombee_name'), desc: I18n.t('tutorial.page3_plombee_desc'), color: '#9B7BB8', arcH: 55 },
+            { key: '3', name: I18n.t('tutorial.page3_tir_name'), desc: I18n.t('tutorial.page3_tir_desc'), color: '#C44B3F', arcH: 40 }
         ];
 
         const startY = CONTENT_Y + 85;
@@ -451,11 +451,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const desc = this.add.text(cx, CONTENT_Y + 85,
-            'Apres chaque mene :\n' +
-            '- Comptez vos boules plus proches du cochonnet\n' +
-            '  que la meilleure boule adverse.\n' +
-            '- Chaque boule proche = 1 point.\n' +
-            '- Premier a 13 points gagne !', {
+            I18n.t('tutorial.page4_desc'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
             align: 'left', shadow: SHADOW, lineSpacing: 6
         }).setOrigin(0.5);
@@ -493,7 +489,7 @@ export default class TutorialScene extends Phaser.Scene {
         resultBg.strokeRoundedRect(cx - 100, diagY + 65, 200, 36, 6);
         this._contentContainer.add(resultBg);
 
-        const result = this.add.text(cx, diagY + 83, '= 2 points pour VOUS !', {
+        const result = this.add.text(cx, diagY + 83, I18n.t('tutorial.page4_result'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
         this._contentContainer.add(result);
@@ -513,10 +509,9 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer.add(title);
 
         const tips = [
-            { key: 'F', name: 'FOCUS', desc: 'Stabilise la visee (-80% tremblement).\nVous avez 5 charges par match.', color: '#87CEEB' },
-            { key: 'R', name: 'RETRO', desc: 'Active le backspin pour freiner\nla boule apres l\'atterrissage.', color: '#D4A574' },
-            { key: 'C', name: 'CAPACITE', desc: 'Pouvoir unique de votre personnage.\nA utiliser au bon moment !', color: '#9B7BB8' },
-            { key: 'TAB', name: 'CLASSEMENT', desc: 'Voir le classement des boules\net les distances en temps reel.', color: '#6B8E4E' }
+            { key: 'F', name: I18n.t('tutorial.page5_focus_name'), desc: I18n.t('tutorial.page5_focus_desc'), color: '#87CEEB' },
+            { key: 'C', name: I18n.t('tutorial.page5_ability_name'), desc: I18n.t('tutorial.page5_ability_desc'), color: '#9B7BB8' },
+            { key: 'TAB', name: I18n.t('tutorial.page5_tab_name'), desc: I18n.t('tutorial.page5_tab_desc'), color: '#6B8E4E' }
         ];
 
         const startY = CONTENT_Y + 70;

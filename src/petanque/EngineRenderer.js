@@ -361,7 +361,7 @@ export default class EngineRenderer {
         }
 
         if (bestBall) {
-            const color = bestBall.team === 'player' ? 0x44CC44 : 0xCC4444;
+            const color = 0xCC4444; // Always red for closest ball
             const t = this._bestPulse.t;
             const alpha = 0.4 + t * 0.4;
             const radius = bestBall.radius + 3 + t * 2;
@@ -374,17 +374,6 @@ export default class EngineRenderer {
                 if (this._bestGlowSprite && typeof this._bestGlowSprite.clearFilters === 'function') {
                     try { this._bestGlowSprite.clearFilters(); } catch (_) {}
                     this._bestGlowSprite = null;
-                }
-                // Apply Phaser 4 glow on new best ball
-                if (this._hasWebGL && bestBall?.sprite) {
-                    try {
-                        if (typeof bestBall.sprite.enableFilters === 'function') {
-                            bestBall.sprite.enableFilters();
-                            const glowColor = bestBall.team === 'player' ? FILTER_GLOW_PLAYER : FILTER_GLOW_OPPONENT;
-                            bestBall.sprite.filters.internal.addGlow(glowColor, FILTER_GLOW_STRENGTH, 0, 1, false, FILTER_GLOW_QUALITY, FILTER_GLOW_QUALITY);
-                            this._bestGlowSprite = bestBall.sprite;
-                        }
-                    } catch (_) { /* Filter not supported */ }
                 }
                 if (this._lastBestBallId !== null) {
                     const flash = this.scene.add.graphics().setDepth(11);
