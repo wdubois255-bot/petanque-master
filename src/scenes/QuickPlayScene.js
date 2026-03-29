@@ -566,7 +566,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             const ability = charData.ability || (charData.abilities_unlock?.[0]?.ability);
             if (ability) {
                 const abX = barX + barW + 30;
-                const abY = barStartY - 14;
+                const abY = barStartY - 4;
                 const abName = I18n.field(ability, 'name');
                 const abDesc = I18n.field(ability, 'description');
                 const charges = ability.charges > 0 ? `Actif (${ability.charges}x)` : 'Passif';

@@ -96,7 +96,7 @@ const TERRAIN_DECOR = {
         { type: 'olive',       x: -67,    y: 85,  scale: 2.35, depth: 4.00, frame: 4 }, // devant bordure
         { type: 'olive',       x: -46,    y: 152, scale: 1.8,  depth: 4.00, frame: 4 }, // devant bordure
         { type: 'olive',       x: 'R+65', y: 170, scale: 2.0,  depth: 4.00, frame: 5 }, // devant bordure
-        { type: 'olive',       x: 'R+50', y: 116, scale: 1.3,  depth: 4.00, frame: 5 }, // devant bordure
+        { type: 'olive',       x: 'R+50', y: 116, scale: 1.3,  depth: 1.50, frame: 5 }, // derriere terrain
         { type: 'olive',       x: -54,    y: 405, scale: 1.55, depth: 4.00, frame: 4 }, // devant bordure
         { type: 'banc_td',     x: 32,     y: -4,  scale: 1.1,  depth: 0.50, frame: 3 },
         { type: 'banc_td',     x: 137,    y: -3,  scale: 1.1,  depth: 0.50, frame: 3 },
@@ -115,7 +115,7 @@ const TERRAIN_DECOR = {
         { type: 'olive',   x: -58,    y: 234, scale: 2.0,  depth: 0.50, frame: 14 },
         { type: 'olive',   x: 'R+73', y: 221, scale: 1.85, depth: 0.50, frame: 10 },
         { type: 'olive',   x: 'R+72', y: 160, scale: 1.85, depth: 0.30, frame: 10 },
-        { type: 'olive',   x: 'R+62', y: 102, scale: 2.0,  depth: 0.00, frame: 14 },
+        { type: 'olive',   x: 'R+62', y: 102, scale: 2.0,  depth: 0.50, frame: 14 },
         { type: 'banc_td', x: 29,     y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
         { type: 'banc_td', x: 87,     y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
         { type: 'banc_td', x: 152,    y: 0,   scale: 0.9,  depth: 0.50, frame: 1 },
@@ -271,7 +271,7 @@ export default class TerrainRenderer {
             const hasFallback = decor.fallback && s.textures.exists(decor.fallback);
 
             const scale = p.scale || 1;
-            const depth = p.depth || 0.6;
+            const depth = p.depth != null ? p.depth : 0.6;
 
             // Shadow under large sprites (scale > 1.5) — warm brown, not pure black
             if (scale > 1.5) {
@@ -399,10 +399,30 @@ export default class TerrainRenderer {
             const tiledTex = this.scene.textures.createCanvas(tiledKey, TERRAIN_WIDTH, TERRAIN_HEIGHT);
             const tiledCtx = tiledTex.getContext();
 
+            // Disable smoothing to prevent visible seams between tiled tiles
+            tiledCtx.imageSmoothingEnabled = false;
+
             const srcImage = this.scene.textures.get(texKey).getSourceImage();
-            const pattern = tiledCtx.createPattern(srcImage, 'repeat');
-            tiledCtx.fillStyle = pattern;
-            tiledCtx.fillRect(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+            const tw = srcImage.width;
+            const th = srcImage.height;
+
+            // Two-pass tiling: base layer + half-offset layer to hide seams
+            // Pass 1: normal grid
+            for (let tly = 0; tly < TERRAIN_HEIGHT; tly += th) {
+                for (let tlx = 0; tlx < TERRAIN_WIDTH; tlx += tw) {
+                    tiledCtx.drawImage(srcImage, tlx, tly);
+                }
+            }
+            // Pass 2: half-offset tiles at reduced opacity — breaks visible seam lines
+            tiledCtx.globalAlpha = 0.35;
+            const halfW = Math.floor(tw / 2);
+            const halfH = Math.floor(th / 2);
+            for (let tly = -halfH; tly < TERRAIN_HEIGHT; tly += th) {
+                for (let tlx = -halfW; tlx < TERRAIN_WIDTH; tlx += tw) {
+                    tiledCtx.drawImage(srcImage, tlx, tly);
+                }
+            }
+            tiledCtx.globalAlpha = 1;
 
             // Tint colline warmer to differentiate from village (same terre texture)
             if (this.terrainId === 'colline') {
