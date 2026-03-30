@@ -124,19 +124,16 @@ export default class CreditsScene extends Phaser.Scene {
             { type: 'heading', text: '--- TECHNOLOGY ---' },
             { type: 'line', text: 'Phaser 4.0.0 RC6 — Game Framework' },
             { type: 'line', text: 'Vite — Build System' },
-            { type: 'line', text: 'PixelLab MCP — Sprite Generation' },
-            { type: 'line', text: 'ElevenLabs MCP — Sound Effects' },
-            { type: 'line', text: 'Claude Code — AI Assistant' },
             { type: 'spacer', height: 30 },
 
             { type: 'heading', text: '--- PIXEL ART ---' },
-            { type: 'line', text: 'Character sprites — PixelLab + hand editing' },
+            { type: 'line', text: 'Character sprites — hand crafted' },
             { type: 'line', text: 'UI elements — Procedural generation' },
             { type: 'line', text: I18n.t('credits.font_credit') },
             { type: 'spacer', height: 30 },
 
             { type: 'heading', text: '--- AUDIO ---' },
-            { type: 'line', text: 'Sound Effects — ElevenLabs + Procedural synthesis' },
+            { type: 'line', text: 'Sound Effects — Original creations' },
             { type: 'line', text: 'Music — Original compositions' },
             { type: 'spacer', height: 30 },
 

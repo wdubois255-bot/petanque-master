@@ -740,7 +740,7 @@ export default class PetanqueScene extends Phaser.Scene {
     // === Challenge panel (persistent, right side) ===
     _createChallengePanel(name, description, reward) {
         const px = GAME_WIDTH - 148;
-        const py = 62;
+        const py = 80;  // Below cochonnet distance badge (ends at y=77)
         const pw = 142;
         const ph = 52;
 
@@ -753,7 +753,7 @@ export default class PetanqueScene extends Phaser.Scene {
         bg.strokeRoundedRect(-pw / 2, -ph / 2, pw, ph, 4);
         container.add(bg);
 
-        const header = this.add.text(0, -ph / 2 + 8, I18n.t('arcade.challenge_label') || 'DEFI', {
+        const header = this.add.text(0, -ph / 2 + 8, I18n.t('arcade.match_challenge') || 'DEFI MATCH', {
             fontFamily: 'monospace', fontSize: '9px', color: '#FFD700',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
