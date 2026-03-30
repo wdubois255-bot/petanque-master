@@ -28,7 +28,7 @@ export default class UIFactory {
             fontFamily: options.pixel ? FONT_PIXEL : FONT_BODY,
             fontSize,
             color,
-            shadow: options.heavyShadow ? SHADOW_HEAVY : SHADOW_TEXT
+            shadow: options.noShadow ? { offsetX: 0, offsetY: 0, color: '#3A2E28', blur: 0, fill: false } : options.heavyShadow ? SHADOW_HEAVY : SHADOW_TEXT
         };
         if (options.align) style.align = options.align;
         if (options.wrapWidth) {

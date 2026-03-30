@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, SHADOW_TEXT, UI } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, UI } from '../utils/Constants.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
 
-const SHADOW = SHADOW_TEXT;
+const NO_SHADOW = { offsetX: 0, offsetY: 0, color: '#3A2E28', blur: 0, fill: false };
 
 // Built dynamically from characters.json in create() — no hardcoded roster
 let _charValues = [];
@@ -47,6 +47,11 @@ const STAT_COLORS = [COLORS.STAT_PRECISION, COLORS.STAT_PUISSANCE, COLORS.STAT_E
 export default class QuickPlayScene extends Phaser.Scene {
     constructor() {
         super('QuickPlayScene');
+    }
+
+    /** UIFactory.addText wrapper — no shadow in QuickPlay panel */
+    _text(x, y, text, fontSize, color, options = {}) {
+        return UIFactory.addText(this, x, y, text, fontSize, color, { ...options, noShadow: true });
     }
 
     // ================================================================
@@ -159,7 +164,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             this.add.text(16, 14, 'PARTIE RAPIDE', {
                 fontFamily: FONT_PIXEL, fontSize: '14px',
                 color: CSS.OR,
-                shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
+                shadow: NO_SHADOW
             }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI)
         );
 
@@ -169,20 +174,20 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         this._p1NameText = this.add.text(GAME_WIDTH - 220, 14, p1Char.display, {
             fontFamily: 'monospace', fontSize: '10px',
-            color: '#5B9BD5', shadow: SHADOW
+            color: '#5B9BD5', shadow: NO_SHADOW
         }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
         this._bannerObjects.push(this._p1NameText);
 
         this._bannerObjects.push(
             this.add.text(GAME_WIDTH - 200, 14, 'VS', {
                 fontFamily: FONT_PIXEL, fontSize: '10px',
-                color: CSS.ACCENT, shadow: SHADOW
+                color: CSS.ACCENT, shadow: NO_SHADOW
             }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
         );
 
         this._p2NameText = this.add.text(GAME_WIDTH - 180, 14, p2Char.display, {
             fontFamily: 'monospace', fontSize: '10px',
-            color: '#C44B3F', shadow: SHADOW
+            color: '#C44B3F', shadow: NO_SHADOW
         }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
         this._bannerObjects.push(this._p2NameText);
     }
@@ -228,13 +233,13 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._tabBarObjects.push(tabBg);
 
             // Number hint (1-4)
-            const numHint = UIFactory.addText(this, x - tabW / 2 + 14, TAB_BAR_Y,
+            const numHint = this._text(x - tabW / 2 + 14, TAB_BAR_Y,
                 `${i + 1}`, '8px', isActive ? CSS.OR : CSS.OMBRE, {
                     pixel: true, depth: UI.DEPTH_PANEL + 1, alpha: 0.5
                 });
             this._tabBarObjects.push(numHint);
 
-            const label = UIFactory.addText(this, x + 4, TAB_BAR_Y,
+            const label = this._text(x + 4, TAB_BAR_Y,
                 TAB_LABELS[i], '9px',
                 isActive ? CSS.OR : CSS.GRIS,
                 { pixel: true, depth: UI.DEPTH_PANEL + 1 }
@@ -315,7 +320,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             );
         }
         this._tabObjects.push(this.add.text(sideX, sideY + 28, 'J1', {
-            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         // J2 preview sprite (right of grid) — animated greeting
@@ -336,7 +341,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             );
         }
         this._tabObjects.push(this.add.text(rightX, sideY + 28, 'J2', {
-            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         for (let i = 0; i < _charValues.length; i++) {
@@ -379,7 +384,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 silGfx.fillEllipse(cx, cy - 8, 28, 36);
                 this._tabObjects.push(silGfx);
                 this._tabObjects.push(this.add.text(cx, cy - 8, '?', {
-                    fontFamily: FONT_PIXEL, fontSize: '18px', color: '#3A2E28', shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '18px', color: '#3A2E28', shadow: NO_SHADOW
                 }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
                 // Lock icon
                 this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 22, '\uD83D\uDD12', {
@@ -387,7 +392,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
                 // Hidden name
                 this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, '???', {
-                    fontFamily: FONT_PIXEL, fontSize: '7.5px', color: '#5A4A3A', shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '7.5px', color: '#5A4A3A', shadow: NO_SHADOW
                 }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
             } else {
                 // Character sprite — greeting frame 0 (static) if available, else canvas frame 0
@@ -407,19 +412,19 @@ export default class QuickPlayScene extends Phaser.Scene {
                 this._tabObjects.push(this.add.text(cx, cy + cellH / 2 - 12, shortName, {
                     fontFamily: FONT_PIXEL, fontSize: '7.5px',
                     color: isP1 ? '#5B9BD5' : isP2 ? '#C44B3F' : '#F5E6D0',
-                    shadow: SHADOW
+                    shadow: NO_SHADOW
                 }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 3));
             }
 
             // P1/P2 badge
             if (isP1) {
                 this._tabObjects.push(this.add.text(cx - cellW / 2 + 3, cy - cellH / 2 + 2, 'J1', {
-                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#5B9BD5', shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#5B9BD5', shadow: NO_SHADOW
                 }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 4));
             }
             if (isP2) {
                 this._tabObjects.push(this.add.text(cx + cellW / 2 - 3, cy - cellH / 2 + 2, 'J2', {
-                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#C44B3F', shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '6px', color: '#C44B3F', shadow: NO_SHADOW
                 }).setOrigin(1, 0).setDepth(UI.DEPTH_PANEL + 4));
             }
 
@@ -506,7 +511,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._tabObjects.push(this.add.text(CX, detailY + 95,
             'Clic = J1  |  Shift+Clic = J2', {
                 fontFamily: 'monospace', fontSize: '7px',
-                color: CSS.GRIS, shadow: SHADOW, alpha: 0.5
+                color: CSS.GRIS, shadow: NO_SHADOW, alpha: 0.5
             }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 2));
     }
 
@@ -519,23 +524,23 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Locked character: show minimal info
         if (char.locked) {
             this._tabObjects.push(this.add.text(x, y, `${label}: ???`, {
-                fontFamily: FONT_PIXEL, fontSize: '10px', color: '#5A4A3A', shadow: SHADOW
+                fontFamily: FONT_PIXEL, fontSize: '10px', color: '#5A4A3A', shadow: NO_SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
             this._tabObjects.push(this.add.text(x, y + 18, I18n.t('locked_arcade_detail', '\uD83D\uDD12 A debloquer en mode Arcade'), {
-                fontFamily: FONT_PIXEL, fontSize: '9px', color: '#7A6A5A', shadow: SHADOW
+                fontFamily: FONT_PIXEL, fontSize: '9px', color: '#7A6A5A', shadow: NO_SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
             return;
         }
 
         // Label + name
         this._tabObjects.push(this.add.text(x, y, `${label}: ${char.display}`, {
-            fontFamily: FONT_PIXEL, fontSize: '10px', color, shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '10px', color, shadow: NO_SHADOW
         }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
 
         // Catchphrase
         if (charData.catchphrase) {
             this._tabObjects.push(this.add.text(x, y + 16, `"${I18n.field(charData, 'catchphrase')}"`, {
-                fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.OCRE, shadow: SHADOW
+                fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.OCRE, shadow: NO_SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
         }
 
@@ -551,13 +556,13 @@ export default class QuickPlayScene extends Phaser.Scene {
                 const sy = barStartY + i * 16;
 
                 this._tabObjects.push(this.add.text(barX - 4, sy + 3, STAT_LABELS[i], {
-                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.GRIS, shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.GRIS, shadow: NO_SHADOW
                 }).setOrigin(1, 0.5).setDepth(UI.DEPTH_PANEL + 3));
 
                 UIFactory.drawStatBar(gfx, barX, sy, barW, 7, val, 10, STAT_COLORS[i]);
 
                 this._tabObjects.push(this.add.text(barX + barW + 8, sy + 3, `${val}`, {
-                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.CREME, shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.CREME, shadow: NO_SHADOW
                 }).setOrigin(0, 0.5).setDepth(UI.DEPTH_PANEL + 3));
             }
             this._tabObjects.push(gfx);
@@ -572,16 +577,16 @@ export default class QuickPlayScene extends Phaser.Scene {
                 const charges = ability.charges > 0 ? `Actif (${ability.charges}x)` : 'Passif';
 
                 this._tabObjects.push(this.add.text(abX, abY, `\u26A1 ${abName}`, {
-                    fontFamily: FONT_PIXEL, fontSize: '9px', color: '#FFD700', shadow: SHADOW
+                    fontFamily: FONT_PIXEL, fontSize: '9px', color: '#FFD700', shadow: NO_SHADOW
                 }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
 
                 this._tabObjects.push(this.add.text(abX, abY + 13, charges, {
                     fontFamily: FONT_PIXEL, fontSize: '8px',
-                    color: ability.charges > 0 ? '#87CEEB' : '#9B7BB8', shadow: SHADOW
+                    color: ability.charges > 0 ? '#87CEEB' : '#9B7BB8', shadow: NO_SHADOW
                 }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
 
                 this._tabObjects.push(this.add.text(abX, abY + 26, abDesc, {
-                    fontFamily: FONT_PIXEL, fontSize: '8px', color: '#F5E6D0', shadow: SHADOW,
+                    fontFamily: FONT_PIXEL, fontSize: '8px', color: '#F5E6D0', shadow: NO_SHADOW,
                     wordWrap: { width: w - (abX - x) - 10 }, lineSpacing: 2
                 }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
             }
@@ -598,10 +603,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         const topY = TAB_CONTENT_Y + 12;
 
         // Column headers
-        this._tabObjects.push(UIFactory.addText(this, leftX + colW / 2, topY, 'BOULES', '10px', CSS.OR, {
+        this._tabObjects.push(this._text(leftX + colW / 2, topY, 'BOULES', '10px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 2
         }));
-        this._tabObjects.push(UIFactory.addText(this, rightX + colW / 2, topY, 'COCHONNET', '10px', CSS.OR, {
+        this._tabObjects.push(this._text(rightX + colW / 2, topY, 'COCHONNET', '10px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 2
         }));
 
@@ -645,12 +650,12 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // Name
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 90, boule.name, '11px', CSS.OR, {
+        this._tabObjects.push(this._text(centerX, y + 90, boule.name, '11px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 108, boule.description || '', '9px', CSS.CREME, {
+        this._tabObjects.push(this._text(centerX, y + 108, boule.description || '', '9px', CSS.CREME, {
             depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
         }));
 
@@ -667,7 +672,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         for (let i = 0; i < bouleStats.length; i++) {
             const sy = barStartY + i * 20;
-            this._tabObjects.push(UIFactory.addText(this, barX, sy + 4,
+            this._tabObjects.push(this._text(barX, sy + 4,
                 bouleStats[i].label, '8px', CSS.GRIS, {
                     pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
                 }));
@@ -677,7 +682,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Bonus text
         if (boule.bonus) {
-            this._tabObjects.push(UIFactory.addText(this, centerX, barStartY + 48,
+            this._tabObjects.push(this._text(centerX, barStartY + 48,
                 'Bonus: ' + boule.bonus, '8px', CSS.LAVANDE, {
                     depth: UI.DEPTH_PANEL + 3
                 }));
@@ -685,7 +690,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Lore
         if (boule.lore) {
-            this._tabObjects.push(UIFactory.addText(this, centerX, barStartY + 66,
+            this._tabObjects.push(this._text(centerX, barStartY + 66,
                 boule.lore, '8px', CSS.OCRE, {
                     depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 16, align: 'center',
                     alpha: 0.7
@@ -693,7 +698,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // Counter
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 248,
+        this._tabObjects.push(this._text(centerX, y + 248,
             (this._bouleIndex + 1) + ' / ' + this._ownedBoules.length, '8px', CSS.GRIS, {
                 pixel: true, depth: UI.DEPTH_PANEL + 3
             }));
@@ -734,17 +739,17 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // Name
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 100, coch.name, '11px', CSS.OR, {
+        this._tabObjects.push(this._text(centerX, y + 100, coch.name, '11px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 120, coch.description || '', '9px', CSS.CREME, {
+        this._tabObjects.push(this._text(centerX, y + 120, coch.description || '', '9px', CSS.CREME, {
             depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
         }));
 
         // Counter
-        this._tabObjects.push(UIFactory.addText(this, centerX, y + 170,
+        this._tabObjects.push(this._text(centerX, y + 170,
             (this._cochonnetIndex + 1) + ' / ' + this._ownedCochonnets.length, '8px', CSS.GRIS, {
                 pixel: true, depth: UI.DEPTH_PANEL + 3
             }));
@@ -839,7 +844,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 previewGfx.strokeRect(sx, sy, sw, sh);
                 // Arrow showing slope direction
                 const arrow = sz.direction === 'down' ? 'v' : '>';
-                this._tabObjects.push(UIFactory.addText(this, sx + sw / 2, sy + sh / 2,
+                this._tabObjects.push(this._text(sx + sw / 2, sy + sh / 2,
                     arrow, '10px', CSS.OR, { depth: UI.DEPTH_PANEL + 4, alpha: 0.5 }));
             }
         }
@@ -849,7 +854,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             previewGfx.lineStyle(4, 0x7A7A70, 0.8);
             previewGfx.strokeRect(previewX + 4, previewY + 4, previewW - 8, previewH - 8);
 
-            this._tabObjects.push(UIFactory.addText(this, previewX + previewW / 2, previewY + previewH - 14,
+            this._tabObjects.push(this._text(previewX + previewW / 2, previewY + previewH - 14,
                 'MURS - Les boules rebondissent !', '8px', CSS.GRIS, {
                     depth: UI.DEPTH_PANEL + 4, alpha: 0.7
                 }));
@@ -864,11 +869,11 @@ export default class QuickPlayScene extends Phaser.Scene {
             lockGfx.fillRoundedRect(previewX, previewY, previewW, previewH, 4);
             this._tabObjects.push(lockGfx);
 
-            this._tabObjects.push(UIFactory.addText(this, CX, previewY + previewH / 2 - 10,
+            this._tabObjects.push(this._text(CX, previewY + previewH / 2 - 10,
                 'VERROUILLE', '14px', CSS.ACCENT, {
                     pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 6
                 }));
-            this._tabObjects.push(UIFactory.addText(this, CX, previewY + previewH / 2 + 14,
+            this._tabObjects.push(this._text(CX, previewY + previewH / 2 + 14,
                 'Terminez l\'Arcade pour debloquer', '9px', CSS.GRIS, {
                     depth: UI.DEPTH_PANEL + 6
                 }));
@@ -878,12 +883,12 @@ export default class QuickPlayScene extends Phaser.Scene {
         const infoY = previewY + previewH + 10;
 
         // Terrain name
-        this._tabObjects.push(UIFactory.addText(this, CX, infoY, terrain.name, '12px', CSS.OR, {
+        this._tabObjects.push(this._text(CX, infoY, terrain.name, '12px', CSS.OR, {
             pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(UIFactory.addText(this, CX, infoY + 18, terrain.description || '', '9px', CSS.CREME, {
+        this._tabObjects.push(this._text(CX, infoY + 18, terrain.description || '', '9px', CSS.CREME, {
             depth: UI.DEPTH_PANEL + 3, wrapWidth: 600, align: 'center'
         }));
 
@@ -895,7 +900,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         // Adherence (derived from friction)
         const adherence = Math.min(5, Math.round(terrain.friction * 1.67));
         UIFactory.drawStatBar(statsGfx, CX - barW - 60, statsY, barW, 8, adherence, 5, COLORS.STAT_ADAPTABILITE);
-        this._tabObjects.push(UIFactory.addText(this, CX - barW - 96, statsY + 4,
+        this._tabObjects.push(this._text(CX - barW - 96, statsY + 4,
             'ADH', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
 
         // Complexity
@@ -905,13 +910,13 @@ export default class QuickPlayScene extends Phaser.Scene {
         if (terrain.walls) complexity += 2;
         complexity = Math.min(5, complexity);
         UIFactory.drawStatBar(statsGfx, CX + 60, statsY, barW, 8, complexity, 5, COLORS.STAT_EFFET);
-        this._tabObjects.push(UIFactory.addText(this, CX + 24, statsY + 4,
+        this._tabObjects.push(this._text(CX + 24, statsY + 4,
             'CMP', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
 
         this._tabObjects.push(statsGfx);
 
         // Counter
-        this._tabObjects.push(UIFactory.addText(this, CX, statsY + 22,
+        this._tabObjects.push(this._text(CX, statsY + 22,
             (this._terrainIndex + 1) + ' / ' + this._allTerrains.length, '8px', CSS.GRIS, {
                 pixel: true, depth: UI.DEPTH_PANEL + 3
             }));
@@ -970,7 +975,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 hard: 'L\'IA est impitoyable. Bonne chance.'
             };
             const desc = diffDescriptions[DIFFICULTIES[this._difficultyIndex].key] || '';
-            this._tabObjects.push(UIFactory.addText(this, CX, formatY + rowH + 10, desc, '9px', CSS.OCRE, {
+            this._tabObjects.push(this._text(CX, formatY + rowH + 10, desc, '9px', CSS.OCRE, {
                 depth: UI.DEPTH_PANEL + 3, alpha: 0.8
             }));
         }
@@ -978,13 +983,13 @@ export default class QuickPlayScene extends Phaser.Scene {
 
     _buildSettingRow(labelX, y, valX, label, options, currentIndex, onChange) {
         // Label
-        this._tabObjects.push(UIFactory.addText(this, labelX, y, label, '10px', CSS.GRIS, {
+        this._tabObjects.push(this._text(labelX, y, label, '10px', CSS.GRIS, {
             pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
         }));
 
         // Current value (highlighted)
         const val = options[currentIndex];
-        this._tabObjects.push(UIFactory.addText(this, valX, y, val.display, '12px', CSS.OR, {
+        this._tabObjects.push(this._text(valX, y, val.display, '12px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 3
         }));
 
@@ -1010,7 +1015,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const summaryText = this._getSummaryText();
         this._summaryLabel = this.add.text(CX, BOTTOM_Y - 4, summaryText, {
             fontFamily: 'monospace', fontSize: '8px',
-            color: CSS.OCRE, shadow: SHADOW, alpha: 0.7
+            color: CSS.OCRE, shadow: NO_SHADOW, alpha: 0.7
         }).setOrigin(0.5).setDepth(UI.DEPTH_UI);
         this._bottomObjects.push(this._summaryLabel);
 
@@ -1069,7 +1074,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL,
             fontSize: '14px',
             color: CSS.CREME,
-            shadow: SHADOW
+            shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 5).setInteractive({ useHandCursor: true });
 
         arrow.on('pointerover', () => {
@@ -1189,7 +1194,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     _showLockedMessage(x, y) {
         const msg = this.add.text(x, y - 20, I18n.t('locked_arcade', 'A debloquer en Arcade'), {
             fontFamily: FONT_PIXEL, fontSize: '8px', color: '#C44B3F',
-            shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
+            shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 10).setAlpha(1);
         this.tweens.add({
             targets: msg, y: y - 40, alpha: 0, duration: 1200, ease: 'Power2',
