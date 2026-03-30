@@ -188,7 +188,7 @@
 
 ### 3.0 Phase 3 — Profondeur technique (PLAN_PHASE3.md)
 - [x] **AXE A** : Rafle, tir devant expose, ciblage cochonnet [B], spin lateral [E], IA mise a jour
-- [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
+- [x] **AXE B** : Feedback & resultats de tir (ciseau, casquette, blesser, vocabulaire petanque FIPJP — "Palet" supprime session 61, remplace par RECUL)
 - [x] **AXE C** : Cleanup code — IntroScene dead code, leaks keyboard, SaveManager migration, flyOnly TIR, constantes extraites
 - [x] **AXE D** : Tests complementaires — slopes, walls, match flow, AimingSystem, SceneReuse, edge cases (+30 tests, 273/273)
 - [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions) — ~~Commentator supprime session 56~~
@@ -215,9 +215,10 @@
 
 ### 3.4 Tests automatises
 - [x] Vitest : 570 tests unitaires, 18 suites — **570/570 PASS**
-- [x] Playwright e2e : 85 tests (navigation, health, performance, stress, visual regression)
+- [x] Playwright e2e : 85+ tests (navigation, health, performance, stress, visual regression)
   - **67/67 tests fonctionnels PASS** (game, health, performance, stress)
   - **18 tests visual regression** : baselines a regenerer apres chaque changement visuel
+  - **+6 tests selection-dataflow (session 61)** : QuickPlay/Arcade → PetanqueScene data flow, compteur Match
 - [x] CI/CD : GitHub Actions `.github/workflows/qa.yml`
 - **Fichiers** : `tests/`, `tests/e2e/`, `playwright.config.js`
 
