@@ -17,7 +17,7 @@
 | Personnages | OK | 12 persos, stats, barks, sprites (11/12 complets) |
 | Terrains | OK | 5 terrains avec physique distincte |
 | Localisation | OK | FR 95% + EN 95% |
-| Audio | OK | 14 SFX, 2 musiques, ambiance, commentateur 55 phrases |
+| Audio | OK | 14 SFX, 2 musiques, ambiance terrain |
 | SDK Portails | OK | CrazyGames + Poki SDK integres via VITE_PLATFORM |
 | Tests | OK | 440 tests (344 unit + 96 E2E) |
 | CI/CD | OK | GitHub Pages deploy + QA pipeline |
@@ -84,7 +84,6 @@ The first serious petanque game — with pixel art charm, provencal humor, and s
 5 terrains with distinct physics (sand, grass, stone, hills, docks)
 Shop with 15+ cosmetic items
 RPG-lite progression — your Rookie evolves
-Dynamic commentator (55 contextual lines)
 Playable in French & English
 
 ## How to play

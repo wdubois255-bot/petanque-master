@@ -141,7 +141,7 @@
 - [x] 3 SFX UI : sfxUINavigate, sfxPurchase, sfxLevelUp
 - [x] 2 musiques (title_theme, match_theme)
 - [x] Music tension crossfade (crossfade dynamique selon pression du match)
-- [x] Commentator infrastructure (systeme de commentaires audio)
+- [x] ~~Commentator infrastructure~~ (supprime session 56 — encombrait l'ecran)
 - [x] Ambiance par terrain (cigales, vagues, oiseaux, vent, industriel)
 - **Fichiers** : `public/assets/audio/sfx/`, `public/assets/audio/music/`
 
@@ -191,7 +191,7 @@
 - [x] **AXE B** : Feedback & resultats de tir (palet, ciseau, casquette, blesser, vocabulaire petanque)
 - [x] **AXE C** : Cleanup code — IntroScene dead code, leaks keyboard, SaveManager migration, flyOnly TIR, constantes extraites
 - [x] **AXE D** : Tests complementaires — slopes, walls, match flow, AimingSystem, SceneReuse, edge cases (+30 tests, 273/273)
-- [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions, Commentator.js 55 phrases)
+- [x] **AXE E** : Audio enrichi (ambiances terrain procedurale, crowd reactions) — ~~Commentator supprime session 56~~
 - [x] **AXE F** : Mobile (touch areas 56px, portrait lock, PortalSDK wrapper, pooling Graphics)
 
 ### 3.1 Sprite Rookie (post-lancement)
@@ -248,8 +248,8 @@
 - [x] **EngineRenderer** : aim hint
 - [x] **ScorePanel** : SCORE / VOUS / ADV. / MENE {n} / tab hint
 - [x] **Sprint F — I18n.field() + fieldArray()** : résolution localisée des champs JSON (locale → fallback FR)
-- [x] **Sprint F — données _en** : characters.json (12 persos × name/title/description/catchphrase/barks_en), terrains, shop, arcade, commentator
-- [x] **Sprint F — câblage scenes** : I18n.field() branché dans CharSelect, VSIntro, Petanque (barks), Result, Arcade, ScorePanel, Commentator
+- [x] **Sprint F — données _en** : characters.json (12 persos × name/title/description/catchphrase/barks_en), terrains, shop, arcade
+- [x] **Sprint F — câblage scenes** : I18n.field() branché dans CharSelect, VSIntro, Petanque (barks), Result, Arcade, ScorePanel
 - [x] **Clé dupliquée** : ingame.aim_hint supprimée, unifié sur tutorial.aim
 - **Fichiers** : `src/utils/I18n.js`, `public/data/lang/fr.json`, `public/data/lang/en.json`
 
