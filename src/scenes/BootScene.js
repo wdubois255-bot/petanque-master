@@ -77,7 +77,6 @@ export default class BootScene extends Phaser.Scene {
         this.load.json('npcs', `${BASE}data/npcs.json`);
         this.load.json('progression', `${BASE}data/progression.json`);
         this.load.json('shop', `${BASE}data/shop.json`);
-        this.load.json('commentator', `${BASE}data/commentator.json`);
 
         // Tileset (Pipoya basechip + water tiles combined)
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);

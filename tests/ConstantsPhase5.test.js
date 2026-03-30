@@ -12,7 +12,6 @@ import {
     CROWD_INTENSITY_BY_ROUND,
     SHOP_EXPRESS_MIN_GALETS,
     DEFEAT_CONSOLATION_GALETS, DEFEAT_RETRY_ENABLED,
-    COMMENTATOR_COOLDOWN
 } from '../src/utils/Constants.js';
 
 describe('Phase 5 constants', () => {
@@ -88,7 +87,4 @@ describe('Phase 5 constants', () => {
         expect(typeof DEFEAT_RETRY_ENABLED).toBe('boolean');
     });
 
-    test('commentator cooldown is positive', () => {
-        expect(COMMENTATOR_COOLDOWN).toBeGreaterThan(0);
-    });
 });

@@ -90,7 +90,7 @@ npx vitest run    # Tests unitaires
                            #   Player, Overworld, SpriteTest, DevTest)
     /petanque/             # Ball, Cochonnet, PetanqueEngine, PetanqueAI,
                            #   AimingSystem, EngineRenderer, TerrainRenderer,
-                           #   Commentator, CharacterTextures, ModularCharacter, ai/
+                           #   CharacterTextures, ModularCharacter, ai/
     /ui/                   # UIFactory, ScorePanel, DialogBox, InGameTutorial, FeedbackWidget
     /utils/                # Constants, SaveManager, SoundManager, I18n,
                            #   SceneTransition, PortraitGenerator, PortalSDK
@@ -98,7 +98,7 @@ npx vitest run    # Tests unitaires
     /entities/             # Player, NPC
   /public
     /data/                 # characters.json, terrains.json, boules.json, arcade.json,
-                           #   shop.json, progression.json, commentator.json, npcs.json, lang/
+                           #   shop.json, progression.json, npcs.json, lang/
     /assets/               # sprites/, portraits/, audio/sfx/, audio/music/
   /research/               # 59 fichiers (index: research/00_synthese_etat_projet.md)
   /tests/                  # Vitest (unit) + Playwright (e2e)

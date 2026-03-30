@@ -315,10 +315,6 @@ describe('QA-3 Phase 4B — Chasse aux oublis', () => {
             expect(existsSync(resolve(DATA, 'progression.json'))).toBe(true);
         });
 
-        it('commentator.json existe', () => {
-            expect(existsSync(resolve(DATA, 'commentator.json'))).toBe(true);
-        });
-
         it('npcs.json existe', () => {
             expect(existsSync(resolve(DATA, 'npcs.json'))).toBe(true);
         });

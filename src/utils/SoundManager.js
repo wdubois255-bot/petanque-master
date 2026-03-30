@@ -1143,30 +1143,6 @@ export function sfxCrowdOoh() {
     ns.start(now + 0.05);
 }
 
-// === COMMENTATEUR (triggered by game events) ===
-
-const COMMENTATOR_LINES = {
-    good_point: ['sfx_comm_joli', 'sfx_comm_magnifique'],
-    very_close: ['sfx_comm_ohlala'],
-    carreau: ['sfx_comm_carreau'],
-    mene_win: ['sfx_comm_magnifique'],
-    oob: ['sfx_comm_aie'],
-    great_shot: ['sfx_comm_quel_tir'],
-    tight: ['sfx_comm_serre'],
-    fanny: ['sfx_comm_fanny'],
-    encourage: ['sfx_comm_allez'],
-    surprise: ['sfx_comm_ouh']
-};
-
-export function sfxCommentator(eventType) {
-    if (_muted) return;
-    const keys = COMMENTATOR_LINES[eventType];
-    if (!keys || keys.length === 0) return;
-    const key = keys[Math.floor(Math.random() * keys.length)];
-    if (playFile(key, { volume: 0.6 })) return;
-    // No procedural fallback for commentary — requires real audio files
-}
-
 // === AMBIANCE ===
 
 export function startCigales() {

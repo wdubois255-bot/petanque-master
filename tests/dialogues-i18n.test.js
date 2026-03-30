@@ -1,6 +1,6 @@
 /**
  * PHASE 2 — Dialogues & I18n Tests
- * Tests I18n coverage, commentator phrases, hardcoded strings,
+ * Tests I18n coverage, hardcoded strings,
  * and text quality across all scenes.
  */
 import { describe, it, expect } from 'vitest';
@@ -14,7 +14,6 @@ const SRC_DIR = resolve(ROOT, 'src');
 // Load data files
 const frLang = JSON.parse(readFileSync(resolve(DATA_DIR, 'lang', 'fr.json'), 'utf-8'));
 const enLang = JSON.parse(readFileSync(resolve(DATA_DIR, 'lang', 'en.json'), 'utf-8'));
-const commentator = JSON.parse(readFileSync(resolve(DATA_DIR, 'commentator.json'), 'utf-8'));
 const characters = JSON.parse(readFileSync(resolve(DATA_DIR, 'characters.json'), 'utf-8'));
 const arcade = JSON.parse(readFileSync(resolve(DATA_DIR, 'arcade.json'), 'utf-8'));
 const shop = JSON.parse(readFileSync(resolve(DATA_DIR, 'shop.json'), 'utf-8'));
@@ -56,59 +55,6 @@ function collectJsFiles(dir) {
 const allFrKeys = flattenKeys(frLang);
 const allEnKeys = flattenKeys(enLang);
 const srcFiles = collectJsFiles(SRC_DIR);
-
-// ══════════════════════════════════════════════════════════════════
-// 2A. COMMENTATOR IN-GAME DIALOGUES
-// ══════════════════════════════════════════════════════════════════
-describe('Phase 2A — Commentator dialogues in-game', () => {
-    // FR categories (without _en suffix)
-    const frCategories = Object.keys(commentator).filter(k => !k.endsWith('_en'));
-
-    it('commentator.json a des categories FR', () => {
-        expect(frCategories.length).toBeGreaterThan(0);
-    });
-
-    for (const cat of frCategories) {
-        describe(`Commentator: ${cat}`, () => {
-            it('a au moins 2 variantes FR (variete)', () => {
-                const pool = commentator[cat];
-                expect(Array.isArray(pool), `${cat} should be array`).toBe(true);
-                expect(pool.length, `${cat} needs >= 2 variants`).toBeGreaterThanOrEqual(2);
-            });
-
-            it('a une version EN correspondante', () => {
-                const enKey = `${cat}_en`;
-                expect(commentator[enKey], `${cat} missing _en version`).toBeDefined();
-                expect(Array.isArray(commentator[enKey])).toBe(true);
-            });
-
-            it('meme nombre de variantes FR et EN', () => {
-                const enKey = `${cat}_en`;
-                if (commentator[enKey]) {
-                    expect(commentator[enKey].length).toBe(commentator[cat].length);
-                }
-            });
-
-            it('aucune chaine vide', () => {
-                for (const phrase of commentator[cat]) {
-                    expect(phrase.trim().length, `${cat}: empty phrase`).toBeGreaterThan(0);
-                }
-                const enKey = `${cat}_en`;
-                if (commentator[enKey]) {
-                    for (const phrase of commentator[enKey]) {
-                        expect(phrase.trim().length, `${enKey}: empty phrase`).toBeGreaterThan(0);
-                    }
-                }
-            });
-        });
-    }
-
-    it('les categories EN sont toutes couvertes (pas de FR sans EN)', () => {
-        for (const cat of frCategories) {
-            expect(commentator[`${cat}_en`], `${cat} has no _en equivalent`).toBeDefined();
-        }
-    });
-});
 
 // ══════════════════════════════════════════════════════════════════
 // 2B. DIALOGUES OUT-GAME — I18n key coverage per scene
@@ -459,18 +405,6 @@ describe('Phase 2C — Qualite des textes', () => {
             if (typeof val === 'string') {
                 for (const removed of removedEn) {
                     expect(val.toLowerCase()).not.toContain(removed);
-                }
-            }
-        }
-    });
-
-    it('aucune reference aux lancers supprimes dans commentator.json', () => {
-        for (const [cat, pool] of Object.entries(commentator)) {
-            if (Array.isArray(pool)) {
-                for (const phrase of pool) {
-                    for (const removed of removedThrowTypes) {
-                        expect(phrase.toLowerCase(), `commentator ${cat}: contains "${removed}"`).not.toContain(removed);
-                    }
                 }
             }
         }

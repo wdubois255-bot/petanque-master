@@ -562,5 +562,3 @@ export const SHOP_EXPRESS_MIN_GALETS = 40;                // ne pas afficher si 
 export const DEFEAT_CONSOLATION_GALETS = 5;               // galets de consolation apres defaite
 export const DEFEAT_RETRY_ENABLED = true;                 // autoriser le retry du meme match
 
-// Commentator sequencing
-export const COMMENTATOR_COOLDOWN = 3000;                 // ms minimum entre deux messages textuels

@@ -10,7 +10,7 @@ import {
     MOMENTUM_INDICATOR_THRESHOLD, MOMENTUM_INDICATOR_ALPHA, MOMENTUM_INDICATOR_RADIUS,
     PRESSURE_INDICATOR_COLOR, PRESSURE_WOBBLE_AMPLITUDE, PRESSURE_WOBBLE_SPEED,
     CHALLENGE_BANNER_DURATION, CHALLENGE_REWARD_GALETS, CHALLENGE_PROBABILITY,
-    CROWD_INTENSITY_BY_ROUND, COMMENTATOR_COOLDOWN,
+    CROWD_INTENSITY_BY_ROUND,
     FOCUS_CHARGES_PER_MATCH,
     FEEDBACK_URL
 } from '../utils/Constants.js';
@@ -24,7 +24,6 @@ import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmb
 import { loadSave, saveSave, addGalets } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 import DialogBox from '../ui/DialogBox.js';
-import Commentator from '../petanque/Commentator.js';
 import PortalSDK from '../utils/PortalSDK.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
@@ -236,9 +235,6 @@ export default class PetanqueScene extends Phaser.Scene {
                 if (Math.random() < 0.5) self._showBark(other, 'opponent_carreau');
             });
         };
-
-        // === COMMENTATEUR (disabled — encombrait l'ecran) ===
-        this._commentator = null;
 
         // Hook score for gameplay indicators (pressure, momentum, challenges)
         const _origOnScore = this.engine.onScore;
@@ -508,15 +504,6 @@ export default class PetanqueScene extends Phaser.Scene {
         // Music tension crossfade when score >= 10
         this.events.on('match-tension', (tense) => setMusicTension(tense));
 
-        // === Phase 5 — Commentator sequencer (avoid overlap with challenge banners) ===
-        this._commentatorBusy = false;
-        this._safeCommentatorSay = (category) => {
-            if (this._commentatorBusy || !this._commentator) return;
-            this._commentatorBusy = true;
-            this._commentator.say(category);
-            this.time.delayedCall(COMMENTATOR_COOLDOWN, () => { this._commentatorBusy = false; });
-        };
-
         // === Phase 5 D1 — onMeneStart hook for mene challenges ===
         this.engine.onMeneStart = (meneNumber) => {
             if (!this.arcadeState || !this._challengePool?.length) return;
@@ -542,27 +529,10 @@ export default class PetanqueScene extends Phaser.Scene {
             this._showChallengeBanner(I18n.field(challenge, 'text'));
         };
 
-        // === Phase 5 E2 — Commentaire terrain (une seule fois, 2s) ===
-        this.time.delayedCall(2000, () => {
-            const surface = this.terrainFullData?.surface || this.terrainType;
-            if (surface === 'sable') this._safeCommentatorSay('terrain_sable');
-            else if (surface === 'dalles') this._safeCommentatorSay('terrain_dalles');
-            else if (surface === 'herbe') this._safeCommentatorSay('terrain_herbe');
-        });
-
-        // === Phase 5 E2 — Commentaire adversaire (une seule fois, 6s) ===
-        this.time.delayedCall(6000, () => {
-            const arch = this.opponentCharacter?.archetype;
-            if (arch === 'tireur') this._safeCommentatorSay('adversaire_tireur');
-            else if (arch === 'pointeur') this._safeCommentatorSay('adversaire_pointeur');
-        });
-
-        // === Phase 5 E2 + F3 — Commentaires de mene + Golden zone (chainer avec onMeneStart) ===
+        // === Phase 5 F3 — Golden zone (chainer avec onMeneStart) ===
         const _origMeneStart = this.engine.onMeneStart;
         this.engine.onMeneStart = (meneNumber) => {
             if (_origMeneStart) _origMeneStart(meneNumber);
-            if (meneNumber === 2) this._safeCommentatorSay?.('mene_debut_2');
-            if (meneNumber === 5) this._safeCommentatorSay?.('mene_debut_5');
             // Phase 5 F3: Golden zone (30% chance, mene 2+, arcade only)
             if (this.arcadeState && meneNumber >= 2 && Math.random() < 0.3) {
                 this._spawnGoldenZone();
@@ -765,10 +735,6 @@ export default class PetanqueScene extends Phaser.Scene {
         this.cameras.main.flash(200, 196, 75, 63);
         setMusicTension(true);
 
-        // One-shot commentator reaction
-        if (this._commentator) {
-            this._commentator.say('pression', true);
-        }
     }
 
     // === Challenge panel (persistent, right side) ===
@@ -916,7 +882,6 @@ export default class PetanqueScene extends Phaser.Scene {
             }
         });
 
-        if (this._commentator) this._commentator.say('defi', true);
     }
 
     // === Phase 5 D1 — Challenge result display ===
@@ -962,7 +927,6 @@ export default class PetanqueScene extends Phaser.Scene {
             stopCrowdAmbiance();
             stopMusic();
             stopRollingSound();
-            if (this._commentator) { this._commentator.destroy(); this._commentator = null; }
             if (this._vignetteGraphics) { this._vignetteGraphics.destroy(); this._vignetteGraphics = null; }
             if (this.cameras?.main) this.cameras.main.setZoom(1.0); // Reset zoom-pulse
             if (this._barkBubble) { this._barkBubble.destroy(); this._barkBubble = null; }
@@ -1273,12 +1237,6 @@ export default class PetanqueScene extends Phaser.Scene {
             if (existingTurnChange) existingTurnChange(team);
             this._updateTurnIndicator(team);
             this._animateToCircle(team);
-            // Commentateur : premier lancer (toutes les boules encore en main)
-            const rem = this.engine.remaining;
-            const bpp = this.engine.ballsPerPlayer;
-            if (rem.player === bpp && rem.opponent === bpp) {
-                this.time.delayedCall(300, () => this._commentator?.say('premier_lancer'));
-            }
         };
 
         const existingOnThrow = this.engine.onThrow;
@@ -1291,17 +1249,6 @@ export default class PetanqueScene extends Phaser.Scene {
         this.engine.onAfterStop = (lastTeam) => {
             if (existingAfterStop) existingAfterStop(lastTeam);
             this._animateReaction(lastTeam);
-            // Commentateur : derniere boule de la mene
-            const rem = this.engine.remaining;
-            if (rem.player + rem.opponent === 1) {
-                this.time.delayedCall(400, () => this._commentator?.say('derniere_boule'));
-            }
-            // Commentateur : bon point (joueur tres pres du cochonnet)
-            if (lastTeam === 'player' && this.engine.lastThrownBall?.isAlive && this.engine.cochonnet?.isAlive) {
-                const dist = this.engine.lastThrownBall.distanceTo(this.engine.cochonnet);
-                if (dist < 20) this.time.delayedCall(600, () => this._commentator?.say('bon_point'));
-                else if (dist < 6) this.time.delayedCall(600, () => this._commentator?.say('tres_pres'));
-            }
             // Update AI momentum based on shot quality
             if (lastTeam === 'opponent' && this.ai && this.ai.updateMomentum) {
                 const ball = this.engine.lastThrownBall;
