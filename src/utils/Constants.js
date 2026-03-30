@@ -116,7 +116,8 @@ export const THROW_RANGE_FACTOR_TIR = 0.95;
 // 0.6 → terre=100%, herbe=80%, sable=76%, dalles=115%
 export const TERRAIN_ROLL_COMPENSATION = 0.6;
 
-// Palet detection
+// DEPRECATED — "Palet" supprime (terme non-FIPJP, masquait les RECUL valides)
+// Conserve pour compatibilite tests unitaires existants
 export const PALET_THRESHOLD = 50;
 export const LOFT_PRESETS = [LOFT_DEMI_PORTEE, LOFT_PLOMBEE];
 // Tous les presets valides (pointer + tir) — pour validation et tests
@@ -369,10 +370,10 @@ export const BALL_SQUASH_RADIUS_BOOST = 2;
 
 // Ball sizes (pixels in game) - physics radius
 export const BALL_RADIUS = 10;
-export const COCHONNET_RADIUS = 8;
-// Visual scale for sprites (smaller look on terrain)
-export const BALL_DISPLAY_SCALE = 1.0;  // Aligner visuel sur hitbox physique
-export const COCHONNET_DISPLAY_SCALE = 0.82; // Légèrement plus petit que boule (cohérent)
+export const COCHONNET_RADIUS = 7;  // 8→7 : aligne hitbox physique sur visuel réel (COCHONNET_DISPLAY_SCALE=1.0 → visual=7px=physics)
+// Visual scale for sprites (aligne le visuel sur la hitbox physique)
+export const BALL_DISPLAY_SCALE = 1.0;      // Aligner visuel sur hitbox physique
+export const COCHONNET_DISPLAY_SCALE = 1.0; // Aligner visuel sur hitbox physique (était 0.82 → créait gap 1.4px visible)
 export const BALL_MASS = 700;
 export const COCHONNET_MASS = 16; // Cochonnet bois reel 10-18g (plus leger = plus dramatique)
 // Cochonnet speed caps differencies par contexte (point vs tir)

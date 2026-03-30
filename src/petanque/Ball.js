@@ -533,6 +533,12 @@ export default class Ball {
         a._squashTimer = squashFrames;
         b._squashTimer = squashFrames;
 
+        // Clear pointer flag after collision: ensures chain hits (A→B→cochonnet) transfer
+        // full force — without this, B.isPoint=true caps cochonnet to COCHONNET_MAX_SPEED_POINT
+        // and applies COCHONNET_POINT_DAMPING even when B was kicked by another ball.
+        a.isPoint = false;
+        b.isPoint = false;
+
         return true;
     }
 

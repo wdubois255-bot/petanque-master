@@ -1,12 +1,12 @@
 /**
  * ShotResults.test.js — AXE B Phase 3
- * Teste la logique de detection des 8 resultats de tir dans _detectShotResult()
+ * Teste la logique de detection des 7 resultats de tir dans _detectShotResult()
  * en inspectant directement les constantes et la logique sans Phaser.
+ * Note: "Palet" supprime (terme ambigu FIPJP, masquait les Reculs) — T4 terminologie
  */
 import { describe, it, expect } from 'vitest';
 import {
     CARREAU_THRESHOLD,
-    PALET_THRESHOLD,
     CASQUETTE_MAX_DISPLACEMENT,
     BLESSEE_MAX_DISPLACEMENT,
     RECUL_MIN_BACKWARD_PX
@@ -57,12 +57,7 @@ function detectShotType({
         if (targetDisplacement < CASQUETTE_MAX_DISPLACEMENT) return 'CASQUETTE';
         if (targetDisplacement < BLESSEE_MAX_DISPLACEMENT) return 'BLESSEE';
 
-        if (lastImpactPoint) {
-            const dxImpact = ball.x - lastImpactPoint.x;
-            const dyImpact = ball.y - lastImpactPoint.y;
-            const distFromImpact = Math.sqrt(dxImpact * dxImpact + dyImpact * dyImpact);
-            if (distFromImpact > CARREAU_THRESHOLD && distFromImpact < PALET_THRESHOLD) return 'PALET';
-        }
+        // "Palet" supprime — terme non-FIPJP masquant les RECUL (voir T4 terminologie)
 
         if (lastImpactPoint && ball._throwDirX !== undefined) {
             const dxFromImpact = ball.x - lastImpactPoint.x;
@@ -142,20 +137,7 @@ describe('Shot Result Detection — AXE B', () => {
         expect(result).toBe('BLESSEE');
     });
 
-    // 7. Palet (boule tiree reste entre CARREAU_THRESHOLD et PALET_THRESHOLD du point d'impact)
-    it('detecte PALET quand la boule reste pres du point d impact (28-50px)', () => {
-        const impactPt = { x: 100, y: 100 };
-        // Cible deplacee de 40px (> BLESSEE_MAX 32px → tir reussi), boule tiree a 35px de l'impact
-        const result = detectShotType({
-            isTir: true,
-            hitBalls: [{ x: 140, y: 100, team: 'opponent' }], // deplacement 40px
-            lastImpactPoint: impactPt,
-            ball: { x: 100 + 35, y: 100, radius: 10, team: 'player', vx: 0, vy: 0, _throwDirX: 1, _throwDirY: 0 }
-        });
-        expect(result).toBe('PALET');
-    });
-
-    // 8. Recul (boule tiree a fini derriere le point d'impact)
+    // 7. Recul (boule tiree a fini derriere le point d'impact)
     it('detecte RECUL quand la boule tiree a fini derriere le point d impact', () => {
         const impactPt = { x: 100, y: 100 };
         // Tir vers la droite (+X), boule tiree finit a gauche du point d'impact → recul
@@ -177,8 +159,8 @@ describe('Shot Result Detection — AXE B', () => {
         expect(CASQUETTE_MAX_DISPLACEMENT).toBe(8);
         expect(BLESSEE_MAX_DISPLACEMENT).toBe(32);
         expect(RECUL_MIN_BACKWARD_PX).toBe(5);
-        expect(CARREAU_THRESHOLD).toBeLessThan(PALET_THRESHOLD);
         expect(CASQUETTE_MAX_DISPLACEMENT).toBeLessThan(BLESSEE_MAX_DISPLACEMENT);
+        expect(CARREAU_THRESHOLD).toBeLessThan(BLESSEE_MAX_DISPLACEMENT * 2); // CARREAU(15) < 64
     });
 
     // Carreau guard
@@ -191,12 +173,12 @@ describe('Shot Result Detection — AXE B', () => {
         expect(result).toBe('CARREAU_GUARD');
     });
 
-    // Characters.json — barks nouveau
-    it('tous les personnages ont les nouveaux barks (carreau_victim, palet_success, contre_self, fanny_win, fanny_lose)', async () => {
+    // Characters.json — barks requis (palet_success conserve dans les donnees mais non declenche)
+    it('tous les personnages ont les barks requis (carreau_victim, contre_self, fanny_win, fanny_lose)', async () => {
         const { readFileSync } = await import('fs');
         const { resolve } = await import('path');
         const data = JSON.parse(readFileSync(resolve(__dirname, '../public/data/characters.json'), 'utf-8'));
-        const requiredBarks = ['carreau_victim', 'palet_success', 'contre_self', 'fanny_win', 'fanny_lose'];
+        const requiredBarks = ['carreau_victim', 'contre_self', 'fanny_win', 'fanny_lose'];
         for (const char of data.roster) {
             for (const bark of requiredBarks) {
                 expect(

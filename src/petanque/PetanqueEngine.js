@@ -21,7 +21,6 @@ import {
     SLOWMO_DISTANCE, SLOWMO_SPEED_THRESHOLD, SLOWMO_FACTOR, SLOWMO_LERP_SPEED,
     SPEED_THRESHOLD,
     GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
-    PALET_THRESHOLD,
     CASQUETTE_MAX_DISPLACEMENT, BLESSEE_MAX_DISPLACEMENT, RECUL_MIN_BACKWARD_PX,
     CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY,
     puissanceMultiplier
@@ -30,7 +29,7 @@ import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
     sfxCarreau, sfxThrow, sfxVictory, sfxDefeat, sfxScore,
     startRollingSound, updateRollingSound, stopRollingSound,
-    sfxPalet, sfxCasquette, sfxCiseau, sfxBiberon, sfxContre, sfxTrou,
+    sfxCasquette, sfxCiseau, sfxBiberon, sfxContre, sfxTrou,
     sfxCrowdGasp, sfxCrowdBoo, sfxCrowdCheer, sfxCrowdOoh
 } from '../utils/SoundManager.js';
 
@@ -1470,22 +1469,6 @@ export default class PetanqueEngine {
             }
 
             // Carreau est detecte avant nous par _checkCarreau/_celebrateCarreau (guard en haut)
-
-            // Palet : boule tiree reste pres du POINT D'IMPACT
-            if (impactPt) {
-                const dxImpact = ball.x - impactPt.x;
-                const dyImpact = ball.y - impactPt.y;
-                const distFromImpact = Math.sqrt(dxImpact * dxImpact + dyImpact * dyImpact);
-
-                if (distFromImpact > CARREAU_THRESHOLD && distFromImpact < PALET_THRESHOLD) {
-                    sfxPalet();
-                    this.scene.time.delayedCall(200, () => sfxCrowdCheer());
-                    this._showShotLabel(ball, 'Palet !', '#C0C0C0', 13);
-                    if (this.onShotResult) this.onShotResult('palet', ball);
-                    this._shotCollisions = [];
-                    return;
-                }
-            }
 
             // Recul CORRIGE : boule tiree a fini DERRIERE le point d'impact
             // (mesure par position finale vs direction du tir — vitesse est ~0 au repos)
