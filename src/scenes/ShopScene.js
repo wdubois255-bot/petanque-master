@@ -38,6 +38,7 @@ export default class ShopScene extends Phaser.Scene {
         this._tabElements = [];
         this._purchasing = false;
         this._scrollOffset = 0;
+        this._transitioning = false; // reset for scene reuse (Phaser reuses instances)
     }
 
     create() {
@@ -510,35 +511,35 @@ export default class ShopScene extends Phaser.Scene {
             elements.push(ph);
         }
 
-        // Name (right of icon)
+        // Name (right of icon) — y -26 leaves room for desc below (no overlap)
         const shortName = item.name.replace('Boule ', '').replace('Cochonnet ', '');
         elements.push(
-            this.add.text(x + 56, cy - 16, shortName, {
+            this.add.text(x + 56, cy - 26, shortName, {
                 fontFamily: 'monospace', fontSize: '9px',
                 color: isSelected ? CSS.OR : CSS.CREME, shadow: SHADOW
             }).setDepth(6)
         );
 
-        // Description (1 line)
+        // Description (1 line) — y -8 gives gap after 9px name
         const desc = item.description.length > 26 ? item.description.substring(0, 24) + '..' : item.description;
         elements.push(
-            this.add.text(x + 56, cy - 2, desc, {
+            this.add.text(x + 56, cy - 8, desc, {
                 fontFamily: 'monospace', fontSize: '7px',
                 color: CSS.GRIS, shadow: SHADOW
             }).setDepth(6)
         );
 
-        // Price / owned badge (bottom of card)
+        // Price / owned badge (bottom of card) — y +8 gives gap after 7px desc
         if (owned) {
             elements.push(
-                this.add.text(x + 56, cy + 14, '\u2713 Possede', {
+                this.add.text(x + 56, cy + 8, '\u2713 Possede', {
                     fontFamily: 'monospace', fontSize: '8px',
                     color: '#44CC44', shadow: SHADOW
                 }).setDepth(6)
             );
         } else if (locked) {
             elements.push(
-                this.add.text(x + 56, cy + 14, `\u{1F512} ${item.minWins} victoires`, {
+                this.add.text(x + 56, cy + 8, `\u{1F512} ${item.minWins} victoires`, {
                     fontFamily: 'monospace', fontSize: '8px',
                     color: '#5A4A3A', shadow: SHADOW
                 }).setDepth(6)
@@ -546,7 +547,7 @@ export default class ShopScene extends Phaser.Scene {
         } else {
             const canAfford = save.galets >= item.price;
             elements.push(
-                this.add.text(x + 56, cy + 14, `${item.price} G`, {
+                this.add.text(x + 56, cy + 8, `${item.price} G`, {
                     fontFamily: 'monospace', fontSize: '9px',
                     color: canAfford ? CSS.OR : '#C44B3F', shadow: SHADOW
                 }).setDepth(6)
@@ -719,7 +720,7 @@ export default class ShopScene extends Phaser.Scene {
     // INPUT
     // ================================================================
     _setupInput() {
-        this.input.keyboard.on('keydown-ESC', () => { sfxUIClick(); fadeToScene(this, 'TitleScene'); });
+        // ESC is handled by UIFactory.addBackButton — do not bind it twice here
         this.input.keyboard.on('keydown-ONE', () => { sfxUIClick(); this._switchTab(0); });
         this.input.keyboard.on('keydown-TWO', () => { sfxUIClick(); this._switchTab(1); });
         this.input.keyboard.on('keydown-THREE', () => { sfxUIClick(); this._switchTab(2); });

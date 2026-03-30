@@ -455,17 +455,17 @@ export default class PetanqueScene extends Phaser.Scene {
             const badgeH = 22;
             const badgeX = 6;
             const badgeY = 6;
-            const badgeBg = this.add.graphics().setDepth(92).setAlpha(0);
-            badgeBg.fillStyle(0x3A2E28, 0.85);
-            badgeBg.fillRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
-            badgeBg.lineStyle(1, 0xD4A574, 0.3);
-            badgeBg.strokeRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
-            const badgeLabel = this.add.text(badgeX + badgeW / 2, badgeY + badgeH / 2, badgeText, {
+            this._arcadeBadgeBg = this.add.graphics().setDepth(92).setAlpha(0);
+            this._arcadeBadgeBg.fillStyle(0x3A2E28, 0.85);
+            this._arcadeBadgeBg.fillRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
+            this._arcadeBadgeBg.lineStyle(1, 0xD4A574, 0.3);
+            this._arcadeBadgeBg.strokeRoundedRect(badgeX, badgeY, badgeW, badgeH, 4);
+            this._arcadeBadgeLabel = this.add.text(badgeX + badgeW / 2, badgeY + badgeH / 2, badgeText, {
                 fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
                 shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(92).setAlpha(0);
             // Fade in
-            this.tweens.add({ targets: [badgeBg, badgeLabel], alpha: 1, duration: 400, delay: 500 });
+            this.tweens.add({ targets: [this._arcadeBadgeBg, this._arcadeBadgeLabel], alpha: 1, duration: 400, delay: 500 });
         }
 
         // === Phase 5 — Mene challenges (arcade only) ===
@@ -1787,6 +1787,9 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this._gamePaused) return;
         this._gamePaused = true;
         if (this.aimingSystem) this.aimingSystem.cancel();
+        // Hide arcade match badge so it doesn't show through the semi-transparent overlay
+        if (this._arcadeBadgeBg)    this._arcadeBadgeBg.setVisible(false);
+        if (this._arcadeBadgeLabel) this._arcadeBadgeLabel.setVisible(false);
 
         const CX = GAME_WIDTH / 2;
         const CY = GAME_HEIGHT / 2;
@@ -2052,6 +2055,9 @@ export default class PetanqueScene extends Phaser.Scene {
             this._pauseContainer.destroy(true);
             this._pauseContainer = null;
         }
+        // Restore arcade match badge
+        if (this._arcadeBadgeBg)    this._arcadeBadgeBg.setVisible(true);
+        if (this._arcadeBadgeLabel) this._arcadeBadgeLabel.setVisible(true);
     }
 
     _playIrisOpen() {

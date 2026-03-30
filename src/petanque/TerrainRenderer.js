@@ -280,6 +280,7 @@ export default class TerrainRenderer {
             }
 
             let img = null;
+            let crown = null; // crown sprite (top half of tree) for depth-sorted trunk/foliage split
             if (hasGrid) {
                 const frameIdx = p.frame !== undefined ? p.frame : decor.pool[Math.floor(this._rng() * decor.pool.length)];
                 img = s.add.image(px, p.y, decor.key, frameIdx);
@@ -289,6 +290,20 @@ export default class TerrainRenderer {
                 if (p.alpha !== undefined) img.setAlpha(p.alpha);
                 // Distance tint for far elements
                 if (p.alpha && p.alpha < 0.5) img.setTint(0xCCCCCC);
+
+                // Trunk / crown depth split for trees — order: fond < tronc < feuillage
+                if (['olive', 'tree', 'willow'].includes(p.type)) {
+                    const fW = (img.frame?.realWidth)  || 64;
+                    const fH = (img.frame?.realHeight) || 64;
+                    const halfH = Math.floor(fH / 2);
+                    img.setCrop(0, halfH, fW, halfH); // trunk = bottom half at depth
+                    crown = s.add.image(px, p.y, decor.key, frameIdx);
+                    crown.setScale(scale).setDepth(depth + 0.5); // crown in front of trunk
+                    if (p.flipX) crown.setFlipX(true);
+                    if (p.alpha !== undefined) crown.setAlpha(p.alpha);
+                    if (p.alpha && p.alpha < 0.5) crown.setTint(0xCCCCCC);
+                    crown.setCrop(0, 0, fW, halfH); // crown = top half
+                }
             } else if (hasFallback) {
                 img = s.add.image(px, p.y, decor.fallback);
                 img.setDepth(depth);
@@ -297,12 +312,13 @@ export default class TerrainRenderer {
                 if (p.alpha !== undefined) img.setAlpha(p.alpha);
             }
 
-            // Subtle idle sway for organic decor (trees, plants)
+            // Subtle idle sway for organic decor (trees, plants) — crown sways in sync with trunk
             if (img && ['olive', 'tree', 'willow', 'lavande', 'herbe'].includes(p.type)) {
                 const swayAmount = p.type === 'herbe' ? 1 : 2;
                 const swayDuration = 3000 + Math.floor(this._rng() * 2000);
+                const swayTargets = crown ? [img, crown] : [img];
                 s.tweens.add({
-                    targets: img,
+                    targets: swayTargets,
                     x: img.x + swayAmount,
                     angle: swayAmount * 0.3,
                     duration: swayDuration,
