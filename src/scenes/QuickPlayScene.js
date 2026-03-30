@@ -325,7 +325,8 @@ export default class QuickPlayScene extends Phaser.Scene {
                     .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4)
             );
         }
-        this._tabObjects.push(this.add.text(sideX, sideY + 28, 'J1', {
+        const isLocal = getModes()[this._modeIndex].key === 'local';
+        this._tabObjects.push(this.add.text(sideX, sideY + 28, isLocal ? 'J1' : I18n.t('ingame.you'), {
             fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
@@ -346,7 +347,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                     .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
             );
         }
-        this._tabObjects.push(this.add.text(rightX, sideY + 28, 'J2', {
+        this._tabObjects.push(this.add.text(rightX, sideY + 28, isLocal ? 'J2' : I18n.t('ingame.opponent'), {
             fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
@@ -509,9 +510,11 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._tabObjects.push(midDiv);
 
         // P1 detail
-        this._buildCharDetail(40, detailY + 2, halfW, this._p1Index, 'J1', '#5B9BD5');
+        const p1Label = isLocal ? 'J1' : I18n.t('ingame.you');
+        const p2Label = isLocal ? 'J2' : I18n.t('ingame.opponent');
+        this._buildCharDetail(40, detailY + 2, halfW, this._p1Index, p1Label, '#5B9BD5');
         // P2 detail
-        this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, 'J2', '#C44B3F');
+        this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, p2Label, '#C44B3F');
 
         // Hint at bottom
         this._tabObjects.push(this.add.text(CX, detailY + 95,
