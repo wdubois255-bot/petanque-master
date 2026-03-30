@@ -1010,14 +1010,14 @@ export default class ResultScene extends Phaser.Scene {
 
     _showUnlockNotification(unlocks) {
         const text = unlocks.join('\n');
-        const notif = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 60, text, {
+        const notif = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 130, text, {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
             shadow: SHADOW, align: 'center', backgroundColor: '#3A2E28',
             padding: { x: 12, y: 8 }
         }).setOrigin(0.5).setDepth(200).setAlpha(0);
 
         this.tweens.add({
-            targets: notif, alpha: 1, y: GAME_HEIGHT - 80,
+            targets: notif, alpha: 1, y: GAME_HEIGHT - 140,
             duration: 500, ease: 'Back.easeOut', delay: 1500
         });
     }
