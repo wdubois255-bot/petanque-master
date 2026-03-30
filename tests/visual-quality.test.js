@@ -152,12 +152,12 @@ describe('QA-3 Phase 1B — Boules et cochonnet', () => {
         expect(bouleList.length).toBeGreaterThanOrEqual(5);
     });
 
-    it('chaque boule a id, name, stats (precision, puissance)', () => {
+    it('chaque boule a id, name, stats (masse, rayon)', () => {
         for (const b of bouleList) {
             expect(b).toHaveProperty('id');
             expect(b).toHaveProperty('name');
-            expect(b.stats).toHaveProperty('precision');
-            expect(b.stats).toHaveProperty('puissance');
+            expect(b.stats).toHaveProperty('masse');
+            expect(b.stats).toHaveProperty('rayon');
         }
     });
 
@@ -177,12 +177,12 @@ describe('QA-3 Phase 1B — Boules et cochonnet', () => {
         }
     });
 
-    it('les stats de boules sont dans les plages valides (1-5)', () => {
+    it('les stats de boules sont dans les plages valides (masse 500-1000g, rayon 8-12)', () => {
         for (const b of bouleList) {
-            expect(b.stats.precision).toBeGreaterThanOrEqual(1);
-            expect(b.stats.precision).toBeLessThanOrEqual(5);
-            expect(b.stats.puissance).toBeGreaterThanOrEqual(1);
-            expect(b.stats.puissance).toBeLessThanOrEqual(5);
+            expect(b.stats.masse).toBeGreaterThanOrEqual(500);
+            expect(b.stats.masse).toBeLessThanOrEqual(1000);
+            expect(b.stats.rayon).toBeGreaterThanOrEqual(8);
+            expect(b.stats.rayon).toBeLessThanOrEqual(12);
         }
     });
 });

@@ -12,24 +12,30 @@ const NO_SHADOW = { offsetX: 0, offsetY: 0, color: '#3A2E28', blur: 0, fill: fal
 let _charValues = [];
 
 const TAB_KEYS = ['personnages', 'equipement', 'terrain', 'reglages'];
-const TAB_LABELS = ['PERSONNAGES', 'EQUIPEMENT', 'TERRAIN', 'REGLAGES'];
+const TAB_I18N = ['quickplay.tabs.characters', 'quickplay.tabs.equipment', 'quickplay.tabs.terrain', 'quickplay.tabs.settings'];
 
-const DIFFICULTIES = [
-    { display: 'Facile', key: 'easy' },
-    { display: 'Moyen', key: 'medium' },
-    { display: 'Difficile', key: 'hard' }
-];
+function getDifficulties() {
+    return [
+        { display: I18n.t('quickplay.difficulties.easy'), key: 'easy' },
+        { display: I18n.t('quickplay.difficulties.medium'), key: 'medium' },
+        { display: I18n.t('quickplay.difficulties.hard'), key: 'hard' }
+    ];
+}
 
-const FORMATS = [
-    { display: '3 Boules', key: 3 },
-    { display: '2 Boules', key: 2 },
-    { display: '1 Boule', key: 1 }
-];
+function getFormats() {
+    return [
+        { display: I18n.t('quickplay.formats.3'), key: 3 },
+        { display: I18n.t('quickplay.formats.2'), key: 2 },
+        { display: I18n.t('quickplay.formats.1'), key: 1 }
+    ];
+}
 
-const MODES = [
-    { display: 'VS IA', key: 'vs_ia' },
-    { display: 'Local 1v1', key: 'local' }
-];
+function getModes() {
+    return [
+        { display: I18n.t('quickplay.modes.vs_ia'), key: 'vs_ia' },
+        { display: I18n.t('quickplay.modes.local'), key: 'local' }
+    ];
+}
 
 const CX = GAME_WIDTH / 2;
 
@@ -161,7 +167,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Title left-aligned
         this._bannerObjects.push(
-            this.add.text(16, 14, 'PARTIE RAPIDE', {
+            this.add.text(16, 14, I18n.t('quickplay.title'), {
                 fontFamily: FONT_PIXEL, fontSize: '14px',
                 color: CSS.OR,
                 shadow: NO_SHADOW
@@ -213,10 +219,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._tabBarObjects = [];
 
         const tabW = 170;
-        const totalW = tabW * TAB_LABELS.length;
+        const totalW = tabW * TAB_KEYS.length;
         const startX = (GAME_WIDTH - totalW) / 2;
 
-        for (let i = 0; i < TAB_LABELS.length; i++) {
+        for (let i = 0; i < TAB_KEYS.length; i++) {
             const x = startX + i * tabW + tabW / 2;
             const isActive = i === this._activeTab;
 
@@ -240,7 +246,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._tabBarObjects.push(numHint);
 
             const label = this._text(x + 4, TAB_BAR_Y,
-                TAB_LABELS[i], '9px',
+                I18n.t(TAB_I18N[i]), '9px',
                 isActive ? CSS.OR : CSS.GRIS,
                 { pixel: true, depth: UI.DEPTH_PANEL + 1 }
             );
@@ -509,7 +515,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Hint at bottom
         this._tabObjects.push(this.add.text(CX, detailY + 95,
-            'Clic = J1  |  Shift+Clic = J2', {
+            I18n.t('quickplay.select_hint'), {
                 fontFamily: 'monospace', fontSize: '7px',
                 color: CSS.GRIS, shadow: NO_SHADOW, alpha: 0.5
             }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 2));
@@ -526,7 +532,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._tabObjects.push(this.add.text(x, y, `${label}: ???`, {
                 fontFamily: FONT_PIXEL, fontSize: '10px', color: '#5A4A3A', shadow: NO_SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
-            this._tabObjects.push(this.add.text(x, y + 18, I18n.t('locked_arcade_detail', '\uD83D\uDD12 A debloquer en mode Arcade'), {
+            this._tabObjects.push(this.add.text(x, y + 18, I18n.t('quickplay.locked_arcade_detail'), {
                 fontFamily: FONT_PIXEL, fontSize: '9px', color: '#7A6A5A', shadow: NO_SHADOW
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
             return;
@@ -574,7 +580,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 const abY = barStartY - 4;
                 const abName = I18n.field(ability, 'name');
                 const abDesc = I18n.field(ability, 'description');
-                const charges = ability.charges > 0 ? `Actif (${ability.charges}x)` : 'Passif';
+                const charges = ability.charges > 0 ? I18n.t('quickplay.ability_active', { charges: ability.charges }) : I18n.t('quickplay.ability_passive');
 
                 this._tabObjects.push(this.add.text(abX, abY, `\u26A1 ${abName}`, {
                     fontFamily: FONT_PIXEL, fontSize: '9px', color: '#FFD700', shadow: NO_SHADOW
@@ -603,10 +609,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         const topY = TAB_CONTENT_Y + 12;
 
         // Column headers
-        this._tabObjects.push(this._text(leftX + colW / 2, topY, 'BOULES', '10px', CSS.OR, {
+        this._tabObjects.push(this._text(leftX + colW / 2, topY, I18n.t('quickplay.labels.boules'), '10px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 2
         }));
-        this._tabObjects.push(this._text(rightX + colW / 2, topY, 'COCHONNET', '10px', CSS.OR, {
+        this._tabObjects.push(this._text(rightX + colW / 2, topY, I18n.t('quickplay.labels.cochonnet'), '10px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 2
         }));
 
@@ -650,48 +656,34 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // Name
-        this._tabObjects.push(this._text(centerX, y + 90, boule.name, '11px', CSS.OR, {
+        this._tabObjects.push(this._text(centerX, y + 90, I18n.field(boule, 'name'), '11px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(this._text(centerX, y + 108, boule.description || '', '9px', CSS.CREME, {
-            depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
+        this._tabObjects.push(this._text(centerX, y + 108, I18n.field(boule, 'description') || '', '9.5px', CSS.CREME, {
+            pixel: true, depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
         }));
 
-        // Stat bars for boule
-        const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
-        const barW = Math.min(w - 40, 130);
-        const barX = centerX - barW / 2 - 18;
+        // Mass + diameter
         const barStartY = y + 140;
+        this._tabObjects.push(this._text(centerX, barStartY,
+            `${boule.stats?.masse || 700}g  \u2300${(boule.stats?.rayon || 10) * 2}`, '11px', CSS.OCRE, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
 
-        const bouleStats = [
-            { label: 'PRC', val: boule.stats?.precision || 3, color: COLORS.STAT_PRECISION },
-            { label: 'PUI', val: boule.stats?.puissance || 3, color: COLORS.STAT_PUISSANCE }
-        ];
-
-        for (let i = 0; i < bouleStats.length; i++) {
-            const sy = barStartY + i * 20;
-            this._tabObjects.push(this._text(barX, sy + 4,
-                bouleStats[i].label, '8px', CSS.GRIS, {
-                    pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0
-                }));
-            UIFactory.drawStatBar(gfx, barX + 36, sy, barW, 8, bouleStats[i].val, 5, bouleStats[i].color);
-        }
-        this._tabObjects.push(gfx);
-
-        // Bonus text
+        // Bonus effect (player-friendly)
         if (boule.bonus) {
-            this._tabObjects.push(this._text(centerX, barStartY + 48,
-                'Bonus: ' + boule.bonus, '8px', CSS.LAVANDE, {
-                    depth: UI.DEPTH_PANEL + 3
+            this._tabObjects.push(this._text(centerX, barStartY + 20,
+                I18n.field(boule, 'effect') || boule.bonus, '10px', CSS.LAVANDE, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 3
                 }));
         }
 
         // Lore
         if (boule.lore) {
-            this._tabObjects.push(this._text(centerX, barStartY + 66,
-                boule.lore, '8px', CSS.OCRE, {
+            this._tabObjects.push(this._text(centerX, barStartY + 42,
+                I18n.field(boule, 'lore') || boule.lore, '9px', CSS.OCRE, {
                     depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 16, align: 'center',
                     alpha: 0.7
                 }));
@@ -739,12 +731,12 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // Name
-        this._tabObjects.push(this._text(centerX, y + 100, coch.name, '11px', CSS.OR, {
+        this._tabObjects.push(this._text(centerX, y + 100, I18n.field(coch, 'name'), '11px', CSS.OR, {
             pixel: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(this._text(centerX, y + 120, coch.description || '', '9px', CSS.CREME, {
+        this._tabObjects.push(this._text(centerX, y + 120, I18n.field(coch, 'description') || '', '9px', CSS.CREME, {
             depth: UI.DEPTH_PANEL + 3, wrapWidth: w - 20, align: 'center'
         }));
 
@@ -855,7 +847,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             previewGfx.strokeRect(previewX + 4, previewY + 4, previewW - 8, previewH - 8);
 
             this._tabObjects.push(this._text(previewX + previewW / 2, previewY + previewH - 14,
-                'MURS - Les boules rebondissent !', '8px', CSS.GRIS, {
+                I18n.t('quickplay.labels.walls_warning'), '8px', CSS.GRIS, {
                     depth: UI.DEPTH_PANEL + 4, alpha: 0.7
                 }));
         }
@@ -870,11 +862,11 @@ export default class QuickPlayScene extends Phaser.Scene {
             this._tabObjects.push(lockGfx);
 
             this._tabObjects.push(this._text(CX, previewY + previewH / 2 - 10,
-                'VERROUILLE', '14px', CSS.ACCENT, {
+                I18n.t('quickplay.locked'), '14px', CSS.ACCENT, {
                     pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 6
                 }));
             this._tabObjects.push(this._text(CX, previewY + previewH / 2 + 14,
-                'Terminez l\'Arcade pour debloquer', '9px', CSS.GRIS, {
+                I18n.t('quickplay.locked_unlock'), '9px', CSS.GRIS, {
                     depth: UI.DEPTH_PANEL + 6
                 }));
         }
@@ -883,12 +875,12 @@ export default class QuickPlayScene extends Phaser.Scene {
         const infoY = previewY + previewH + 10;
 
         // Terrain name
-        this._tabObjects.push(this._text(CX, infoY, terrain.name, '12px', CSS.OR, {
+        this._tabObjects.push(this._text(CX, infoY, I18n.field(terrain, 'name') || terrain.name, '12px', CSS.OR, {
             pixel: true, heavyShadow: true, depth: UI.DEPTH_PANEL + 3
         }));
 
         // Description
-        this._tabObjects.push(this._text(CX, infoY + 18, terrain.description || '', '9px', CSS.CREME, {
+        this._tabObjects.push(this._text(CX, infoY + 18, I18n.field(terrain, 'description') || '', '9px', CSS.CREME, {
             depth: UI.DEPTH_PANEL + 3, wrapWidth: 600, align: 'center'
         }));
 
@@ -901,7 +893,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         const adherence = Math.min(5, Math.round(terrain.friction * 1.67));
         UIFactory.drawStatBar(statsGfx, CX - barW - 60, statsY, barW, 8, adherence, 5, COLORS.STAT_ADAPTABILITE);
         this._tabObjects.push(this._text(CX - barW - 96, statsY + 4,
-            'ADH', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
+            I18n.t('quickplay.labels.adherence'), '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
 
         // Complexity
         let complexity = 1;
@@ -911,7 +903,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         complexity = Math.min(5, complexity);
         UIFactory.drawStatBar(statsGfx, CX + 60, statsY, barW, 8, complexity, 5, COLORS.STAT_EFFET);
         this._tabObjects.push(this._text(CX + 24, statsY + 4,
-            'CMP', '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
+            I18n.t('quickplay.labels.complexity'), '8px', CSS.GRIS, { pixel: true, depth: UI.DEPTH_PANEL + 3, originX: 0 }));
 
         this._tabObjects.push(statsGfx);
 
@@ -944,15 +936,15 @@ export default class QuickPlayScene extends Phaser.Scene {
         const valX = CX + 40;
 
         // MODE
-        this._buildSettingRow(labelX, topY, valX, 'MODE', MODES, this._modeIndex, (idx) => {
+        this._buildSettingRow(labelX, topY, valX, I18n.t('quickplay.labels.mode'), getModes(), this._modeIndex, (idx) => {
             this._modeIndex = idx;
             this._buildTabContent();
             this._updateSummary();
         });
 
         // DIFFICULTY (only visible in VS IA mode)
-        if (MODES[this._modeIndex].key === 'vs_ia') {
-            this._buildSettingRow(labelX, topY + rowH, valX, 'DIFFICULTE', DIFFICULTIES, this._difficultyIndex, (idx) => {
+        if (getModes()[this._modeIndex].key === 'vs_ia') {
+            this._buildSettingRow(labelX, topY + rowH, valX, I18n.t('quickplay.labels.difficulty'), getDifficulties(), this._difficultyIndex, (idx) => {
                 this._difficultyIndex = idx;
                 this._buildTabContent();
                 this._updateSummary();
@@ -960,21 +952,17 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // FORMAT
-        const formatY = MODES[this._modeIndex].key === 'vs_ia' ? topY + rowH * 2 : topY + rowH;
-        this._buildSettingRow(labelX, formatY, valX, 'FORMAT', FORMATS, this._formatIndex, (idx) => {
+        const formatY = getModes()[this._modeIndex].key === 'vs_ia' ? topY + rowH * 2 : topY + rowH;
+        this._buildSettingRow(labelX, formatY, valX, I18n.t('quickplay.labels.format'), getFormats(), this._formatIndex, (idx) => {
             this._formatIndex = idx;
             this._buildTabContent();
             this._updateSummary();
         });
 
         // Description text for current difficulty
-        if (MODES[this._modeIndex].key === 'vs_ia') {
-            const diffDescriptions = {
-                easy: 'L\'IA est genereuse. Ideal pour decouvrir.',
-                medium: 'L\'IA joue correctement. Un bon defi.',
-                hard: 'L\'IA est impitoyable. Bonne chance.'
-            };
-            const desc = diffDescriptions[DIFFICULTIES[this._difficultyIndex].key] || '';
+        if (getModes()[this._modeIndex].key === 'vs_ia') {
+            const diffKey = getDifficulties()[this._difficultyIndex].key;
+            const desc = I18n.t('quickplay.difficulty_desc.' + diffKey);
             this._tabObjects.push(this._text(CX, formatY + rowH + 10, desc, '9px', CSS.OCRE, {
                 depth: UI.DEPTH_PANEL + 3, alpha: 0.8
             }));
@@ -1022,7 +1010,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         // JOUER button
         const btnW = 220;
         const btnH = 36;
-        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 22, btnW, btnH, 'JOUER !', {
+        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 22, btnW, btnH, I18n.t('quickplay.play_btn'), {
             fontSize: '16px',
             selectedTextColor: CSS.OR,
             depth: UI.DEPTH_UI,
@@ -1040,7 +1028,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Controls hint
         this._bottomObjects.push(UIFactory.addControlsHint(this,
-            '[1-4] Onglets  [Fleches] Naviguer  [Entree] Jouer  [Echap] Retour',
+            I18n.t('quickplay.controls_hint'),
             { depth: UI.DEPTH_UI }
         ));
     }
@@ -1048,9 +1036,10 @@ export default class QuickPlayScene extends Phaser.Scene {
     _getSummaryText() {
         const p1 = _charValues[this._p1Index].display;
         const p2 = _charValues[this._p2Index].display;
-        const terrain = this._allTerrains[this._terrainIndex]?.name || 'Village';
-        const mode = MODES[this._modeIndex].key === 'local' ? 'Local' : DIFFICULTIES[this._difficultyIndex].display;
-        const format = FORMATS[this._formatIndex].display;
+        const terrainObj = this._allTerrains[this._terrainIndex];
+        const terrain = (terrainObj && I18n.field(terrainObj, 'name')) || 'Village';
+        const mode = getModes()[this._modeIndex].key === 'local' ? getModes()[this._modeIndex].display : getDifficulties()[this._difficultyIndex].display;
+        const format = getFormats()[this._formatIndex].display;
         return p1 + ' vs ' + p2 + ' | ' + terrain + ' | ' + mode + ' | ' + format;
     }
 
@@ -1146,7 +1135,7 @@ export default class QuickPlayScene extends Phaser.Scene {
                 this._updateSummary();
                 break;
             case 'reglages':
-                this._modeIndex = (this._modeIndex + dir + MODES.length) % MODES.length;
+                this._modeIndex = (this._modeIndex + dir + getModes().length) % getModes().length;
                 this._buildTabContent();
                 this._updateSummary();
                 break;
@@ -1168,8 +1157,8 @@ export default class QuickPlayScene extends Phaser.Scene {
                 this._updateSummary();
                 break;
             case 'reglages':
-                if (MODES[this._modeIndex].key === 'vs_ia') {
-                    this._difficultyIndex = (this._difficultyIndex + dir + DIFFICULTIES.length) % DIFFICULTIES.length;
+                if (getModes()[this._modeIndex].key === 'vs_ia') {
+                    this._difficultyIndex = (this._difficultyIndex + dir + getDifficulties().length) % getDifficulties().length;
                     this._buildTabContent();
                     this._updateSummary();
                 }
@@ -1192,7 +1181,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     }
 
     _showLockedMessage(x, y) {
-        const msg = this.add.text(x, y - 20, I18n.t('locked_arcade', 'A debloquer en Arcade'), {
+        const msg = this.add.text(x, y - 20, I18n.t('quickplay.locked_arcade'), {
             fontFamily: FONT_PIXEL, fontSize: '8px', color: '#C44B3F',
             shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 10).setAlpha(1);
@@ -1206,15 +1195,15 @@ export default class QuickPlayScene extends Phaser.Scene {
     // COMPUTED STATE (for launch)
     // ================================================================
     get _mode() {
-        return MODES[this._modeIndex].key;
+        return getModes()[this._modeIndex].key;
     }
 
     get _difficulty() {
-        return DIFFICULTIES[this._difficultyIndex].key;
+        return getDifficulties()[this._difficultyIndex].key;
     }
 
     get _format() {
-        return FORMATS[this._formatIndex].key;
+        return getFormats()[this._formatIndex].key;
     }
 
     get _p1CharId() {

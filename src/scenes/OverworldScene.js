@@ -358,7 +358,7 @@ export default class OverworldScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 48, 'Appuyez sur Espace', {
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 48, I18n.t('overworld_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
@@ -385,7 +385,7 @@ export default class OverworldScene extends Phaser.Scene {
         const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 32, 520, 48, 0x3A2E28, 0.9)
             .setDepth(150).setScrollFactor(0);
         const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32,
-            '\u2191\u2190\u2193\u2192  Se deplacer     Espace  Parler', {
+            I18n.t('overworld_extra.controls_hint'), {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(151).setScrollFactor(0);

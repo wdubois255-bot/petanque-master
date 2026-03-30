@@ -181,7 +181,11 @@
     "hint_sand": "Sand slows balls down. Throw harder!",
     "hint_mixed": "Watch the zones! Grass = slow, gravel = fast.",
     "hint_slope": "Sloped terrain! Aim higher to compensate.",
-    "hint_walls": "Balls bounce off walls here!"
+    "hint_walls": "Balls bounce off walls here!",
+    "cochonnet_too_short": "Too short! ({n}/3)",
+    "cochonnet_too_long": "Too far! ({n}/3)",
+    "cochonnet_out": "Out of bounds! ({n}/3)",
+    "cochonnet_switch": "3 failed attempts! Opponent throws."
   },
   "shop": {
     "buy": "BUY",
@@ -213,13 +217,6 @@
     "back": "< BACK",
     "confirm": "CONFIRM",
     "vs": "VS"
-  },
-  "aiming": {
-    "retro_on": "[R] BACKSPIN!",
-    "retro_off": "[R] Backspin",
-    "cochonnet_on": "[B] JACK!",
-    "cochonnet_off": "[B] Jack",
-    "spin_label": "Spin"
   },
   "loft": {
     "demi": "Half-Lob",
@@ -299,5 +296,211 @@
     "comment_placeholder": "Bug, suggestion, what you liked...",
     "send": "Send",
     "thanks": "Thanks for your feedback!"
+  },
+  "quickplay": {
+    "title": "QUICK GAME",
+    "tabs": {
+      "characters": "CHARACTERS",
+      "equipment": "EQUIPMENT",
+      "terrain": "TERRAIN",
+      "settings": "SETTINGS"
+    },
+    "difficulties": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "difficulty_desc": {
+      "easy": "The AI goes easy. Great for learning.",
+      "medium": "The AI plays fair. A good challenge.",
+      "hard": "The AI is ruthless. Good luck."
+    },
+    "formats": {
+      "3": "3 Balls",
+      "2": "2 Balls",
+      "1": "1 Ball"
+    },
+    "modes": {
+      "vs_ia": "VS AI",
+      "local": "Local 1v1"
+    },
+    "labels": {
+      "mode": "MODE",
+      "difficulty": "DIFFICULTY",
+      "format": "FORMAT",
+      "boules": "BALLS",
+      "cochonnet": "JACK",
+      "walls_warning": "WALLS - Balls bounce off!",
+      "adherence": "GRP",
+      "complexity": "CMP"
+    },
+    "play_btn": "PLAY!",
+    "select_hint": "Click = P1  |  Shift+Click = P2",
+    "locked": "LOCKED",
+    "locked_unlock": "Complete Arcade to unlock",
+    "locked_arcade": "Unlock in Arcade",
+    "locked_arcade_detail": "\uD83D\uDD12 Unlock in Arcade mode",
+    "controls_hint": "[1-4] Tabs  [Arrows] Navigate  [Enter] Play  [Esc] Back",
+    "ability_active": "Active ({charges}x)",
+    "ability_passive": "Passive",
+    "bonus_prefix": "Bonus: "
+  },
+  "shop_extra": {
+    "title": "SHOP",
+    "buy": "BUY",
+    "owned": "\u2713 OWNED",
+    "equip": "EQUIP",
+    "equipped": "Equipped \u2713",
+    "locked": "LOCKED",
+    "wins_required": "{n} wins required",
+    "price_galets": "{price} Pebbles",
+    "insufficient": "Not enough Pebbles",
+    "confirm_buy": "Buy {name}\nfor {price} Pebbles?"
+  },
+  "engine": {
+    "carreau": "CARREAU!",
+    "fanny": "FANNY!",
+    "au_cochonnet": "Hit the jack!"
+  },
+  "aiming": {
+    "retro_on": "[R] BACKSPIN!",
+    "retro_off": "[R] Backspin",
+    "cochonnet_on": "[B] JACK!",
+    "cochonnet_off": "[B] Jack",
+    "spin_label": "Spin",
+    "mode_cochonnet": "JACK",
+    "mode_tir": "SHOT",
+    "mode_demi": "HALF-LOB",
+    "focus_active": "F FOCUS!",
+    "focus_ready": "F Focus",
+    "distance_label": "~{dist}m",
+    "back": "\u2190 [ESC]",
+    "focus_message": "Focus... Breathe..."
+  },
+  "charselect_extra": {
+    "abilities_title": "\u2014 ABILITIES \u2014",
+    "archetypes": {
+      "tireur": "Shooter",
+      "pointeur": "Pointer",
+      "equilibre": "Balanced",
+      "complet": "Complete",
+      "milieu": "Midrange",
+      "adaptable": "Adaptable",
+      "glisseur": "Glider"
+    }
+  },
+  "pause": {
+    "title": "PAUSE",
+    "controls_title": "CONTROLS",
+    "controls": [
+      "Click/Drag: Aim and throw",
+      "1-3: Throw mode",
+      "T: Iron Shot",
+      "F: Focus (slow-mo)",
+      "R: Backspin | E: Spin",
+      "TAB: Ball ranking"
+    ],
+    "volume_title": "VOLUME",
+    "sound_on": "[ SOUND: ON  ]",
+    "sound_off": "[ SOUND: OFF ]",
+    "mute_toggle": "Mute ON/OFF",
+    "volume_down": "Volume -",
+    "volume_up": "Volume +",
+    "resume": "\u25b6  Resume",
+    "abandon": "\u2715  Quit",
+    "confirm_abandon": "Really quit?",
+    "confirm_yes": "Yes",
+    "confirm_no": "No"
+  },
+  "player": {
+    "title": "MY CHARACTER",
+    "controls_hint": "Click  Equip / Select     Esc  Back",
+    "special_abilities": "SPECIAL ABILITIES",
+    "stats": {
+      "victories": "VICTORIES",
+      "defeats": "DEFEATS",
+      "carreaux": "CARREAUX",
+      "time": "TIME",
+      "perfect_shots": "Perfect shots",
+      "total_playtime": "total playtime"
+    },
+    "stat_desc": {
+      "precision_high": "Surgical \u2014 almost no dispersion",
+      "precision_mid": "Decent \u2014 moderate dispersion",
+      "precision_low": "Inaccurate \u2014 ball often drifts",
+      "puissance_high": "Devastating \u2014 maximum range",
+      "puissance_mid": "Normal \u2014 standard range",
+      "puissance_low": "Weak \u2014 limited range",
+      "effet_high": "Spin master \u2014 total spin control",
+      "effet_mid": "Good spin \u2014 effective backspin",
+      "effet_low": "Low backspin \u2014 straight trajectories",
+      "sang_froid_high": "Unshakeable \u2014 zero trembling",
+      "sang_froid_mid": "Stable \u2014 slight trembling under pressure",
+      "sang_froid_low": "Nervous \u2014 trembles when score is tight"
+    }
+  },
+  "result_extra": {
+    "unlocked_character": "{name} joined your roster!",
+    "press_space": "~ Press Space ~",
+    "unlocks": {
+      "bronze_balls": "Bronze Balls unlocked! (3 matches)",
+      "black_balls": "Black Balls unlocked! (10 carreaux)",
+      "red_balls": "Red Balls unlocked! (10 wins)",
+      "gold_balls": "Gold Balls unlocked! (50 wins)",
+      "blue_cochonnet": "Blue Jack unlocked! (5 wins)",
+      "green_cochonnet": "Green Jack unlocked! (20 carreaux)",
+      "jungle_cochonnet": "Jungle Jack unlocked! (50 wins)",
+      "title_artilleur": "Title \"The Gunner\" unlocked! (20 wins)",
+      "title_maitre": "Title \"Master Bowler\" unlocked! (50 wins)",
+      "badge_tireur": "Badge \"The Shooter\"! (3 carreaux in 1 match)"
+    },
+    "galets_earned": "+{amount} Pebbles",
+    "new_technique": "\u2605 NEW TECHNIQUE \u2605",
+    "technique_key_hint": "[2] in match to use it",
+    "technique_arc_demi": "Half",
+    "technique_arc_plombee": "Lob",
+    "galets_teaser": "{amount} more Pebbles for {name}!",
+    "milestone_toast": "\u2605 {text}  +{reward} Pebbles"
+  },
+  "vsintro": {
+    "skip_hint": "Space / Click"
+  },
+  "overworld_extra": {
+    "press_space": "Press Space",
+    "controls_hint": "\u2191\u2190\u2193\u2192  Move     Space  Talk"
+  },
+  "arcade_extra": {
+    "skip_hint": "~ Space ~",
+    "galets_label": "{amount} Pebbles",
+    "milestone_reward": "+{amount} Pebbles"
+  },
+  "boule_effects": {
+    "acier": "Balanced. Good all-rounders.",
+    "bronze": "\u26A1 Heavy: hit hard on shots",
+    "doree": "\u2728 Precise with good backspin",
+    "cuivre": "\uD83C\uDFAF Natural backspin, well balanced",
+    "noire": "\u26A1 Very heavy: perfect for carreaux",
+    "bleue": "\uD83D\uDCA8 Ultra-light, roll far",
+    "rouge": "\uD83C\uDFAF Strong grip, stop fast",
+    "emeraude": "\uD83D\uDCA8 Light and precise",
+    "rouille": "\u26A1 Very heavy, maximum grip",
+    "titane": "\uD83D\uDCA8 Ultra-precise but fragile",
+    "lavande": "\uD83C\uDFAF Light backspin, great for pointing",
+    "ivoire": "\uD83D\uDCA8 Light and smooth, rolls far",
+    "obsidienne": "\u26A1 Powerful, knocks everything away",
+    "corail": "\uD83C\uDFAF Good grip, versatile",
+    "sable": "\uD83C\uDFAF Light grip, sticks to terrain",
+    "chrome": "\uD83D\uDCA8 Glides like on ice"
+  },
+  "cochonnet_effects": {
+    "classique": "Traditional boxwood jack.",
+    "bleu": "FIPJP competition jack.",
+    "vert": "Resin jack.",
+    "rouge": "Impossible to lose sight of.",
+    "jungle": "Tropical camouflage.",
+    "multicolor": "Psychedelic rainbow."
+  },
+  "credits": {
+    "font_credit": "Font — PressStart2P (OFL license)"
   }
 }

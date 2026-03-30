@@ -42,7 +42,8 @@ export default defineConfig(({ mode }) => {
             }
         },
         server: {
-            port: 8080
+            port: 8080,
+            host: true
         },
         plugins: [
             {

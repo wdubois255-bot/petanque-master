@@ -72,8 +72,8 @@ function computeScore(balls, cochonnet) {
 // =====================================================
 
 describe('Match Flow — Cochonnet placement (FIPJP)', () => {
-    it('cochonnet constants match FIPJP rules (6m, 10m on 13m terrain)', () => {
-        expect(COCHONNET_MIN_DIST).toBe(Math.round(6 * (420 / 13))); // 6m minimum
+    it('cochonnet constants match rules (5.5m, 10m on 13m terrain)', () => {
+        expect(COCHONNET_MIN_DIST).toBe(Math.round(5.5 * (420 / 13))); // 5.5m minimum
         expect(COCHONNET_MAX_DIST).toBe(Math.round(10 * (420 / 13))); // 10m maximum
         // Any valid cochonnet distance falls in this range
         const validDist = 220;

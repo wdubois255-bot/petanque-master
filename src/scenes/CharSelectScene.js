@@ -458,7 +458,7 @@ export default class CharSelectScene extends Phaser.Scene {
 
     _updateRookieAbilities(char) {
         const unlockedIds = this._save?.rookie?.abilitiesUnlocked || [];
-        this._abilitiesLabel.setText('\u2014 CAPACIT\u00c9S \u2014');
+        this._abilitiesLabel.setText(I18n.t('charselect_extra.abilities_title'));
         char.abilities_unlock.forEach((unlock, i) => {
             if (!this._abilityTexts[i]) return;
             const isUnlocked = unlockedIds.includes(unlock.id);
@@ -471,8 +471,13 @@ export default class CharSelectScene extends Phaser.Scene {
 
     _updateCharAbility(char) {
         const archetypeLabels = {
-            tireur: 'Tireur', pointeur: 'Pointeur', equilibre: '\u00c9quilibr\u00e9',
-            complet: 'Complet', milieu: 'Milieu', adaptable: 'Adaptable', glisseur: 'Glisseur'
+            tireur: I18n.t('charselect_extra.archetypes.tireur'),
+            pointeur: I18n.t('charselect_extra.archetypes.pointeur'),
+            equilibre: I18n.t('charselect_extra.archetypes.equilibre'),
+            complet: I18n.t('charselect_extra.archetypes.complet'),
+            milieu: I18n.t('charselect_extra.archetypes.milieu'),
+            adaptable: I18n.t('charselect_extra.archetypes.adaptable'),
+            glisseur: I18n.t('charselect_extra.archetypes.glisseur')
         };
         const archetypeColors = {
             tireur: '#C44B3F', pointeur: '#87CEEB', equilibre: '#D4A574',

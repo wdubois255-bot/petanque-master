@@ -181,7 +181,11 @@
     "hint_sand": "Le sable ralentit les boules. Tirez plus fort !",
     "hint_mixed": "Attention aux zones ! Herbe = lent, gravier = rapide.",
     "hint_slope": "Terrain en pente ! Compensez en visant plus haut.",
-    "hint_walls": "Les boules rebondissent sur les murs ici !"
+    "hint_walls": "Les boules rebondissent sur les murs ici !",
+    "cochonnet_too_short": "Trop court ! ({n}/3)",
+    "cochonnet_too_long": "Trop loin ! ({n}/3)",
+    "cochonnet_out": "Hors terrain ! ({n}/3)",
+    "cochonnet_switch": "3 essais rates ! A l'adversaire de lancer."
   },
   "shop": {
     "buy": "ACHETER",
@@ -213,13 +217,6 @@
     "back": "< RETOUR",
     "confirm": "CONFIRMER",
     "vs": "VS"
-  },
-  "aiming": {
-    "retro_on": "[R] RETRO !",
-    "retro_off": "[R] Retro",
-    "cochonnet_on": "[B] COCHONNET !",
-    "cochonnet_off": "[B] Cochonnet",
-    "spin_label": "Spin"
   },
   "loft": {
     "demi": "Demi-portee",
@@ -299,5 +296,211 @@
     "comment_placeholder": "Bug, suggestion, ce que vous aimez...",
     "send": "Envoyer",
     "thanks": "Merci pour votre retour !"
+  },
+  "quickplay": {
+    "title": "PARTIE RAPIDE",
+    "tabs": {
+      "characters": "PERSONNAGES",
+      "equipment": "EQUIPEMENT",
+      "terrain": "TERRAIN",
+      "settings": "REGLAGES"
+    },
+    "difficulties": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
+    },
+    "difficulty_desc": {
+      "easy": "L'IA est genereuse. Ideal pour decouvrir.",
+      "medium": "L'IA joue correctement. Un bon defi.",
+      "hard": "L'IA est impitoyable. Bonne chance."
+    },
+    "formats": {
+      "3": "3 Boules",
+      "2": "2 Boules",
+      "1": "1 Boule"
+    },
+    "modes": {
+      "vs_ia": "VS IA",
+      "local": "Local 1v1"
+    },
+    "labels": {
+      "mode": "MODE",
+      "difficulty": "DIFFICULTE",
+      "format": "FORMAT",
+      "boules": "BOULES",
+      "cochonnet": "COCHONNET",
+      "walls_warning": "MURS - Les boules rebondissent !",
+      "adherence": "ADH",
+      "complexity": "CMP"
+    },
+    "play_btn": "JOUER !",
+    "select_hint": "Clic = J1  |  Shift+Clic = J2",
+    "locked": "VERROUILLE",
+    "locked_unlock": "Terminez l'Arcade pour debloquer",
+    "locked_arcade": "A debloquer en Arcade",
+    "locked_arcade_detail": "\uD83D\uDD12 A debloquer en mode Arcade",
+    "controls_hint": "[1-4] Onglets  [Fleches] Naviguer  [Entree] Jouer  [Echap] Retour",
+    "ability_active": "Actif ({charges}x)",
+    "ability_passive": "Passif",
+    "bonus_prefix": "Bonus : "
+  },
+  "shop_extra": {
+    "title": "BOUTIQUE",
+    "buy": "ACHETER",
+    "owned": "\u2713 POSSEDE",
+    "equip": "EQUIPER",
+    "equipped": "Equipee \u2713",
+    "locked": "VERROUILLE",
+    "wins_required": "{n} victoires requises",
+    "price_galets": "{price} Galets",
+    "insufficient": "Galets insuffisants",
+    "confirm_buy": "Acheter {name}\npour {price} Galets ?"
+  },
+  "engine": {
+    "carreau": "CARREAU !",
+    "fanny": "FANNY !",
+    "au_cochonnet": "Au cochonnet !"
+  },
+  "aiming": {
+    "retro_on": "[R] RETRO !",
+    "retro_off": "[R] Retro",
+    "cochonnet_on": "[B] COCHONNET !",
+    "cochonnet_off": "[B] Cochonnet",
+    "spin_label": "Spin",
+    "mode_cochonnet": "COCHONNET",
+    "mode_tir": "TIR",
+    "mode_demi": "DEMI-PORTEE",
+    "focus_active": "F FOCUS !",
+    "focus_ready": "F Respire",
+    "distance_label": "~{dist}m",
+    "back": "\u2190 [ESC]",
+    "focus_message": "Focus... Respire..."
+  },
+  "charselect_extra": {
+    "abilities_title": "\u2014 CAPACITES \u2014",
+    "archetypes": {
+      "tireur": "Tireur",
+      "pointeur": "Pointeur",
+      "equilibre": "Equilibre",
+      "complet": "Complet",
+      "milieu": "Milieu",
+      "adaptable": "Adaptable",
+      "glisseur": "Glisseur"
+    }
+  },
+  "pause": {
+    "controls_title": "CONTROLES",
+    "controls": [
+      "Clic/Drag : Viser et lancer",
+      "1-3 : Mode de lancer",
+      "T : Tir au fer",
+      "F : Focus (slow-mo)",
+      "R : Retro | E : Spin",
+      "TAB : Classement boules"
+    ],
+    "volume_title": "VOLUME",
+    "sound_on": "[ SON : ON  ]",
+    "sound_off": "[ SON : OFF ]",
+    "mute_toggle": "Muet ON/OFF",
+    "volume_down": "Volume -",
+    "volume_up": "Volume +",
+    "resume": "\u25b6  Reprendre",
+    "abandon": "\u2715  Abandonner",
+    "confirm_abandon": "Vraiment abandonner ?",
+    "confirm_yes": "Oui",
+    "confirm_no": "Non",
+    "title": "PAUSE"
+  },
+  "player": {
+    "title": "MON PERSO",
+    "controls_hint": "Clic  Equiper / Selectionner     Echap  Retour",
+    "special_abilities": "CAPACITES SPECIALES",
+    "stats": {
+      "victories": "VICTOIRES",
+      "defeats": "DEFAITES",
+      "carreaux": "CARREAUX",
+      "time": "TEMPS",
+      "perfect_shots": "Tirs parfaits",
+      "total_playtime": "de jeu total"
+    },
+    "stat_desc": {
+      "precision_high": "Chirurgical \u2014 quasi aucune dispersion",
+      "precision_mid": "Correct \u2014 dispersion moderee",
+      "precision_low": "Imprecis \u2014 la boule devie souvent",
+      "puissance_high": "Devastateur \u2014 portee maximale",
+      "puissance_mid": "Normal \u2014 portee standard",
+      "puissance_low": "Faible \u2014 portee limitee",
+      "effet_high": "Maitre retro \u2014 controle total du spin",
+      "effet_mid": "Bon spin \u2014 retro efficace",
+      "effet_low": "Peu de retro \u2014 trajectoires droites",
+      "sang_froid_high": "Imperturbable \u2014 zero tremblement",
+      "sang_froid_mid": "Stable \u2014 leger tremblement sous pression",
+      "sang_froid_low": "Nerveux \u2014 tremble quand le score est serre"
+    }
+  },
+  "result_extra": {
+    "unlocked_character": "{name} a rejoint votre roster !",
+    "press_space": "~ Appuyez sur Espace ~",
+    "unlocks": {
+      "bronze_balls": "Boules Bronze debloquees ! (3 matchs)",
+      "black_balls": "Boules Noires debloquees ! (10 carreaux)",
+      "red_balls": "Boules Rouges debloquees ! (10 victoires)",
+      "gold_balls": "Boules Dorees debloquees ! (50 victoires)",
+      "blue_cochonnet": "Cochonnet Bleu debloque ! (5 victoires)",
+      "green_cochonnet": "Cochonnet Vert debloque ! (20 carreaux)",
+      "jungle_cochonnet": "Cochonnet Jungle debloque ! (50 victoires)",
+      "title_artilleur": "Titre \"L'Artilleur\" debloque ! (20 victoires)",
+      "title_maitre": "Titre \"Maitre Bouliste\" debloque ! (50 victoires)",
+      "badge_tireur": "Badge \"Le Tireur\" ! (3 carreaux en 1 match)"
+    },
+    "galets_earned": "+{amount} Galets",
+    "new_technique": "\u2605 NOUVELLE TECHNIQUE \u2605",
+    "technique_key_hint": "[2] en match pour l'utiliser",
+    "technique_arc_demi": "Demi",
+    "technique_arc_plombee": "Plombee",
+    "galets_teaser": "Encore {amount} Galets pour {name} !",
+    "milestone_toast": "\u2605 {text}  +{reward} Galets"
+  },
+  "vsintro": {
+    "skip_hint": "Espace / Clic"
+  },
+  "overworld_extra": {
+    "press_space": "Appuyez sur Espace",
+    "controls_hint": "\u2191\u2190\u2193\u2192  Se deplacer     Espace  Parler"
+  },
+  "arcade_extra": {
+    "skip_hint": "~ Espace ~",
+    "galets_label": "{amount} Galets",
+    "milestone_reward": "+{amount} Galets"
+  },
+  "boule_effects": {
+    "acier": "Equilibrees. Bonnes en tout.",
+    "bronze": "\u26A1 Lourdes : frappent fort au tir",
+    "doree": "\u2728 Precises avec bon retro",
+    "cuivre": "\uD83C\uDFAF Retro naturel, bien equilibrees",
+    "noire": "\u26A1 Tres lourdes : ideal pour le carreau",
+    "bleue": "\uD83D\uDCA8 Ultra-legeres, glissent loin",
+    "rouge": "\uD83C\uDFAF Grip fort, s'arretent vite",
+    "emeraude": "\uD83D\uDCA8 Legeres et precises",
+    "rouille": "\u26A1 Tres lourdes, grip maximum",
+    "titane": "\uD83D\uDCA8 Ultra-precises mais fragiles",
+    "lavande": "\uD83C\uDFAF Retro leger, bonnes en pointage",
+    "ivoire": "\uD83D\uDCA8 Legere et fluide, roule loin",
+    "obsidienne": "\u26A1 Puissante, ejecte tout sur son passage",
+    "corail": "\uD83C\uDFAF Bon grip, polyvalente",
+    "sable": "\uD83C\uDFAF Grip leger, s'accroche au terrain",
+    "chrome": "\uD83D\uDCA8 Glisse comme sur de la glace"
+  },
+  "cochonnet_effects": {
+    "classique": "Le cochonnet traditionnel en bois de buis.",
+    "bleu": "Cochonnet competition FIPJP.",
+    "vert": "Cochonnet en resine.",
+    "rouge": "Impossible a perdre de vue.",
+    "jungle": "Camouflage tropical.",
+    "multicolor": "Arc-en-ciel psychedelique."
+  },
+  "credits": {
+    "font_credit": "Font — PressStart2P (OFL license)"
   }
 }

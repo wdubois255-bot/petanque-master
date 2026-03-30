@@ -766,7 +766,7 @@ export default class PetanqueScene extends Phaser.Scene {
         }).setOrigin(0.5);
         container.add(desc);
 
-        const rewardTxt = this.add.text(0, ph / 2 - 8, `+${reward} Galets`, {
+        const rewardTxt = this.add.text(0, ph / 2 - 8, I18n.t('result_extra.galets_earned', { amount: reward }), {
             fontFamily: 'monospace', fontSize: '8px', color: '#D4A574'
         }).setOrigin(0.5);
         container.add(rewardTxt);
@@ -1870,7 +1870,7 @@ export default class PetanqueScene extends Phaser.Scene {
         container.add(panelGfx);
 
         // === Titre PAUSE ===
-        container.add(this.add.text(CX, py + 24, 'PAUSE', {
+        container.add(this.add.text(CX, py + 24, I18n.t('pause.title'), {
             fontFamily: 'monospace', fontSize: '20px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5));
@@ -1882,16 +1882,9 @@ export default class PetanqueScene extends Phaser.Scene {
         container.add(sep);
 
         // === Rappel des contrôles (colonne gauche) ===
-        const controls = [
-            'Clic/Drag : Viser et lancer',
-            '1-3 : Mode de lancer',
-            'T : Tir au fer',
-            'F : Focus (slow-mo)',
-            'R : Retro | E : Spin',
-            'TAB : Classement boules',
-        ];
+        const controls = I18n.ta('pause.controls');
         const ctrlX = px + 16;
-        container.add(this.add.text(ctrlX, py + 56, 'CONTROLES', {
+        container.add(this.add.text(ctrlX, py + 56, I18n.t('pause.controls_title'), {
             fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
         }));
         controls.forEach((line, i) => {
@@ -1943,12 +1936,12 @@ export default class PetanqueScene extends Phaser.Scene {
         };
 
         // Volume row
-        container.add(this.add.text(rx, py + 58, 'VOLUME', {
+        container.add(this.add.text(rx, py + 58, I18n.t('pause.volume_title'), {
             fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
         }));
         const audioSettings = getAudioSettings();
         const muteLbl = this.add.text(rx, py + 78,
-            audioSettings.muted ? '[ SON : OFF ]' : '[ SON : ON  ]', {
+            audioSettings.muted ? I18n.t('pause.sound_off') : I18n.t('pause.sound_on'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0'
         });
         const volBar = this.add.text(rx, py + 92,
@@ -1958,20 +1951,20 @@ export default class PetanqueScene extends Phaser.Scene {
         container.add([muteLbl, volBar]);
 
         // Mute button
-        makeBtn('Muet ON/OFF', py + 118, '#3A3020', '#5A4A30', '#C4954A', () => {
+        makeBtn(I18n.t('pause.mute_toggle'), py + 118, '#3A3020', '#5A4A30', '#C4954A', () => {
             toggleMute();
             const s = getAudioSettings();
-            muteLbl.setText(s.muted ? '[ SON : OFF ]' : '[ SON : ON  ]');
+            muteLbl.setText(s.muted ? I18n.t('pause.sound_off') : I18n.t('pause.sound_on'));
         });
         // Vol- button
-        makeBtn('Volume -', py + 156, '#2A2020', '#4A3030', '#8A6050', () => {
+        makeBtn(I18n.t('pause.volume_down'), py + 156, '#2A2020', '#4A3030', '#8A6050', () => {
             const s = getAudioSettings();
             const nv = Math.max(0, s.masterVolume - 0.1);
             setMasterVolume(nv);
             volBar.setText(`Vol: ${'█'.repeat(Math.round(nv * 10))}${'░'.repeat(10 - Math.round(nv * 10))}`);
         });
         // Vol+ button
-        makeBtn('Volume +', py + 192, '#2A2020', '#4A3030', '#8A6050', () => {
+        makeBtn(I18n.t('pause.volume_up'), py + 192, '#2A2020', '#4A3030', '#8A6050', () => {
             const s = getAudioSettings();
             const nv = Math.min(1, s.masterVolume + 0.1);
             setMasterVolume(nv);
@@ -2015,7 +2008,7 @@ export default class PetanqueScene extends Phaser.Scene {
             rpGfx.strokeRoundedRect(rpX, rpY - 14, rpW, 28, 6);
         };
         drawRpN();
-        const rpLbl = this.add.text(CX, rpY, '▶  Reprendre', {
+        const rpLbl = this.add.text(CX, rpY, I18n.t('pause.resume'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#44FF44'
         }).setOrigin(0.5);
         const rpZone = this.add.zone(CX, rpY, rpW, 28).setInteractive({ useHandCursor: true });
@@ -2042,7 +2035,7 @@ export default class PetanqueScene extends Phaser.Scene {
             abGfx.strokeRoundedRect(rpX, abY - 12, rpW, 24, 5);
         };
         drawAbN();
-        const abLbl = this.add.text(CX, abY, '✕  Abandonner', {
+        const abLbl = this.add.text(CX, abY, I18n.t('pause.abandon'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#CC4444'
         }).setOrigin(0.5);
         const abZone = this.add.zone(CX, abY, rpW, 24).setInteractive({ useHandCursor: true });
@@ -2070,7 +2063,7 @@ export default class PetanqueScene extends Phaser.Scene {
         confGfx.lineStyle(2, 0xCC4444, 0.8);
         confGfx.strokeRoundedRect(cx, cy, cw, ch, 10);
 
-        const qTxt = this.add.text(CX, cy + 28, 'Vraiment abandonner ?', {
+        const qTxt = this.add.text(CX, cy + 28, I18n.t('pause.confirm_abandon'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0'
         }).setOrigin(0.5).setDepth(261);
 
@@ -2079,7 +2072,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const noGfx = this.add.graphics().setDepth(260);
         noGfx.fillStyle(0x2A5A2A, 0.9);
         noGfx.fillRoundedRect(CX - bw - 8, cy + 56, bw, bh, 5);
-        const noTxt = this.add.text(CX - bw / 2 - 8, cy + 70, 'Non', {
+        const noTxt = this.add.text(CX - bw / 2 - 8, cy + 70, I18n.t('pause.confirm_no'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#44FF44'
         }).setOrigin(0.5).setDepth(261).setInteractive({ useHandCursor: true });
         noTxt.on('pointerover', () => sfxUIHover());
@@ -2093,7 +2086,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const ouiGfx = this.add.graphics().setDepth(260);
         ouiGfx.fillStyle(0x5A1A1A, 0.9);
         ouiGfx.fillRoundedRect(CX + 8, cy + 56, bw, bh, 5);
-        const oui = this.add.text(CX + bw / 2 + 8, cy + 70, 'Oui', {
+        const oui = this.add.text(CX + bw / 2 + 8, cy + 70, I18n.t('pause.confirm_yes'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#CC4444'
         }).setOrigin(0.5).setDepth(261).setInteractive({ useHandCursor: true });
         oui.on('pointerover', () => sfxUIHover());

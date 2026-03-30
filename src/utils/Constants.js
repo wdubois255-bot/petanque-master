@@ -14,8 +14,8 @@ export const TERRAIN_HEIGHT = 420;
 export const TERRAIN_LENGTH_METERS = 13;
 // Conversion px <-> metres (terrain 420px = 13m)
 export const PX_PER_METER = TERRAIN_HEIGHT / TERRAIN_LENGTH_METERS;  // ~32.3 px/m
-// Cochonnet: 6-10m from throw circle (FIPJP)
-export const COCHONNET_MIN_DIST = Math.round(6 * PX_PER_METER);   // ~194px
+// Cochonnet: 5.5-10m from throw circle (FIPJP = 6-10m, 5.5m pour plus de choix strategique)
+export const COCHONNET_MIN_DIST = Math.round(5.5 * PX_PER_METER); // ~178px
 export const COCHONNET_MAX_DIST = Math.round(10 * PX_PER_METER);  // ~323px
 
 // Petanque - physique
@@ -99,6 +99,10 @@ export const RETRO_TERRAIN_EFF = {
 export const RETRO_MIN_EFFET_STAT = 8;   // Minimum effet stat to use retro (auto-applied)
 // Retro intensity by palier: effet 8 = 70%, 9 = 85%, 10 = 100%
 export const RETRO_INTENSITY_BY_EFFET = { 8: 0.70, 9: 0.85, 10: 1.0 };
+// Backspin reversal: when ball decelerates to near-zero, backspin can reverse direction (recul)
+// reculSpeed = TIR_RECUL_IMPULSE * retroIntensity * terrainEff
+// terre: 2.5*0.85*1.0=2.1 → ~15px recul. sable: 2.5*1.0*2.0=5.0 → ~35px. dalles: 2.5*0.7*0.6=1.05 → ~5px
+export const TIR_RECUL_IMPULSE = 2.5;
 
 // Throw range: fraction of TERRAIN_HEIGHT atteignable a pleine puissance
 // Pointer: 92% du terrain (was 85% hardcoded), Tir: 95%
@@ -123,7 +127,8 @@ export const PREDICTION_SAMPLE_RATE = 3;
 export const PREDICTION_DOT_RADIUS = 2;
 
 // Petanque - carreau (detecte naturellement grace au COR 0.62)
-export const CARREAU_THRESHOLD = 28;
+// Seuil: ~15px = ~46cm — la boule du tireur doit s'arreter pres de l'impact
+export const CARREAU_THRESHOLD = 15;
 export const CARREAU_DISPLACED_MIN = 32;
 
 // Petanque - shot result detection (tir labels)
@@ -207,10 +212,10 @@ export const MIN_IMPACT_SPEED = 2.0;
 // Tir au fer: vitesse d'impact a l'atterrissage (simule l'energie cinetique de la chute)
 // Avec COR 0.62 et masses egales: cible recoit ~81% → ejectee a ~7.3 px/frame
 export const TIR_IMPACT_SPEED = 9.0;
-// Rayon de detection de contact au tir (px) — plus large car la boule tombe d'en haut
-export const TIR_LANDING_CONTACT_RADIUS = 10;
-export const COCHONNET_ROLL_MIN = 0.15;
-export const COCHONNET_ROLL_MAX = 0.25;
+// Rayon de detection de contact au tir (px) — tolerance legere pour vue isometrique
+export const TIR_LANDING_CONTACT_RADIUS = 3;
+export const COCHONNET_ROLL_MIN = 0.07;
+export const COCHONNET_ROLL_MAX = 0.12;
 export const COCHONNET_SAFE_MARGIN = 15;
 export const COCHONNET_CLAMP_MARGIN = 35;
 export const BALL_CLAMP_MARGIN = 16;
@@ -404,8 +409,8 @@ export const CHAR_SPRITE_MAP = {
     'suchaud': 'suchaud_animated'
 };
 
-// Note: le_magicien, marcel, reyes ont des sprites mais ne sont pas dans le roster jouable.
-// Sprites conservés pour future Phase D (narrative overworld).
+// Note: le_magicien, marcel ont des sprites mais ne sont pas dans le roster jouable.
+// Sprites conserves pour future Phase D (narrative overworld).
 
 // Characters that use a single static image (not a spritesheet)
 export const CHAR_STATIC_SPRITES = [];

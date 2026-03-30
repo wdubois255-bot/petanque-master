@@ -274,7 +274,7 @@ export default class ResultScene extends Phaser.Scene {
         // Galets + XP on same line to save space
         if (galetsToGive > 0 || xpEarned > 0) {
             const parts = [];
-            if (galetsToGive > 0) { addGalets(galetsToGive); parts.push(`+${galetsToGive} Galets`); }
+            if (galetsToGive > 0) { addGalets(galetsToGive); parts.push(I18n.t('result_extra.galets_earned', { amount: galetsToGive })); }
             if (xpEarned > 0) parts.push(`+${xpEarned} XP`);
             const rewardStr = parts.join('   ');
             statsContainer.add(this.add.text(panelX, rewardLineY, rewardStr, {
@@ -628,12 +628,12 @@ export default class ResultScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: charTitle, alpha: 1, duration: 300, delay: 500 });
 
-        const joinText = this.add.text(GAME_WIDTH / 2, panelY + 118, 'a rejoint votre roster !', {
+        const joinText = this.add.text(GAME_WIDTH / 2, panelY + 118, I18n.t('result_extra.unlocked_character', { name: I18n.field(char, 'name') || char.name }), {
             fontFamily: 'monospace', fontSize: '13px', color: '#9B7BB8', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: joinText, alpha: 1, duration: 300, delay: 600 });
 
-        const continueHint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, '~ Appuyez sur Espace ~', {
+        const continueHint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: continueHint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
@@ -678,7 +678,7 @@ export default class ResultScene extends Phaser.Scene {
         panel.setScale(0);
         this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
-        const title = this.add.text(GAME_WIDTH / 2, panelY + 24, '\u2605 NOUVELLE TECHNIQUE \u2605', {
+        const title = this.add.text(GAME_WIDTH / 2, panelY + 24, I18n.t('result_extra.new_technique'), {
             fontFamily: 'monospace', fontSize: '16px', color: colorHex,
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setScale(0);
@@ -713,10 +713,10 @@ export default class ResultScene extends Phaser.Scene {
         }
         arcGfx.strokePath();
         // Labels for arcs
-        const demiLabel = this.add.text(arcCx - 50, arcY + 6, 'Demi', {
+        const demiLabel = this.add.text(arcCx - 50, arcY + 6, I18n.t('result_extra.technique_arc_demi'), {
             fontFamily: 'monospace', fontSize: '9px', color: '#6B8E4E'
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
-        const plomLabel = this.add.text(arcCx + 45, arcY + 6, 'Plombee', {
+        const plomLabel = this.add.text(arcCx + 45, arcY + 6, I18n.t('result_extra.technique_arc_plombee'), {
             fontFamily: 'monospace', fontSize: '9px', color: '#9B7BB8'
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: [arcGfx, demiLabel, plomLabel], alpha: 1, duration: 400, delay: 400 });
@@ -727,12 +727,12 @@ export default class ResultScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: descText, alpha: 1, duration: 300, delay: 500 });
 
-        const keyHint = this.add.text(GAME_WIDTH / 2, panelY + 160, '[2] en match pour l\'utiliser', {
+        const keyHint = this.add.text(GAME_WIDTH / 2, panelY + 160, I18n.t('result_extra.technique_key_hint'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#87CEEB', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: keyHint, alpha: 0.8, duration: 300, delay: 600 });
 
-        const hint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, '~ Appuyez sur Espace ~', {
+        const hint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: hint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
@@ -819,7 +819,7 @@ export default class ResultScene extends Phaser.Scene {
         toasts.forEach((toast, i) => {
             const y = 18 + i * 34;
             const toastText = this.add.text(GAME_WIDTH / 2, y + 10,
-                `★ ${toast.text}  +${toast.reward} Galets`, {
+                I18n.t('result_extra.milestone_toast', { text: toast.text, reward: toast.reward }), {
                     fontFamily: 'monospace', fontSize: '13px', color: '#FFD700',
                     backgroundColor: '#2A1F14', padding: { x: 12, y: 6 },
                     shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
@@ -972,20 +972,20 @@ export default class ResultScene extends Phaser.Scene {
         const newUnlocks = [];
 
         const bouleUnlocks = [
-            { id: 'boule_bronze', cond: stats.matches >= 3, msg: 'Boules Bronze debloquees ! (3 matchs)' },
-            { id: 'boule_noire', cond: stats.carreaux >= 10, msg: 'Boules Noires debloquees ! (10 carreaux)' },
-            { id: 'boule_rouge', cond: stats.victories >= 10, msg: 'Boules Rouges debloquees ! (10 victoires)' },
-            { id: 'boule_doree', cond: stats.victories >= 50, msg: 'Boules Dorees debloquees ! (50 victoires)' },
+            { id: 'boule_bronze', cond: stats.matches >= 3, msg: I18n.t('result_extra.unlocks.bronze_balls') },
+            { id: 'boule_noire', cond: stats.carreaux >= 10, msg: I18n.t('result_extra.unlocks.black_balls') },
+            { id: 'boule_rouge', cond: stats.victories >= 10, msg: I18n.t('result_extra.unlocks.red_balls') },
+            { id: 'boule_doree', cond: stats.victories >= 50, msg: I18n.t('result_extra.unlocks.gold_balls') },
         ];
         const cochUnlocks = [
-            { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: 'Cochonnet Bleu debloque ! (5 victoires)' },
-            { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: 'Cochonnet Vert debloque ! (20 carreaux)' },
-            { id: 'cochonnet_jungle', cond: stats.victories >= 50, msg: 'Cochonnet Jungle debloque ! (50 victoires)' },
+            { id: 'cochonnet_bleu', cond: stats.victories >= 5, msg: I18n.t('result_extra.unlocks.blue_cochonnet') },
+            { id: 'cochonnet_vert', cond: stats.carreaux >= 20, msg: I18n.t('result_extra.unlocks.green_cochonnet') },
+            { id: 'cochonnet_jungle', cond: stats.victories >= 50, msg: I18n.t('result_extra.unlocks.jungle_cochonnet') },
         ];
         const titleUnlocks = [
-            { id: 'title_artilleur', cond: stats.victories >= 20, msg: "Titre \"L'Artilleur\" debloque ! (20 victoires)" },
-            { id: 'title_maitre', cond: stats.victories >= 50, msg: 'Titre "Maitre Bouliste" debloque ! (50 victoires)' },
-            { id: 'badge_tireur', cond: (this.matchStats.carreaux || 0) >= 3, msg: 'Badge "Le Tireur" ! (3 carreaux en 1 match)' },
+            { id: 'title_artilleur', cond: stats.victories >= 20, msg: I18n.t('result_extra.unlocks.title_artilleur') },
+            { id: 'title_maitre', cond: stats.victories >= 50, msg: I18n.t('result_extra.unlocks.title_maitre') },
+            { id: 'badge_tireur', cond: (this.matchStats.carreaux || 0) >= 3, msg: I18n.t('result_extra.unlocks.badge_tireur') },
         ];
         for (const u of [...bouleUnlocks, ...cochUnlocks, ...titleUnlocks]) {
             if (u.cond && !unlocked.includes(u.id)) {
@@ -1110,7 +1110,7 @@ export default class ResultScene extends Phaser.Scene {
             if (next) {
                 const diff = next.price - save.galets;
                 const galetTxt = this.add.text(cx, teaserY,
-                    `Encore ${diff} Galets pour ${next.name} !`, {
+                    I18n.t('result_extra.galets_teaser', { amount: diff, name: next.name }), {
                         fontFamily: 'monospace', fontSize: '11px',
                         color: '#D4A574', shadow: SHADOW_SM
                     }

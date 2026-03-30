@@ -3,7 +3,7 @@ import {
     RESTITUTION_COCHONNET, BALL_RADIUS, BALL_MASS,
     PREDICTION_STEPS, PREDICTION_SAMPLE_RATE,
     RETRO_FRICTION_MULT, RETRO_PHASE1_MULT, RETRO_PHASE1_FRAMES, RETRO_PHASE2_FRAMES,
-    RETRO_TERRAIN_EFF, WALL_RESTITUTION,
+    RETRO_TERRAIN_EFF, WALL_RESTITUTION, TIR_RECUL_IMPULSE,
     BALL_TEXTURE_RADIUS, BALL_SHADOW_OFFSET_X, BALL_SHADOW_OFFSET_Y,
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
@@ -45,6 +45,7 @@ export default class Ball {
         this._retroTerrainEff = 1.0; // terrain efficiency multiplier
         this._retroIntensity = 0;   // stored intensity for phase calculations
         this._isRecoiling = false;  // true when ball moves backward after collision
+        this._reculDone = false;    // prevents infinite backspin reversal loops
 
         // Spin lateral (gauche/droite) — actif apres atterrissage
         this._lateralSpin = 0;        // -1 = gauche, 0 = off, +1 = droite
@@ -171,6 +172,7 @@ export default class Ball {
         this._retroFrames = Math.round(RETRO_PHASE1_FRAMES * intensity);
         this._retroTerrainEff = (RETRO_TERRAIN_EFF[terrainType] ?? 1.0);
         this._isRecoiling = false;
+        this._reculDone = false;
     }
 
     /**
@@ -306,6 +308,22 @@ export default class Ball {
                 }
             }
         } else {
+            // Backspin reversal (recul): when retro phase 1 is active and ball is near-zero speed,
+            // the remaining backspin energy reverses direction (only for tir, not pointage)
+            if (this._retroPhase > 0 && this._retroIntensity > 0.3 && !this.isPoint
+                && this._throwDirX !== undefined && !this._reculDone) {
+                const reculSpeed = TIR_RECUL_IMPULSE * this._retroIntensity * this._retroTerrainEff;
+                if (reculSpeed > SPEED_THRESHOLD) {
+                    this.vx = -this._throwDirX * reculSpeed;
+                    this.vy = -this._throwDirY * reculSpeed;
+                    this._retroPhase = 2; // transition to wind-down
+                    this._retroFrames = RETRO_PHASE2_FRAMES;
+                    this._isRecoiling = true;
+                    this._reculDone = true; // prevent infinite reversal loops
+                    return;
+                }
+            }
+
             // On slopes, don't stop if gravity is still pushing the ball
             // BUT cap at ~2 seconds (120 frames) to prevent infinite roll
             let activeSlopeForce = 0;
@@ -425,7 +443,7 @@ export default class Ball {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Le Mur ability: larger collision radius
+        // Le Mur ability (Rocher): larger collision radius
         const radiusA = a.radius * (a.collisionRadiusMult || 1);
         const radiusB = b.radius * (b.collisionRadiusMult || 1);
         const minDist = radiusA + radiusB;

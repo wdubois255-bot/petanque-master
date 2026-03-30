@@ -132,7 +132,7 @@ export default class CreditsScene extends Phaser.Scene {
             { type: 'heading', text: '--- PIXEL ART ---' },
             { type: 'line', text: 'Character sprites — PixelLab + hand editing' },
             { type: 'line', text: 'UI elements — Procedural generation' },
-            { type: 'line', text: 'Font — PressStart2P (OFL license)' },
+            { type: 'line', text: I18n.t('credits.font_credit') },
             { type: 'spacer', height: 30 },
 
             { type: 'heading', text: '--- AUDIO ---' },

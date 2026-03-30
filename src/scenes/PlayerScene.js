@@ -46,7 +46,7 @@ export default class PlayerScene extends Phaser.Scene {
         UIFactory.addBackButton(this, 'TitleScene');
 
         // Controls hint
-        UIFactory.addControlsHint(this, 'Clic  Equiper / Selectionner     Echap  Retour');
+        UIFactory.addControlsHint(this, I18n.t('player.controls_hint'));
 
         // Keyboard tab switching
         this.input.keyboard.on('keydown-ONE', () => this._switchTab(0));
@@ -435,13 +435,13 @@ export default class PlayerScene extends Phaser.Scene {
         // Detailed stat cards
         const barDefs = [
             { key: 'precision', label: 'PRECISION', color: COLORS.STAT_PRECISION,
-                desc: (v) => v >= 8 ? 'Chirurgical — quasi aucune dispersion' : v >= 5 ? 'Correct — dispersion moderee' : 'Imprecis — la boule devie souvent' },
+                desc: (v) => v >= 8 ? I18n.t('player.stat_desc.precision_high') : v >= 5 ? I18n.t('player.stat_desc.precision_mid') : I18n.t('player.stat_desc.precision_low') },
             { key: 'puissance', label: 'PUISSANCE', color: COLORS.STAT_PUISSANCE,
-                desc: (v) => v >= 8 ? 'Devastateur — portee maximale' : v >= 5 ? 'Normal — portee standard' : 'Faible — portee limitee' },
+                desc: (v) => v >= 8 ? I18n.t('player.stat_desc.puissance_high') : v >= 5 ? I18n.t('player.stat_desc.puissance_mid') : I18n.t('player.stat_desc.puissance_low') },
             { key: 'effet', label: 'EFFET', color: COLORS.STAT_EFFET,
-                desc: (v) => v >= 8 ? 'Maitre retro — controle total du spin' : v >= 5 ? 'Bon spin — retro efficace' : 'Peu de retro — trajectoires droites' },
+                desc: (v) => v >= 8 ? I18n.t('player.stat_desc.effet_high') : v >= 5 ? I18n.t('player.stat_desc.effet_mid') : I18n.t('player.stat_desc.effet_low') },
             { key: 'sang_froid', label: 'SANG-FROID', color: COLORS.STAT_ADAPTABILITE,
-                desc: (v) => v >= 8 ? 'Imperturbable — zero tremblement' : v >= 5 ? 'Stable — leger tremblement sous pression' : 'Nerveux — tremble quand le score est serre' }
+                desc: (v) => v >= 8 ? I18n.t('player.stat_desc.sang_froid_high') : v >= 5 ? I18n.t('player.stat_desc.sang_froid_mid') : I18n.t('player.stat_desc.sang_froid_low') }
         ];
 
         const cardW = (CONTENT_W - 60) / 2;
@@ -492,7 +492,7 @@ export default class PlayerScene extends Phaser.Scene {
 
         // Bottom section: Abilities unlocked
         const abY = y + 24 + 2 * (cardH + 10) + 10;
-        this._addContent(this.add.text(x, abY, 'CAPACITES SPECIALES', {
+        this._addContent(this.add.text(x, abY, I18n.t('player.special_abilities'), {
             fontFamily: FONT_PIXEL, fontSize: '9px', color: CSS.OR, shadow: SHADOW
         }).setDepth(5));
 
@@ -713,10 +713,10 @@ export default class PlayerScene extends Phaser.Scene {
         const cardW = 130;
         const cardH = 70;
         const statsCards = [
-            { label: 'VICTOIRES', value: `${statsWins}`, sub: `${winRate}%`, color: 0x44CC44 },
-            { label: 'DEFAITES', value: `${statsLosses}`, sub: `${100 - winRate}%`, color: 0xCC4444 },
-            { label: 'CARREAUX', value: `${save.stats?.totalCarreaux || 0}`, sub: 'Tirs parfaits', color: 0xFFD700 },
-            { label: 'TEMPS', value: formatPlaytime(save.playtime || 0), sub: 'de jeu total', color: 0x87CEEB }
+            { label: I18n.t('player.stats.victories'), value: `${statsWins}`, sub: `${winRate}%`, color: 0x44CC44 },
+            { label: I18n.t('player.stats.defeats'), value: `${statsLosses}`, sub: `${100 - winRate}%`, color: 0xCC4444 },
+            { label: I18n.t('player.stats.carreaux'), value: `${save.stats?.totalCarreaux || 0}`, sub: I18n.t('player.stats.perfect_shots'), color: 0xFFD700 },
+            { label: I18n.t('player.stats.time'), value: formatPlaytime(save.playtime || 0), sub: I18n.t('player.stats.total_playtime'), color: 0x87CEEB }
         ];
 
         statsCards.forEach((card, i) => {

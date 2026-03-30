@@ -231,7 +231,7 @@ export default class ArcadeScene extends Phaser.Scene {
         });
 
         // Skip hint (appears after 2s)
-        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 24, '~ Espace ~', {
+        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 24, I18n.t('arcade_extra.skip_hint'), {
             fontFamily: 'Georgia, serif', fontSize: '11px', color: '#8A7A5A',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setAlpha(0);
@@ -916,7 +916,7 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Galets bonus display
         const bonusLabel = this._isPerfect ? I18n.t('arcade.bonus_perfect') : I18n.t('arcade.bonus_complete');
-        this.add.text(GAME_WIDTH / 2, 335, `+${this._completionGalets} Galets (${bonusLabel})`, {
+        this.add.text(GAME_WIDTH / 2, 335, `${I18n.t('arcade_extra.milestone_reward', { amount: this._completionGalets })} (${bonusLabel})`, {
             fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 
@@ -998,7 +998,7 @@ export default class ArcadeScene extends Phaser.Scene {
         shopElements.push(subtitle);
 
         let currentSave = loadSave();
-        const galetsLabel = this.add.text(cx, 135, `${currentSave.galets} Galets`, {
+        const galetsLabel = this.add.text(cx, 135, I18n.t('arcade_extra.galets_label', { amount: currentSave.galets }), {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
         }).setOrigin(0.5).setDepth(51);
         shopElements.push(galetsLabel);
@@ -1063,7 +1063,7 @@ export default class ArcadeScene extends Phaser.Scene {
                         saveSave(s);
                         buyBtn.setText(I18n.t('shop.owned')).setColor('#44CC44').removeInteractive();
                         currentSave = s;
-                        galetsLabel.setText(`${s.galets} Galets`);
+                        galetsLabel.setText(I18n.t('arcade_extra.galets_label', { amount: s.galets }));
                     }
                 });
             }
@@ -1201,7 +1201,7 @@ export default class ArcadeScene extends Phaser.Scene {
         const name = this.add.text(cx, cy + 5, I18n.field(milestone, 'text'), {
             fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5).setDepth(102);
-        const reward = this.add.text(cx, cy + 30, `+${milestone.reward} Galets`, {
+        const reward = this.add.text(cx, cy + 30, I18n.t('arcade_extra.milestone_reward', { amount: milestone.reward }), {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700'
         }).setOrigin(0.5).setDepth(102);
 

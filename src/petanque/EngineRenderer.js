@@ -278,7 +278,7 @@ export default class EngineRenderer {
         this.scene.cameras.main.flash(100, 255, 215, 0, true);
 
         // "CARREAU !" text with Phaser 4 glow filter
-        const txt = this.scene.add.text(ball.x, ball.y - 30, 'CARREAU !', {
+        const txt = this.scene.add.text(ball.x, ball.y - 30, I18n.t('engine.carreau'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(65);
@@ -444,7 +444,7 @@ export default class EngineRenderer {
         const h = this.scene.scale.height;
 
         if (isFanny) {
-            const fannyTxt = this.scene.add.text(w / 2, h / 2 + 10, 'FANNY !', {
+            const fannyTxt = this.scene.add.text(w / 2, h / 2 + 10, I18n.t('engine.fanny'), {
                 fontFamily: 'monospace', fontSize: '18px', color: '#C44B3F', shadow
             }).setOrigin(0.5).setDepth(102).setAlpha(0);
             this.scene.tweens.add({

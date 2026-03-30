@@ -104,7 +104,7 @@ export default class ShopScene extends Phaser.Scene {
     // HEADER
     // ================================================================
     _drawHeader() {
-        this.add.text(16, 18, 'BOUTIQUE', {
+        this.add.text(16, 18, I18n.t('shop_extra.title'), {
             fontFamily: FONT_PIXEL, fontSize: '16px',
             color: CSS.OR, shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setDepth(5);
@@ -223,7 +223,7 @@ export default class ShopScene extends Phaser.Scene {
         }
 
         // Item name
-        const shortName = item.name.replace('Boule ', '').replace('Cochonnet ', '');
+        const shortName = I18n.field(item, 'name').replace('Boule ', '').replace('Cochonnet ', '').replace('Ball ', '').replace('Jack ', '');
         this._previewElements.push(
             this.add.text(cx, 155, shortName, {
                 fontFamily: FONT_PIXEL, fontSize: '10px',
@@ -233,7 +233,7 @@ export default class ShopScene extends Phaser.Scene {
 
         // Full description (wrapped)
         this._previewElements.push(
-            this.add.text(cx, 175, item.description, {
+            this.add.text(cx, 175, I18n.field(item, 'description'), {
                 fontFamily: 'monospace', fontSize: '8px',
                 color: CSS.GRIS, shadow: SHADOW,
                 wordWrap: { width: PREVIEW_W - 30 }, align: 'center'
@@ -249,7 +249,7 @@ export default class ShopScene extends Phaser.Scene {
             this._previewElements.push(lockBg);
 
             this._previewElements.push(
-                this.add.text(cx, lockY + 2, `\u{1F512} ${item.minWins} victoires requises`, {
+                this.add.text(cx, lockY + 2, `\u{1F512} ${I18n.t('shop_extra.wins_required', { n: item.minWins })}`, {
                     fontFamily: 'monospace', fontSize: '8px',
                     color: '#C44B3F', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6)
@@ -270,53 +270,24 @@ export default class ShopScene extends Phaser.Scene {
             if (bouleData) {
                 const statsY = 210;
 
-                // Mass
+                // Mass + diameter
                 this._previewElements.push(
-                    this.add.text(cx, statsY, `${bouleData.stats.masse}g`, {
-                        fontFamily: 'monospace', fontSize: '9px',
+                    this.add.text(cx, statsY, `${bouleData.stats.masse}g  \u2300${bouleData.stats.rayon * 2}`, {
+                        fontFamily: FONT_PIXEL, fontSize: '11px',
                         color: CSS.OCRE, shadow: SHADOW
                     }).setOrigin(0.5).setDepth(5)
                 );
 
-                // Bonus
+                // Bonus effect (player-friendly)
                 if (bouleData.bonus) {
-                    const bonusTxt = bouleData.bonus
-                        .replace('friction_x', 'Friction x')
-                        .replace('knockback_x', 'Impact x')
-                        .replace('retro_x', 'Retro x')
-                        .replace('restitution_x', 'Rebond x');
+                    const bonusTxt = I18n.field(bouleData, 'effect') || bouleData.bonus;
                     this._previewElements.push(
-                        this.add.text(cx, statsY + 14, bonusTxt, {
-                            fontFamily: 'monospace', fontSize: '8px',
+                        this.add.text(cx, statsY + 18, bonusTxt, {
+                            fontFamily: FONT_PIXEL, fontSize: '10px',
                             color: '#87CEEB', shadow: SHADOW
                         }).setOrigin(0.5).setDepth(5)
                     );
                 }
-
-                // Mini stat bars (precision, puissance)
-                const barY = statsY + 32;
-                const barW = 100;
-                const bars = [
-                    { label: 'PRE', val: bouleData.stats.precision, max: 5, color: COLORS.STAT_PRECISION },
-                    { label: 'PUI', val: bouleData.stats.puissance, max: 5, color: COLORS.STAT_PUISSANCE }
-                ];
-
-                const barGfx = this.add.graphics().setDepth(5);
-                this._previewElements.push(barGfx);
-
-                bars.forEach((b, i) => {
-                    const by = barY + i * 18;
-                    this._previewElements.push(
-                        this.add.text(cx - barW / 2 - 2, by + 1, b.label, {
-                            fontFamily: 'monospace', fontSize: '7px',
-                            color: CSS.OCRE, shadow: SHADOW
-                        }).setOrigin(1, 0.5).setDepth(5)
-                    );
-                    barGfx.fillStyle(0x1A1510, 0.6);
-                    barGfx.fillRoundedRect(cx - barW / 2, by - 3, barW, 7, 2);
-                    barGfx.fillStyle(b.color, 0.8);
-                    barGfx.fillRoundedRect(cx - barW / 2, by - 3, barW * (b.val / b.max), 7, 2);
-                });
             }
         }
 
@@ -333,7 +304,7 @@ export default class ShopScene extends Phaser.Scene {
             this._previewElements.push(badgeBg);
 
             this._previewElements.push(
-                this.add.text(cx, actionY + 2, '\u2713 POSSEDE', {
+                this.add.text(cx, actionY + 2, I18n.t('shop_extra.owned'), {
                     fontFamily: FONT_PIXEL, fontSize: '9px',
                     color: '#44CC44', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6)
@@ -353,7 +324,7 @@ export default class ShopScene extends Phaser.Scene {
                     equipBg.strokeRoundedRect(cx - 45, actionY + 20, 90, 22, 6);
                     this._previewElements.push(equipBg);
 
-                    const equipTxt = this.add.text(cx, actionY + 31, 'EQUIPER', {
+                    const equipTxt = this.add.text(cx, actionY + 31, I18n.t('shop_extra.equip'), {
                         fontFamily: FONT_PIXEL, fontSize: '8px',
                         color: '#87CEEB', shadow: SHADOW
                     }).setOrigin(0.5).setDepth(6);
@@ -371,7 +342,7 @@ export default class ShopScene extends Phaser.Scene {
                     this._previewElements.push(equipZone);
                 } else {
                     this._previewElements.push(
-                        this.add.text(cx, actionY + 30, 'Equipee \u2713', {
+                        this.add.text(cx, actionY + 30, I18n.t('shop_extra.equipped'), {
                             fontFamily: 'monospace', fontSize: '8px',
                             color: CSS.OCRE, shadow: SHADOW
                         }).setOrigin(0.5).setDepth(5)
@@ -381,7 +352,7 @@ export default class ShopScene extends Phaser.Scene {
         } else if (locked) {
             // Locked by progression
             this._previewElements.push(
-                this.add.text(cx, actionY - 5, `${item.price} Galets`, {
+                this.add.text(cx, actionY - 5, I18n.t('shop_extra.price_galets', { price: item.price }), {
                     fontFamily: FONT_PIXEL, fontSize: '11px',
                     color: CSS.GRIS, shadow: SHADOW
                 }).setOrigin(0.5).setDepth(5)
@@ -395,7 +366,7 @@ export default class ShopScene extends Phaser.Scene {
             this._previewElements.push(lockBtnBg);
 
             this._previewElements.push(
-                this.add.text(cx, actionY + 26, 'VERROUILLE', {
+                this.add.text(cx, actionY + 26, I18n.t('shop_extra.locked'), {
                     fontFamily: FONT_PIXEL, fontSize: '9px',
                     color: '#5A4A3A', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6)
@@ -404,7 +375,7 @@ export default class ShopScene extends Phaser.Scene {
             // Price
             const priceColor = canAfford ? CSS.OR : '#C44B3F';
             this._previewElements.push(
-                this.add.text(cx, actionY - 5, `${item.price} Galets`, {
+                this.add.text(cx, actionY - 5, I18n.t('shop_extra.price_galets', { price: item.price }), {
                     fontFamily: FONT_PIXEL, fontSize: '11px',
                     color: priceColor, shadow: SHADOW
                 }).setOrigin(0.5).setDepth(5)
@@ -419,7 +390,7 @@ export default class ShopScene extends Phaser.Scene {
                 buyBg.strokeRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
                 this._previewElements.push(buyBg);
 
-                const buyTxt = this.add.text(cx, actionY + 26, 'ACHETER', {
+                const buyTxt = this.add.text(cx, actionY + 26, I18n.t('shop_extra.buy'), {
                     fontFamily: FONT_PIXEL, fontSize: '10px',
                     color: '#44CC44', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6);
@@ -433,7 +404,7 @@ export default class ShopScene extends Phaser.Scene {
                 this._previewElements.push(buyZone);
             } else {
                 this._previewElements.push(
-                    this.add.text(cx, actionY + 18, 'Galets insuffisants', {
+                    this.add.text(cx, actionY + 18, I18n.t('shop_extra.insufficient'), {
                         fontFamily: 'monospace', fontSize: '7px',
                         color: '#C44B3F', shadow: SHADOW
                     }).setOrigin(0.5).setDepth(5)

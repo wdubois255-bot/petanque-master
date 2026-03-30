@@ -164,6 +164,7 @@ export default class PetanqueEngine {
         // (mene 1 = startTeam from config, default player)
         this._cochonnetTeam = this.meneWinner || this._startTeam || 'player';
         this.meneWinner = null;
+        this._cochonnetAttempts = 0;
 
         this.setState(STATES.COCHONNET_THROW);
     }
@@ -355,18 +356,76 @@ export default class PetanqueEngine {
         const rollVx = throwDirX * rollSpeed;
         const rollVy = throwDirY * rollSpeed;
 
-        // Animate fly, then wait for roll to stop before switching state
+        // Animate fly, then wait for roll to stop before validating distance
         this._animateThrow(this.cochonnet, clampedX, clampedY, rollVx, rollVy, () => {
-            // Wait for cochonnet to stop rolling before allowing first ball
             const waitForStop = () => {
                 if (this.cochonnet.isMoving) {
                     this.scene.time.delayedCall(50, waitForStop);
                 } else {
-                    this.setState(STATES.FIRST_BALL);
+                    this._validateCochonnetDistance();
                 }
             };
             waitForStop();
         }, LOFT_DEMI_PORTEE);
+    }
+
+    /**
+     * FIPJP: cochonnet must land 6-10m from throw circle.
+     * 3 attempts, then opponent takes over.
+     */
+    _validateCochonnetDistance() {
+        const cx = this.scene.throwCircleX;
+        const cy = this.scene.throwCircleY;
+        const dx = this.cochonnet.x - cx;
+        const dy = this.cochonnet.y - cy;
+        const distPx = Math.sqrt(dx * dx + dy * dy);
+
+        // Valid range: 6-10m (using PX_PER_METER from constants)
+        const minPx = Math.round(6 * (TERRAIN_HEIGHT / 13));
+        const maxPx = Math.round(10 * (TERRAIN_HEIGHT / 13));
+        const isOutOfBounds = !this.cochonnet.isAlive;
+        const isTooShort = !isOutOfBounds && distPx < minPx;
+        const isTooLong = !isOutOfBounds && distPx > maxPx;
+
+        if (!isOutOfBounds && !isTooShort && !isTooLong) {
+            // Valid — proceed to first ball
+            this.setState(STATES.FIRST_BALL);
+            return;
+        }
+
+        // Invalid throw
+        this._cochonnetAttempts++;
+        const attempt = this._cochonnetAttempts;
+
+        // Show reason
+        if (isOutOfBounds) {
+            this._showMessage(I18n.t('ingame.cochonnet_out', { n: attempt }));
+        } else if (isTooShort) {
+            this._showMessage(I18n.t('ingame.cochonnet_too_short', { n: attempt }));
+        } else {
+            this._showMessage(I18n.t('ingame.cochonnet_too_long', { n: attempt }));
+        }
+
+        // Destroy invalid cochonnet
+        if (this.cochonnet) {
+            this.cochonnet.destroy();
+            this.cochonnet = null;
+        }
+
+        this.scene.time.delayedCall(1500, () => {
+            if (attempt >= 3) {
+                // Switch to opponent after 3 failed attempts
+                this._showMessage(I18n.t('ingame.cochonnet_switch'));
+                this._cochonnetTeam = this._cochonnetTeam === 'player' ? 'opponent' : 'player';
+                this._cochonnetAttempts = 0;
+                this.scene.time.delayedCall(1500, () => {
+                    this.setState(STATES.COCHONNET_THROW);
+                });
+            } else {
+                // Retry — same team
+                this.setState(STATES.COCHONNET_THROW);
+            }
+        });
     }
 
     static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6) {
@@ -436,7 +495,7 @@ export default class PetanqueEngine {
         ball.puissanceStat = charPui;
 
         // === Unique ability effects ===
-        // Le Mur (Reyes): double collision radius
+        // Le Mur (Rocher): double collision radius
         if (throwMeta.leMur) {
             ball.collisionRadiusMult = 2.0;
         }
@@ -599,12 +658,27 @@ export default class PetanqueEngine {
                         landingHit = true;
                         // Ball landed on/very near another — give it velocity
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
-                            const landAngle = Math.atan2(targetY - startY, targetX - startX);
-                            // Tir au fer: simulate high-speed vertical impact converted to horizontal
-                            // With COR 0.62, thrower retains ~19% → stops near impact (carreau naturel)
+                            // Use THROW DIRECTION (not collision normal) for velocity.
+                            // The impact parameter (cdist) determines how off-center the hit is,
+                            // and resolveCollision handles the physics naturally:
+                            // - Center hit (cdist≈0): dvn≈full → 81% transfer → carreau
+                            // - Side hit (cdist≈R): dvn=partial → target sideways → tir de côté
+                            // - Edge hit (cdist≈2R): dvn≈0 → barely clips → casquette
+                            const throwAngle = Math.atan2(targetY - startY, targetX - startX);
                             const impactSpeed = isTir ? TIR_IMPACT_SPEED : MIN_IMPACT_SPEED;
-                            rollVx = Math.cos(landAngle) * impactSpeed;
-                            rollVy = Math.sin(landAngle) * impactSpeed;
+                            rollVx = Math.cos(throwAngle) * impactSpeed;
+                            rollVy = Math.sin(throwAngle) * impactSpeed;
+                        }
+                        // Ensure physical overlap so resolveCollision fires on the next frame
+                        // (landingContactBonus may detect contact without actual overlap)
+                        if (cdist > 0 && cdist > ball.radius + other.radius - 2) {
+                            const nx = (other.x - ball.x) / cdist;
+                            const ny = (other.y - ball.y) / cdist;
+                            const pushDist = cdist - (ball.radius + other.radius) + 2;
+                            if (pushDist > 0) {
+                                ball.x += nx * pushDist;
+                                ball.y += ny * pushDist;
+                            }
                         }
                     }
                 }
@@ -640,6 +714,12 @@ export default class PetanqueEngine {
                 }
 
                 ball.launch(rollVx, rollVy);
+
+                // Activate 2-phase retro model for tir (enables recul via backspin reversal)
+                // Simple retro (just friction mult) is used for pointage; 2-phase for tir
+                if (isTir && ball.retro > 0) {
+                    ball.activateRetro(ball.retro, this.terrainType);
+                }
 
                 // Spin lateral post-atterrissage (actif uniquement apres contact sol)
                 if (ball.throwMeta?.lateralSpin && ball.throwMeta.lateralSpin !== 0) {
@@ -1306,7 +1386,7 @@ export default class PetanqueEngine {
         const hitEnemy = hitBalls.filter(b => b.team !== ball.team && b.team !== 'cochonnet');
 
         if (hitCochonnet.length > 0 && hitEnemy.length === 0 && hitAllied.length === 0) {
-            this._showShotLabel(ball, 'Au cochonnet !', '#FFD700', 12);
+            this._showShotLabel(ball, I18n.t('engine.au_cochonnet'), '#FFD700', 12);
             this._shotCollisions = [];
             return;
         }

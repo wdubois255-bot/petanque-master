@@ -76,7 +76,7 @@ export default class VSIntroScene extends Phaser.Scene {
         overlay.fillRect(0, GAME_HEIGHT * 0.6, GAME_WIDTH, GAME_HEIGHT * 0.4);
 
         // Skip hint
-        const skipHint = this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 14, 'Espace / Clic', {
+        const skipHint = this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 14, I18n.t('vsintro.skip_hint'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
         }).setOrigin(1, 1).setDepth(60).setAlpha(0);
         this.tweens.add({ targets: skipHint, alpha: 0.6, duration: 500, delay: 1000 });

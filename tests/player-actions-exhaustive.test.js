@@ -97,10 +97,10 @@ describe('Phase 3A — Boot / Title', () => {
     });
 
     it('3 boules en tete-a-tete (1v1)', () => {
-        // QuickPlay default format is 3 boules
-        // Check that default format in QuickPlayScene is 3
+        // QuickPlay default format is 3 boules (via I18n key 'quickplay.formats.3')
+        // Check that default format in QuickPlayScene references key 3
         const content = readFileSync(resolve(SRC_DIR, 'scenes', 'QuickPlayScene.js'), 'utf-8');
-        expect(content).toContain("display: '3 Boules'");
+        expect(content).toContain("'quickplay.formats.3'");
     });
 });
 
@@ -266,8 +266,8 @@ describe('Phase 3C — PetanqueScene', () => {
     });
 
     describe('Cochonnet distance — regles FIPJP', () => {
-        it('COCHONNET_MIN_DIST = 6m on 13m terrain', () => {
-            expect(Constants.COCHONNET_MIN_DIST).toBe(Math.round(6 * (420 / 13)));
+        it('COCHONNET_MIN_DIST = 5.5m on 13m terrain', () => {
+            expect(Constants.COCHONNET_MIN_DIST).toBe(Math.round(5.5 * (420 / 13)));
         });
 
         it('COCHONNET_MAX_DIST = 10m on 13m terrain', () => {
@@ -625,11 +625,11 @@ describe('Phase 3G — Chasse aux oublis', () => {
             }
         });
 
-        it('chaque boule a des stats', () => {
+        it('chaque boule a des stats (masse, rayon)', () => {
             for (const boule of boules.sets) {
                 expect(boule.stats, `${boule.id} missing stats`).toBeDefined();
-                expect(boule.stats.precision).toBeDefined();
-                expect(boule.stats.puissance).toBeDefined();
+                expect(boule.stats.masse).toBeDefined();
+                expect(boule.stats.rayon).toBeDefined();
             }
         });
     });

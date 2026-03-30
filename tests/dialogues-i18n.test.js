@@ -454,7 +454,7 @@ describe('Phase 2C — Qualite des textes', () => {
                 // Some keys use fallback default values in code — check if it's a known pattern
                 // e.g. I18n.t('locked_arcade', 'A debloquer en Arcade')
                 // These fallback patterns are OK
-                if (!key.includes('locked_') && !key.includes('galet_') && !key.includes('.galets_icon') && !key.includes('.challenge_label') && !key.endsWith('_')) {
+                if (!key.includes('locked_') && !key.includes('galet_') && !key.includes('.galets_icon') && !key.includes('.challenge_label') && !key.endsWith('_') && !key.endsWith('.')) {
                     missing.push(key);
                 }
             }

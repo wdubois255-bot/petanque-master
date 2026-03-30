@@ -3,7 +3,7 @@ import {
     DEAD_ZONE_PX,
     LOFT_DEMI_PORTEE, LOFT_PLOMBEE, LOFT_TIR,
     PLOMBEE_UNLOCK_WINS,
-    COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
+    COCHONNET_MIN_DIST, COCHONNET_MAX_DIST, PX_PER_METER,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
     LATERAL_SPIN_MIN_EFFET,
     RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET,
@@ -462,7 +462,7 @@ export default class AimingSystem {
 
         // === BACK BUTTON (return to style selector) ===
         const backBtnY = H - AIMING_UI_BOTTOM_OFFSET;
-        const backBtn = this.scene.add.text(8, backBtnY - 12, '\u2190 [ESC]', {
+        const backBtn = this.scene.add.text(8, backBtnY - 12, I18n.t('aiming.back'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
             shadow: SHADOW
         }).setDepth(97).setAlpha(0.6).setInteractive({ useHandCursor: true });
@@ -568,7 +568,7 @@ export default class AimingSystem {
         this._modeUI.push(bg);
 
         // Label
-        const label = this.scene.add.text(bx + 8, by, active ? 'F FOCUS !' : 'F Respire', {
+        const label = this.scene.add.text(bx + 8, by, active ? I18n.t('aiming.focus_active') : I18n.t('aiming.focus_ready'), {
             fontFamily: 'monospace', fontSize: '10px',
             color: active ? '#4ADE80' : '#87CEEB', shadow: SHADOW
         }).setOrigin(0, 0.5).setDepth(97);
@@ -611,7 +611,7 @@ export default class AimingSystem {
                 targets: overlay, alpha: 0, duration: 600,
                 onComplete: () => overlay.destroy()
             });
-            this.engine._showMessage('Focus... Respire...', 1000);
+            this.engine._showMessage(I18n.t('aiming.focus_message'), 1000);
         } else {
             this._focusCharges++; // refund
         }
@@ -943,8 +943,12 @@ export default class AimingSystem {
         if (dist < DEAD_ZONE_PX) return;
 
         let angle = Math.atan2(dy, dx);
-        // Quadratic power curve: more control at low power, realistic feel
-        const rawPower = Math.min(dist / 150, 1);
+        // Cochonnet: power starts at 0 right past dead zone (full 6-10m range)
+        // Boules: power ramps from dead zone edge (more natural feel)
+        const isCochonnetRelease = this.engine.state === 'COCHONNET_THROW';
+        const effectiveDist = isCochonnetRelease ? (dist - DEAD_ZONE_PX) : dist;
+        const maxDrag = isCochonnetRelease ? (150 - DEAD_ZONE_PX) : 150;
+        const rawPower = Math.min(effectiveDist / maxDrag, 1);
         let power = rawPower * rawPower;
 
         // Precision wobble: the marker was oscillating during aim — use its current offset
@@ -995,8 +999,8 @@ export default class AimingSystem {
 
             // Pass ability flags to engine for collision-time effects
             const throwMeta = {
-                carreauInstinct: this.isAbilityActive('carreau_instinct'),
                 leMur: this.isAbilityActive('le_mur'),
+                carreauInstinct: this.isAbilityActive('carreau_instinct'),
                 lectureTerrainActive: this.isAbilityActive('lecture_terrain'),
                 targetCochonnet: this._targetCochonnet,
                 lateralSpin: this._lateralSpin,
@@ -1164,8 +1168,11 @@ export default class AimingSystem {
 
         if (dist < DEAD_ZONE_PX) return;
 
-        // Quadratic power curve (same as onPointerUp)
-        const rawPower = Math.min(dist / 150, 1);
+        // Cochonnet: power starts at 0 right past dead zone (full 6-10m range)
+        const isCochonnetDraw = this.engine.state === 'COCHONNET_THROW';
+        const effectiveDist = isCochonnetDraw ? (dist - DEAD_ZONE_PX) : dist;
+        const maxDrag = isCochonnetDraw ? (150 - DEAD_ZONE_PX) : 150;
+        const rawPower = Math.min(effectiveDist / maxDrag, 1);
         const power = rawPower * rawPower;
         const angle = Math.atan2(dy, dx);
 
@@ -1272,9 +1279,9 @@ export default class AimingSystem {
         if (this._powerText) this._powerText.destroy();
         if (this._powerBarImg) this._powerBarImg.destroy();
         if (this._powerBarFill) this._powerBarFill.destroy();
-        const modeLabel = isCochonnetThrow ? 'COCHONNET'
-            : this.shotMode === 'tirer' ? 'TIR'
-            : this.loftPreset?.label || 'DEMI-PORTEE';
+        const modeLabel = isCochonnetThrow ? I18n.t('aiming.mode_cochonnet')
+            : this.shotMode === 'tirer' ? I18n.t('aiming.mode_tir')
+            : this.loftPreset?.label || I18n.t('aiming.mode_demi');
         const retroSuffix = this.retroActive ? ' +R' : '';
 
         // v2_bar_power visual gauge behind text
@@ -1299,9 +1306,13 @@ export default class AimingSystem {
             this._powerBarFill = null;
         }
 
+        // For cochonnet: show distance in meters instead of %
+        const powerDisplay = isCochonnetThrow
+            ? `${modeLabel} ${((COCHONNET_MIN_DIST + rawPower * (COCHONNET_MAX_DIST - COCHONNET_MIN_DIST)) / PX_PER_METER).toFixed(1)}m`
+            : `${modeLabel} ${Math.round(rawPower * 100)}%${retroSuffix}`;
         this._powerText = this.scene.add.text(
             originX, originY + 28,
-            `${modeLabel} ${Math.round(rawPower * 100)}%${retroSuffix}`,
+            powerDisplay,
             {
                 fontFamily: 'monospace', fontSize: '20px',
                 color: this.retroActive ? '#9B7BB8'
