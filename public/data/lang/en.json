@@ -336,6 +336,7 @@
     },
     "play_btn": "PLAY!",
     "select_hint": "Click = P1  |  Shift+Click = P2",
+    "selecting": "Selecting",
     "locked": "LOCKED",
     "locked_unlock": "Complete Arcade to unlock",
     "locked_arcade": "Unlock in Arcade",

@@ -1079,64 +1079,29 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _ensureSprites() {
-        // Player sprite — always recreate to match selected character
-        if (this.textures.exists('petanque_player')) {
-            this.textures.remove('petanque_player');
-        }
-        const playerKey = this._getCharSpriteKey(this.playerCharId);
-        const playerIsStatic = CHAR_STATIC_SPRITES.includes(this.playerCharId);
-        if (this.textures.exists(playerKey)) {
-            const src = this.textures.get(playerKey).getSourceImage();
-            if (playerIsStatic) {
-                // Static image: create a 1-frame spritesheet from the image
-                this.textures.addSpriteSheet('petanque_player', src,
-                    { frameWidth: src.width, frameHeight: src.height }
-                );
-            } else {
-                // Canvas textures (V2 characters): copy to new canvas + add frames manually
-                // (Phaser 4 addSpriteSheet doesn't reliably handle canvas sources on scene re-entry)
-                const w = src.width || 512, h = src.height || 512;
-                const canvas = this.textures.createCanvas('petanque_player', w, h);
-                canvas.context.imageSmoothingEnabled = false;
-                canvas.context.drawImage(src, 0, 0);
-                canvas.refresh();
-                const tex = this.textures.get('petanque_player');
-                for (let i = 0; i < 16; i++) {
-                    tex.add(i, 0, (i % 4) * 128, Math.floor(i / 4) * 128, 128, 128);
-                }
-            }
-            this.textures.get('petanque_player').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        } else {
+        // Use original texture keys directly — avoids canvas copy bugs in Phaser 4
+        // (previous approach copied canvas textures to 'petanque_player'/'petanque_opponent'
+        //  which could swap textures on scene re-entry)
+        this._playerTextureKey = this._getCharSpriteKey(this.playerCharId);
+        const opponentId = this.opponentId || 'ley';
+        this._opponentTextureKey = this._getCharSpriteKey(opponentId);
+
+        // Fallback: generate procedural sprites if textures don't exist
+        if (!this.textures.exists(this._playerTextureKey)) {
             generateCharacterSprite(this, 'petanque_player', this._getCharPalette(this.playerCharId));
+            this._playerTextureKey = 'petanque_player';
+        }
+        if (!this.textures.exists(this._opponentTextureKey)) {
+            generateCharacterSprite(this, 'petanque_opponent', this._getCharPalette(opponentId));
+            this._opponentTextureKey = 'petanque_opponent';
         }
 
-        // Opponent sprite — always recreate for different opponents
-        if (this.textures.exists('petanque_opponent')) {
-            this.textures.remove('petanque_opponent');
+        // Cleanup stale canvas copies from previous matches
+        if (this.textures.exists('petanque_player') && this._playerTextureKey !== 'petanque_player') {
+            this.textures.remove('petanque_player');
         }
-        const opponentId = this.opponentId || 'ley';
-        const opponentKey = this._getCharSpriteKey(opponentId);
-        const opponentIsStatic = CHAR_STATIC_SPRITES.includes(opponentId);
-        if (this.textures.exists(opponentKey)) {
-            const src = this.textures.get(opponentKey).getSourceImage();
-            if (opponentIsStatic) {
-                this.textures.addSpriteSheet('petanque_opponent', src,
-                    { frameWidth: src.width, frameHeight: src.height }
-                );
-            } else {
-                const w = src.width || 512, h = src.height || 512;
-                const canvas = this.textures.createCanvas('petanque_opponent', w, h);
-                canvas.context.imageSmoothingEnabled = false;
-                canvas.context.drawImage(src, 0, 0);
-                canvas.refresh();
-                const tex = this.textures.get('petanque_opponent');
-                for (let i = 0; i < 16; i++) {
-                    tex.add(i, 0, (i % 4) * 128, Math.floor(i / 4) * 128, 128, 128);
-                }
-            }
-            this.textures.get('petanque_opponent').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        } else {
-            generateCharacterSprite(this, 'petanque_opponent', this._getCharPalette(opponentId));
+        if (this.textures.exists('petanque_opponent') && this._opponentTextureKey !== 'petanque_opponent') {
+            this.textures.remove('petanque_opponent');
         }
     }
 
@@ -1184,11 +1149,11 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // Player starts at the circle (first to throw)
         const playerFrame = CHAR_STATIC_SPRITES.includes(this.playerCharId) ? 0 : 12;
-        this.playerSprite = this.add.sprite(circleX, circleY, 'petanque_player', playerFrame)
+        this.playerSprite = this.add.sprite(circleX, circleY, this._playerTextureKey, playerFrame)
             .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
 
         // Opponent starts watching from the right
-        this.opponentSprite = this.add.sprite(this._opponentWatchX, this._opponentWatchY, 'petanque_opponent', 0)
+        this.opponentSprite = this.add.sprite(this._opponentWatchX, this._opponentWatchY, this._opponentTextureKey, 0)
             .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
 
         // Turn arrows (follow the active thrower at the circle)

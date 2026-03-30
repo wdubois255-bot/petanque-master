@@ -82,9 +82,13 @@ export default class BootScene extends Phaser.Scene {
         this.load.image('basechip_combined', `${BASE}assets/tilesets/basechip_combined.png`);
 
         // V2 characters — individual direction PNGs (composed into spritesheets in create())
+        // NOTE: robineau/rocher rotation folders are swapped on disk → folder mapping corrects this
         const V2_CHARS = [
             'fazzino', 'foyot', 'mamie_josette', 'papi_rene',
-            'rizzi', 'robineau', 'rocher', 'sofia', 'suchaud',
+            'rizzi',
+            { name: 'robineau', folder: 'rocher' },
+            { name: 'rocher', folder: 'robineau' },
+            'sofia', 'suchaud',
             'rookie',
             { name: 'la_choupe', folder: 'la_choupe_v2' },
             { name: 'ley', folder: 'ley_v2_zip' }

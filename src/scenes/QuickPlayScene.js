@@ -92,6 +92,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._ownedCochonnets = [];
         this._allTerrains = [];
         this._charsData = null;
+        this._selectingSlot = 'p1'; // alternates between 'p1' and 'p2' on each click
     }
 
     // ================================================================
@@ -459,13 +460,18 @@ export default class QuickPlayScene extends Phaser.Scene {
             } else {
                 zone.on('pointerdown', () => {
                     sfxUIClick();
-                    // Left click = J1, right click or shift+click = J2
-                    if (this.input.activePointer.event?.shiftKey || this.input.activePointer.rightButtonDown()) {
+                    // Assign to active slot (alternates J1 → J2 → J1...)
+                    // Shift+click or right-click forces J2
+                    const forceP2 = this.input.activePointer.event?.shiftKey || this.input.activePointer.rightButtonDown();
+                    const slot = forceP2 ? 'p2' : this._selectingSlot;
+                    if (slot === 'p2') {
                         this._p2Index = i;
                         this._updateBannerSprite('p2');
+                        this._selectingSlot = 'p1';
                     } else {
                         this._p1Index = i;
                         this._updateBannerSprite('p1');
+                        this._selectingSlot = 'p2';
                     }
                     this._buildTabContent();
                     this._updateSummary();
@@ -516,11 +522,15 @@ export default class QuickPlayScene extends Phaser.Scene {
         // P2 detail
         this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, p2Label, '#C44B3F');
 
-        // Hint at bottom
+        // Active slot indicator (shows who the next click will assign to)
+        const slotLabel = this._selectingSlot === 'p1'
+            ? (isLocal ? 'J1' : I18n.t('ingame.you'))
+            : (isLocal ? 'J2' : I18n.t('ingame.opponent'));
+        const slotColor = this._selectingSlot === 'p1' ? '#5B9BD5' : '#C44B3F';
         this._tabObjects.push(this.add.text(CX, detailY + 95,
-            I18n.t('quickplay.select_hint'), {
-                fontFamily: 'monospace', fontSize: '7px',
-                color: CSS.GRIS, shadow: NO_SHADOW, alpha: 0.5
+            `${I18n.t('quickplay.selecting')}: ${slotLabel}`, {
+                fontFamily: 'monospace', fontSize: '8px',
+                color: slotColor, shadow: NO_SHADOW
             }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 2));
     }
 
@@ -1258,7 +1268,8 @@ export default class QuickPlayScene extends Phaser.Scene {
             difficulty: isLocal ? 'medium' : this._difficulty,
             format: this._format,
             opponentName: this._p2Name,
-            opponentId: 'quickplay_' + this._p2CharId,
+            playerCharId: this._p1CharId,
+            opponentId: this._p2CharId,
             returnScene: 'QuickPlayScene',
             personality: p2Char?.ai?.personality || null,
             playerCharacter: p1Char,

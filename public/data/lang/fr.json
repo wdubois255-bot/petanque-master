@@ -336,6 +336,7 @@
     },
     "play_btn": "JOUER !",
     "select_hint": "Clic = J1  |  Shift+Clic = J2",
+    "selecting": "Selection",
     "locked": "VERROUILLE",
     "locked_unlock": "Terminez l'Arcade pour debloquer",
     "locked_arcade": "A debloquer en Arcade",
