@@ -656,28 +656,61 @@ export default class PetanqueEngine {
                     const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
                     if (cdist < ball.radius + other.radius + landingContactBonus) {
                         landingHit = true;
-                        // Ball landed on/very near another — give it velocity
                         if (Math.abs(rollVx) < 0.1 && Math.abs(rollVy) < 0.1) {
-                            // Use THROW DIRECTION (not collision normal) for velocity.
-                            // The impact parameter (cdist) determines how off-center the hit is,
-                            // and resolveCollision handles the physics naturally:
-                            // - Center hit (cdist≈0): dvn≈full → 81% transfer → carreau
-                            // - Side hit (cdist≈R): dvn=partial → target sideways → tir de côté
-                            // - Edge hit (cdist≈2R): dvn≈0 → barely clips → casquette
-                            const throwAngle = Math.atan2(targetY - startY, targetX - startX);
+                            const throwDx = targetX - startX;
+                            const throwDy = targetY - startY;
+                            const throwLen = Math.sqrt(throwDx * throwDx + throwDy * throwDy);
+                            const throwNx = throwDx / throwLen;
+                            const throwNy = throwDy / throwLen;
                             const impactSpeed = isTir ? TIR_IMPACT_SPEED : MIN_IMPACT_SPEED;
-                            rollVx = Math.cos(throwAngle) * impactSpeed;
-                            rollVy = Math.sin(throwAngle) * impactSpeed;
-                        }
-                        // Ensure physical overlap so resolveCollision fires on the next frame
-                        // (landingContactBonus may detect contact without actual overlap)
-                        if (cdist > 0 && cdist > ball.radius + other.radius - 2) {
-                            const nx = (other.x - ball.x) / cdist;
-                            const ny = (other.y - ball.y) / cdist;
-                            const pushDist = cdist - (ball.radius + other.radius) + 2;
-                            if (pushDist > 0) {
-                                ball.x += nx * pushDist;
-                                ball.y += ny * pushDist;
+
+                            // Dot product: is the target in FRONT of the ball (along throw dir)?
+                            const toTargetX = other.x - ball.x;
+                            const toTargetY = other.y - ball.y;
+                            const dotApproach = toTargetX * throwNx + toTargetY * throwNy;
+
+                            if (dotApproach > 0) {
+                                // FRONT/SIDE HIT: throw direction velocity → resolveCollision
+                                // handles impact parameter naturally:
+                                // - Center (cdist≈0): dvn≈full → 81% transfer → carreau
+                                // - Side (cdist≈R): dvn partial → tir de côté
+                                // - Edge (cdist≈2R): dvn≈0 → casquette avant
+                                rollVx = throwNx * impactSpeed;
+                                rollVy = throwNy * impactSpeed;
+                                // Ensure physical overlap for resolveCollision
+                                if (cdist > 0 && cdist > ball.radius + other.radius - 2) {
+                                    const nx = toTargetX / cdist;
+                                    const ny = toTargetY / cdist;
+                                    const pushDist = cdist - (ball.radius + other.radius) + 2;
+                                    if (pushDist > 0) {
+                                        ball.x += nx * pushDist;
+                                        ball.y += ny * pushDist;
+                                    }
+                                }
+                            } else {
+                                // BACK-CLIP: ball landed past/behind the target → casquette arrière
+                                // Direct physics — resolveCollision can't handle this (ball moves away)
+                                // Energy transfer based on overlap: more overlap = stronger clip
+                                const contactZone = ball.radius + other.radius + landingContactBonus;
+                                const clipStrength = Math.max(0.05, 1 - cdist / contactZone);
+                                // Target gets a small push (casquette-level: 5-15% energy)
+                                const nx = toTargetX / cdist;
+                                const ny = toTargetY / cdist;
+                                const targetPush = impactSpeed * clipStrength * 0.15;
+                                other.vx += nx * targetPush;
+                                other.vy += ny * targetPush;
+                                other.isMoving = true;
+                                other._squashTimer = 3;
+                                ball._squashTimer = 3;
+                                // Ball continues along throw direction, barely slowed
+                                rollVx = throwNx * impactSpeed * 0.88;
+                                rollVy = throwNy * impactSpeed * 0.88;
+                                // Separate balls to prevent resolveCollision double-handling
+                                if (cdist < ball.radius + other.radius) {
+                                    const sep = ball.radius + other.radius - cdist + 1;
+                                    ball.x -= nx * sep;
+                                    ball.y -= ny * sep;
+                                }
                             }
                         }
                     }
@@ -715,10 +748,14 @@ export default class PetanqueEngine {
 
                 ball.launch(rollVx, rollVy);
 
-                // Activate 2-phase retro model for tir (enables recul via backspin reversal)
-                // Simple retro (just friction mult) is used for pointage; 2-phase for tir
-                if (isTir && ball.retro > 0) {
-                    ball.activateRetro(ball.retro, this.terrainType);
+                // Retro only on tir au fer (ball lands directly on target)
+                // Palet (lands before) or missed tir = no backspin effect at all
+                if (isTir) {
+                    if (ball.retro > 0 && landingHit) {
+                        ball.activateRetro(ball.retro, this.terrainType);
+                    } else {
+                        ball.retro = 0; // clear simple retro mode too
+                    }
                 }
 
                 // Spin lateral post-atterrissage (actif uniquement apres contact sol)

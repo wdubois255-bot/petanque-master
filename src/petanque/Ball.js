@@ -310,9 +310,11 @@ export default class Ball {
         } else {
             // Backspin reversal (recul): when retro phase 1 is active and ball is near-zero speed,
             // the remaining backspin energy reverses direction (only for tir, not pointage)
+            // Terrain does NOT affect recul impulse — backspin is a ball property, not terrain.
+            // Terrain friction still applies normally during the backward roll (phase 2).
             if (this._retroPhase > 0 && this._retroIntensity > 0.3 && !this.isPoint
                 && this._throwDirX !== undefined && !this._reculDone) {
-                const reculSpeed = TIR_RECUL_IMPULSE * this._retroIntensity * this._retroTerrainEff;
+                const reculSpeed = TIR_RECUL_IMPULSE * this._retroIntensity;
                 if (reculSpeed > SPEED_THRESHOLD) {
                     this.vx = -this._throwDirX * reculSpeed;
                     this.vy = -this._throwDirY * reculSpeed;

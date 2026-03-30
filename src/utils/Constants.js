@@ -100,8 +100,9 @@ export const RETRO_MIN_EFFET_STAT = 8;   // Minimum effet stat to use retro (aut
 // Retro intensity by palier: effet 8 = 70%, 9 = 85%, 10 = 100%
 export const RETRO_INTENSITY_BY_EFFET = { 8: 0.70, 9: 0.85, 10: 1.0 };
 // Backspin reversal: when ball decelerates to near-zero, backspin can reverse direction (recul)
-// reculSpeed = TIR_RECUL_IMPULSE * retroIntensity * terrainEff
-// terre: 2.5*0.85*1.0=2.1 → ~15px recul. sable: 2.5*1.0*2.0=5.0 → ~35px. dalles: 2.5*0.7*0.6=1.05 → ~5px
+// reculSpeed = TIR_RECUL_IMPULSE * retroIntensity (terrain does NOT affect — backspin is ball property)
+// effet 8: 2.5*0.70=1.75, effet 9: 2.5*0.85=2.125, effet 10: 2.5*1.0=2.5
+// Post-reversal friction depends on terrain normally (dalles = slides further back, sable = stops sooner)
 export const TIR_RECUL_IMPULSE = 2.5;
 
 // Throw range: fraction of TERRAIN_HEIGHT atteignable a pleine puissance
