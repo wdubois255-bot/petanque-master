@@ -1016,77 +1016,55 @@ export default class PetanqueScene extends Phaser.Scene {
     // === CHARACTER UNIQUE ABILITIES ===
 
     _getCharacterAbility(charId) {
-        const ABILITIES = {
-            'ley': {
-                id: 'carreau_instinct',
-                name: 'Carreau Instinct',
-                charges: 1,
-                description: 'Tir: ejection 50% plus puissante'
-                // Effect: applied in PetanqueEngine when a ball-ball collision happens
-            },
-            'la_choupe': {
-                id: 'coup_de_canon',
-                name: 'Coup de Canon',
-                charges: 2,
-                description: 'Puissance +30%, precision -20%'
-                // Effect: modifies power and wobble for this throw
-            },
-            'foyot': {
-                id: 'lecture_terrain',
-                name: 'Lecture du Terrain',
-                charges: 2,
-                description: 'Affiche la trajectoire complete pendant 3s'
-            },
-            'mamie_josette': {
-                id: 'vieux_renard',
-                name: 'Vieux Renard',
-                charges: 3,
-                description: 'Annule le tremblement de pression'
-            },
-            'rocher': {
-                id: 'le_mur',
-                name: 'Le Mur',
-                charges: 2,
-                description: 'Boule 2x plus large pour bloquer'
-            }
-        };
+        const charsData = this.cache.json.get('characters');
+        const charData = charsData?.roster?.find(c => c.id === charId);
+        if (!charData) return null;
 
-        if (charId === 'rookie') {
+        // Rookie has progressive unlocks from save
+        if (charData.isRookie && charData.abilities_unlock) {
             const save = loadSave();
             const unlocked = save.rookie?.abilitiesUnlocked || [];
-            const hasInstinct = unlocked.includes('instinct');
-            const hasNaturel = unlocked.includes('naturel');
-            const hasDetermination = unlocked.includes('determination');
+            const unlockedAbilities = charData.abilities_unlock.filter(u => unlocked.includes(u.id));
 
-            // Determination is passive — handled separately via _determinationActive flag
-            // Return the highest-priority active ability
-            if (hasInstinct && hasNaturel) {
-                // Both unlocked: return instinct as primary, naturel as secondary
+            const instinctData = unlockedAbilities.find(u => u.id === 'instinct');
+            const naturelData = unlockedAbilities.find(u => u.id === 'naturel');
+            const determinationData = unlockedAbilities.find(u => u.id === 'determination');
+            const hasDetermination = !!determinationData;
+
+            if (instinctData && naturelData) {
                 return {
                     id: 'instinct',
-                    name: "L'Instinct",
-                    charges: 1,
-                    description: 'Ralentit le temps pendant 2s',
+                    name: I18n.field(instinctData.ability, 'name'),
+                    charges: instinctData.ability.charges,
+                    description: I18n.field(instinctData.ability, 'description'),
                     secondary: {
                         id: 'naturel',
-                        name: 'Le Naturel',
-                        charges: 1,
-                        description: 'Supprime le wobble pour ce lancer'
+                        name: I18n.field(naturelData.ability, 'name'),
+                        charges: naturelData.ability.charges,
+                        description: I18n.field(naturelData.ability, 'description')
                     },
                     hasDetermination
                 };
-            } else if (hasInstinct) {
-                return { id: 'instinct', name: "L'Instinct", charges: 1, description: 'Ralentit le temps pendant 2s', hasDetermination };
-            } else if (hasNaturel) {
-                return { id: 'naturel', name: 'Le Naturel', charges: 1, description: 'Supprime le wobble pour ce lancer', hasDetermination };
+            } else if (instinctData) {
+                return { id: 'instinct', name: I18n.field(instinctData.ability, 'name'), charges: instinctData.ability.charges, description: I18n.field(instinctData.ability, 'description'), hasDetermination };
+            } else if (naturelData) {
+                return { id: 'naturel', name: I18n.field(naturelData.ability, 'name'), charges: naturelData.ability.charges, description: I18n.field(naturelData.ability, 'description'), hasDetermination };
             } else if (hasDetermination) {
-                // Only determination (passive) — no active ability button, but flag it
-                return { id: 'determination_only', name: 'Determination', charges: 0, description: 'Passif: precision accrue apres mene perdue', hasDetermination: true };
+                return { id: 'determination_only', name: I18n.field(determinationData.ability, 'name'), charges: 0, description: I18n.field(determinationData.ability, 'description'), hasDetermination: true };
             }
             return null;
         }
 
-        return ABILITIES[charId] || null;
+        // All other characters: read ability directly from characters.json
+        if (!charData.ability) return null;
+        const ab = charData.ability;
+        const id = ab.name.toLowerCase().replace(/['\s]+/g, '_').replace(/__+/g, '_');
+        return {
+            id,
+            name: I18n.field(ab, 'name'),
+            charges: ab.charges || 0,
+            description: I18n.field(ab, 'description')
+        };
     }
 
     // === SPRITE LOADING (real spritesheets or procedural fallback) ===

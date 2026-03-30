@@ -489,7 +489,7 @@ export default class InGameTutorial {
 
         // Build modes dynamically based on unlock state
         const save = loadSave();
-        const plombeeUnlocked = (save.stats?.totalWins || 0) >= PLOMBEE_UNLOCK_WINS || save.tutorialSeen;
+        const plombeeUnlocked = true;
 
         const modes = [
             { key: '1', name: I18n.t('tutorial.modes.demi'), color: '#6B8E4E' }
