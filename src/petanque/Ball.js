@@ -8,7 +8,7 @@ import {
     BALL_SHADOW_RATIO_W, BALL_SHADOW_RATIO_H, BALL_ROLL_FRAME_STEP,
     BALL_SHADOW_STRETCH_MAX, BALL_SHADOW_STRETCH_SPEED, BALL_SQUASH_RADIUS_BOOST,
     BALL_DISPLAY_SCALE, COCHONNET_DISPLAY_SCALE,
-    COCHONNET_POINT_DAMPING, COCHONNET_MAX_SPEED_POINT, COCHONNET_MAX_SPEED_TIR,
+    COCHONNET_IMPACT_DAMPING, COCHONNET_POINT_DAMPING, COCHONNET_MAX_SPEED_POINT, COCHONNET_MAX_SPEED_TIR,
     puissanceMultiplier,
     LATERAL_SPIN_FORCE, LATERAL_SPIN_FRAMES, LATERAL_SPIN_FRAMES_BY_EFFET,
     LATERAL_SPIN_MIN_SPEED, LATERAL_SPIN_TERRAIN_MULT
@@ -481,9 +481,12 @@ export default class Ball {
         const bSpeed = b.vx * b.vx + b.vy * b.vy;
         const mover = aSpeed > bSpeed ? a : b;
 
-        // Cochonnet-specific: pointage = damping (biberon doux), tir = plein impact
-        if (isBouleVsCochonnet && mover.isPoint) {
-            impulse *= COCHONNET_POINT_DAMPING;
+        // Cochonnet-specific: réduction globale de moitié, puis pointage = damping supplémentaire
+        if (isBouleVsCochonnet) {
+            impulse *= COCHONNET_IMPACT_DAMPING;
+            if (mover.isPoint) {
+                impulse *= COCHONNET_POINT_DAMPING;
+            }
         }
 
         // === PUISSANCE impacts ejection distance ===

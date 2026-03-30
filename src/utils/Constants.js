@@ -203,7 +203,8 @@ export const WALL_RESTITUTION = 0.35; // Bois/metal reel ~0.30-0.40
 // Boule-boule: PAS de damping — COR 0.62 gere naturellement l'energie.
 // Cochonnet: deux regimes differents (point vs tir) car ratio masse 43:1
 // rend le cochonnet trop sensible au moindre contact en pointage.
-export const COCHONNET_POINT_DAMPING = 0.55; // Pointage→cochonnet: 55% impulse (biberon doux)
+export const COCHONNET_IMPACT_DAMPING = 0.5;  // Global: force transmise au cochonnet réduite de moitié (tir + pointage)
+export const COCHONNET_POINT_DAMPING = 0.55; // Pointage→cochonnet: 55% impulse en plus (biberon doux, s'applique après IMPACT_DAMPING)
 // (Boule-boule: aucun damping, devant de boule fonctionne naturellement)
 export const COLLISION_SPARK_COUNT = 5;
 export const CARREAU_SPARK_COUNT = 8;
