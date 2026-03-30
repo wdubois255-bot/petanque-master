@@ -177,10 +177,10 @@ export default class AimingSystem {
     // Flat list: Demi-portee + Tir au fer (+ Plombee when unlocked)
     // No tabs, no families — simple and clear
 
-    /** Check if plombee is unlocked (derived from save, no extra field) */
+    /** Check if plombee is unlocked (first win OR tutorial completed) */
     _isPlombeeUnlocked() {
         const save = loadSave();
-        return (save.stats?.totalWins || 0) >= PLOMBEE_UNLOCK_WINS;
+        return (save.stats?.totalWins || 0) >= PLOMBEE_UNLOCK_WINS || save.tutorialSeen;
     }
 
     /** Build available style list based on game state and progression */
