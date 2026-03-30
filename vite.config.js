@@ -11,6 +11,13 @@ const PORTAL_SCRIPTS = {
     standalone: ''
 };
 
+// CSP overrides per platform (script-src + connect-src additions)
+const PORTAL_CSP = {
+    crazygames: { scriptSrc: 'https://sdk.crazygames.com', connectSrc: 'https://sdk.crazygames.com https://script.google.com' },
+    poki:       { scriptSrc: 'https://game-cdn.poki.com', connectSrc: 'https://game-cdn.poki.com https://script.google.com' },
+    standalone: { scriptSrc: '', connectSrc: '' }
+};
+
 export default defineConfig(({ mode }) => {
     const platform = process.env.VITE_PLATFORM || 'standalone';
 
@@ -42,8 +49,28 @@ export default defineConfig(({ mode }) => {
                 name: 'inject-portal-sdk',
                 transformIndexHtml(html) {
                     const script = PORTAL_SCRIPTS[platform] || '';
-                    if (!script) return html;
-                    return html.replace('</head>', `${script}\n</head>`);
+                    const csp = PORTAL_CSP[platform] || PORTAL_CSP.standalone;
+
+                    // Inject portal SDK script
+                    if (script) {
+                        html = html.replace('</head>', `${script}\n</head>`);
+                    }
+
+                    // Extend CSP for portal SDKs
+                    if (csp.scriptSrc) {
+                        html = html.replace(
+                            "script-src 'self' 'wasm-unsafe-eval'",
+                            `script-src 'self' 'wasm-unsafe-eval' ${csp.scriptSrc}`
+                        );
+                    }
+                    if (csp.connectSrc) {
+                        html = html.replace(
+                            /connect-src 'self'[^;]*/,
+                            `connect-src 'self' ${csp.connectSrc}`
+                        );
+                    }
+
+                    return html;
                 }
             }
         ]

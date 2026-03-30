@@ -184,7 +184,7 @@ Voir [section 12](#12-analytics-in-game-optionnel) pour les details. En resume :
   ```bash
   npm run build && npx vitest run
   ```
-  Verifier : 0 erreurs de build, tous les tests passent (570/570 au 28 mars 2026). Le dossier `dist/` contient le jeu complet pret a uploader.
+  Verifier : 0 erreurs de build, tous les tests passent (3089/3089 au 30 mars 2026). Le dossier `dist/` (~11 MB avec assets) contient le jeu complet pret a uploader.
 
 - [ ] **4.2 — Zipper le contenu de dist/**
   IMPORTANT : zipper le CONTENU de dist/, pas le dossier lui-meme. Si le ZIP contient un dossier "dist" a la racine, itch.io ne trouvera pas l'index.html.

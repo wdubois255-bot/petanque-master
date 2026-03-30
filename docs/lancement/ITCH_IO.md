@@ -21,7 +21,7 @@
 | SDK Portails | OK | CrazyGames + Poki SDK integres via VITE_PLATFORM |
 | Tests | OK | 440 tests (344 unit + 96 E2E) |
 | CI/CD | OK | GitHub Pages deploy + QA pipeline |
-| Build | OK | ~1.6 MB total (424KB jeu + 1237KB Phaser) |
+| Build | OK | ~11 MB total (476KB jeu + 1.2MB Phaser + ~9MB assets audio/sprites) |
 | Mobile | OK | Touch 56px, rotation portrait overlay |
 
 ### Ce qui BLOQUE (3h de travail)

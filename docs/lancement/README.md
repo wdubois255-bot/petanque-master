@@ -65,7 +65,7 @@ Le script affiche : ratings, devices, commentaires, erreurs, recommandations.
 | Version 1.0.0 | `package.json` | OK |
 | SDK portails (CrazyGames + Poki) | `PortalSDK.js` | OK |
 | I18n FR + EN | `public/data/lang/` | OK |
-| 570 tests | Vitest | OK |
+| 3089 tests | Vitest | OK |
 
 ---
 

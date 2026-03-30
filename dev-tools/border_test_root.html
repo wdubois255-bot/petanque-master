@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Border Log Ends - Placement Test</title>
+<style>
+  body { background: #2a2a2a; color: #fff; font-family: Arial; text-align: center; margin: 20px; }
+  h2 { color: #D4A574; }
+  .terrain-container { display: inline-block; position: relative; margin: 30px auto; }
+  .terrain { background: #C4854A; border: none; }
+  .border-h { position: absolute; background: repeat-x; image-rendering: pixelated; }
+  .border-v { position: absolute; background: repeat-y; image-rendering: pixelated; }
+  .log-end {
+    position: absolute; width: 64px; height: 64px;
+    image-rendering: pixelated; cursor: pointer;
+    border: 2px solid transparent; transition: border-color 0.2s;
+  }
+  .log-end:hover { border-color: #FFD700; }
+  .log-end.selected { border-color: #FF4444; }
+  .info { margin: 20px; padding: 15px; background: #333; border-radius: 8px; display: inline-block; text-align: left; }
+  .result { margin: 20px; padding: 15px; background: #1a3a1a; border-radius: 8px; font-family: monospace; font-size: 14px; }
+  button { padding: 10px 20px; font-size: 16px; margin: 5px; cursor: pointer; background: #D4A574; border: none; border-radius: 4px; }
+  button:hover { background: #E8B884; }
+  .label { position: absolute; color: #FFD700; font-weight: bold; font-size: 11px; pointer-events: none; text-shadow: 1px 1px 2px #000; }
+</style>
+</head>
+<body>
+<h2>Clique sur chaque bout de rondin pour changer son orientation</h2>
+<p>Chaque clic fait tourner parmi les 4 orientations possibles. Quand c'est bon, copie le resultat en bas.</p>
+
+<div class="terrain-container" id="container">
+  <!-- Terrain surface -->
+  <div class="terrain" id="terrain" style="position: absolute;"></div>
+
+  <!-- 8 log end positions -->
+</div>
+
+<div class="info">
+  <b>Legende :</b><br>
+  Positions 1-4 : bouts des bordures <b>verticales</b> (gauche/droite)<br>
+  Positions 5-8 : bouts des bordures <b>horizontales</b> (haut/bas)<br><br>
+  <b>Clic gauche</b> = orientation suivante | <b>Clic droit</b> = flip horizontal
+</div>
+
+<div class="result" id="result"></div>
+<button onclick="copyResult()">Copier le resultat</button>
+
+<script>
+const SCALE = 4; // Display scale
+const BW = 16;   // Border width
+const TW = 180;  // Terrain width
+const TH = 300;  // Terrain height (shortened for display)
+const TILE = 16;  // Tile size
+
+// Scaled values
+const bw = BW * SCALE;
+const tw = TW * SCALE;
+const th = TH * SCALE;
+const tile = TILE * SCALE;
+
+const container = document.getElementById('container');
+container.style.width = (tw + bw * 2) + 'px';
+container.style.height = (th + bw * 2) + 'px';
+
+// Terrain background
+const terrain = document.getElementById('terrain');
+terrain.style.left = bw + 'px';
+terrain.style.top = bw + 'px';
+terrain.style.width = tw + 'px';
+terrain.style.height = th + 'px';
+
+// Draw tiled borders using canvas for the repeating wood texture
+function createBorderCanvas(src, width, height, isVertical) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      if (isVertical) {
+        for (let y = 0; y < height; y += tile) {
+          ctx.drawImage(img, 0, y, tile, tile);
+        }
+      } else {
+        for (let x = 0; x < width; x += tile) {
+          ctx.drawImage(img, x, 0, tile, tile);
+        }
+      }
+      resolve(canvas.toDataURL());
+    };
+    img.src = src;
+  });
+}
+
+// Create scaled tile images
+function scaleImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = tile;
+      canvas.height = tile;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, tile, tile);
+      resolve(canvas.toDataURL());
+    };
+    img.src = src;
+  });
+}
+
+// State: orientation index for each of the 8 log ends
+// 0 = normal, 1 = flipX, 2 = flipY, 3 = flipX+flipY
+const states = [0, 0, 0, 0, 0, 0, 0, 0];
+const orientationNames = ['normal', 'flipX', 'flipY', 'flipX+flipY'];
+
+const positions = [
+  // Vertical border ends (using border_end_v)
+  { id: 0, label: '1: Gauche HAUT',  x: bw - tile,       y: bw,            type: 'v' },
+  { id: 1, label: '2: Gauche BAS',   x: bw - tile,       y: bw + th - tile, type: 'v' },
+  { id: 2, label: '3: Droite HAUT',  x: bw + tw,         y: bw,            type: 'v' },
+  { id: 3, label: '4: Droite BAS',   x: bw + tw,         y: bw + th - tile, type: 'v' },
+  // Horizontal border ends (using border_end_h)
+  { id: 4, label: '5: Haut GAUCHE',  x: 0,               y: 0,             type: 'h' },
+  { id: 5, label: '6: Haut DROITE',  x: bw + tw + bw - tile, y: 0,         type: 'h' },
+  { id: 6, label: '7: Bas GAUCHE',   x: 0,               y: bw + th,       type: 'h' },
+  { id: 7, label: '8: Bas DROITE',   x: bw + tw + bw - tile, y: bw + th,   type: 'h' },
+];
+
+const logEndElements = [];
+
+async function init() {
+  const vSrc = await scaleImage('public/assets/sprites/border_end_v.png');
+  const hSrc = await scaleImage('public/assets/sprites/border_end_h.png');
+
+  // Draw simple colored borders
+  const borderColor = '#8B6B3A';
+  // Top
+  addBorder(0, 0, tw + bw * 2, bw, borderColor);
+  // Bottom
+  addBorder(0, bw + th, tw + bw * 2, bw, borderColor);
+  // Left
+  addBorder(0, bw, bw, th, borderColor);
+  // Right
+  addBorder(bw + tw, bw, bw, th, borderColor);
+
+  // Create log end images
+  for (const pos of positions) {
+    const img = document.createElement('img');
+    img.className = 'log-end';
+    img.style.left = pos.x + 'px';
+    img.style.top = pos.y + 'px';
+    img.style.width = tile + 'px';
+    img.style.height = tile + 'px';
+    img.dataset.type = pos.type;
+    img.dataset.idx = pos.id;
+    img.src = pos.type === 'v' ? vSrc : hSrc;
+
+    img.addEventListener('click', (e) => {
+      e.preventDefault();
+      states[pos.id] = (states[pos.id] + 1) % 4;
+      applyOrientation(img, states[pos.id]);
+      updateResult();
+    });
+
+    img.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      // Quick flip X
+      const s = states[pos.id];
+      states[pos.id] = s ^ 1; // toggle flipX bit
+      applyOrientation(img, states[pos.id]);
+      updateResult();
+    });
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.style.left = pos.x + 'px';
+    label.style.top = (pos.y - 16) + 'px';
+    label.textContent = pos.label;
+
+    container.appendChild(img);
+    container.appendChild(label);
+    logEndElements.push(img);
+  }
+
+  updateResult();
+}
+
+function addBorder(x, y, w, h, color) {
+  const div = document.createElement('div');
+  div.style.position = 'absolute';
+  div.style.left = x + 'px';
+  div.style.top = y + 'px';
+  div.style.width = w + 'px';
+  div.style.height = h + 'px';
+  div.style.background = color;
+  container.appendChild(div);
+}
+
+function applyOrientation(img, state) {
+  const fx = (state & 1) ? -1 : 1;
+  const fy = (state & 2) ? -1 : 1;
+  img.style.transform = `scaleX(${fx}) scaleY(${fy})`;
+}
+
+function updateResult() {
+  const names = ['Gauche HAUT (V)', 'Gauche BAS (V)', 'Droite HAUT (V)', 'Droite BAS (V)',
+                 'Haut GAUCHE (H)', 'Haut DROITE (H)', 'Bas GAUCHE (H)', 'Bas DROITE (H)'];
+  let text = 'RESULTAT — copie ca dans le chat :\n\n';
+  for (let i = 0; i < 8; i++) {
+    text += `${names[i]} → ${orientationNames[states[i]]}\n`;
+  }
+  document.getElementById('result').textContent = text;
+}
+
+function copyResult() {
+  const text = document.getElementById('result').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Copie !'));
+}
+
+init();
+</script>
+</body>
+</html>
