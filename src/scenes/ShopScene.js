@@ -532,7 +532,7 @@ export default class ShopScene extends Phaser.Scene {
         // Price / owned badge (bottom of card) — y +8 gives gap after 7px desc
         if (owned) {
             elements.push(
-                this.add.text(x + 56, cy + 8, '\u2713 Possede', {
+                this.add.text(x + 56, cy + 8, I18n.t('shop_extra.owned'), {
                     fontFamily: 'monospace', fontSize: '8px',
                     color: '#44CC44', shadow: SHADOW
                 }).setDepth(6)

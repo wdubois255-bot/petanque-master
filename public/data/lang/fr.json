@@ -185,7 +185,11 @@
     "cochonnet_too_short": "Trop court ! ({n}/3)",
     "cochonnet_too_long": "Trop loin ! ({n}/3)",
     "cochonnet_out": "Hors terrain ! ({n}/3)",
-    "cochonnet_switch": "3 essais rates ! A l'adversaire de lancer."
+    "cochonnet_switch": "3 essais rates ! A l'adversaire de lancer.",
+    "tuto_welcome": "BIENVENUE !\n\nVous devez lancer le cochonnet\n(la petite boule verte).\n\nGlissez et relachez pour viser.",
+    "tuto_objective": "OBJECTIF :\nPlacez vos boules le plus pres\npossible du cochonnet.\n\nL'equipe la plus loin rejoue.",
+    "tuto_techniques": "TECHNIQUES :\n\nDemi-portee = mi-hauteur\nPlombee = haute (arrete court)\nTir = tendu (chasse l'adversaire)\n\nAppuyez sur R pour changer.",
+    "tuto_scoring": "SCORE :\nChaque boule plus proche\ndu cochonnet que la meilleure\nadverse rapporte 1 point.\n\nPremier a 13 gagne !"
   },
   "shop": {
     "buy": "ACHETER",
@@ -504,6 +508,11 @@
     "multicolor": "Arc-en-ciel psychedelique."
   },
   "credits": {
-    "font_credit": "Font — PressStart2P (OFL license)"
+    "font_credit": "Font — PressStart2P (OFL license)",
+    "inventors": "Inventeurs de la petanque",
+    "pied_tanque": "\"Pied tanque\" — jouer les pieds ancres au sol",
+    "fipjp_line1": "Regles FIPJP — Federation Internationale",
+    "fipjp_line2": "de Petanque et Jeu Provencal",
+    "thanks": "MERCI DE JOUER !"
   }
 }

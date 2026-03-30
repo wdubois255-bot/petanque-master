@@ -123,7 +123,7 @@ export default class PlayerScene extends Phaser.Scene {
         badgeBg.lineStyle(1, 0xD4A574, 0.5);
         badgeBg.strokeRoundedRect(cx - 40, 186, 80, 18, 9);
 
-        this.add.text(cx, 195, 'Adaptable', {
+        this.add.text(cx, 195, I18n.t('charselect_extra.archetypes.adaptable'), {
             fontFamily: 'monospace', fontSize: '9px',
             color: CSS.OCRE, shadow: SHADOW
         }).setOrigin(0.5).setDepth(3);

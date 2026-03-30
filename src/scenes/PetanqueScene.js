@@ -962,19 +962,19 @@ export default class PetanqueScene extends Phaser.Scene {
     _showTutorialStep(step) {
         const steps = [
             {
-                text: 'BIENVENUE !\n\nVous devez lancer le cochonnet\n(la petite boule verte).\n\nGlissez et relachez pour viser.',
+                text: I18n.t('ingame.tuto_welcome'),
                 y: GAME_HEIGHT / 2
             },
             {
-                text: 'OBJECTIF :\nPlacez vos boules le plus pres\npossible du cochonnet.\n\nL\'equipe la plus loin rejoue.',
+                text: I18n.t('ingame.tuto_objective'),
                 y: GAME_HEIGHT / 2
             },
             {
-                text: 'TECHNIQUES :\n\nDemi-portee = mi-hauteur\nPlombee = haute (arrete court)\nTir = tendu (chasse l\'adversaire)\n\nAppuyez sur R pour changer.',
+                text: I18n.t('ingame.tuto_techniques'),
                 y: GAME_HEIGHT / 2
             },
             {
-                text: 'SCORE :\nChaque boule plus proche\ndu cochonnet que la meilleure\nadverse rapporte 1 point.\n\nPremier a 13 gagne !',
+                text: I18n.t('ingame.tuto_scoring'),
                 y: GAME_HEIGHT / 2
             }
         ];

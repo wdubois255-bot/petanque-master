@@ -185,7 +185,11 @@
     "cochonnet_too_short": "Too short! ({n}/3)",
     "cochonnet_too_long": "Too far! ({n}/3)",
     "cochonnet_out": "Out of bounds! ({n}/3)",
-    "cochonnet_switch": "3 failed attempts! Opponent throws."
+    "cochonnet_switch": "3 failed attempts! Opponent throws.",
+    "tuto_welcome": "WELCOME!\n\nThrow the cochonnet\n(the small green ball).\n\nSlide and release to aim.",
+    "tuto_objective": "OBJECTIVE:\nPlace your boules as close\nas possible to the cochonnet.\n\nThe team furthest away plays again.",
+    "tuto_techniques": "TECHNIQUES:\n\nHalf-lob = mid-height\nHigh-lob = high arc (stops short)\nShot = flat (knocks opponent)\n\nPress R to switch.",
+    "tuto_scoring": "SCORING:\nEach boule closer to the\ncochonnet than the best opponent\nboule scores 1 point.\n\nFirst to 13 wins!"
   },
   "shop": {
     "buy": "BUY",
@@ -504,6 +508,11 @@
     "multicolor": "Psychedelic rainbow."
   },
   "credits": {
-    "font_credit": "Font — PressStart2P (OFL license)"
+    "font_credit": "Font — PressStart2P (OFL license)",
+    "inventors": "Inventors of petanque",
+    "pied_tanque": "\"Pied tanque\" — playing with feet anchored to the ground",
+    "fipjp_line1": "FIPJP Rules — International Federation",
+    "fipjp_line2": "of Petanque and Provencal Game",
+    "thanks": "THANKS FOR PLAYING!"
   }
 }

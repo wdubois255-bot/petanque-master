@@ -139,18 +139,18 @@ export default class CreditsScene extends Phaser.Scene {
 
             { type: 'heading', text: '--- SPECIAL THANKS ---' },
             { type: 'line', text: 'Jules Lenoir & Ernest Pitiot' },
-            { type: 'line', text: 'Inventeurs de la petanque' },
+            { type: 'line', text: I18n.t('credits.inventors') },
             { type: 'line', text: 'La Ciotat, 1907' },
             { type: 'spacer', height: 20 },
-            { type: 'line', text: '"Pied tanque" — jouer les pieds ancres au sol' },
+            { type: 'line', text: I18n.t('credits.pied_tanque') },
             { type: 'spacer', height: 30 },
 
             { type: 'heading', text: '--- LA PETANQUE ---' },
-            { type: 'line', text: 'Regles FIPJP — Federation Internationale' },
-            { type: 'line', text: 'de Petanque et Jeu Provencal' },
+            { type: 'line', text: I18n.t('credits.fipjp_line1') },
+            { type: 'line', text: I18n.t('credits.fipjp_line2') },
             { type: 'spacer', height: 40 },
 
-            { type: 'title', text: 'MERCI DE JOUER !' },
+            { type: 'title', text: I18n.t('credits.thanks') },
             { type: 'spacer', height: 60 },
         ];
     }
