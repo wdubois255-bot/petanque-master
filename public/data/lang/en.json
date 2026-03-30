@@ -284,7 +284,9 @@
     "restart": "RESTART",
     "quit": "QUIT",
     "bonus_perfect": "Perfect bonus",
-    "bonus_complete": "Completion bonus"
+    "bonus_complete": "Completion bonus",
+    "champion_name": "Champion: {name}",
+    "default_champion": "Champion"
   },
   "feedback": {
     "title": "Your feedback matters!",

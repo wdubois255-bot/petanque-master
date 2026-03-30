@@ -851,7 +851,7 @@ export default class ArcadeScene extends Phaser.Scene {
         // Show ending narrative first, then the completion screen
         if (this.arcadeData.ending_narrative && !this._endingShown) {
             this._endingShown = true;
-            const playerName = this.playerCharacter ? I18n.field(this.playerCharacter, 'name') : 'Le Champion';
+            const playerName = this.playerCharacter ? I18n.field(this.playerCharacter, 'name') : I18n.t('arcade.default_champion');
             const endingNarrative = I18n.fieldArray(this.arcadeData, 'ending_narrative') || this.arcadeData.ending_narrative;
             const lines = endingNarrative.map(
                 l => l.replace('[Personnage]', playerName)
@@ -899,7 +899,7 @@ export default class ArcadeScene extends Phaser.Scene {
             fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 240, `Champion : ${I18n.field(this.playerCharacter, 'name')}`, {
+        this.add.text(GAME_WIDTH / 2, 240, I18n.t('arcade.champion_name', { name: I18n.field(this.playerCharacter, 'name') }), {
             fontFamily: 'monospace', fontSize: '18px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
 

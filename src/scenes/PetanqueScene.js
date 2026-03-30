@@ -453,7 +453,7 @@ export default class PetanqueScene extends Phaser.Scene {
             const badgeText = `Match ${this.arcadeRound}/${totalMatches}`;
             const badgeW = badgeText.length * 7 + 16;
             const badgeH = 22;
-            const badgeX = 6;
+            const badgeX = 44;
             const badgeY = 6;
             this._arcadeBadgeBg = this.add.graphics().setDepth(92).setAlpha(0);
             this._arcadeBadgeBg.fillStyle(0x3A2E28, 0.85);
