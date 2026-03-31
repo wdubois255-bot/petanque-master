@@ -1050,8 +1050,8 @@ export default class AimingSystem {
 
     _getWobbleSpeed() {
         const precision = this.charStats.precision || 6;
-        // Precision 10 = slow (1.2 Hz), Precision 1 = fast (3.5 Hz)
-        const base = 1.2 + (10 - precision) * 0.26;
+        // Precision 10 = slow (0.96 Hz), Precision 1 = fast (2.8 Hz) — 20% slower overall
+        const base = (1.2 + (10 - precision) * 0.26) * 0.8;
         return base * this._getFocusMultiplier();
     }
 

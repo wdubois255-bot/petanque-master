@@ -16,7 +16,7 @@ Welcome to Petanque Master.
 
 ---
 
-You play as Rookie — a newcomer who dares challenge the legends of the local boulodrome. Work your way up through 12 opponents, each with their own personality, playing style, and very specific ways of getting under your skin.
+You play as Rookie — a newcomer who dares challenge the legends of the local boulodrome. Work your way up through 11 opponents, each with their own personality, playing style, and very specific ways of getting under your skin.
 
 **The cast includes:**
 
@@ -26,7 +26,7 @@ You play as Rookie — a newcomer who dares challenge the legends of the local b
 
 ⚓ **La Choupe** — the dock enforcer. Plays rough. Talks too much. Reminds you of someone.
 
-...and 9 more characters who will humble you in different ways.
+...and 8 more characters who will humble you in different ways.
 
 ---
 
@@ -111,7 +111,7 @@ You throw heavy metal balls at a small wooden ball. The old guy opposite you has
 
 [LINK] — plays in the browser, no install, no account
 
-12 opponents to beat. 5 terrains. 3 throwing styles. Arcade progression + free sandbox. EN/FR.
+11 opponents to beat. 5 terrains. 3 throwing styles. Arcade progression + free sandbox. EN/FR.
 
 The sand terrain is humbling. Good luck.
 ```
@@ -247,7 +247,7 @@ But the characters are what I care about most.
 
 **La Choupe** works the docks. He plays rough and wins a lot and talks the whole time. You know someone like him.
 
-There are 9 more opponents. Each one taught me something about what makes petanque interesting.
+There are 8 more opponents. Each one taught me something about what makes petanque interesting.
 
 ---
 

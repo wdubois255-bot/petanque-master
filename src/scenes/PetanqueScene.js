@@ -483,21 +483,7 @@ export default class PetanqueScene extends Phaser.Scene {
             this.tweens.add({ targets: [this._arcadeBadgeBg, this._arcadeBadgeLabel], alpha: 1, duration: 400, delay: 500 });
         }
 
-        // === Phase 5 — Mene challenges (arcade only) ===
-        if (this.arcadeState) {
-            const arcadeData = this.cache.json.get('arcade');
-            this._challengePool = arcadeData?.mene_challenges || [];
-
-            // Match challenge — persistent panel on the right side
-            const matchChallenges = arcadeData?.match_challenges || [];
-            if (matchChallenges.length > 0) {
-                this._matchChallenge = matchChallenges[Math.floor(Math.random() * matchChallenges.length)];
-                const cName = I18n.field(this._matchChallenge, 'name');
-                const cDesc = I18n.field(this._matchChallenge, 'description');
-                const cReward = this._matchChallenge.reward || CHALLENGE_REWARD_GALETS;
-                this._matchChallengePanel = this._createChallengePanel(cName, cDesc, cReward);
-            }
-        }
+        // === Phase 5 — Mene challenges (arcade only) — DISABLED ===
 
         // Contextual terrain tooltips (one-shot per terrain, for ALL players)
         {
@@ -519,30 +505,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // Music tension crossfade when score >= 10
         this.events.on('match-tension', (tense) => setMusicTension(tense));
 
-        // === Phase 5 D1 — onMeneStart hook for mene challenges ===
-        this.engine.onMeneStart = (meneNumber) => {
-            if (!this.arcadeState || !this._challengePool?.length) return;
-            if (meneNumber <= 1) return;
-            this._menesSinceLastChallenge++;
-            // Force challenge every 3 mènes max, otherwise use probability
-            const forceChallenge = this._menesSinceLastChallenge >= 3;
-            if (!forceChallenge && Math.random() > CHALLENGE_PROBABILITY) return;
-            this._menesSinceLastChallenge = 0;
-            const challenge = this._challengePool[Math.floor(Math.random() * this._challengePool.length)];
-            this._currentChallenge = challenge;
-            this._challengeCompleted = false;
-
-            // First challenge of first arcade match: explain Galets & shop
-            if (!this._galetExplainShown && this.arcadeRound === 1) {
-                this._galetExplainShown = true;
-                this._showGaletExplanation(() => {
-                    this._showChallengeBanner(I18n.field(challenge, 'text'));
-                });
-                return;
-            }
-
-            this._showChallengeBanner(I18n.field(challenge, 'text'));
-        };
+        // === Phase 5 D1 — onMeneStart hook for mene challenges — DISABLED ===
 
         // === Phase 5 F3 — Golden zone (chainer avec onMeneStart) ===
         const _origMeneStart = this.engine.onMeneStart;

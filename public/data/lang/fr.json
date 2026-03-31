@@ -401,9 +401,8 @@
     "controls": [
       "Clic/Drag : Viser et lancer",
       "1-3 : Mode de lancer",
-      "T : Tir au fer",
       "F : Focus (slow-mo)",
-      "R : Retro | E : Spin",
+      "E : Spin lateral",
       "TAB : Classement boules"
     ],
     "volume_title": "VOLUME",

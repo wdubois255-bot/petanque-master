@@ -1264,21 +1264,24 @@ export default class QuickPlayScene extends Phaser.Scene {
             if (save.rookie) p1Char = { ...p1Char, stats: { ...save.rookie.stats } };
         }
 
-        UIFactory.transitionTo(this, 'PetanqueScene', {
-            terrain: this._terrainKey,
-            difficulty: isLocal ? 'medium' : this._difficulty,
-            format: this._format,
-            opponentName: this._p2Name,
-            playerCharId: this._p1CharId,
-            opponentId: this._p2CharId,
-            returnScene: 'QuickPlayScene',
-            personality: p2Char?.ai?.personality || null,
+        const terrainObj = this._allTerrains[this._terrainIndex];
+        const terrainName = terrainObj ? (I18n.field(terrainObj, 'name') || terrainObj.name) : 'Place du Village';
+
+        fadeToScene(this, 'VSIntroScene', {
             playerCharacter: p1Char,
             opponentCharacter: p2Char,
-            localMultiplayer: isLocal,
-            quickPlay: true,
-            bouleType: this._bouleKey,
-            cochonnetType: this._cochonnetKey
+            terrain: this._terrainKey,
+            terrainName,
+            matchData: {
+                difficulty: isLocal ? 'medium' : this._difficulty,
+                format: this._format,
+                returnScene: 'QuickPlayScene',
+                personality: p2Char?.ai?.personality || null,
+                localMultiplayer: isLocal,
+                quickPlay: true,
+                bouleType: this._bouleKey,
+                cochonnetType: this._cochonnetKey
+            }
         });
     }
 

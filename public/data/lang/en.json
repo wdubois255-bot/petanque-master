@@ -402,9 +402,8 @@
     "controls": [
       "Click/Drag: Aim and throw",
       "1-3: Throw mode",
-      "T: Iron Shot",
       "F: Focus (slow-mo)",
-      "R: Backspin | E: Spin",
+      "E: Lateral spin",
       "TAB: Ball ranking"
     ],
     "volume_title": "VOLUME",
