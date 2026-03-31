@@ -44,6 +44,21 @@ export default class PetanqueScene extends Phaser.Scene {
         this.playerCharacter = data.playerCharacter || null;
         this.opponentCharacter = data.opponentCharacter || null;
         this.playerCharId = this.playerCharacter?.id || data.playerCharId || 'rookie';
+
+        // Always refresh Rookie stats from save (may have been updated by LevelUpScene)
+        if (this.playerCharId === 'rookie' || this.playerCharacter?.isRookie) {
+            const save = loadSave();
+            if (save.rookie?.stats) {
+                if (!this.playerCharacter) {
+                    const chars = this.cache?.json?.get('characters');
+                    const rookieDef = (chars?.roster || []).find(c => c.isRookie || c.id === 'rookie');
+                    if (rookieDef) this.playerCharacter = { ...rookieDef };
+                }
+                if (this.playerCharacter) {
+                    this.playerCharacter.stats = { ...save.rookie.stats };
+                }
+            }
+        }
         this.opponentId = this.opponentCharacter?.id || data.opponentId?.replace('char_', '')?.replace('quickplay_', '') || null;
         this.arcadeState = data.arcadeState || null;
         this.arcadeRound = data.arcadeRound || null;

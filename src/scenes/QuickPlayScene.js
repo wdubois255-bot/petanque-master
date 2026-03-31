@@ -563,7 +563,8 @@ export default class QuickPlayScene extends Phaser.Scene {
             }).setOrigin(0, 0).setDepth(UI.DEPTH_PANEL + 3));
         }
 
-        // Stat bars (compact horizontal)
+        // Stat bars (compact horizontal) — use saved stats for Rookie
+        const rookieStats = (charData.isRookie || charData.id === 'rookie') ? loadSave()?.rookie?.stats : null;
         if (charData.stats) {
             const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
             const barW = Math.min(w - 80, 140);
@@ -571,7 +572,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             const barStartY = y + 34;
 
             for (let i = 0; i < STAT_NAMES.length; i++) {
-                const val = charData.stats[STAT_NAMES[i]] || 0;
+                const val = rookieStats ? (rookieStats[STAT_NAMES[i]] ?? charData.stats[STAT_NAMES[i]]) : (charData.stats[STAT_NAMES[i]] || 0);
                 const sy = barStartY + i * 16;
 
                 this._tabObjects.push(this.add.text(barX - 4, sy + 3, STAT_LABELS[i], {

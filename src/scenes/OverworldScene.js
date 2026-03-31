@@ -6,7 +6,7 @@ import NPCManager from '../world/NPCManager.js';
 import Player from '../entities/Player.js';
 import DialogBox from '../ui/DialogBox.js';
 import I18n from '../utils/I18n.js';
-import { saveGame } from '../utils/SaveManager.js';
+import { saveGame, loadSave } from '../utils/SaveManager.js';
 
 export default class OverworldScene extends Phaser.Scene {
     constructor() {
@@ -287,6 +287,12 @@ export default class OverworldScene extends Phaser.Scene {
         this._currentOpponent = npc;
         this._updatePlaytime();
 
+        // Build Rookie playerCharacter with saved stats
+        const save = loadSave();
+        const chars = this.cache.json.get('characters');
+        const rookieDef = (chars?.roster || []).find(c => c.isRookie || c.id === 'rookie');
+        const playerCharacter = rookieDef ? { ...rookieDef, stats: { ...save.rookie.stats } } : null;
+
         this.cameras.main.flash(200, 255, 255, 255);
         this.cameras.main.once('cameraflashcomplete', () => {
             this.cameras.main.fadeOut(300);
@@ -298,7 +304,8 @@ export default class OverworldScene extends Phaser.Scene {
                     format: npc.format,
                     opponentName: npc.npcName,
                     opponentId: npc.id,
-                    returnScene: 'OverworldScene'
+                    returnScene: 'OverworldScene',
+                    playerCharacter
                 });
             });
         });

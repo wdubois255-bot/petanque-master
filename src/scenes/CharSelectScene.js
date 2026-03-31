@@ -341,11 +341,12 @@ export default class CharSelectScene extends Phaser.Scene {
             this._updateCharAbility(char);
         }
 
-        // Stat bars
+        // Stat bars — use saved stats for Rookie (may have been upgraded via LevelUp)
+        const rookieStats = (char.isRookie || char.id === 'rookie') ? this._save?.rookie?.stats : null;
         const statNames = ['precision', 'puissance', 'effet', 'sang_froid'];
         for (const stat of statNames) {
             const bar = this._statBars[stat];
-            const value = char.stats[stat];
+            const value = rookieStats ? (rookieStats[stat] ?? char.stats[stat]) : char.stats[stat];
             const targetWidth = (value / 10) * 120;
             const bx = GAME_WIDTH - 220 - 40;
             const by = bar.y - 6;
