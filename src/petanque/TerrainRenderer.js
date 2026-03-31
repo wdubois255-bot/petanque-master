@@ -1064,19 +1064,20 @@ export default class TerrainRenderer {
         const cd = depth + 0.1;
         if (assets.corners === 'rondin_ends') {
             // Village/Plage: pre-baked rondin end sprites (8 pieces)
+            // [key, cx, cy, flipX, flipY]
             const ends = [
-                ['corner_tl_v', tx - half,            ty + half],
-                ['corner_tl_h', tx - bw + half,       ty - half],
-                ['corner_tr_v', tx + tw + half,        ty + half],
-                ['corner_tr_h', tx + tw + bw - half,   ty - half],
-                ['corner_bl_v', tx - half,             ty + th - half],
-                ['corner_bl_h', tx - bw + half,        ty + th + half],
-                ['corner_br_v', tx + tw + half,         ty + th - half],
-                ['corner_br_h', tx + tw + bw - half,    ty + th + half],
+                ['corner_tl_v', tx - half,            ty + half,          false, false],
+                ['corner_tl_h', tx - bw + half,       ty - half,          false, false],
+                ['corner_tr_v', tx + tw + half,        ty + half,          true,  false],
+                ['corner_tr_h', tx + tw + bw - half,   ty - half,         false, false],
+                ['corner_bl_v', tx - half,             ty + th - half,     false, false],
+                ['corner_bl_h', tx - bw + half,        ty + th + half,    false, true],
+                ['corner_br_v', tx + tw + half,         ty + th - half,   true,  false],
+                ['corner_br_h', tx + tw + bw - half,    ty + th + half,   false, true],
             ];
-            for (const [key, cx, cy] of ends) {
+            for (const [key, cx, cy, fx, fy] of ends) {
                 if (this.scene.textures.exists(key)) {
-                    all.push(this.scene.add.sprite(cx, cy, key).setDepth(cd));
+                    all.push(this.scene.add.sprite(cx, cy, key).setDepth(cd).setFlipX(fx).setFlipY(fy));
                 }
             }
         } else {

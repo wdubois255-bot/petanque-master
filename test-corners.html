@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test Corners</title>
+<style>
+  body { background: #1a1a1a; color: #eee; font-family: monospace; padding: 20px; margin: 0; }
+  h2 { color: #D4A574; margin: 0 0 8px; }
+  p  { color: #aaa; margin: 0 0 12px; font-size: 13px; }
+  #wrap { position: relative; display: inline-block; }
+  #game { image-rendering: pixelated; display: block;
+          transform-origin: top left; transform: scale(2); }
+  /* Overlay buttons — positioned at 1× coords, scaled with canvas */
+  .cbtn {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid rgba(155,123,184,0.8);
+    border-radius: 2px;
+    background: transparent;
+    padding: 0;
+    transition: border-color .15s;
+  }
+  .cbtn:hover { border-color: #fff; }
+  .cbtn canvas { display: block; image-rendering: pixelated; }
+  #panel {
+    margin-top: 500px; /* space for 2× scaled canvas (480×2=960, but we show panel after) */
+    padding: 16px; background: #111; border-radius: 6px; max-width: 832px;
+  }
+  #json-output { color: #6BFF6B; white-space: pre; font-size: 12px; }
+  button.copy { margin-top: 10px; padding: 8px 20px; background: #9B7BB8;
+    border: none; color: white; cursor: pointer; border-radius: 4px; font-size: 13px; }
+  button.copy:hover { background: #B89BC8; }
+  .hint { color: #9B7BB8; font-size: 12px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h2>Test Coins Rondins</h2>
+<p>Clique sur un bouton violet pour cycler l'orientation (normal → flipX → flipY → flipXY). Copie le JSON quand c'est bon.</p>
+
+<div id="wrap">
+  <canvas id="game" width="832" height="480"></canvas>
+  <!-- Overlay buttons injected by JS -->
+</div>
+
+<div id="panel">
+  <div class="hint">Orientations actuelles :</div>
+  <div id="json-output">{}</div>
+  <button class="copy" onclick="copyJson()">Copier le JSON</button>
+</div>
+
+<script>
+// ── Game constants (matches PetanqueScene / TerrainRenderer) ──────────────────
+const GW = 832, GH = 480;
+const TW = 180, TH = 420;
+const BW = 16;
+const tx = (GW - TW) / 2;   // 326
+const ty = (GH - TH) / 2;   // 30
+const half = BW / 2;         // 8
+
+// ── Corner definitions (key, center x, center y) — matches TerrainRenderer ───
+const CORNERS = [
+  { key: 'corner_tl_v', cx: tx - half,            cy: ty + half          },
+  { key: 'corner_tl_h', cx: tx - BW + half,       cy: ty - half          },
+  { key: 'corner_tr_v', cx: tx + TW + half,        cy: ty + half         },
+  { key: 'corner_tr_h', cx: tx + TW + BW - half,   cy: ty - half         },
+  { key: 'corner_bl_v', cx: tx - half,             cy: ty + TH - half    },
+  { key: 'corner_bl_h', cx: tx - BW + half,        cy: ty + TH + half    },
+  { key: 'corner_br_v', cx: tx + TW + half,        cy: ty + TH - half    },
+  { key: 'corner_br_h', cx: tx + TW + BW - half,   cy: ty + TH + half   },
+];
+
+const CYCLE = [
+  { label: 'normal', flipX: false, flipY: false },
+  { label: 'flipX',  flipX: true,  flipY: false },
+  { label: 'flipY',  flipX: false, flipY: true  },
+  { label: 'flipXY', flipX: true,  flipY: true  },
+];
+
+// State: one orientation index per corner
+const state = {};
+CORNERS.forEach(c => { state[c.key] = 0; });
+
+// ── Image loading ─────────────────────────────────────────────────────────────
+const BASE = 'public/assets/sprites/borders/';
+const imgs = {};
+const KEYS = [
+  'border_wood_h', 'border_wood_v',
+  ...CORNERS.map(c => c.key)
+];
+let loadedCount = 0;
+
+KEYS.forEach(k => {
+  const img = new Image();
+  img.src = BASE + k + '.png';
+  imgs[k] = img;
+  img.onload  = img.onerror = () => { if (++loadedCount === KEYS.length) init(); };
+});
+
+// ── Render ────────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('game');
+const ctx    = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+function drawTiled(imgKey, destX, destY, destW, destH, flipX, flipY) {
+  const img = imgs[imgKey];
+  if (!img || !img.naturalWidth) {
+    ctx.fillStyle = '#8B6B3A';
+    ctx.fillRect(destX, destY, destW, destH);
+    return;
+  }
+  const sw = img.naturalWidth, sh = img.naturalHeight;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(destX, destY, destW, destH);
+  ctx.clip();
+  // tile manually
+  for (let ox = 0; ox < destW + sw; ox += sw) {
+    for (let oy = 0; oy < destH + sh; oy += sh) {
+      const px = destX + ox, py = destY + oy;
+      ctx.save();
+      ctx.translate(px + (flipX ? sw : 0), py + (flipY ? sh : 0));
+      ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+
+function drawSprite(imgKey, cx, cy, flipX, flipY) {
+  const img = imgs[imgKey];
+  if (!img || !img.naturalWidth) return;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  ctx.save();
+  ctx.translate(cx - w/2 + (flipX ? w : 0), cy - h/2 + (flipY ? h : 0));
+  ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+}
+
+function render() {
+  // 1. BG
+  ctx.fillStyle = '#C4B090';
+  ctx.fillRect(0, 0, GW, GH);
+
+  // 2. Terrain surface
+  ctx.fillStyle = '#C4854A';
+  ctx.fillRect(tx, ty, TW, TH);
+
+  // Simple gravel dots for authenticity
+  ctx.fillStyle = 'rgba(160,112,56,0.4)';
+  for (let i = 0; i < 200; i++) {
+    const gx = tx + (i * 137) % TW;
+    const gy = ty + (i * 97)  % TH;
+    ctx.fillRect(gx, gy, 2, 2);
+  }
+
+  // 3. Borders — H (full width including corner zones)
+  const fullW = TW + BW * 2;
+  drawTiled('border_wood_h', tx - BW, ty - BW,      fullW, BW, false, false); // top
+  drawTiled('border_wood_h', tx - BW, ty + TH,       fullW, BW, false, true);  // bottom (flipY)
+  drawTiled('border_wood_v', tx - BW, ty,            BW,    TH, false, false); // left
+  drawTiled('border_wood_v', tx + TW, ty,            BW,    TH, true,  false); // right (flipX)
+
+  // 4. Corner pieces
+  CORNERS.forEach(c => {
+    const ori = CYCLE[state[c.key]];
+    drawSprite(c.key, c.cx, c.cy, ori.flipX, ori.flipY);
+  });
+
+
+  updateJson();
+}
+
+// ── Overlay buttons ───────────────────────────────────────────────────────────
+const SCALE = 2; // CSS scale
+
+function drawBtnSprite(btnCanvas, imgKey, flipX, flipY) {
+  const bCtx = btnCanvas.getContext('2d');
+  bCtx.imageSmoothingEnabled = false;
+  const w = btnCanvas.width, h = btnCanvas.height;
+  bCtx.clearRect(0, 0, w, h);
+  const img = imgs[imgKey];
+  if (!img || !img.naturalWidth) return;
+  bCtx.save();
+  bCtx.translate(flipX ? w : 0, flipY ? h : 0);
+  bCtx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+  bCtx.drawImage(img, 0, 0, w, h);
+  bCtx.restore();
+}
+
+function createOverlayButtons() {
+  const wrap = document.getElementById('wrap');
+  CORNERS.forEach(c => {
+    const btn = document.createElement('div');
+    btn.className = 'cbtn';
+    btn.id = 'btn_' + c.key;
+
+    const spriteSize = 16 * SCALE;
+    const bx = (c.cx - 8) * SCALE;
+    const by = (c.cy - 8) * SCALE;
+    btn.style.left = bx + 'px';
+    btn.style.top  = by + 'px';
+    btn.style.width  = spriteSize + 'px';
+    btn.style.height = spriteSize + 'px';
+
+    const bc = document.createElement('canvas');
+    bc.width  = spriteSize;
+    bc.height = spriteSize;
+    btn.appendChild(bc);
+
+    const ori = CYCLE[state[c.key]];
+    drawBtnSprite(bc, c.key, ori.flipX, ori.flipY);
+
+    btn.addEventListener('click', () => {
+      state[c.key] = (state[c.key] + 1) % CYCLE.length;
+      render();
+      updateButtons();
+    });
+
+    wrap.appendChild(btn);
+  });
+}
+
+function updateButtons() {
+  CORNERS.forEach(c => {
+    const btn = document.getElementById('btn_' + c.key);
+    if (!btn) return;
+    const bc  = btn.querySelector('canvas');
+    const ori = CYCLE[state[c.key]];
+    drawBtnSprite(bc, c.key, ori.flipX, ori.flipY);
+  });
+}
+
+// ── JSON output ───────────────────────────────────────────────────────────────
+function updateJson() {
+  const out = {};
+  CORNERS.forEach(c => {
+    out[c.key] = CYCLE[state[c.key]];
+  });
+  document.getElementById('json-output').textContent = JSON.stringify(out, null, 2);
+}
+
+function copyJson() {
+  navigator.clipboard.writeText(document.getElementById('json-output').textContent);
+}
+
+// ── Panel margin: account for 2× canvas height ───────────────────────────────
+document.getElementById('panel').style.marginTop = (GH * SCALE + 20) + 'px';
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  render();
+  createOverlayButtons();
+}
+</script>
+</body>
+</html>
