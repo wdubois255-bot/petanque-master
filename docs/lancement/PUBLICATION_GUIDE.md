@@ -87,7 +87,7 @@ Made with Phaser 4 and a genuine love for the south of France.
 BLOC EN FRANCAIS — coller en dessous du separateur :
 ---
 
-Un dimanche après-midi dans le Midi. 35°C, des cigales, et Papi René qui joue à la pétanque depuis avant ta naissance — et qui s'apprête à te le rappeler.
+Un dimanche après-midi dans le Midi. 35°C, des cigales, et Papi René qui joue à la pétanque depuis avant ta naissance, et qui s'apprête à te le rappeler.
 
 Bienvenue dans Pétanque Master.
 
@@ -97,7 +97,7 @@ Trois façons de lancer (demi-portée, plombée, tir au fer), cinq terrains avec
 
 Gratuit. Sans installation. Tu ouvres la page, tu joues.
 
-Développé avec Phaser 4 et une physique 100% maison — pas de moteur tiers, chaque terrain se sent vraiment différent.
+Développé avec Phaser 4 et une physique 100% custom. Pas de moteur tiers, chaque terrain se sent vraiment différent.
 
 ---
 
