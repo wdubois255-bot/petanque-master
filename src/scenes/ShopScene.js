@@ -269,7 +269,7 @@ export default class ShopScene extends Phaser.Scene {
             const bouleId = item.id.replace(/^boule_/, '');
             const bouleData = this.boulesData?.sets?.find(s => s.id === bouleId);
             if (bouleData) {
-                const statsY = 210;
+                const statsY = (locked && !owned) ? 240 : 210;
 
                 // Mass + diameter
                 this._previewElements.push(
