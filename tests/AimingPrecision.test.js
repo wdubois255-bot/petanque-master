@@ -46,7 +46,7 @@ const originY = terrainY + TERRAIN_HEIGHT - 20;  // ~430 — cercle de lancer en
 // --- Helpers: reproduisent les formules de AimingSystem.js ---
 
 /** Reproduit le calcul du marqueur visuel pendant le drag (AimingSystem.update)
- *  Le marqueur montre le point d'ARRET predit (stop position).
+ *  Le marqueur montre le point d'ATTERRISSAGE predit (premier contact sol).
  *  Utilise le meme angle wobble + power wobble que onPointerUp. */
 function computeVisualMarker(angle, rawPower, loftPreset, frictionMult = 1.0, puissanceStat = 6,
     wobbleOffset = { x: 0, y: 0 }, trembleOffset = { x: 0, y: 0 }, aimTime = 0,
@@ -66,7 +66,7 @@ function computeVisualMarker(angle, rawPower, loftPreset, frictionMult = 1.0, pu
         wobbledAngle, wobbledPower, originX, originY, bounds, loftPreset, frictionMult, puissanceStat,
         bouleFrictionMult, retroIntensity
     );
-    return { markerX: params.stopX, markerY: params.stopY };
+    return { markerX: params.targetX, markerY: params.targetY };
 }
 
 /** Reproduit le calcul au relacher (AimingSystem.onPointerUp) — SANS wobble */
@@ -109,10 +109,10 @@ function computePowerWobble(wobbleX, wobbleY, maxAmplitude, techniquePenalty, ai
 }
 
 // =====================================================================
-// 1. COHERENCE MARQUEUR VISUEL vs POSITION D'ARRET ESTIMEE
+// 1. COHERENCE MARQUEUR VISUEL vs POINT D'ATTERRISSAGE (PREMIER CONTACT SOL)
 // =====================================================================
 
-describe('1. Marqueur visuel == point d\'arret predit (sans wobble)', () => {
+describe('1. Marqueur visuel == point d\'atterrissage predit (sans wobble)', () => {
     const angles = [-Math.PI / 2, -Math.PI / 3, -Math.PI * 2 / 3]; // haut, diag gauche, diag droite
     const powers = [0.2, 0.5, 0.7, 1.0];
 
@@ -120,23 +120,27 @@ describe('1. Marqueur visuel == point d\'arret predit (sans wobble)', () => {
         describe(`Loft: ${loft.label}`, () => {
             for (const rawPower of powers) {
                 for (const angle of angles) {
-                    it(`power=${rawPower}, angle=${angle.toFixed(2)} — marqueur == stopX/stopY`, () => {
+                    it(`power=${rawPower}, angle=${angle.toFixed(2)} — marqueur == targetX/targetY`, () => {
                         const visual = computeVisualMarker(angle, rawPower, loft);
                         const thrown = computeThrowLanding(angle, rawPower, loft);
 
-                        // Le marqueur affiche le point d'arret predit (stopX/Y)
-                        expect(visual.markerX).toBeCloseTo(thrown.stopX, 5);
-                        expect(visual.markerY).toBeCloseTo(thrown.stopY, 5);
+                        // Le marqueur affiche le point d'atterrissage (targetX/Y)
+                        expect(visual.markerX).toBeCloseTo(thrown.targetX, 5);
+                        expect(visual.markerY).toBeCloseTo(thrown.targetY, 5);
                     });
                 }
             }
         });
     }
 
-    it('demi-portee: marqueur au-dela de l\'atterrissage (50% vol + 50% roll)', () => {
+    it('demi-portee: le marqueur est AU point d\'atterrissage (pas au-dela)', () => {
         const angle = -Math.PI / 2;
         const params = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
-        // Le marqueur (stop) est plus loin que l'atterrissage (target)
+        const marker = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE);
+        // Le marqueur correspond exactement au landing (target)
+        expect(marker.markerX).toBeCloseTo(params.targetX, 5);
+        expect(marker.markerY).toBeCloseTo(params.targetY, 5);
+        // La boule roule ensuite au-dela (stop > landing)
         const landDist = Math.sqrt((params.targetX - originX) ** 2 + (params.targetY - originY) ** 2);
         const stopDist = Math.sqrt((params.stopX - originX) ** 2 + (params.stopY - originY) ** 2);
         expect(stopDist).toBeGreaterThan(landDist);
@@ -151,7 +155,7 @@ describe('1. Marqueur visuel == point d\'arret predit (sans wobble)', () => {
         expect(gapPlombee).toBeLessThan(gapDemi);
     });
 
-    it('tir au fer: la boule s\'arrete au marqueur (flyOnly, stop == target)', () => {
+    it('tir au fer: la boule atterrit au marqueur (flyOnly, stop == target)', () => {
         const angle = -Math.PI / 2;
         const tir = computeThrowLanding(angle, 0.6, LOFT_TIR);
         expect(tir.stopX).toBeCloseTo(tir.targetX, 5);
@@ -319,7 +323,7 @@ describe('3b. Wobble actif — marqueur == lancer reel (angle + power wobble)', 
         expect(deviation).toBeGreaterThan(5);
     });
 
-    it('wobble Y=10px → le marqueur correspond au stop du lancer reel', () => {
+    it('wobble Y=10px → le marqueur correspond au landing du lancer reel', () => {
         const angle = -Math.PI / 2;
         const rawPower = 0.6;
         const power = rawPower * rawPower;
@@ -331,13 +335,13 @@ describe('3b. Wobble actif — marqueur == lancer reel (angle + power wobble)', 
             wobAngle, power, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6
         );
 
-        // Le marqueur doit correspondre au stop (a la power wobble pres)
+        // Le marqueur doit correspondre au landing (a la power wobble pres)
         const visual = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 6, wobble);
-        expect(visual.markerX).toBeCloseTo(throwResult.stopX, 0);
-        expect(visual.markerY).toBeCloseTo(throwResult.stopY, 0);
+        expect(visual.markerX).toBeCloseTo(throwResult.targetX, 0);
+        expect(visual.markerY).toBeCloseTo(throwResult.targetY, 0);
     });
 
-    it('precision 1 (wobble 18px) → grande deviation, mais marqueur = stop', () => {
+    it('precision 1 (wobble 18px) → grande deviation, mais marqueur = landing', () => {
         const angle = -Math.PI / 2;
         const rawPower = 0.7;
         const wobble = { x: 5, y: 10 };
@@ -348,8 +352,8 @@ describe('3b. Wobble actif — marqueur == lancer reel (angle + power wobble)', 
             wobAngle, rawPower * rawPower, originX, originY, bounds, LOFT_PLOMBEE, 1.0, 1
         );
 
-        expect(visual.markerX).toBeCloseTo(throwResult.stopX, 0);
-        expect(visual.markerY).toBeCloseTo(throwResult.stopY, 0);
+        expect(visual.markerX).toBeCloseTo(throwResult.targetX, 0);
+        expect(visual.markerY).toBeCloseTo(throwResult.targetY, 0);
     });
 
     it('precision 10 (wobble 2px) → deviation minime', () => {
@@ -500,14 +504,14 @@ describe('6. Roulement apres le marqueur — quantification par technique', () =
         expect(Math.sqrt(tir.rollVx ** 2 + tir.rollVy ** 2)).toBe(0);
     });
 
-    it('le marqueur montre l\'arret predit — au-dela de l\'atterrissage', () => {
+    it('le marqueur montre le point d\'atterrissage — la boule roule au-dela', () => {
         const angle = -Math.PI / 2;
         const marker = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE);
         const params = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
 
-        // Marqueur = stop position (au-dela du landing)
-        expect(marker.markerX).toBeCloseTo(params.stopX, 5);
-        expect(marker.markerY).toBeCloseTo(params.stopY, 5);
+        // Marqueur = landing position (premier contact sol)
+        expect(marker.markerX).toBeCloseTo(params.targetX, 5);
+        expect(marker.markerY).toBeCloseTo(params.targetY, 5);
         // Stop est plus loin que landing (le roll ajoute de la distance)
         const landDist = Math.abs(params.targetY - originY);
         const stopDist = Math.abs(params.stopY - originY);
@@ -676,7 +680,7 @@ describe('10. Multi-terrain — meme atterrissage, stop different', () => {
     const terrainTypes = Object.entries(TERRAIN_FRICTION);
 
     for (const [name, friction] of terrainTypes) {
-        it(`terrain ${name} (friction ${friction}): meme atterrissage, marqueur adapte au terrain`, () => {
+        it(`terrain ${name} (friction ${friction}): marqueur = atterrissage (identique quel que soit le terrain)`, () => {
             const terre = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
             const other = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, friction);
 
@@ -684,14 +688,17 @@ describe('10. Multi-terrain — meme atterrissage, stop different', () => {
             expect(other.targetX).toBeCloseTo(terre.targetX, 5);
             expect(other.targetY).toBeCloseTo(terre.targetY, 5);
 
-            // Le marqueur (stop) reflette la friction terrain
+            // Le marqueur montre le landing → identique quel que soit le terrain
             const markerTerre = computeVisualMarker(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
             const markerOther = computeVisualMarker(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, friction);
+            expect(markerOther.markerX).toBeCloseTo(markerTerre.markerX, 5);
+            expect(markerOther.markerY).toBeCloseTo(markerTerre.markerY, 5);
+
+            // Mais le stop (arret final) differe selon le terrain
             if (friction !== 1.0) {
-                // Different terrain friction → different stop position
-                const distTerre = Math.abs(markerTerre.markerY - originY);
-                const distOther = Math.abs(markerOther.markerY - originY);
-                expect(distTerre).not.toBeCloseTo(distOther, 0);
+                const stopTerre = Math.abs(terre.stopY - originY);
+                const stopOther = Math.abs(other.stopY - originY);
+                expect(stopTerre).not.toBeCloseTo(stopOther, 0);
             }
         });
     }
@@ -955,18 +962,19 @@ describe('15. Stress test — 100 lancers aleatoires restent dans les bounds', (
 });
 
 // =====================================================================
-// 16. RETRO (BACKSPIN) — prediction integre le retro dans le stop
+// 16. RETRO (BACKSPIN) — retro n'affecte pas le marqueur (landing) mais affecte le stop
 // =====================================================================
 
-describe('16. Retro — le marqueur integre le backspin dans l\'arret predit', () => {
-    it('retro actif → le marqueur est plus proche que sans retro', () => {
+describe('16. Retro — le marqueur montre le landing (retro n\'affecte que le roule)', () => {
+    it('retro actif → le marqueur est identique (landing ne depend pas du retro)', () => {
         const angle = -Math.PI / 2;
         const noRetro = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE, 1.0, 6,
             { x: 0, y: 0 }, { x: 0, y: 0 }, 0, 1, 0);
         const withRetro = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE, 1.0, 6,
             { x: 0, y: 0 }, { x: 0, y: 0 }, 0, 1, 0.5);
-        // Retro = more friction = ball stops closer (markerY is bigger = closer to origin)
-        expect(withRetro.markerY).toBeGreaterThan(noRetro.markerY);
+        // Landing is the same regardless of retro
+        expect(withRetro.markerX).toBeCloseTo(noRetro.markerX, 5);
+        expect(withRetro.markerY).toBeCloseTo(noRetro.markerY, 5);
     });
 
     it('retro effet 10 (50%) → marqueur significativement plus court', () => {

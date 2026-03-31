@@ -6,7 +6,7 @@ import {
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST, PX_PER_METER,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
     LATERAL_SPIN_MIN_EFFET,
-    RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET, RETRO_FRICTION_MULT,
+    RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET,
     IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
 import { loadSave } from '../utils/SaveManager.js';
@@ -1250,29 +1250,22 @@ export default class AimingSystem {
             const wobbledPower = Phaser.Math.Clamp(
                 power + Math.sin(this._aimTime * 2.3) * powerWobble, 0.01, 1);
 
-            // Predicted STOP position: where the ball actually comes to rest
-            // Includes terrain friction, boule friction, and retro (backspin)
-            const bouleFriction = this.engine.getBouleFrictionMult?.(this.engine.currentTeam || 'player') || 1;
-            const effetStat = this.charStats.effet || 6;
-            const retroForPrediction = this.retroActive
-                ? (RETRO_INTENSITY_BY_EFFET[effetStat] || (effetStat >= RETRO_MIN_EFFET_STAT ? 0.35 : 0))
-                : 0;
+            // Predicted LANDING position: where the ball first contacts the ground
+            // Post-impact behavior (rolling, friction, retro) is NOT shown — player reads the terrain
             const params = PetanqueEngine.computeThrowParams(
                 wobbledAngle, wobbledPower, originX, originY,
-                this.engine.bounds, loft, this.engine.frictionMult, puissance,
-                bouleFriction, retroForPrediction
+                this.engine.bounds, loft, this.engine.frictionMult, puissance
             );
-            markerX = params.stopX;
-            markerY = params.stopY;
+            markerX = params.targetX;
+            markerY = params.targetY;
 
             // Base prediction (no wobble) for precision circle center
             const baseParams = PetanqueEngine.computeThrowParams(
                 angle, power, originX, originY,
-                this.engine.bounds, loft, this.engine.frictionMult, puissance,
-                bouleFriction, retroForPrediction
+                this.engine.bounds, loft, this.engine.frictionMult, puissance
             );
-            baseX = baseParams.stopX;
-            baseY = baseParams.stopY;
+            baseX = baseParams.targetX;
+            baseY = baseParams.targetY;
         }
 
         // Precision circle centered on base (non-wobbled) position
@@ -1286,7 +1279,7 @@ export default class AimingSystem {
             this._predictionGfx.strokeCircle(baseX, baseY, scaledAmp);
         }
 
-        // Marker cross at exact predicted stop position
+        // Marker cross at exact predicted LANDING position (first ground contact)
         // Sur mobile : cercle +20% pour meilleure lisibilite (5 → 6)
         const markerRadius = IS_MOBILE ? 6 : 5;
         this._predictionGfx.lineStyle(1.5, color, 0.6);
