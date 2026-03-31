@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cover Art Generator — Petanque Master</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; color: #e6edf3; font-family: 'Courier New', monospace; padding: 24px; }
+    h1 { color: #D4A574; font-size: 20px; margin-bottom: 4px; }
+    .subtitle { color: #8b949e; font-size: 12px; margin-bottom: 20px; }
+    .layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+    canvas { display: block; border: 2px solid #30363d; image-rendering: pixelated; }
+    .controls { flex: 1; min-width: 300px; }
+    .group { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px; margin-bottom: 10px; }
+    .group h3 { color: #D4A574; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .row label { color: #8b949e; font-size: 11px; flex: 1; }
+    .row .val { color: #D4A574; font-size: 11px; min-width: 38px; text-align: right; margin-right: 8px; }
+    input[type=range] { width: 160px; accent-color: #D4A574; }
+    .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .btn { background: #D4A574; color: #0d1117; border: none; padding: 9px 16px; cursor: pointer; font-size: 12px; font-weight: bold; font-family: inherit; border-radius: 4px; }
+    .btn:hover { background: #C4854A; }
+    .btn.sec { background: #21262d; color: #e6edf3; border: 1px solid #30363d; }
+    #status { font-size: 11px; color: #8b949e; margin-top: 14px; line-height: 2; }
+    .ok { color: #3fb950; }
+    .err { color: #f85149; }
+  </style>
+</head>
+<body>
+  <h1>Cover Art Generator — Petanque Master</h1>
+  <p class="subtitle">Ouvrir via http://localhost:8080/cover-art-generator.html — utilise les sprites du jeu</p>
+
+  <div class="layout">
+    <div>
+      <canvas id="canvas" width="630" height="500"></canvas>
+      <div class="btns">
+        <button class="btn" onclick="generate()">↺ Regénérer</button>
+        <button class="btn" onclick="dl(630,500,'cover-art-630x500.png')">↓ 630×500 itch.io</button>
+        <button class="btn sec" onclick="dl(315,250,'cover-art-thumb-315x250.png')">↓ Miniature 315×250</button>
+      </div>
+      <div id="status">Chargement des assets...</div>
+    </div>
+
+    <div class="controls">
+      <div class="group">
+        <h3>Personnages</h3>
+        <div class="row"><label>Échelle sprites</label><span class="val" id="vScale">5×</span>
+          <input type="range" id="spriteScale" min="3" max="7" value="5"
+            oninput="set('vScale',this.value+'×');generate()"></div>
+        <div class="row"><label>Y perso. gauche (Rookie)</label><span class="val" id="vRY">255</span>
+          <input type="range" id="rookieY" min="150" max="430" value="255"
+            oninput="set('vRY',this.value);generate()"></div>
+        <div class="row"><label>Y perso. droite (Papi René)</label><span class="val" id="vPY">255</span>
+          <input type="range" id="papiY" min="150" max="430" value="255"
+            oninput="set('vPY',this.value);generate()"></div>
+        <div class="row"><label>X marge côtés</label><span class="val" id="vXM">50</span>
+          <input type="range" id="xMargin" min="0" max="180" value="50"
+            oninput="set('vXM',this.value);generate()"></div>
+      </div>
+
+      <div class="group">
+        <h3>Terrain</h3>
+        <div class="row"><label>Début terrain (Y)</label><span class="val" id="vTY">238</span>
+          <input type="range" id="terrainY" min="140" max="380" value="238"
+            oninput="set('vTY',this.value);generate()"></div>
+      </div>
+
+      <div class="group">
+        <h3>Logo</h3>
+        <div class="row"><label>Position Y</label><span class="val" id="vLY">44</span>
+          <input type="range" id="logoY" min="10" max="200" value="44"
+            oninput="set('vLY',this.value);generate()"></div>
+        <div class="row"><label>Taille titre (px)</label><span class="val" id="vFS">34</span>
+          <input type="range" id="fontSize" min="18" max="52" value="34"
+            oninput="set('vFS',this.value);generate()"></div>
+        <div class="row"><label>Largeur boîte</label><span class="val" id="vBW">390</span>
+          <input type="range" id="boxW" min="250" max="580" value="390"
+            oninput="set('vBW',this.value);generate()"></div>
+      </div>
+
+      <div class="group">
+        <h3>Boules</h3>
+        <div class="row"><label>Afficher</label><span class="val"></span>
+          <input type="checkbox" id="showBoules" checked onchange="generate()"></div>
+        <div class="row"><label>Taille (px)</label><span class="val" id="vBS">60</span>
+          <input type="range" id="bouleSize" min="24" max="120" value="60"
+            oninput="set('vBS',this.value);generate()"></div>
+        <div class="row"><label>Position Y</label><span class="val" id="vBY">410</span>
+          <input type="range" id="bouleY" min="280" max="480" value="410"
+            oninput="set('vBY',this.value);generate()"></div>
+      </div>
+
+      <div class="group">
+        <h3>Arbres</h3>
+        <div class="row"><label>Afficher</label><span class="val"></span>
+          <input type="checkbox" id="showTrees" checked onchange="generate()"></div>
+        <div class="row"><label>Hauteur arbres (px)</label><span class="val" id="vTH">150</span>
+          <input type="range" id="treeH" min="60" max="260" value="150"
+            oninput="set('vTH',this.value);generate()"></div>
+        <div class="row"><label>Y arbres</label><span class="val" id="vTreeY">130</span>
+          <input type="range" id="treeY" min="60" max="350" value="130"
+            oninput="set('vTreeY',this.value);generate()"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 630, H = 500;
+
+    function set(id, val) { document.getElementById(id).textContent = val; }
+    function gi(id) { return parseInt(document.getElementById(id).value); }
+
+    const cache = {};
+    function loadImg(src) {
+      if (cache[src]) return Promise.resolve(cache[src]);
+      return new Promise(res => {
+        const img = new Image();
+        img.onload = () => { cache[src] = img; res(img); };
+        img.onerror = () => res(null);
+        img.src = src;
+      });
+    }
+
+    const SRCS = {
+      rookie:    '/assets/sprites/rookie_animated.png',
+      papi:      '/assets/sprites/papi_rene_animated.png',
+      bouleA:    '/assets/sprites/boule_acier.png',
+      bouleR:    '/assets/sprites/boule_rouge.png',
+      bouleD:    '/assets/sprites/boule_doree.png',
+      cochonnet: '/assets/sprites/cochonnet.png',
+      terrain:   '/assets/sprites/terrain_tex_terre.png',
+      olivier:   '/assets/sprites/decor_olivier.png',
+      pin:       '/assets/sprites/decor_pin.png',
+    };
+
+    let imgs = {};
+    let ready = false;
+
+    async function loadAll() {
+      const entries = Object.entries(SRCS);
+      const results = await Promise.all(entries.map(([,s]) => loadImg(s)));
+      entries.forEach(([k], i) => imgs[k] = results[i]);
+
+      const el = document.getElementById('status');
+      el.innerHTML = entries.map(([k, s], i) =>
+        `<span class="${imgs[k] ? 'ok' : 'err'}">${imgs[k] ? '✓' : '✗'}</span> ` +
+        `${s.split('/').pop()}${imgs[k] ? ` (${imgs[k].naturalWidth}×${imgs[k].naturalHeight})` : ''}`
+      ).join('<br>');
+
+      ready = true;
+      generate();
+    }
+
+    // ── Sky ──────────────────────────────────────────────────────────────────
+    function drawSky(terrainY) {
+      const g = ctx.createLinearGradient(0, 0, 0, terrainY);
+      g.addColorStop(0.00, '#4A98C8');
+      g.addColorStop(0.18, '#6AB0D8');
+      g.addColorStop(0.45, '#87CEEB');
+      g.addColorStop(0.68, '#D4B870');
+      g.addColorStop(0.85, '#D4A574');
+      g.addColorStop(1.00, '#C47840');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, terrainY + 2);
+
+      // Clouds
+      ctx.fillStyle = 'rgba(255,255,255,0.16)';
+      [[110,52,58,17],[162,45,38,13],[400,66,68,19],[445,58,42,15],[290,36,32,11]].forEach(([x,y,rx,ry]) => {
+        ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); ctx.fill();
+      });
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      [[130,60,72,14],[415,72,55,12]].forEach(([x,y,rx,ry]) => {
+        ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); ctx.fill();
+      });
+
+      // Sun glow (upper right)
+      const sg = ctx.createRadialGradient(560, 55, 5, 560, 55, 80);
+      sg.addColorStop(0,   'rgba(255,230,100,0.22)');
+      sg.addColorStop(0.5, 'rgba(255,200,80,0.10)');
+      sg.addColorStop(1,   'rgba(255,200,80,0)');
+      ctx.fillStyle = sg;
+      ctx.fillRect(460, 0, 170, 140);
+    }
+
+    // ── Terrain ───────────────────────────────────────────────────────────────
+    function drawTerrain(terrainY) {
+      if (imgs.terrain) {
+        const pat = ctx.createPattern(imgs.terrain, 'repeat');
+        ctx.save();
+        ctx.translate(0, terrainY);
+        ctx.fillStyle = pat;
+        ctx.fillRect(0, 0, W, H - terrainY);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#C4954A';
+        ctx.fillRect(0, terrainY, W, H - terrainY);
+      }
+
+      // Horizon blend (sky→terrain)
+      const b = ctx.createLinearGradient(0, terrainY - 18, 0, terrainY + 36);
+      b.addColorStop(0,   'rgba(196,120,64,0)');
+      b.addColorStop(0.35,'rgba(140,90,40,0.22)');
+      b.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = b;
+      ctx.fillRect(0, terrainY - 18, W, 54);
+    }
+
+    // ── Trees ─────────────────────────────────────────────────────────────────
+    function drawTrees(terrainY, treeHeight, treeY) {
+      const t1 = imgs.olivier;
+      const t2 = imgs.pin;
+      if (!t1 && !t2) return;
+
+      function drawTree(sprite, x, y, h, flip) {
+        if (!sprite) return;
+        const w = Math.round(sprite.naturalWidth * h / sprite.naturalHeight);
+        ctx.imageSmoothingEnabled = false;
+        if (flip) {
+          ctx.save();
+          ctx.translate(x + w, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(sprite, 0, y, w, h);
+          ctx.restore();
+        } else {
+          ctx.drawImage(sprite, x, y, w, h);
+        }
+      }
+
+      // Left: olivier
+      drawTree(t1, -8, treeY, treeHeight, false);
+      // Right: pin (mirrored)
+      const t2Sprite = t2 || t1;
+      const t2W = Math.round(t2Sprite.naturalWidth * treeHeight / t2Sprite.naturalHeight);
+      drawTree(t2Sprite, W - t2W + 8, treeY, treeHeight, true);
+    }
+
+    // ── Logo ─────────────────────────────────────────────────────────────────
+    function drawLogo(logoY, fontSize, boxW) {
+      const bh = fontSize * 2.2 + 28;
+      const bx = (W - boxW) / 2;
+      const by = logoY;
+
+      // Drop shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.50)';
+      ctx.beginPath(); ctx.roundRect(bx+6, by+6, boxW, bh, 7); ctx.fill();
+
+      // Box background (dark wood)
+      ctx.fillStyle = '#4A2810';
+      ctx.beginPath(); ctx.roundRect(bx, by, boxW, bh, 7); ctx.fill();
+
+      // Wood grain highlight
+      const wg = ctx.createLinearGradient(bx, by, bx, by+bh);
+      wg.addColorStop(0,   'rgba(255,180,80,0.12)');
+      wg.addColorStop(0.4, 'rgba(255,160,60,0.06)');
+      wg.addColorStop(1,   'rgba(0,0,0,0.10)');
+      ctx.fillStyle = wg;
+      ctx.beginPath(); ctx.roundRect(bx, by, boxW, bh, 7); ctx.fill();
+
+      // Outer border (ocre)
+      ctx.strokeStyle = '#D4A574';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect(bx, by, boxW, bh, 7); ctx.stroke();
+
+      // Inner border (gold)
+      ctx.strokeStyle = 'rgba(255,215,0,0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(bx+5, by+5, boxW-10, bh-10, 5); ctx.stroke();
+
+      const cy1 = by + bh * 0.40;
+
+      // Title shadow
+      ctx.font = `bold ${fontSize}px "Courier New", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeStyle = '#1A0A00';
+      ctx.lineWidth = 6;
+      ctx.strokeText('PETANQUE MASTER', W/2, cy1);
+
+      // Title gold gradient
+      const tg = ctx.createLinearGradient(0, cy1 - fontSize, 0, cy1 + fontSize * 0.5);
+      tg.addColorStop(0,   '#FFE868');
+      tg.addColorStop(0.45,'#FFD000');
+      tg.addColorStop(0.8, '#D4A030');
+      tg.addColorStop(1,   '#C47820');
+      ctx.fillStyle = tg;
+      ctx.fillText('PETANQUE MASTER', W/2, cy1);
+
+      // Subtitle
+      const sf = Math.max(10, Math.round(fontSize * 0.37));
+      const cy2 = by + bh * 0.78;
+      ctx.font = `${sf}px "Courier New", monospace`;
+      ctx.strokeStyle = '#1A0A00';
+      ctx.lineWidth = 2;
+      ctx.strokeText('·  Aim  ·  Throw  ·  Dominate  ·', W/2, cy2);
+      ctx.fillStyle = '#D4C070';
+      ctx.fillText('·  Aim  ·  Throw  ·  Dominate  ·', W/2, cy2);
+    }
+
+    // ── Characters ────────────────────────────────────────────────────────────
+    function drawChar(sprite, x, y, scale, flip) {
+      if (!sprite) return;
+      const fs = 32; // frame size in spritesheet
+      const d  = fs * scale;
+
+      // Ground shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath();
+      ctx.ellipse(x + d/2, y + d - 3, d*0.26, d*0.065, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.imageSmoothingEnabled = false;
+      if (flip) {
+        ctx.save();
+        ctx.translate(x + d, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(sprite, 0, 0, fs, fs, 0, y, d, d);
+        ctx.restore();
+      } else {
+        ctx.drawImage(sprite, 0, 0, fs, fs, x, y, d, d);
+      }
+    }
+
+    // ── Boules ────────────────────────────────────────────────────────────────
+    function drawBoules(bouleY, bouleSize) {
+      const list = [
+        [imgs.bouleA,  234, bouleY +  0],
+        [imgs.bouleR,  286, bouleY + 14],
+        [imgs.bouleD,  336, bouleY +  5],
+      ];
+      list.forEach(([b, bx, by]) => {
+        if (!b) return;
+        const sc = bouleSize / b.naturalWidth;
+        const bw = b.naturalWidth * sc, bh = b.naturalHeight * sc;
+
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.ellipse(bx + bw/2, by + bh - 2, bw*0.42, bh*0.10, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(b, bx, by, bw, bh);
+      });
+
+      // Cochonnet (smaller, slightly ahead)
+      if (imgs.cochonnet) {
+        const c = imgs.cochonnet;
+        const cs = (bouleSize * 0.50) / c.naturalWidth;
+        const cw = c.naturalWidth * cs, ch = c.naturalHeight * cs;
+        const cx = 300, cy = bouleY - ch * 0.6;
+
+        ctx.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx.beginPath();
+        ctx.ellipse(cx + cw/2, cy + ch - 2, cw*0.42, ch*0.10, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(c, cx, cy, cw, ch);
+      }
+    }
+
+    // ── Badge ────────────────────────────────────────────────────────────────
+    function drawBadge() {
+      ctx.fillStyle = 'rgba(8,5,3,0.75)';
+      ctx.fillRect(0, H - 30, W, 30);
+      ctx.fillStyle = '#D4A574';
+      ctx.fillRect(0, H - 30, W, 1);
+
+      ctx.font = 'bold 11px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#D4A574';
+      ctx.fillText('★  FREE BROWSER GAME  ·  PIXEL ART PÉTANQUE  ·  12 CHARACTERS  ·  5 TERRAINS  ★', W/2, H - 15);
+    }
+
+    // ── Main ─────────────────────────────────────────────────────────────────
+    function generate() {
+      if (!ready) return;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, W, H);
+
+      const spriteScale = gi('spriteScale');
+      const rookieYv  = gi('rookieY');
+      const papiYv    = gi('papiY');
+      const xMargin   = gi('xMargin');
+      const terrainYv = gi('terrainY');
+      const logoYv    = gi('logoY');
+      const fontSv    = gi('fontSize');
+      const boxWv     = gi('boxW');
+      const showB     = document.getElementById('showBoules').checked;
+      const bouleSz   = gi('bouleSize');
+      const bouleYv   = gi('bouleY');
+      const showT     = document.getElementById('showTrees').checked;
+      const treeHv    = gi('treeH');
+      const treeYv    = gi('treeY');
+
+      const charD = 32 * spriteScale;
+
+      drawSky(terrainYv);
+      drawTerrain(terrainYv);
+      if (showT) drawTrees(terrainYv, treeHv, treeYv);
+      drawLogo(logoYv, fontSv, boxWv);
+
+      drawChar(imgs.rookie, xMargin, rookieYv, spriteScale, false);
+      drawChar(imgs.papi,   W - charD - xMargin, papiYv, spriteScale, true);
+
+      if (showB) drawBoules(bouleYv, bouleSz);
+
+      drawBadge();
+    }
+
+    function dl(w, h, name) {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = false;
+      x.drawImage(canvas, 0, 0, w, h);
+      const a = document.createElement('a');
+      a.download = name;
+      a.href = c.toDataURL('image/png');
+      a.click();
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>
