@@ -77,7 +77,7 @@ That's the game I wanted to make.
 
 ---
 
-Petanque Master is a free browser game I've been building for 2 years. Provençal pixel art, 12 characters you'll love to beat (or get wrecked by), and physics that make you groan when your ball rolls one centimeter past the cochonnet.
+Petanque Master is a free browser game — provençal pixel art, 12 characters you'll love to beat (or get wrecked by), and physics that make you groan when your ball rolls one centimeter past the cochonnet.
 
 The opponents are the heart of it. Each one has a personality and a special ability that changes how you approach the match:
 
