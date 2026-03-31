@@ -283,6 +283,12 @@ export function recordMatchStats({ won, terrainName, characterId, carreaux, bibe
     return save.stats;
 }
 
+export function addPlaytime(seconds) {
+    const save = loadSave();
+    save.playtime = (save.playtime || 0) + seconds;
+    saveSave(save);
+}
+
 export function getStats() {
     return loadSave().stats || {};
 }

@@ -21,7 +21,7 @@ import ScorePanel from '../ui/ScorePanel.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmbiance, stopCrowdAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMasterVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
-import { loadSave, saveSave, addGalets } from '../utils/SaveManager.js';
+import { loadSave, saveSave, addGalets, addPlaytime } from '../utils/SaveManager.js';
 import InGameTutorial from '../ui/InGameTutorial.js';
 import DialogBox from '../ui/DialogBox.js';
 import PortalSDK from '../utils/PortalSDK.js';
@@ -105,6 +105,8 @@ export default class PetanqueScene extends Phaser.Scene {
         // Phase 5 — Match challenge
         this._matchChallenge = null;
         this._matchChallengePanel = null;
+        // Playtime tracking
+        this._sessionStart = Date.now();
     }
 
     create() {
@@ -886,6 +888,11 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _shutdown() {
+        // Save playtime for this session
+        if (this._sessionStart) {
+            const elapsed = Math.round((Date.now() - this._sessionStart) / 1000);
+            if (elapsed > 0) addPlaytime(elapsed);
+        }
         // Notifier le portail que le gameplay s'arrête (no-op en standalone)
         PortalSDK.gameplayStop();
 
