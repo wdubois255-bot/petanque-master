@@ -984,9 +984,9 @@ export default class AimingSystem {
         } else {
             // In local multiplayer, use the current team (could be 'opponent')
             const team = this.engine.currentTeam || 'player';
-            // Retro is automatic for effet >= 8, intensity by palier (8=70%, 9=85%, 10=100%)
+            // Retro is automatic for effet >= 8, intensity by palier (8=35%, 9=42.5%, 10=50%)
             const effetStat = this.charStats.effet || 6;
-            const retroIntensity = this.retroActive ? (RETRO_INTENSITY_BY_EFFET[effetStat] || (effetStat >= RETRO_MIN_EFFET_STAT ? 0.70 : 0)) : 0;
+            const retroIntensity = this.retroActive ? (RETRO_INTENSITY_BY_EFFET[effetStat] || (effetStat >= RETRO_MIN_EFFET_STAT ? 0.35 : 0)) : 0;
 
             let finalPower = power;
 
@@ -1233,8 +1233,10 @@ export default class AimingSystem {
             const params = PetanqueEngine.computeThrowParams(
                 angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult, puissance
             );
-            markerX = params.targetX;
-            markerY = params.targetY;
+            // Show estimated STOP position (not just landing) so the player
+            // knows where the ball will approximately end up after rolling
+            markerX = params.stopX;
+            markerY = params.stopY;
         }
 
         // Apply precision wobble to landing marker

@@ -929,7 +929,7 @@ export default class TerrainRenderer {
         const ty = this.ty;
         const tw = TERRAIN_WIDTH;
         const th = TERRAIN_HEIGHT;
-        const inset = 3;
+        const inset = 0;
 
         switch (this.vis.deadLineStyle) {
             case 'chalk':     this._deadLineFicelle(g, tx, ty, tw, th, inset, 0xFFFFFF, 0.45); break;

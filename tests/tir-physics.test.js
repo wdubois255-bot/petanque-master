@@ -775,4 +775,52 @@ describe('9 - Integration: full tir sequence', () => {
         const travelDist = startY - ball.y;
         expect(travelDist).toBeGreaterThan(50);
     });
+
+    it('missed tir: retro is cleared and NOT applied (PetanqueEngine logic)', () => {
+        // Simulates PetanqueEngine landing callback when tir misses:
+        // landingHit = false → ball.retro must be cleared to 0
+        const ball = new Ball(mockScene, 200, 300, {
+            mass: BALL_MASS, radius: BALL_RADIUS, frictionMult: TERRAIN_FRICTION.terre
+        });
+
+        // Ball has retro set (as throwBall() would do)
+        ball.retro = 0.425; // effet 9 new intensity
+        ball._throwDirX = 0;
+        ball._throwDirY = -1;
+
+        // PetanqueEngine logic for tir with landingHit = false (missed):
+        const isTir = true;
+        const landingHit = false;
+        if (isTir) {
+            if (ball.retro > 0 && landingHit) {
+                ball.activateRetro(ball.retro, 'terre');
+            } else {
+                ball.retro = 0; // clear simple retro mode
+            }
+        }
+
+        // Retro must be completely cleared
+        expect(ball.retro).toBe(0);
+        expect(ball._retroPhase).toBe(0);
+        expect(ball._retroIntensity).toBe(0);
+
+        // Now launch ball — should roll with NO retro effect (retroMult = 1.0)
+        ball.launch(0, -TIR_IMPACT_SPEED);
+        const startY = ball.y;
+        const ballWithRetro = new Ball(mockScene, 200, 300, {
+            mass: BALL_MASS, radius: BALL_RADIUS, frictionMult: TERRAIN_FRICTION.terre
+        });
+        ballWithRetro._throwDirX = 0;
+        ballWithRetro._throwDirY = -1;
+        ballWithRetro.activateRetro(0.425, 'terre');
+        ballWithRetro.launch(0, -TIR_IMPACT_SPEED);
+
+        runUntilStop(ball);
+        runUntilStop(ballWithRetro);
+
+        // Missed tir ball should travel FURTHER (no retro friction)
+        const distMiss = Math.abs(ball.y - 300);
+        const distRetro = Math.abs(ballWithRetro.y - 300);
+        expect(distMiss).toBeGreaterThan(distRetro);
+    });
 });

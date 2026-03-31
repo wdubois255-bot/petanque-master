@@ -453,7 +453,24 @@ export default class PetanqueEngine {
         const rollVx = Math.cos(angle) * rollingSpeed;
         const rollVy = Math.sin(angle) * rollingSpeed;
 
-        return { targetX, targetY, rollVx, rollVy };
+        // Estimated stop position: landing + deceleration distance from roll
+        // Ball.update friction: decelPerFrame = FRICTION_BASE * frictionMult
+        // Kinematic: stopDist = rollSpeed² / (2 * decelPerFrame)
+        let stopX = targetX, stopY = targetY;
+        if (rollingSpeed > 0) {
+            const actualDecel = FRICTION_BASE * frictionMult;
+            const estRollDist = (rollingSpeed * rollingSpeed) / (2 * actualDecel);
+            stopX = Phaser.Math.Clamp(
+                targetX + Math.cos(angle) * estRollDist,
+                bounds.x + BALL_CLAMP_MARGIN, bounds.x + bounds.w - BALL_CLAMP_MARGIN
+            );
+            stopY = Phaser.Math.Clamp(
+                targetY + Math.sin(angle) * estRollDist,
+                bounds.y + BALL_CLAMP_MARGIN, bounds.y + bounds.h - BALL_CLAMP_MARGIN
+            );
+        }
+
+        return { targetX, targetY, rollVx, rollVy, stopX, stopY };
     }
 
     throwBall(angle, power, team, shotMode = 'pointer', loftPreset = null, retro = 0, throwMeta = {}) {

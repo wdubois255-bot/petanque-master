@@ -192,11 +192,11 @@ export default class PetanqueAI {
 
         let finalLoftPreset = loftPreset;
 
-        // AI retro: automatic for effet >= 8, intensity by palier
+        // AI retro: automatic for effet >= 8, intensity by palier (halved)
         let retroIntensity = 0;
         const effetStat = this._charStats.effet;
         if (finalLoftPreset.retroAllowed && effetStat >= RETRO_MIN_EFFET_STAT) {
-            retroIntensity = RETRO_INTENSITY_BY_EFFET[effetStat] || 0.70;
+            retroIntensity = RETRO_INTENSITY_BY_EFFET[effetStat] || 0.35;
         }
 
         // Spin lateral: only for effet >= 8, chance scales with stat
