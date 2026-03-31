@@ -372,6 +372,8 @@ export const BALL_SQUASH_RADIUS_BOOST = 2;
 // Ball sizes (pixels in game) - physics radius
 export const BALL_RADIUS = 10;
 export const COCHONNET_RADIUS = 7;  // 8→7 : aligne hitbox physique sur visuel réel (COCHONNET_DISPLAY_SCALE=1.0 → visual=7px=physics)
+// Conversion rayon jeu (px) → diamètre réel FIPJP (mm). Plage autorisée : 70.5–80mm.
+export const BOULE_RAYON_TO_MM = { 9: 71, 10: 74, 11: 78 };
 // Visual scale for sprites (aligne le visuel sur la hitbox physique)
 export const BALL_DISPLAY_SCALE = 1.0;      // Aligner visuel sur hitbox physique
 export const COCHONNET_DISPLAY_SCALE = 1.0; // Aligner visuel sur hitbox physique (était 0.82 → créait gap 1.4px visible)

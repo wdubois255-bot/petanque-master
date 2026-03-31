@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH } from '../utils/Constants.js';
+import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH, BOULE_RAYON_TO_MM } from '../utils/Constants.js';
 import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -271,9 +271,10 @@ export default class ShopScene extends Phaser.Scene {
             if (bouleData) {
                 const statsY = (locked && !owned) ? 240 : 210;
 
-                // Mass + diameter
+                // Mass + diameter (FIPJP: 650-800g, 70.5-80mm)
+                const diam = BOULE_RAYON_TO_MM[bouleData.stats.rayon] ?? (bouleData.stats.rayon * 7);
                 this._previewElements.push(
-                    this.add.text(cx, statsY, `${bouleData.stats.masse}g  \u2300${bouleData.stats.rayon * 2}`, {
+                    this.add.text(cx, statsY, `${bouleData.stats.masse}g · ${diam}mm`, {
                         fontFamily: FONT_PIXEL, fontSize: '11px',
                         color: CSS.OCRE, shadow: SHADOW
                     }).setOrigin(0.5).setDepth(5)
