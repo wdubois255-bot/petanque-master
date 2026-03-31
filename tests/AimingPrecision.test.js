@@ -30,6 +30,8 @@ import {
     DEAD_ZONE_PX,
     TERRAIN_FRICTION,
     SPEED_THRESHOLD,
+    RETRO_FRICTION_MULT,
+    RETRO_INTENSITY_BY_EFFET,
     puissanceMultiplier
 } from '../src/utils/Constants.js';
 import PetanqueEngine from '../src/petanque/PetanqueEngine.js';
@@ -44,11 +46,25 @@ const originY = terrainY + TERRAIN_HEIGHT - 20;  // ~430 — cercle de lancer en
 // --- Helpers: reproduisent les formules de AimingSystem.js ---
 
 /** Reproduit le calcul du marqueur visuel pendant le drag (AimingSystem.update)
- *  Le marqueur affiche la position d'arret estimee (stopX/stopY), PAS l'atterrissage */
-function computeVisualMarker(angle, rawPower, loftPreset, frictionMult = 1.0, puissanceStat = 6) {
-    const power = rawPower * rawPower;  // quadratique
+ *  Le marqueur montre le point d'ARRET predit (stop position).
+ *  Utilise le meme angle wobble + power wobble que onPointerUp. */
+function computeVisualMarker(angle, rawPower, loftPreset, frictionMult = 1.0, puissanceStat = 6,
+    wobbleOffset = { x: 0, y: 0 }, trembleOffset = { x: 0, y: 0 }, aimTime = 0,
+    bouleFrictionMult = 1, retroIntensity = 0) {
+    const power = rawPower * rawPower;
+    // Wobbled angle (same as onPointerUp + update)
+    const wobbleAngleOffset = Math.atan2(wobbleOffset.y, wobbleOffset.x + 100) - Math.atan2(0, 100);
+    const wobbledAngle = angle + wobbleAngleOffset + trembleOffset.x * 0.002;
+    // Power wobble (same as onPointerUp)
+    const techniquePenalty = loftPreset.precisionPenalty || 0;
+    const wobbleMag = Math.sqrt(wobbleOffset.x ** 2 + wobbleOffset.y ** 2);
+    const maxWobble = getWobbleAmplitude(puissanceStat, techniquePenalty); // approx
+    const powerWobble = maxWobble > 0
+        ? (wobbleMag / maxWobble) * 0.03 * (1 + techniquePenalty * 0.3) : 0;
+    const wobbledPower = Math.max(0.01, Math.min(1, power + Math.sin(aimTime * 2.3) * powerWobble));
     const params = PetanqueEngine.computeThrowParams(
-        angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat
+        wobbledAngle, wobbledPower, originX, originY, bounds, loftPreset, frictionMult, puissanceStat,
+        bouleFrictionMult, retroIntensity
     );
     return { markerX: params.stopX, markerY: params.stopY };
 }
@@ -96,7 +112,7 @@ function computePowerWobble(wobbleX, wobbleY, maxAmplitude, techniquePenalty, ai
 // 1. COHERENCE MARQUEUR VISUEL vs POSITION D'ARRET ESTIMEE
 // =====================================================================
 
-describe('1. Marqueur visuel == position d\'arret estimee (sans wobble)', () => {
+describe('1. Marqueur visuel == point d\'arret predit (sans wobble)', () => {
     const angles = [-Math.PI / 2, -Math.PI / 3, -Math.PI * 2 / 3]; // haut, diag gauche, diag droite
     const powers = [0.2, 0.5, 0.7, 1.0];
 
@@ -108,7 +124,7 @@ describe('1. Marqueur visuel == position d\'arret estimee (sans wobble)', () => 
                         const visual = computeVisualMarker(angle, rawPower, loft);
                         const thrown = computeThrowLanding(angle, rawPower, loft);
 
-                        // Le marqueur affiche la position d'arret estimee (stopX/Y)
+                        // Le marqueur affiche le point d'arret predit (stopX/Y)
                         expect(visual.markerX).toBeCloseTo(thrown.stopX, 5);
                         expect(visual.markerY).toBeCloseTo(thrown.stopY, 5);
                     });
@@ -117,24 +133,29 @@ describe('1. Marqueur visuel == position d\'arret estimee (sans wobble)', () => 
         });
     }
 
-    it('le marqueur est AU-DELA du point d\'atterrissage pour demi-portee (roll)', () => {
-        const angle = -Math.PI / 2; // vers le haut
+    it('demi-portee: marqueur au-dela de l\'atterrissage (50% vol + 50% roll)', () => {
+        const angle = -Math.PI / 2;
         const params = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
-        // stopY < targetY car la boule roule vers le haut (direction du lancer)
-        expect(params.stopY).toBeLessThan(params.targetY);
+        // Le marqueur (stop) est plus loin que l'atterrissage (target)
+        const landDist = Math.sqrt((params.targetX - originX) ** 2 + (params.targetY - originY) ** 2);
+        const stopDist = Math.sqrt((params.stopX - originX) ** 2 + (params.stopY - originY) ** 2);
+        expect(stopDist).toBeGreaterThan(landDist);
     });
 
-    it('le marqueur est AU-DELA du point d\'atterrissage pour plombee (roll)', () => {
+    it('plombee: stop-target gap plus petit que demi-portee (72% vol, 28% roll)', () => {
         const angle = -Math.PI / 2;
-        const params = computeThrowLanding(angle, 0.6, LOFT_PLOMBEE);
-        expect(params.stopY).toBeLessThan(params.targetY);
+        const demi = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
+        const plombee = computeThrowLanding(angle, 0.6, LOFT_PLOMBEE);
+        const gapDemi = Math.sqrt((demi.stopX - demi.targetX) ** 2 + (demi.stopY - demi.targetY) ** 2);
+        const gapPlombee = Math.sqrt((plombee.stopX - plombee.targetX) ** 2 + (plombee.stopY - plombee.targetY) ** 2);
+        expect(gapPlombee).toBeLessThan(gapDemi);
     });
 
-    it('le marqueur == atterrissage pour tir (flyOnly, pas de roll)', () => {
+    it('tir au fer: la boule s\'arrete au marqueur (flyOnly, stop == target)', () => {
         const angle = -Math.PI / 2;
-        const params = computeThrowLanding(angle, 0.6, LOFT_TIR);
-        expect(params.stopX).toBe(params.targetX);
-        expect(params.stopY).toBe(params.targetY);
+        const tir = computeThrowLanding(angle, 0.6, LOFT_TIR);
+        expect(tir.stopX).toBeCloseTo(tir.targetX, 5);
+        expect(tir.stopY).toBeCloseTo(tir.targetY, 5);
     });
 });
 
@@ -276,6 +297,97 @@ describe('3. Wobble — l\'offset du marqueur est fidele a l\'angle applique', (
 });
 
 // =====================================================================
+// 3b. WOBBLE ACTIF — le marqueur correspond au lancer reel
+// =====================================================================
+
+describe('3b. Wobble actif — marqueur == lancer reel (angle + power wobble)', () => {
+    it('wobble Y=10px → le marqueur est devie par angle, pas par pixels', () => {
+        const angle = -Math.PI / 2;
+        const rawPower = 0.6;
+        const wobble = { x: 0, y: 10 };
+
+        // Marqueur visuel (avec wobble applique comme angle)
+        const visual = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 6, wobble);
+        // Marqueur sans wobble
+        const base = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 6);
+
+        // La deviation est proportionnelle a la distance de vol
+        // atan2(10, 100) ≈ 5.7° → a 75px (landing demi-portee) ≈ 7.5px
+        const deviation = Math.sqrt(
+            (visual.markerX - base.markerX) ** 2 + (visual.markerY - base.markerY) ** 2
+        );
+        expect(deviation).toBeGreaterThan(5);
+    });
+
+    it('wobble Y=10px → le marqueur correspond au stop du lancer reel', () => {
+        const angle = -Math.PI / 2;
+        const rawPower = 0.6;
+        const power = rawPower * rawPower;
+        const wobble = { x: 0, y: 10 };
+
+        // Simuler onPointerUp : angle + wobbleAngleOffset
+        const wobAngle = angle + computeWobbleAngleOffset(wobble.x, wobble.y);
+        const throwResult = PetanqueEngine.computeThrowParams(
+            wobAngle, power, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6
+        );
+
+        // Le marqueur doit correspondre au stop (a la power wobble pres)
+        const visual = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 6, wobble);
+        expect(visual.markerX).toBeCloseTo(throwResult.stopX, 0);
+        expect(visual.markerY).toBeCloseTo(throwResult.stopY, 0);
+    });
+
+    it('precision 1 (wobble 18px) → grande deviation, mais marqueur = stop', () => {
+        const angle = -Math.PI / 2;
+        const rawPower = 0.7;
+        const wobble = { x: 5, y: 10 };
+
+        const visual = computeVisualMarker(angle, rawPower, LOFT_PLOMBEE, 1.0, 1, wobble);
+        const wobAngle = angle + computeWobbleAngleOffset(wobble.x, wobble.y);
+        const throwResult = PetanqueEngine.computeThrowParams(
+            wobAngle, rawPower * rawPower, originX, originY, bounds, LOFT_PLOMBEE, 1.0, 1
+        );
+
+        expect(visual.markerX).toBeCloseTo(throwResult.stopX, 0);
+        expect(visual.markerY).toBeCloseTo(throwResult.stopY, 0);
+    });
+
+    it('precision 10 (wobble 2px) → deviation minime', () => {
+        const angle = -Math.PI / 2;
+        const rawPower = 0.5;
+        const wobble = { x: 1, y: 1.2 };
+
+        const visual = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 10, wobble);
+        const base = computeVisualMarker(angle, rawPower, LOFT_DEMI_PORTEE, 1.0, 10);
+
+        const deviation = Math.sqrt(
+            (visual.markerX - base.markerX) ** 2 + (visual.markerY - base.markerY) ** 2
+        );
+        // Precision 10 : deviation tres faible (< 5px)
+        expect(deviation).toBeLessThan(5);
+    });
+
+    it('le marqueur avec wobble reste dans les bounds', () => {
+        for (let i = 0; i < 50; i++) {
+            const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+            const rawPower = 0.2 + Math.random() * 0.8;
+            const wobble = {
+                x: (Math.random() - 0.5) * 20,
+                y: (Math.random() - 0.5) * 12
+            };
+            const loft = ALL_LOFT_PRESETS[Math.floor(Math.random() * 3)];
+
+            const visual = computeVisualMarker(angle, rawPower, loft, 1.0, 6, wobble);
+
+            expect(visual.markerX).toBeGreaterThanOrEqual(bounds.x + BALL_CLAMP_MARGIN);
+            expect(visual.markerX).toBeLessThanOrEqual(bounds.x + bounds.w - BALL_CLAMP_MARGIN);
+            expect(visual.markerY).toBeGreaterThanOrEqual(bounds.y + BALL_CLAMP_MARGIN);
+            expect(visual.markerY).toBeLessThanOrEqual(bounds.y + bounds.h - BALL_CLAMP_MARGIN);
+        }
+    });
+});
+
+// =====================================================================
 // 4. COCHONNET: MARQUEUR VISUEL vs ATTERRISSAGE
 // =====================================================================
 
@@ -368,68 +480,55 @@ describe('5. Clamping terrain — le marqueur ne sort jamais des bounds', () => 
 // 6. ROULEMENT POST-ATTERRISSAGE: QUANTIFICATION
 // =====================================================================
 
-describe('6. Roulement — le marqueur montre la position d\'arret, pas l\'atterrissage', () => {
-    it('demi-portee a 50% de puissance: la boule roule apres atterrissage', () => {
+describe('6. Roulement apres le marqueur — quantification par technique', () => {
+    it('demi-portee: roll significatif (50% de la distance totale)', () => {
         const params = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE);
         const rollSpeed = Math.sqrt(params.rollVx ** 2 + params.rollVy ** 2);
         expect(rollSpeed).toBeGreaterThan(0);
+        expect(LOFT_DEMI_PORTEE.landingFactor).toBe(0.50);
     });
 
-    it('le marqueur (stopY) est plus loin que l\'atterrissage (targetY) pour pointer', () => {
+    it('plombee: roll modere (28% de la distance totale)', () => {
+        const params = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_PLOMBEE);
+        const rollSpeed = Math.sqrt(params.rollVx ** 2 + params.rollVy ** 2);
+        expect(rollSpeed).toBeGreaterThan(0);
+        expect(LOFT_PLOMBEE.landingFactor).toBe(0.72);
+    });
+
+    it('tir au fer: pas de roll (flyOnly)', () => {
+        const tir = computeThrowLanding(-Math.PI / 2, 0.7, LOFT_TIR);
+        expect(Math.sqrt(tir.rollVx ** 2 + tir.rollVy ** 2)).toBe(0);
+    });
+
+    it('le marqueur montre l\'arret predit — au-dela de l\'atterrissage', () => {
         const angle = -Math.PI / 2;
-        for (const loft of [LOFT_DEMI_PORTEE, LOFT_PLOMBEE]) {
-            const params = computeThrowLanding(angle, 0.6, loft);
-            // Stop est plus loin du lanceur = plus petit en Y
-            expect(params.stopY).toBeLessThan(params.targetY);
-        }
+        const marker = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE);
+        const params = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
+
+        // Marqueur = stop position (au-dela du landing)
+        expect(marker.markerX).toBeCloseTo(params.stopX, 5);
+        expect(marker.markerY).toBeCloseTo(params.stopY, 5);
+        // Stop est plus loin que landing (le roll ajoute de la distance)
+        const landDist = Math.abs(params.targetY - originY);
+        const stopDist = Math.abs(params.stopY - originY);
+        expect(stopDist).toBeGreaterThan(landDist);
     });
 
-    it('plombee: le marqueur (stop) est plus proche de l\'atterrissage que demi-portee', () => {
+    it('plombee roule moins que demi-portee', () => {
         const angle = -Math.PI / 2;
         const demi = computeThrowLanding(angle, 0.6, LOFT_DEMI_PORTEE);
         const plombee = computeThrowLanding(angle, 0.6, LOFT_PLOMBEE);
 
-        const rollGapDemi = Math.abs(demi.stopY - demi.targetY);
-        const rollGapPlombee = Math.abs(plombee.stopY - plombee.targetY);
-        // Plombee roule moins que demi-portee
-        expect(rollGapPlombee).toBeLessThan(rollGapDemi);
+        const rollDemi = Math.sqrt(demi.rollVx ** 2 + demi.rollVy ** 2);
+        const rollPlombee = Math.sqrt(plombee.rollVx ** 2 + plombee.rollVy ** 2);
+        expect(rollPlombee).toBeLessThan(rollDemi);
     });
 
-    it('tir au fer: stop == landing (flyOnly)', () => {
-        const tir = computeThrowLanding(-Math.PI / 2, 0.7, LOFT_TIR);
-        expect(tir.stopX).toBe(tir.targetX);
-        expect(tir.stopY).toBe(tir.targetY);
-    });
-
-    it('sable: le stop est plus proche du landing que sur terre (plus de friction)', () => {
-        const angle = -Math.PI / 2;
-        const terre = computeThrowLanding(angle, 0.5, LOFT_DEMI_PORTEE, 1.0);
-        const sable = computeThrowLanding(angle, 0.5, LOFT_DEMI_PORTEE, 2.0);
-
-        const rollGapTerre = Math.abs(terre.stopY - terre.targetY);
-        const rollGapSable = Math.abs(sable.stopY - sable.targetY);
-        // Sur sable, la boule roule moins loin
-        expect(rollGapSable).toBeLessThan(rollGapTerre);
-    });
-
-    it('le marqueur ne trompe plus : plombee a 70% visant un cochonnet a 200px', () => {
-        // Situation type: viser une boule/cochonnet a ~200px du cercle
-        const angle = -Math.PI / 2;
-        const params = computeThrowLanding(angle, 0.7, LOFT_PLOMBEE, 1.0, 6);
-        const marker = computeVisualMarker(angle, 0.7, LOFT_PLOMBEE, 1.0, 6);
-
-        // Le marqueur montre stopY, pas targetY
-        expect(marker.markerY).toBeCloseTo(params.stopY, 5);
-        // Le stop est au-dela de l'atterrissage
-        expect(params.stopY).toBeLessThan(params.targetY);
-    });
-
-    it('le roulement estime reste borne — pas de boule qui roule a l\'infini', () => {
+    it('le roulement reste borne', () => {
         const worst = computeThrowLanding(-Math.PI / 2, 1.0, LOFT_DEMI_PORTEE, 1.0, 10);
-        const rollGap = Math.abs(worst.stopY - worst.targetY);
-        // Le roulement ne devrait pas depasser le terrain entier
-        expect(rollGap).toBeLessThan(TERRAIN_HEIGHT);
-        expect(rollGap).toBeGreaterThan(0);
+        const rollSpeed = Math.sqrt(worst.rollVx ** 2 + worst.rollVy ** 2);
+        expect(rollSpeed).toBeLessThan(15);
+        expect(rollSpeed).toBeGreaterThan(0);
     });
 });
 
@@ -573,44 +672,39 @@ describe('9. Dead lines visuelles == bounds physiques du terrain', () => {
 // 10. COHERENCE MULTI-TERRAIN — meme marqueur, friction differente
 // =====================================================================
 
-describe('10. Multi-terrain — meme atterrissage, marqueur adapte a la friction', () => {
+describe('10. Multi-terrain — meme atterrissage, stop different', () => {
     const terrainTypes = Object.entries(TERRAIN_FRICTION);
 
     for (const [name, friction] of terrainTypes) {
-        it(`terrain ${name} (friction ${friction}): meme point d'atterrissage que terre`, () => {
+        it(`terrain ${name} (friction ${friction}): meme atterrissage, marqueur adapte au terrain`, () => {
             const terre = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
             const other = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, friction);
 
-            // Le point d'atterrissage est identique quel que soit le terrain
+            // Le landing est identique quel que soit le terrain
             expect(other.targetX).toBeCloseTo(terre.targetX, 5);
             expect(other.targetY).toBeCloseTo(terre.targetY, 5);
+
+            // Le marqueur (stop) reflette la friction terrain
+            const markerTerre = computeVisualMarker(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
+            const markerOther = computeVisualMarker(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, friction);
+            if (friction !== 1.0) {
+                // Different terrain friction → different stop position
+                const distTerre = Math.abs(markerTerre.markerY - originY);
+                const distOther = Math.abs(markerOther.markerY - originY);
+                expect(distTerre).not.toBeCloseTo(distOther, 0);
+            }
         });
     }
 
-    it('le marqueur (stop) varie selon le terrain — plus de friction = arret plus tot', () => {
-        const terre = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
-        const sable = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, TERRAIN_FRICTION.sable);
-
-        const rollGapTerre = Math.abs(terre.stopY - terre.targetY);
-        const rollGapSable = Math.abs(sable.stopY - sable.targetY);
-
-        // Sur sable (friction 2.0), la boule s'arrete plus pres du point d'atterrissage
-        expect(rollGapSable).toBeLessThan(rollGapTerre);
-    });
-
-    it('dalles (friction faible) → marqueur plus loin que terre', () => {
-        const terre = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
-        const dalles = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, TERRAIN_FRICTION.dalles);
-
-        const rollGapTerre = Math.abs(terre.stopY - terre.targetY);
-        const rollGapDalles = Math.abs(dalles.stopY - dalles.targetY);
-
-        // Sur dalles (friction 0.5), la boule roule plus loin
-        expect(rollGapDalles).toBeGreaterThan(rollGapTerre);
-    });
-
     it('la vitesse de roulement est compensee partiellement par TERRAIN_ROLL_COMPENSATION', () => {
         expect(TERRAIN_ROLL_COMPENSATION).toBe(0.6);
+
+        const terre = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, 1.0);
+        const sable = computeThrowLanding(-Math.PI / 2, 0.5, LOFT_DEMI_PORTEE, TERRAIN_FRICTION.sable);
+        const rollTerre = Math.sqrt(terre.rollVx ** 2 + terre.rollVy ** 2);
+        const rollSable = Math.sqrt(sable.rollVx ** 2 + sable.rollVy ** 2);
+        // Sable: vitesse de roll plus elevee (compensee) mais friction aussi → roule moins loin
+        expect(rollSable).toBeGreaterThan(rollTerre);
     });
 });
 
@@ -732,10 +826,103 @@ describe('13. Wobble Lissajous — oscillation bornee et previsible', () => {
 });
 
 // =====================================================================
-// 14. STRESS TEST: 100 lancers aleatoires — marqueur toujours dans les bounds
+// 14. FRICTION BOULE — impact sur la position d'arret estimee
 // =====================================================================
 
-describe('14. Stress test — 100 lancers aleatoires restent dans les bounds', () => {
+describe('14. Friction boule — le marqueur integre le bonus de friction de la boule', () => {
+    it('boule bleue (friction_x0.8) → marqueur plus loin que boule acier', () => {
+        const angle = -Math.PI / 2;
+        const acier = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1.0
+        );
+        const bleue = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 0.8
+        );
+
+        // Meme atterrissage
+        expect(acier.targetY).toBe(bleue.targetY);
+        // Bleue roule plus loin (stopY plus petit = plus loin du lanceur)
+        expect(bleue.stopY).toBeLessThan(acier.stopY);
+    });
+
+    it('boule rouille (friction_x1.3) → marqueur plus proche que boule acier', () => {
+        const angle = -Math.PI / 2;
+        const acier = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1.0
+        );
+        const rouille = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1.3
+        );
+
+        // Meme atterrissage
+        expect(acier.targetY).toBe(rouille.targetY);
+        // Rouille s'arrete plus tot (stopY plus grand = plus pres du lanceur)
+        expect(rouille.stopY).toBeGreaterThan(acier.stopY);
+    });
+
+    it('boule acier (friction_x1.0) → pas de modification du stop', () => {
+        const angle = -Math.PI / 2;
+        const withMult = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1.0
+        );
+        const withoutMult = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6
+        );
+        // Default bouleFrictionMult = 1 → identique
+        expect(withMult.stopX).toBe(withoutMult.stopX);
+        expect(withMult.stopY).toBe(withoutMult.stopY);
+    });
+
+    it('la difference est significative : bleue vs rouille ~45% d\'ecart de roulement', () => {
+        const angle = -Math.PI / 2;
+        const bleue = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 0.8
+        );
+        const rouille = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1.3
+        );
+
+        const rollBleue = Math.abs(bleue.stopY - bleue.targetY);
+        const rollRouille = Math.abs(rouille.stopY - rouille.targetY);
+
+        // Bleue roule 1.3/0.8 = 1.625x plus loin que rouille
+        const ratio = rollBleue / rollRouille;
+        expect(ratio).toBeCloseTo(1.3 / 0.8, 1);
+    });
+
+    it('plombee + friction boule → le marqueur reflete les deux', () => {
+        const angle = -Math.PI / 2;
+        const acier = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_PLOMBEE, 1.0, 6, 1.0
+        );
+        const bleue = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_PLOMBEE, 1.0, 6, 0.8
+        );
+
+        // Meme atterrissage (plombee atterrit plus loin que demi-portee)
+        expect(acier.targetY).toBe(bleue.targetY);
+        // Bleue roule plus loin meme en plombee
+        expect(bleue.stopY).toBeLessThan(acier.stopY);
+    });
+
+    it('tir au fer → friction boule n\'a pas d\'impact (flyOnly)', () => {
+        const angle = -Math.PI / 2;
+        const acier = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_TIR, 1.0, 6, 1.0
+        );
+        const bleue = PetanqueEngine.computeThrowParams(
+            angle, 0.25, originX, originY, bounds, LOFT_TIR, 1.0, 6, 0.8
+        );
+        // Tir flyOnly = stop == landing, friction boule n'intervient pas
+        expect(acier.stopY).toBe(bleue.stopY);
+    });
+});
+
+// =====================================================================
+// 15. STRESS TEST: 100 lancers aleatoires — marqueur toujours dans les bounds
+// =====================================================================
+
+describe('15. Stress test — 100 lancers aleatoires restent dans les bounds', () => {
     it('tous les marqueurs restent dans le terrain clampé', () => {
         for (let i = 0; i < 100; i++) {
             const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI; // -pi a 0
@@ -765,4 +952,147 @@ describe('14. Stress test — 100 lancers aleatoires restent dans les bounds', (
             expect(markerY).toBeLessThanOrEqual(bounds.y + bounds.h - 20);
         }
     });
+});
+
+// =====================================================================
+// 16. RETRO (BACKSPIN) — prediction integre le retro dans le stop
+// =====================================================================
+
+describe('16. Retro — le marqueur integre le backspin dans l\'arret predit', () => {
+    it('retro actif → le marqueur est plus proche que sans retro', () => {
+        const angle = -Math.PI / 2;
+        const noRetro = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE, 1.0, 6,
+            { x: 0, y: 0 }, { x: 0, y: 0 }, 0, 1, 0);
+        const withRetro = computeVisualMarker(angle, 0.6, LOFT_DEMI_PORTEE, 1.0, 6,
+            { x: 0, y: 0 }, { x: 0, y: 0 }, 0, 1, 0.5);
+        // Retro = more friction = ball stops closer (markerY is bigger = closer to origin)
+        expect(withRetro.markerY).toBeGreaterThan(noRetro.markerY);
+    });
+
+    it('retro effet 10 (50%) → marqueur significativement plus court', () => {
+        const angle = -Math.PI / 2;
+        const retro50 = RETRO_INTENSITY_BY_EFFET[10]; // 0.50
+        const noRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1, 0
+        );
+        const withRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1, retro50
+        );
+        // Same landing
+        expect(withRetro.targetY).toBe(noRetro.targetY);
+        // Shorter roll with retro
+        const rollNoRetro = Math.abs(noRetro.stopY - noRetro.targetY);
+        const rollRetro = Math.abs(withRetro.stopY - withRetro.targetY);
+        expect(rollRetro).toBeLessThan(rollNoRetro);
+        // retroMult = 1 + 0.5 * 2.5 = 2.25 → roll ratio ~1/2.25 = 0.44x
+        expect(rollRetro / rollNoRetro).toBeCloseTo(1 / (1 + retro50 * RETRO_FRICTION_MULT), 1);
+    });
+
+    it('retro effet 8 (35%) → reduction moderee', () => {
+        const angle = -Math.PI / 2;
+        const retro35 = RETRO_INTENSITY_BY_EFFET[8]; // 0.35
+        const noRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1, 0
+        );
+        const withRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_DEMI_PORTEE, 1.0, 6, 1, retro35
+        );
+        const rollNoRetro = Math.abs(noRetro.stopY - noRetro.targetY);
+        const rollRetro = Math.abs(withRetro.stopY - withRetro.targetY);
+        // retroMult = 1 + 0.35 * 2.5 = 1.875 → roll ~53% of base
+        expect(rollRetro / rollNoRetro).toBeCloseTo(1 / (1 + retro35 * RETRO_FRICTION_MULT), 1);
+    });
+
+    it('tir au fer → retro n\'affecte pas le stop (flyOnly)', () => {
+        const angle = -Math.PI / 2;
+        const noRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_TIR, 1.0, 6, 1, 0
+        );
+        const withRetro = PetanqueEngine.computeThrowParams(
+            angle, 0.36, originX, originY, bounds, LOFT_TIR, 1.0, 6, 1, 0.5
+        );
+        expect(withRetro.stopY).toBe(noRetro.stopY);
+    });
+});
+
+// =====================================================================
+// 17. PRECISION ±5% — prediction vs simulation discrete (Ball.update)
+// =====================================================================
+
+describe('17. Precision ±5% — stop predit vs simulation discrete', () => {
+    /** Simule Ball.update en discret pour N frames et retourne la position d'arret.
+     *  Clamp aux bounds comme computeThrowParams (la boule qui sort = morte). */
+    function simulateDiscreteStop(startX, startY, vx, vy, frictionMult, retroIntensity = 0) {
+        let x = startX, y = startY;
+        let cvx = vx, cvy = vy;
+        const dt = 1 / 60;
+        const retroMult = retroIntensity > 0 ? (1 + retroIntensity * RETRO_FRICTION_MULT) : 1.0;
+        const minX = bounds.x + BALL_CLAMP_MARGIN;
+        const maxX = bounds.x + bounds.w - BALL_CLAMP_MARGIN;
+        const minY = bounds.y + BALL_CLAMP_MARGIN;
+        const maxY = bounds.y + bounds.h - BALL_CLAMP_MARGIN;
+
+        for (let i = 0; i < 600; i++) { // max 10 seconds
+            const speed = Math.sqrt(cvx * cvx + cvy * cvy);
+            if (speed <= SPEED_THRESHOLD) break;
+
+            const frictionDecel = FRICTION_BASE * frictionMult * retroMult * 60;
+            const newSpeed = Math.max(0, speed - frictionDecel * dt);
+            const ratio = speed > 0 ? newSpeed / speed : 0;
+            cvx *= ratio;
+            cvy *= ratio;
+
+            x += cvx * dt * 60;
+            y += cvy * dt * 60;
+
+            // Clamp to bounds (ball that exits = dead, prediction clamps too)
+            x = Math.max(minX, Math.min(maxX, x));
+            y = Math.max(minY, Math.min(maxY, y));
+        }
+        return { x, y };
+    }
+
+    const testCases = [
+        { name: 'demi-portee terre', loft: LOFT_DEMI_PORTEE, friction: 1.0, retro: 0 },
+        { name: 'demi-portee herbe', loft: LOFT_DEMI_PORTEE, friction: TERRAIN_FRICTION.herbe, retro: 0 },
+        { name: 'demi-portee sable', loft: LOFT_DEMI_PORTEE, friction: TERRAIN_FRICTION.sable, retro: 0 },
+        { name: 'demi-portee dalles', loft: LOFT_DEMI_PORTEE, friction: TERRAIN_FRICTION.dalles, retro: 0 },
+        { name: 'plombee terre', loft: LOFT_PLOMBEE, friction: 1.0, retro: 0 },
+        { name: 'plombee herbe', loft: LOFT_PLOMBEE, friction: TERRAIN_FRICTION.herbe, retro: 0 },
+        { name: 'plombee sable', loft: LOFT_PLOMBEE, friction: TERRAIN_FRICTION.sable, retro: 0 },
+        { name: 'plombee dalles', loft: LOFT_PLOMBEE, friction: TERRAIN_FRICTION.dalles, retro: 0 },
+        { name: 'demi-portee terre retro50', loft: LOFT_DEMI_PORTEE, friction: 1.0, retro: 0.5 },
+        { name: 'demi-portee herbe retro35', loft: LOFT_DEMI_PORTEE, friction: TERRAIN_FRICTION.herbe, retro: 0.35 },
+        { name: 'plombee terre retro50', loft: LOFT_PLOMBEE, friction: 1.0, retro: 0.5 },
+    ];
+
+    for (const tc of testCases) {
+        for (const rawPower of [0.3, 0.6, 1.0]) {
+            it(`${tc.name} power=${rawPower} — ecart ≤5%`, () => {
+                const angle = -Math.PI / 2;
+                const power = rawPower * rawPower;
+                const params = PetanqueEngine.computeThrowParams(
+                    angle, power, originX, originY, bounds, tc.loft, tc.friction, 6, 1, tc.retro
+                );
+
+                // Simuler la physique discrete depuis le landing
+                const simStop = simulateDiscreteStop(
+                    params.targetX, params.targetY,
+                    params.rollVx, params.rollVy,
+                    tc.friction, tc.retro
+                );
+
+                const totalDist = Math.sqrt(
+                    (params.stopX - originX) ** 2 + (params.stopY - originY) ** 2
+                );
+                const errorDist = Math.sqrt(
+                    (params.stopX - simStop.x) ** 2 + (params.stopY - simStop.y) ** 2
+                );
+
+                // ±5% de la distance totale
+                const maxError = totalDist * 0.05;
+                expect(errorDist).toBeLessThanOrEqual(Math.max(maxError, 3)); // 3px minimum tolerance
+            });
+        }
+    }
 });

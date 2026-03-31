@@ -23,7 +23,8 @@ import {
     GALET_WIN_ARCADE, GALET_WIN_QUICKPLAY, GALET_CARREAU_BONUS,
     CASQUETTE_MAX_DISPLACEMENT, BLESSEE_MAX_DISPLACEMENT, RECUL_MIN_BACKWARD_PX,
     CARREAU_SHAKE_DURATION, CARREAU_SHAKE_INTENSITY,
-    puissanceMultiplier
+    puissanceMultiplier,
+    RETRO_FRICTION_MULT
 } from '../utils/Constants.js';
 import {
     sfxBouleBoule, sfxBouleCochonnet, sfxLanding, sfxRoll,
@@ -427,7 +428,7 @@ export default class PetanqueEngine {
         });
     }
 
-    static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6) {
+    static computeThrowParams(angle, power, originX, originY, bounds, loftPreset, frictionMult, puissanceStat = 6, bouleFrictionMult = 1, retroIntensity = 0) {
         const isTir = loftPreset.id === 'tir';
         // Puissance stat affects max distance (source: Constants.puissanceMultiplier)
         const puissanceMult = puissanceMultiplier(puissanceStat);
@@ -454,12 +455,14 @@ export default class PetanqueEngine {
         const rollVy = Math.sin(angle) * rollingSpeed;
 
         // Estimated stop position: landing + deceleration distance from roll
-        // Ball.update friction: decelPerFrame = FRICTION_BASE * frictionMult
-        // Kinematic: stopDist = rollSpeed² / (2 * decelPerFrame)
+        // Ball.update uses: decel = FRICTION_BASE * frictionMult * retroMult per frame
+        // Simple retro mode: retroMult = 1 + retro * RETRO_FRICTION_MULT (constant throughout roll)
+        // Kinematic: stopDist = (v² - threshold²) / (2 * decel)
+        const retroMult = retroIntensity > 0 ? (1 + retroIntensity * RETRO_FRICTION_MULT) : 1.0;
         let stopX = targetX, stopY = targetY;
-        if (rollingSpeed > 0) {
-            const actualDecel = FRICTION_BASE * frictionMult;
-            const estRollDist = (rollingSpeed * rollingSpeed) / (2 * actualDecel);
+        if (rollingSpeed > SPEED_THRESHOLD) {
+            const actualDecel = FRICTION_BASE * frictionMult * bouleFrictionMult * retroMult;
+            const estRollDist = (rollingSpeed * rollingSpeed - SPEED_THRESHOLD * SPEED_THRESHOLD) / (2 * actualDecel);
             stopX = Phaser.Math.Clamp(
                 targetX + Math.cos(angle) * estRollDist,
                 bounds.x + BALL_CLAMP_MARGIN, bounds.x + bounds.w - BALL_CLAMP_MARGIN
@@ -1550,6 +1553,12 @@ export default class PetanqueEngine {
 
     _drawImpactTrace(x, y, radius) {
         this.renderer.drawImpactTrace(x, y, radius, this.bounds);
+    }
+
+    // Boule friction multiplier for stop estimation (used by AimingSystem)
+    getBouleFrictionMult(team = 'player') {
+        const stats = this._getBouleStats(team);
+        return stats.frictionMult || 1;
     }
 
     // --- BOULE STATS from boules.json ---

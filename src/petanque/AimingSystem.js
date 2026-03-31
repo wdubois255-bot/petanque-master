@@ -6,7 +6,7 @@ import {
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST, PX_PER_METER,
     FOCUS_CHARGES_PER_MATCH, AIMING_UI_BOTTOM_OFFSET, FOCUS_UI_STACK_OFFSET,
     LATERAL_SPIN_MIN_EFFET,
-    RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET,
+    RETRO_MIN_EFFET_STAT, RETRO_INTENSITY_BY_EFFET, RETRO_FRICTION_MULT,
     IS_MOBILE, TOUCH_BUTTON_SIZE, TOUCH_PADDING
 } from '../utils/Constants.js';
 import { loadSave } from '../utils/SaveManager.js';
@@ -1185,12 +1185,19 @@ export default class AimingSystem {
             else color = 0xCC4444;
         }
 
-        // Draw arrow (with wobble applied to endpoint — arrow moves with marker)
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
+
+        // Compute wobbled angle + power: EXACT same formulas as onPointerUp
+        // so the marker shows precisely where the ball will go if released NOW
+        const wobbleAngleOffset = Math.atan2(this._wobbleOffset.y, this._wobbleOffset.x + 100)
+            - Math.atan2(0, 100);
+        const wobbledAngle = angle + wobbleAngleOffset + this._trembleOffset.x * 0.002;
+
+        // Draw arrow pointing in wobbled direction
         const arrowLen = power * 80;
-        const endX = originX + Math.cos(angle) * arrowLen + this._wobbleOffset.x * 0.5;
-        const endY = originY + Math.sin(angle) * arrowLen + this._wobbleOffset.y * 0.5;
+        const endX = originX + Math.cos(wobbledAngle) * arrowLen;
+        const endY = originY + Math.sin(wobbledAngle) * arrowLen;
 
         const lineWidth = this.shotMode === 'tirer' ? 5 : 3;
         this.arrowGfx.lineStyle(lineWidth, color, 0.8);
@@ -1205,19 +1212,20 @@ export default class AimingSystem {
         this.arrowGfx.beginPath();
         this.arrowGfx.moveTo(endX, endY);
         this.arrowGfx.lineTo(
-            endX - Math.cos(angle - headAngle) * headLen,
-            endY - Math.sin(angle - headAngle) * headLen
+            endX - Math.cos(wobbledAngle - headAngle) * headLen,
+            endY - Math.sin(wobbledAngle - headAngle) * headLen
         );
         this.arrowGfx.moveTo(endX, endY);
         this.arrowGfx.lineTo(
-            endX - Math.cos(angle + headAngle) * headLen,
-            endY - Math.sin(angle + headAngle) * headLen
+            endX - Math.cos(wobbledAngle + headAngle) * headLen,
+            endY - Math.sin(wobbledAngle + headAngle) * headLen
         );
         this.arrowGfx.strokePath();
 
-        // Landing point marker
+        // Stop position marker
         const isCochonnetThrow = this.engine.state === 'COCHONNET_THROW';
         let markerX, markerY;
+        let baseX, baseY; // base (non-wobbled) for precision circle
 
         if (isCochonnetThrow) {
             // Cochonnet: linear power, simple distance calc
@@ -1225,41 +1233,69 @@ export default class AimingSystem {
             const margin = 20;
             const bx = this.engine.bounds.x, by = this.engine.bounds.y;
             const bw = this.engine.bounds.w, bh = this.engine.bounds.h;
-            markerX = Math.max(bx + margin, Math.min(bx + bw - margin, originX + Math.cos(angle) * cochDist));
-            markerY = Math.max(by + margin, Math.min(by + bh - margin, originY + Math.sin(angle) * cochDist));
+            markerX = Math.max(bx + margin, Math.min(bx + bw - margin, originX + Math.cos(wobbledAngle) * cochDist));
+            markerY = Math.max(by + margin, Math.min(by + bh - margin, originY + Math.sin(wobbledAngle) * cochDist));
+            baseX = Math.max(bx + margin, Math.min(bx + bw - margin, originX + Math.cos(angle) * cochDist));
+            baseY = Math.max(by + margin, Math.min(by + bh - margin, originY + Math.sin(angle) * cochDist));
         } else {
             const loft = this.shotMode === 'tirer' ? LOFT_TIR : this.loftPreset;
             const puissance = this.charStats.puissance || 6;
+
+            // Power wobble (same as onPointerUp)
+            const techniquePenalty = loft.precisionPenalty || 0;
+            const wobbleMag = Math.sqrt(this._wobbleOffset.x ** 2 + this._wobbleOffset.y ** 2);
+            const maxWobble = this._getWobbleAmplitude();
+            const powerWobble = maxWobble > 0
+                ? (wobbleMag / maxWobble) * 0.03 * (1 + techniquePenalty * 0.3) : 0;
+            const wobbledPower = Phaser.Math.Clamp(
+                power + Math.sin(this._aimTime * 2.3) * powerWobble, 0.01, 1);
+
+            // Predicted STOP position: where the ball actually comes to rest
+            // Includes terrain friction, boule friction, and retro (backspin)
+            const bouleFriction = this.engine.getBouleFrictionMult?.(this.engine.currentTeam || 'player') || 1;
+            const effetStat = this.charStats.effet || 6;
+            const retroForPrediction = this.retroActive
+                ? (RETRO_INTENSITY_BY_EFFET[effetStat] || (effetStat >= RETRO_MIN_EFFET_STAT ? 0.35 : 0))
+                : 0;
             const params = PetanqueEngine.computeThrowParams(
-                angle, power, originX, originY, this.engine.bounds, loft, this.engine.frictionMult, puissance
+                wobbledAngle, wobbledPower, originX, originY,
+                this.engine.bounds, loft, this.engine.frictionMult, puissance,
+                bouleFriction, retroForPrediction
             );
-            // Show estimated STOP position (not just landing) so the player
-            // knows where the ball will approximately end up after rolling
             markerX = params.stopX;
             markerY = params.stopY;
+
+            // Base prediction (no wobble) for precision circle center
+            const baseParams = PetanqueEngine.computeThrowParams(
+                angle, power, originX, originY,
+                this.engine.bounds, loft, this.engine.frictionMult, puissance,
+                bouleFriction, retroForPrediction
+            );
+            baseX = baseParams.stopX;
+            baseY = baseParams.stopY;
         }
 
-        // Apply precision wobble to landing marker
-        const wobX = markerX + this._wobbleOffset.x;
-        const wobY = markerY + this._wobbleOffset.y;
-
-        // Show wobble range circle (ghosted, shows precision zone)
+        // Precision circle centered on base (non-wobbled) position
         const wobAmp = this._getWobbleAmplitude();
         if (wobAmp > 3) {
+            // Scale circle by distance: pixel wobble amplifies with range
+            const baseDist = Math.sqrt((baseX - originX) ** 2 + (baseY - originY) ** 2);
+            const scaledAmp = baseDist > 0
+                ? baseDist * Math.atan2(wobAmp, 100) : wobAmp;
             this._predictionGfx.lineStyle(0.8, color, 0.15);
-            this._predictionGfx.strokeCircle(markerX, markerY, wobAmp);
+            this._predictionGfx.strokeCircle(baseX, baseY, scaledAmp);
         }
 
-        // Show landing marker (cross) — oscillates with precision wobble
+        // Marker cross at exact predicted stop position
         // Sur mobile : cercle +20% pour meilleure lisibilite (5 → 6)
         const markerRadius = IS_MOBILE ? 6 : 5;
         this._predictionGfx.lineStyle(1.5, color, 0.6);
-        this._predictionGfx.strokeCircle(wobX, wobY, markerRadius);
+        this._predictionGfx.strokeCircle(markerX, markerY, markerRadius);
         this._predictionGfx.beginPath();
-        this._predictionGfx.moveTo(wobX - 4, wobY);
-        this._predictionGfx.lineTo(wobX + 4, wobY);
-        this._predictionGfx.moveTo(wobX, wobY - 4);
-        this._predictionGfx.lineTo(wobX, wobY + 4);
+        this._predictionGfx.moveTo(markerX - 4, markerY);
+        this._predictionGfx.lineTo(markerX + 4, markerY);
+        this._predictionGfx.moveTo(markerX, markerY - 4);
+        this._predictionGfx.lineTo(markerX, markerY + 4);
         this._predictionGfx.strokePath();
 
         // Retro indicator on arrow: small arc near tip
