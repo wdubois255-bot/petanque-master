@@ -440,7 +440,7 @@ export default class VSIntroScene extends Phaser.Scene {
         this.tweens.add({ targets: diffLabel, alpha: 1, duration: 300, delay: 850 });
 
         // 6. Fade out everything
-        this.time.delayedCall(1700, () => {
+        this.time.delayedCall(2550, () => {
             this.tweens.add({
                 targets: allElements,
                 alpha: 0, duration: 250, ease: 'Quad.easeIn'
@@ -451,7 +451,7 @@ export default class VSIntroScene extends Phaser.Scene {
         this._canSkip = false;
         this.time.delayedCall(600, () => { this._canSkip = true; });
 
-        this.time.delayedCall(2500, () => {
+        this.time.delayedCall(3750, () => {
             this._startMatch();
         });
 

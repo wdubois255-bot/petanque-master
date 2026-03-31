@@ -155,6 +155,7 @@ async function main() {
                 deviceScaleFactor: 2,
             });
             const page = await ctx.newPage();
+            await preinjectSave(page, { version: 2, lang: 'en' }); // English UI
             await waitForGame(page);
             await page.waitForTimeout(2000); // Full intro animation
             await snap(page, '01-title-ambiance');
@@ -173,6 +174,7 @@ async function main() {
                 tutorialComplete: true,
                 tutorialPhasesDone: [0, 1, 2],
                 tutorialInGameSeen: true,
+                lang: 'en',
                 stats: { totalMatchesPlayed: 10 },
             });
             await waitForGame(page);
@@ -208,6 +210,7 @@ async function main() {
                 tutorialComplete: true,
                 tutorialPhasesDone: [0, 1, 2],
                 tutorialInGameSeen: true,
+                lang: 'en',
                 stats: { totalMatchesPlayed: 10 },
             });
             await waitForGame(page);
@@ -224,7 +227,7 @@ async function main() {
                 },
             });
             await page.waitForTimeout(4000); // VSIntro
-            await page.waitForTimeout(4000); // PetanqueScene renders
+            await page.waitForTimeout(2000); // PetanqueScene renders — court pour éviter le tooltip terrain
             await snap(page, '03-gameplay-plage');
             await ctx.close();
         }
@@ -251,8 +254,8 @@ async function main() {
                     returnScene: 'TitleScene',
                 },
             });
-            // Capture at peak VS animation: after VS slam (1100ms), before fade (1700ms)
-            await page.waitForTimeout(1300);
+            // Capture at peak VS animation: all elements visible 1600-2550ms (new timing)
+            await page.waitForTimeout(2000);
             await snap(page, '04-vsintro-personnages');
             await ctx.close();
         }
@@ -313,21 +316,41 @@ async function main() {
                     returnScene: 'TitleScene',
                 },
             });
-            await page.waitForTimeout(4000); // VSIntro animation
-            await page.waitForTimeout(5000); // PetanqueScene loads, aiming phase
+            await page.waitForTimeout(4500); // VSIntro animation (now 3750ms) + buffer
+            await page.waitForTimeout(4500); // PetanqueScene fully loaded + cochonnet placed
 
-            // Attempt a throw
-            await page.mouse.move(416, 380);
+            // === LANCER 1 : Demi-portée vers le cochonnet ===
+            // Objectif : placer notre boule près du cochonnet → l'IA doit répondre
+            // Cela crée une cible pour le Tir au Fer qui suit
+            await page.keyboard.press('1'); // Sélectionner Demi-portée
+            await page.waitForTimeout(300);
+            await page.mouse.move(416, 370);
             await page.waitForTimeout(300);
             await page.mouse.down();
-            await page.waitForTimeout(400);
-            await page.mouse.move(416, 180, { steps: 25 }); // Drag up to aim
+            await page.waitForTimeout(300);
+            await page.mouse.move(416, 215, { steps: 20 }); // Puissance modérée, centre terrain
             await page.waitForTimeout(200);
-            await page.mouse.up(); // Release to throw
-            await page.waitForTimeout(6000); // Ball flight + landing + slow-mo
+            await page.mouse.up();
+            await page.waitForTimeout(7000); // Vol + atterrissage + l'IA joue sa boule
+
+            // === LANCER 2 : Tir au Fer — LE CARREAU ===
+            // La boule de l'IA est maintenant sur le terrain (près du cochonnet, centre-haut)
+            // On vise là avec puissance maximale
+            await page.keyboard.press('3'); // Sélectionner Tir au Fer
+            await page.waitForTimeout(400);
+            await page.mouse.move(416, 370);
+            await page.waitForTimeout(300);
+            await page.mouse.down();
+            await page.waitForTimeout(300);
+            await page.mouse.move(416, 50, { steps: 15 }); // Puissance max → centre-haut du terrain
+            await page.waitForTimeout(200);
+            await page.mouse.up();
+            await page.waitForTimeout(8000); // Impact + slow-mo + aftermath
 
             await ctx.close();
             log('  ✓ Video WebM saved');
+            log('  → Pour le GIF carreau : couper à partir de ~17s dans la vidéo');
+            log('    ffmpeg -y -ss 17 -t 5 -i *.webm -vf "fps=12,scale=832:480:flags=neighbor,split[s0][s1];[s0]palettegen=max_colors=96[p];[s1][p]paletteuse=dither=none" -loop 0 header.gif');
         }
 
         await browser.close();
