@@ -12,14 +12,14 @@
 
 | Element | Statut | Detail |
 |---|---|---|
-| Moteur petanque | OK | Physique custom 500 LOC, 6 techniques, 5 terrains |
+| Moteur petanque | OK | Physique custom 525 LOC, 3 lancers (Demi-portee, Plombee, Tir au fer), 5 terrains |
 | Gameplay loop | OK | Arcade (5 matchs) + QuickPlay + Shop + Progression |
-| Personnages | OK | 12 persos, stats, barks, sprites (11/12 complets) |
+| Personnages | OK | 12 persos jouables, stats, barks, tous avec sprites animes |
 | Terrains | OK | 5 terrains avec physique distincte |
-| Localisation | OK | FR 95% + EN 95% |
+| Localisation | OK | FR 100% + EN 100% |
 | Audio | OK | 14 SFX, 2 musiques, ambiance terrain |
 | SDK Portails | OK | CrazyGames + Poki SDK integres via VITE_PLATFORM |
-| Tests | OK | 440 tests (344 unit + 96 E2E) |
+| Tests | OK | 3011+ tests Vitest |
 | CI/CD | OK | GitHub Pages deploy + QA pipeline |
 | Build | OK | ~1.6 MB total (424KB jeu + 1237KB Phaser) |
 | Mobile | OK | Touch 56px, rotation portrait overlay |
@@ -79,7 +79,7 @@ The first serious petanque game — with pixel art charm, provencal humor, and s
 
 **A provencal bocce ball game with RPG progression, 12 characters, and custom physics.**
 
-6 realistic throwing techniques (lob, roll, strike...)
+3 throwing styles (lob, high lob, strike)
 12 characters with unique stats & personalities
 5 terrains with distinct physics (sand, grass, stone, hills, docks)
 Shop with 15+ cosmetic items
@@ -111,7 +111,7 @@ Fazzino the spin artist... and more!
 
 ## Controls
 - Mouse/Touch: Drag and release to aim and set power
-- 1-6: Select throwing technique
+- 1-3: Select throwing style
 - E/R: Add spin (lateral/retro)
 - SPACE: Focus (stabilize aim)
 - TAB (hold): View ball distance ranking
@@ -152,8 +152,7 @@ Un GIF de 3-5 secondes montrant :
 1. Un lancer en arc
 2. La boule qui roule vers le cochonnet
 3. Le slow-mo quand elle s'approche
-4. Le commentaire qui s'affiche
-5. Le score qui s'incremente
+4. Le score qui s'incremente
 
 **Comment capturer :**
 ```bash

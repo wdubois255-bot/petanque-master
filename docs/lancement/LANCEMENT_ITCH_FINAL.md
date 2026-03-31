@@ -90,7 +90,7 @@ Voir [section 12](#12-analytics-in-game-optionnel) pour les details. En resume :
 
 - [ ] **1.2 — GIF header anime (3-5 secondes)**
   Le GIF est le 2e element le plus important. Il montre le gameplay en action et transforme un visiteur curieux en joueur. Un bon GIF = +50% de conversion.
-  - Capturer une sequence : lancer en arc → boule qui roule vers le cochonnet → slow-mo quand elle s'approche → commentaire qui s'affiche → score qui s'incremente
+  - Capturer une sequence : lancer en arc → boule qui roule vers le cochonnet → slow-mo quand elle s'approche → score qui s'incremente
   - Taille cible : < 3 MB, 832px de large, 15 FPS
   - Outils recommandes :
     - **ScreenToGif** (Windows, gratuit) — le plus simple

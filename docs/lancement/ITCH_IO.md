@@ -1,8 +1,8 @@
 # Petanque Master — Plan de lancement complet
 
-> **Date** : 25 mars 2026
+> **Date** : 31 mars 2026 (mis a jour)
 > **Objectif** : Publication itch.io → CrazyGames → Poki
-> **Statut** : Pre-launch (98% pret, 3 fichiers bloquants)
+> **Statut** : Pre-launch — fichiers techniques OK, reste assets visuels (GIF, cover, screenshots)
 
 ---
 
@@ -12,30 +12,30 @@
 
 | Element | Statut | Detail |
 |---|---|---|
-| Moteur petanque | OK | Physique custom 500 LOC, 6 techniques, 5 terrains |
+| Moteur petanque | OK | Physique custom 525 LOC, 3 lancers (Demi-portee, Plombee, Tir au fer), 5 terrains |
 | Gameplay loop | OK | Arcade (5 matchs) + QuickPlay + Shop + Progression |
-| Personnages | OK | 12 persos, stats, barks, sprites (11/12 complets) |
+| Personnages | OK | 12 persos jouables, stats, barks, tous avec sprites animes |
 | Terrains | OK | 5 terrains avec physique distincte |
-| Localisation | OK | FR 95% + EN 95% |
-| Audio | OK | 14 SFX, 2 musiques, ambiance terrain |
+| Localisation | OK | FR 100% + EN 100% |
+| Audio | OK | 19 SFX (12 fichiers .mp3), 2 musiques |
 | SDK Portails | OK | CrazyGames + Poki SDK integres via VITE_PLATFORM |
-| Tests | OK | 440 tests (344 unit + 96 E2E) |
+| Tests | OK | 3011+ tests Vitest |
 | CI/CD | OK | GitHub Pages deploy + QA pipeline |
-| Build | OK | ~11 MB total (476KB jeu + 1.2MB Phaser + ~9MB assets audio/sprites) |
+| Build | OK | ~11 MB dist/ total |
 | Mobile | OK | Touch 56px, rotation portrait overlay |
 
-### Ce qui BLOQUE (3h de travail)
+### Ce qui BLOQUE (2h de travail humain)
 
-| Tache | Fichier | Temps | Bloquant pour |
-|---|---|---|---|
-| Scene Credits | `src/scenes/CreditsScene.js` | 1h | Tous les portails |
-| Privacy Policy | `public/privacy.html` | 30min | CrazyGames, Poki, RGPD |
-| Licence | `LICENSE` (racine) | 10min | Standard pro |
-| Meta og:tags | `index.html` | 20min | Social sharing |
-| Version bump | `package.json` → 1.0.0 | 5min | Coherence |
-| Screenshots (5) | Captures manuelles | 30min | Fiche itch.io |
-| Cover art 630x500 | Montage pixel art | 30min | Thumbnail itch.io |
-| GIF header (3-5s) | Capture d'un carreau slow-mo | 20min | Conversion clics |
+| Tache | Temps | Bloquant pour |
+|---|---|---|
+| ~~Scene Credits~~ | ~~FAIT~~ | ~~OK~~ |
+| ~~Privacy Policy~~ | ~~FAIT~~ | ~~OK~~ |
+| ~~Licence~~ | ~~FAIT~~ | ~~OK~~ |
+| ~~Meta og:tags~~ | ~~FAIT~~ | ~~OK~~ |
+| ~~Version 1.0.0~~ | ~~FAIT~~ | ~~OK~~ |
+| Screenshots (5) | 20min | Fiche itch.io |
+| Cover art 630x500 | 30min | Thumbnail itch.io |
+| GIF header (3-5s) | 30min | Conversion clics |
 
 ---
 
@@ -79,7 +79,7 @@ The first serious petanque game — with pixel art charm, provencal humor, and s
 
 **A provencal bocce ball game with RPG progression, 12 characters, and custom physics.**
 
-6 realistic throwing techniques (lob, roll, strike...)
+3 throwing styles (lob, high lob, strike)
 12 characters with unique stats & personalities
 5 terrains with distinct physics (sand, grass, stone, hills, docks)
 Shop with 15+ cosmetic items
@@ -111,7 +111,7 @@ Fazzino the spin artist... and more!
 
 ## Controls
 - Mouse/Touch: Drag and release to aim and set power
-- 1-6: Select throwing technique
+- 1-3: Select throwing style
 - E/R: Add spin (lateral/retro)
 - SPACE: Focus (stabilize aim)
 - TAB (hold): View ball distance ranking
@@ -152,8 +152,7 @@ Un GIF de 3-5 secondes montrant :
 1. Un lancer en arc
 2. La boule qui roule vers le cochonnet
 3. Le slow-mo quand elle s'approche
-4. Le commentaire qui s'affiche
-5. Le score qui s'incremente
+4. Le score qui s'incremente
 
 **Comment capturer :**
 ```bash
@@ -428,5 +427,5 @@ Le scenario median est atteignable. Le plafond necessite soit un coup de presse,
 
 ---
 
-*Derniere mise a jour : 25 mars 2026 — Session 22*
-*Prochaine action : implementer les 3 fichiers bloquants puis lancer sur itch.io*
+*Derniere mise a jour : 31 mars 2026 — Session 64*
+*Prochaine action : creer les assets visuels (GIF, cover, screenshots) puis publier sur itch.io*
