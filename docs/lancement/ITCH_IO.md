@@ -33,9 +33,9 @@
 | ~~Licence~~ | ~~FAIT~~ | ~~OK~~ |
 | ~~Meta og:tags~~ | ~~FAIT~~ | ~~OK~~ |
 | ~~Version 1.0.0~~ | ~~FAIT~~ | ~~OK~~ |
-| Screenshots (5) | 20min | Fiche itch.io |
-| Cover art 630x500 | 30min | Thumbnail itch.io |
-| GIF header (3-5s) | 30min | Conversion clics |
+| ~~Screenshots (5)~~ | ~~FAIT~~ | ~~OK — docs/lancement/assets/screenshots/~~ |
+| ~~Cover art 630x500~~ | ~~FAIT~~ | ~~OK — docs/lancement/assets/cover-art-630x500.png~~ |
+| ~~GIF header (3-5s)~~ | ~~FAIT~~ | ~~OK — docs/lancement/assets/gif carreau/header.gif (679 KB)~~ |
 
 ---
 

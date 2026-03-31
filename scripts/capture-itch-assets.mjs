@@ -79,6 +79,16 @@ async function waitForGame(page) {
     await page.waitForTimeout(4000); // Phaser boot complete
 }
 
+/** Inject save into localStorage BEFORE page.goto() via addInitScript.
+ *  version:2 is always forced so SaveManager doesn't call migrateV1() and discard our values. */
+async function preinjectSave(page, saveData) {
+    await page.addInitScript((data) => {
+        const key = 'petanque_master_save';
+        const existing = JSON.parse(localStorage.getItem(key) || '{}');
+        localStorage.setItem(key, JSON.stringify({ ...existing, ...data }));
+    }, { version: 2, ...saveData });
+}
+
 async function snap(page, name) {
     const filepath = path.join(SCREENSHOTS_DIR, `${name}.png`);
     await page.locator('canvas').screenshot({ path: filepath });
@@ -159,8 +169,13 @@ async function main() {
                 deviceScaleFactor: 2,
             });
             const page = await ctx.newPage();
+            await preinjectSave(page, {
+                tutorialComplete: true,
+                tutorialPhasesDone: [0, 1, 2],
+                tutorialInGameSeen: true,
+                stats: { totalMatchesPlayed: 10 },
+            });
             await waitForGame(page);
-            await disableTutorial(page);
 
             // Force VSIntro → PetanqueScene with Village terrain
             await forceScene(page, 'VSIntroScene', {
@@ -189,8 +204,13 @@ async function main() {
                 deviceScaleFactor: 2,
             });
             const page = await ctx.newPage();
+            await preinjectSave(page, {
+                tutorialComplete: true,
+                tutorialPhasesDone: [0, 1, 2],
+                tutorialInGameSeen: true,
+                stats: { totalMatchesPlayed: 10 },
+            });
             await waitForGame(page);
-            await disableTutorial(page);
 
             await forceScene(page, 'VSIntroScene', {
                 playerCharacter: { id: 'rookie', name: 'Rookie' },
@@ -231,8 +251,8 @@ async function main() {
                     returnScene: 'TitleScene',
                 },
             });
-            // Capture at the peak of the VS animation (after split + VS slam)
-            await page.waitForTimeout(1800);
+            // Capture at peak VS animation: after VS slam (1100ms), before fade (1700ms)
+            await page.waitForTimeout(1300);
             await snap(page, '04-vsintro-personnages');
             await ctx.close();
         }
@@ -245,16 +265,15 @@ async function main() {
                 deviceScaleFactor: 2,
             });
             const page = await ctx.newPage();
-            await waitForGame(page);
-            // Give the player some galets so the shop looks populated
-            await page.evaluate(() => {
-                const save = JSON.parse(localStorage.getItem('petanque_master_save') || '{}');
-                save.galets = 250;
-                save.tutorialComplete = true;
-                if (!save.stats) save.stats = {};
-                save.stats.totalMatchesPlayed = 10;
-                localStorage.setItem('petanque_master_save', JSON.stringify(save));
+            // Inject BEFORE page.goto so SaveManager reads it at boot
+            await preinjectSave(page, {
+                galets: 250,
+                tutorialComplete: true,
+                tutorialPhasesDone: [0, 1, 2],
+                tutorialInGameSeen: true,
+                stats: { totalMatchesPlayed: 10 },
             });
+            await waitForGame(page);
 
             await forceScene(page, 'ShopScene');
             await page.waitForTimeout(2000); // Shop renders
@@ -274,8 +293,13 @@ async function main() {
                 },
             });
             const page = await ctx.newPage();
+            await preinjectSave(page, {
+                tutorialComplete: true,
+                tutorialPhasesDone: [0, 1, 2],
+                tutorialInGameSeen: true,
+                stats: { totalMatchesPlayed: 10 },
+            });
             await waitForGame(page);
-            await disableTutorial(page);
 
             // Start a match directly — capture the VSIntro + beginning of gameplay
             await forceScene(page, 'VSIntroScene', {
