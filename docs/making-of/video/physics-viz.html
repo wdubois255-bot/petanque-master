@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Petanque Master — Physics Visualization</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #2A1F1A; overflow: hidden; }
+canvas { display: block; image-rendering: pixelated; }
+.controls {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 12px; z-index: 10;
+}
+.controls button {
+  background: #3A2E28; color: #D4A574; border: 2px solid #6B8E4E;
+  padding: 10px 20px; font-family: 'Courier New', monospace; font-size: 14px;
+  cursor: pointer; border-radius: 4px;
+}
+.controls button:hover { background: #4A3E38; }
+.controls button.active { border-color: #D4A574; background: #4A3E38; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="controls">
+  <button onclick="startDemo('trajectories')" id="btn-traj">Trajectoires</button>
+  <button onclick="startDemo('collisions')" id="btn-coll">Collisions COR</button>
+  <button onclick="startDemo('terrains')" id="btn-terr">Terrains</button>
+  <button onclick="startDemo('lofts')" id="btn-loft">Techniques de lancer</button>
+  <button onclick="toggleRecord()" id="btn-rec">REC</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = 1920;
+canvas.height = 1080;
+
+// Palette provencale
+const COLORS = {
+  bg: '#2A1F1A', card: '#3A2E28', shadow: '#1A1510',
+  ocre: '#D4A574', terracotta: '#C4854A', olive: '#6B8E4E',
+  lavande: '#9B7BB8', ciel: '#87CEEB', creme: '#F5E6D0',
+  sable: '#E8D5A3', terre: '#B8956A', herbe: '#7AAF5E',
+  dalles: '#9B9B9B'
+};
+
+// Physics constants from the game
+const FRICTION_BASE = 0.15;
+const COR_BOULE = 0.62;
+const COR_COCHONNET = 0.60;
+const TERRAIN_FRICTION = { terre: 1.0, herbe: 1.8, sable: 3.0, dalles: 0.7 };
+
+let balls = [];
+let trails = [];
+let currentDemo = null;
+let frame = 0;
+let recording = false;
+let mediaRecorder = null;
+let chunks = [];
+
+// --- BALL PHYSICS (simplified from Ball.js) ---
+class Ball {
+  constructor(x, y, vx, vy, radius = 8, color = COLORS.ocre, label = '') {
+    this.x = x; this.y = y;
+    this.vx = vx; this.vy = vy;
+    this.radius = radius;
+    this.color = color;
+    this.label = label;
+    this.friction = FRICTION_BASE;
+    this.alive = true;
+    this.trail = [];
+    this.age = 0;
+  }
+
+  update(dt = 1/60) {
+    if (!this.alive) return;
+    this.age++;
+
+    // Record trail
+    if (this.age % 2 === 0) {
+      this.trail.push({ x: this.x, y: this.y, age: 0 });
+      if (this.trail.length > 200) this.trail.shift();
+    }
+    this.trail.forEach(t => t.age++);
+
+    // Apply friction (linear deceleration)
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (speed > 0.3) {
+      const friction = this.friction * 60 * dt;
+      const newSpeed = Math.max(0, speed - friction);
+      const ratio = newSpeed / speed;
+      this.vx *= ratio;
+      this.vy *= ratio;
+    } else {
+      this.vx = 0;
+      this.vy = 0;
+    }
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Bounce off walls
+    if (this.x < this.radius) { this.x = this.radius; this.vx *= -0.5; }
+    if (this.x > canvas.width - this.radius) { this.x = canvas.width - this.radius; this.vx *= -0.5; }
+    if (this.y < this.radius) { this.y = this.radius; this.vy *= -0.5; }
+    if (this.y > canvas.height - this.radius) { this.y = canvas.height - this.radius; this.vy *= -0.5; }
+  }
+
+  draw() {
+    // Draw trail
+    for (const t of this.trail) {
+      const alpha = Math.max(0, 1 - t.age / 120);
+      ctx.globalAlpha = alpha * 0.3;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Draw ball with 3D gradient
+    const grad = ctx.createRadialGradient(
+      this.x - this.radius * 0.3, this.y - this.radius * 0.3, 1,
+      this.x, this.y, this.radius
+    );
+    grad.addColorStop(0, '#FFFFFF');
+    grad.addColorStop(0.3, this.color);
+    grad.addColorStop(1, COLORS.shadow);
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shadow
+    ctx.fillStyle = 'rgba(26, 21, 16, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(this.x + 3, this.y + this.radius + 2, this.radius * 0.8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label
+    if (this.label) {
+      ctx.fillStyle = COLORS.creme;
+      ctx.font = '14px "Courier New"';
+      ctx.textAlign = 'center';
+      ctx.fillText(this.label, this.x, this.y - this.radius - 8);
+    }
+  }
+
+  static collide(a, b, cor = COR_BOULE) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > a.radius + b.radius || dist === 0) return false;
+
+    const nx = dx / dist;
+    const ny = dy / dist;
+    const dvx = a.vx - b.vx;
+    const dvy = a.vy - b.vy;
+    const dvn = dvx * nx + dvy * ny;
+    if (dvn <= 0) return false;
+
+    const impulse = dvn * (1 + cor);
+    a.vx -= impulse * 0.5 * nx;
+    a.vy -= impulse * 0.5 * ny;
+    b.vx += impulse * 0.5 * nx;
+    b.vy += impulse * 0.5 * ny;
+
+    // Separate
+    const overlap = (a.radius + b.radius - dist) / 2;
+    a.x -= overlap * nx;
+    a.y -= overlap * ny;
+    b.x += overlap * nx;
+    b.y += overlap * ny;
+
+    return true;
+  }
+}
+
+// --- DEMO SCENES ---
+
+function startDemo(name) {
+  currentDemo = name;
+  balls = [];
+  frame = 0;
+
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`btn-${name.substr(0,4)}`);
+  if (btn) btn.classList.add('active');
+
+  switch (name) {
+    case 'trajectories': setupTrajectories(); break;
+    case 'collisions': setupCollisions(); break;
+    case 'terrains': setupTerrains(); break;
+    case 'lofts': setupLofts(); break;
+  }
+}
+
+function setupTrajectories() {
+  // Multiple balls thrown at different angles from same point
+  const cx = 200, cy = 800;
+  const angles = [-20, -30, -40, -50, -60, -70];
+  const colors = [COLORS.ocre, COLORS.terracotta, COLORS.lavande, COLORS.ciel, COLORS.olive, COLORS.creme];
+  const speed = 8;
+
+  for (let i = 0; i < angles.length; i++) {
+    const rad = angles[i] * Math.PI / 180;
+    setTimeout(() => {
+      balls.push(new Ball(
+        cx, cy,
+        Math.cos(rad) * speed,
+        Math.sin(rad) * speed,
+        10, colors[i],
+        `${Math.abs(angles[i])}deg`
+      ));
+    }, i * 500);
+  }
+}
+
+function setupCollisions() {
+  // Show COR: one ball hits another at rest, demonstrating coefficient of restitution
+  const y = 540;
+
+  // Pair 1: COR 0.62 (steel)
+  setTimeout(() => {
+    balls.push(new Ball(100, y - 150, 6, 0, 15, COLORS.ocre, 'COR 0.62'));
+    balls.push(new Ball(600, y - 150, 0, 0, 15, COLORS.terracotta, 'Acier'));
+    balls[balls.length - 2].cor = 0.62;
+    balls[balls.length - 1].cor = 0.62;
+  }, 200);
+
+  // Pair 2: COR 1.0 (perfect elastic — comparison)
+  setTimeout(() => {
+    balls.push(new Ball(100, y, 6, 0, 15, COLORS.ciel, 'COR 1.0'));
+    balls.push(new Ball(600, y, 0, 0, 15, COLORS.lavande, 'Elastique'));
+    balls[balls.length - 2].cor = 1.0;
+    balls[balls.length - 1].cor = 1.0;
+  }, 200);
+
+  // Pair 3: COR 0.3 (clay — inelastic)
+  setTimeout(() => {
+    balls.push(new Ball(100, y + 150, 6, 0, 15, COLORS.olive, 'COR 0.3'));
+    balls.push(new Ball(600, y + 150, 0, 0, 15, '#8B6914', 'Mou'));
+    balls[balls.length - 2].cor = 0.3;
+    balls[balls.length - 1].cor = 0.3;
+  }, 200);
+}
+
+function setupTerrains() {
+  // Same throw on 4 different terrains, showing friction difference
+  const terrains = [
+    { name: 'Dalles (0.7x)', friction: FRICTION_BASE * 0.7, color: COLORS.dalles, y: 200 },
+    { name: 'Terre (1.0x)', friction: FRICTION_BASE * 1.0, color: COLORS.terre, y: 400 },
+    { name: 'Herbe (1.8x)', friction: FRICTION_BASE * 1.8, color: COLORS.herbe, y: 600 },
+    { name: 'Sable (3.0x)', friction: FRICTION_BASE * 3.0, color: COLORS.sable, y: 800 },
+  ];
+
+  for (const t of terrains) {
+    const b = new Ball(200, t.y, 7, 0, 12, t.color, t.name);
+    b.friction = t.friction;
+    b.terrainColor = t.color;
+    balls.push(b);
+  }
+}
+
+function setupLofts() {
+  // Four loft types showing different trajectories
+  const lofts = [
+    { name: 'Demi-portee', arc: 0, landFactor: 0.50, color: COLORS.ocre },
+    { name: 'Plombee', arc: -3, landFactor: 0.72, color: COLORS.lavande },
+    { name: 'Tir au fer', arc: -5, landFactor: 0.90, color: COLORS.terracotta },
+  ];
+
+  for (let i = 0; i < lofts.length; i++) {
+    const l = lofts[i];
+    const b = new Ball(200, 300 + i * 250, 6, l.arc, 12, l.color, l.name);
+    b.loftLanding = l.landFactor;
+    balls.push(b);
+  }
+}
+
+// --- DRAWING ---
+
+function drawBackground() {
+  ctx.fillStyle = COLORS.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Title
+  ctx.fillStyle = COLORS.ocre;
+  ctx.font = 'bold 32px "Courier New"';
+  ctx.textAlign = 'center';
+
+  const titles = {
+    trajectories: 'TRAJECTOIRES — Angles de lancer',
+    collisions: 'COLLISIONS — Coefficient de Restitution (COR)',
+    terrains: 'TERRAINS — Effet de la friction sur la distance',
+    lofts: 'TECHNIQUES — Demi-portee / Plombee / Tir au fer'
+  };
+  ctx.fillText(titles[currentDemo] || 'PHYSIQUE PETANQUE', canvas.width / 2, 50);
+
+  // Subtitle
+  ctx.fillStyle = COLORS.lavande;
+  ctx.font = '18px "Courier New"';
+  ctx.fillText('Moteur physique custom — 500 lignes, pas de Matter.js', canvas.width / 2, 80);
+
+  // Terrain lines for terrain demo
+  if (currentDemo === 'terrains') {
+    const terrains = [
+      { name: 'Dalles', y: 200, color: COLORS.dalles },
+      { name: 'Terre', y: 400, color: COLORS.terre },
+      { name: 'Herbe', y: 600, color: COLORS.herbe },
+      { name: 'Sable', y: 800, color: COLORS.sable },
+    ];
+    for (const t of terrains) {
+      ctx.strokeStyle = t.color + '40';
+      ctx.lineWidth = 60;
+      ctx.beginPath();
+      ctx.moveTo(100, t.y);
+      ctx.lineTo(1820, t.y);
+      ctx.stroke();
+    }
+  }
+
+  // Formula display
+  ctx.fillStyle = COLORS.olive;
+  ctx.font = '16px "Courier New"';
+  ctx.textAlign = 'left';
+  if (currentDemo === 'trajectories') {
+    ctx.fillText('v0 = sqrt(2 * friction * distance)', 40, canvas.height - 60);
+    ctx.fillText('friction_base = 0.15 px/frame', 40, canvas.height - 35);
+  } else if (currentDemo === 'collisions') {
+    ctx.fillText('COR = vitesse_sortie / vitesse_entree', 40, canvas.height - 60);
+    ctx.fillText('Acier sur acier: COR = 0.62 (donnees reelles NIST)', 40, canvas.height - 35);
+  } else if (currentDemo === 'terrains') {
+    ctx.fillText('friction_effective = friction_base * terrain_multiplier', 40, canvas.height - 60);
+    ctx.fillText('Dalles: 0.7x | Terre: 1.0x | Herbe: 1.8x | Sable: 3.0x', 40, canvas.height - 35);
+  }
+
+  // Frame counter
+  ctx.fillStyle = COLORS.creme + '60';
+  ctx.font = '12px "Courier New"';
+  ctx.textAlign = 'right';
+  ctx.fillText(`frame ${frame}`, canvas.width - 20, canvas.height - 10);
+}
+
+function drawDistanceMarkers() {
+  if (currentDemo !== 'terrains') return;
+  // Draw distance markers every 200px
+  for (let x = 400; x <= 1800; x += 200) {
+    ctx.strokeStyle = COLORS.creme + '20';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(x, 100);
+    ctx.lineTo(x, canvas.height - 100);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = COLORS.creme + '40';
+    ctx.font = '11px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${Math.round((x - 200) / 32.3)}m`, x, 115);
+  }
+}
+
+// --- RECORDING ---
+function toggleRecord() {
+  const btn = document.getElementById('btn-rec');
+  if (!recording) {
+    const stream = canvas.captureStream(60);
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8000000 });
+    chunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `physics_${currentDemo || 'demo'}.webm`;
+      a.click();
+    };
+    mediaRecorder.start();
+    recording = true;
+    btn.textContent = 'STOP';
+    btn.style.borderColor = '#FF4444';
+  } else {
+    mediaRecorder.stop();
+    recording = false;
+    btn.textContent = 'REC';
+    btn.style.borderColor = '#6B8E4E';
+  }
+}
+
+// --- MAIN LOOP ---
+function loop() {
+  frame++;
+  drawBackground();
+  drawDistanceMarkers();
+
+  // Update physics
+  for (const b of balls) b.update();
+
+  // Collisions (for collision demo)
+  if (currentDemo === 'collisions') {
+    for (let i = 0; i < balls.length; i += 2) {
+      if (i + 1 < balls.length) {
+        Ball.collide(balls[i], balls[i + 1], balls[i].cor || COR_BOULE);
+      }
+    }
+  }
+
+  // Draw
+  for (const b of balls) b.draw();
+
+  requestAnimationFrame(loop);
+}
+
+// Start
+startDemo('trajectories');
+loop();
+
+// Auto-cycle demos for recording
+let demoIndex = 0;
+const demos = ['trajectories', 'collisions', 'terrains', 'lofts'];
+setInterval(() => {
+  // Don't auto-cycle, user controls
+}, 8000);
+</script>
+</body>
+</html>
