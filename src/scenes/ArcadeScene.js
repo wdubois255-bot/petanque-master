@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE, MAP_NODE_RADIUS, MAP_PATH_COLOR, MAP_PATH_DASH, MAP_NODE_PULSE_DURATION, MAP_STAR_SIZE, MAP_PREVIEW_Y, DEFEAT_CONSOLATION_GALETS, DEFEAT_RETRY_ENABLED, SHOP_EXPRESS_MIN_GALETS } from '../utils/Constants.js';
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
+import { trackArcadeRound } from '../utils/Analytics.js';
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
@@ -95,6 +96,7 @@ export default class ArcadeScene extends Phaser.Scene {
             if (this.lastMatchResult.won) {
                 this.wins++;
                 this.matchResults.push({ round: completedRound, won: true });
+                trackArcadeRound({ round: completedRound, won: true, cumulWins: this.wins });
 
                 // Unlock rewards based on round won
                 this._processRoundUnlocks(completedRound);
@@ -105,6 +107,7 @@ export default class ArcadeScene extends Phaser.Scene {
             } else {
                 this.losses++;
                 this.matchResults.push({ round: completedRound, won: false });
+                trackArcadeRound({ round: completedRound, won: false, cumulWins: this.wins });
                 // In arcade: you can retry (no game over, you just replay the round)
                 this.currentRound--; // Go back to the failed round
             }

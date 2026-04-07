@@ -5,6 +5,7 @@ import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js'
 import UIFactory from '../ui/UIFactory.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
+import { trackShopView, trackPurchase, trackItemEquipped } from '../utils/Analytics.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -46,6 +47,7 @@ export default class ShopScene extends Phaser.Scene {
         this.cameras.main.resetFX();
         setSoundScene(this);
         UIFactory.fadeIn(this);
+        trackShopView();
 
         this.shopData = this.cache.json.get('shop') || {};
         this.boulesData = this.cache.json.get('boules') || {};
@@ -669,6 +671,7 @@ export default class ShopScene extends Phaser.Scene {
         ouiTxt.on('pointerup', () => {
             sfxUIClick();
             cleanup();
+            trackPurchase({ itemId: item.id, itemType: item.type, priceGalets: item.price });
             this._executePurchase(item);
         });
 
@@ -799,6 +802,7 @@ export default class ShopScene extends Phaser.Scene {
             this._purchaseItem(item);
         } else if (owned && (item.type === 'boule' || item.type === 'cochonnet')) {
             sfxUIClick();
+            trackItemEquipped({ itemId: item.id, itemType: item.type });
             if (item.type === 'boule') setSelectedBoule(item.id.replace(/^boule_/, ''));
             else setSelectedCochonnet(item.id.replace(/^cochonnet_/, ''));
             this._save = loadSave();

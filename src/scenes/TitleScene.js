@@ -7,6 +7,7 @@ import UIFactory from '../ui/UIFactory.js';
 import FeedbackWidget from '../ui/FeedbackWidget.js';
 import I18n from '../utils/I18n.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
+import { trackMenuClick } from '../utils/Analytics.js';
 
 const SHADOW = SHADOW_TEXT;
 
@@ -624,6 +625,7 @@ export default class TitleScene extends Phaser.Scene {
     // ================================================================
     _onMainSelect() {
         if (this._selectedIndex === 0) {
+            trackMenuClick('play');
             this._transitionTo(() => {
                 const chars = this.cache.json.get('characters');
                 const rookie = chars.roster.find(c => c.id === 'rookie');
@@ -643,18 +645,23 @@ export default class TitleScene extends Phaser.Scene {
                 });
             });
         } else if (this._selectedIndex === 1) {
+            trackMenuClick('arcade');
             this._transitionTo(() => {
                 const save = loadSave();
                 const resumeRound = Math.min((save.arcadeProgress || 0) + 1, 5);
                 this.scene.start('ArcadeScene', { currentRound: resumeRound });
             });
         } else if (this._selectedIndex === 2) {
+            trackMenuClick('quickplay');
             this._transitionTo(() => this.scene.start('QuickPlayScene'));
         } else if (this._selectedIndex === 3) {
+            trackMenuClick('character');
             this._transitionTo(() => this.scene.start('PlayerScene'));
         } else if (this._selectedIndex === 4) {
+            trackMenuClick('shop');
             this._transitionTo(() => this.scene.start('ShopScene'));
         } else if (this._selectedIndex === 5) {
+            trackMenuClick('settings');
             this._showSettingsMenu();
         }
     }

@@ -28,6 +28,7 @@ import PortalSDK from '../utils/PortalSDK.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
 import FeedbackWidget from '../ui/FeedbackWidget.js';
+import { trackMatchStart, trackMatchComplete } from '../utils/Analytics.js';
 
 export default class PetanqueScene extends Phaser.Scene {
     constructor() {
@@ -112,6 +113,13 @@ export default class PetanqueScene extends Phaser.Scene {
     create() {
         // Notifier le portail que le gameplay commence (no-op en standalone)
         PortalSDK.gameplayStart();
+        trackMatchStart({
+            terrain: this.terrainType,
+            difficulty: this.difficulty,
+            mode: this.returnScene === 'ArcadeScene' ? 'arcade' : (this.format === 'tete_a_tete' ? 'tutorial' : 'quickplay'),
+            playerChar: this.playerCharId,
+            opponentChar: this.opponentCharacter?.id || 'unknown'
+        });
 
         // Reset camera state (previous scene may have faded out)
         this.cameras.main.setAlpha(1);
@@ -2118,6 +2126,18 @@ export default class PetanqueScene extends Phaser.Scene {
                     }
                 };
                 try {
+                    const elapsed = this._sessionStart ? Math.round((Date.now() - this._sessionStart) / 1000) : 0;
+                    trackMatchComplete({
+                        won: resultData.won,
+                        playerScore: resultData.scores.player,
+                        opponentScore: resultData.scores.opponent,
+                        terrain: resultData.terrainName,
+                        mode: this.returnScene === 'ArcadeScene' ? 'arcade' : (this.format === 'tete_a_tete' ? 'tutorial' : 'quickplay'),
+                        durationSec: elapsed,
+                        carreaux: resultData.matchStats?.carreaux || 0,
+                        biberons: resultData.matchStats?.biberons || 0,
+                        galetsEarned: resultData.galetsEarned || 0
+                    });
                     this.scene.start('ResultScene', resultData);
                 } catch (e) {
                     try { this.scene.start('TitleScene'); } catch (_) { /* give up */ }

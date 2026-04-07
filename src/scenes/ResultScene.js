@@ -6,6 +6,7 @@ import UIFactory from '../ui/UIFactory.js';
 import FeedbackWidget from '../ui/FeedbackWidget.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
+import { trackUnlock } from '../utils/Analytics.js';
 
 const SHADOW = UIFactory.SHADOW;
 
@@ -991,6 +992,7 @@ export default class ResultScene extends Phaser.Scene {
             if (u.cond && !unlocked.includes(u.id)) {
                 unlocked.push(u.id);
                 newUnlocks.push(u.msg);
+                trackUnlock(u.id);
                 if (u.id.startsWith('boule_')) unlockBoule(u.id.replace(/^boule_/, ''));
                 if (u.id.startsWith('cochonnet_')) unlockCochonnet(u.id.replace(/^cochonnet_/, ''));
                 if (u.id.startsWith('title_') || u.id.startsWith('badge_')) {
