@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT, STAT_BAR_WIDTH } from '../utils/Constants.js';
+import { COLORS, CSS, ROOKIE_MAX_STAT, SHADOW_TEXT, STAT_BAR_WIDTH } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setRookieStats, addRookiePoints } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -47,14 +48,14 @@ export default class LevelUpScene extends Phaser.Scene {
         // Background gradient
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Decorative border lines (subtle provencal touch)
         const deco = this.add.graphics();
         deco.lineStyle(1, COLORS.OCRE, 0.15);
-        deco.strokeRect(16, 16, GAME_WIDTH - 32, GAME_HEIGHT - 32);
+        deco.strokeRect(16, 16, Layout.W - 32, Layout.H - 32);
         deco.lineStyle(1, COLORS.OR, 0.08);
-        deco.strokeRect(20, 20, GAME_WIDTH - 40, GAME_HEIGHT - 40);
+        deco.strokeRect(20, 20, Layout.W - 40, Layout.H - 40);
 
         // If new ability, show banner first then stat screen
         if (this.newAbility) {
@@ -73,31 +74,31 @@ export default class LevelUpScene extends Phaser.Scene {
     _showAbilityBanner(onComplete) {
         const overlay = this.add.graphics().setDepth(50);
         overlay.fillStyle(0x1A1510, 0.75);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
 
         // Golden flash
         this.cameras.main.flash(200, 255, 215, 0);
 
-        const bannerY = GAME_HEIGHT / 2;
+        const bannerY = Layout.H / 2;
 
         // Banner background (v2 asset or fallback)
         if (this.textures.exists('v2_panel_ornate')) {
-            this.add.nineslice(GAME_WIDTH / 2, bannerY, 'v2_panel_ornate', 0, 500, 80, 16, 16, 16, 16)
+            this.add.nineslice(Layout.W / 2, bannerY, 'v2_panel_ornate', 0, 500, 80, 16, 16, 16, 16)
                 .setOrigin(0.5).setAlpha(0.95).setDepth(51);
         } else {
             const banner = this.add.graphics().setDepth(51);
             banner.fillStyle(COLORS.OMBRE, 0.95);
-            banner.fillRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
+            banner.fillRoundedRect(Layout.W / 2 - 250, bannerY - 40, 500, 80, 8);
             banner.lineStyle(2, COLORS.OR, 0.8);
-            banner.strokeRoundedRect(GAME_WIDTH / 2 - 250, bannerY - 40, 500, 80, 8);
+            banner.strokeRoundedRect(Layout.W / 2 - 250, bannerY - 40, 500, 80, 8);
         }
 
-        const label = this.add.text(GAME_WIDTH / 2, bannerY - 14, I18n.t('levelup.new_ability'), {
+        const label = this.add.text(Layout.W / 2, bannerY - 14, I18n.t('levelup.new_ability'), {
             fontFamily: 'monospace', fontSize: '14px', color: CSS.OR,
             shadow: SHADOW
         }).setOrigin(0.5).setDepth(52).setAlpha(0);
 
-        const abilityName = this.add.text(GAME_WIDTH / 2, bannerY + 12, this.newAbility, {
+        const abilityName = this.add.text(Layout.W / 2, bannerY + 12, this.newAbility, {
             fontFamily: 'monospace', fontSize: '24px', color: CSS.CREME,
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(52).setAlpha(0);
@@ -131,7 +132,7 @@ export default class LevelUpScene extends Phaser.Scene {
 
     _buildStatScreen() {
         // Title
-        const title = this.add.text(GAME_WIDTH / 2, 48, I18n.t('levelup.title'), {
+        const title = this.add.text(Layout.W / 2, 48, I18n.t('levelup.title'), {
             fontFamily: 'monospace', fontSize: '32px', color: CSS.OR,
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setScale(0);
@@ -141,13 +142,13 @@ export default class LevelUpScene extends Phaser.Scene {
         });
 
         // Subtitle (points remaining)
-        this.subtitleText = this.add.text(GAME_WIDTH / 2, 88, this._subtitleString(), {
+        this.subtitleText = this.add.text(Layout.W / 2, 88, this._subtitleString(), {
             fontFamily: 'monospace', fontSize: '18px', color: CSS.CREME,
             shadow: SHADOW
         }).setOrigin(0.5);
 
         // Total points indicator
-        this.add.text(GAME_WIDTH / 2, 112, `Total : ${this.totalPoints} pts`, {
+        this.add.text(Layout.W / 2, 112, `Total : ${this.totalPoints} pts`, {
             fontFamily: 'monospace', fontSize: '12px', color: CSS.GRIS,
             shadow: SHADOW
         }).setOrigin(0.5);
@@ -196,7 +197,7 @@ export default class LevelUpScene extends Phaser.Scene {
     }
 
     _createStatRow(def, y, index) {
-        const centerX = GAME_WIDTH / 2;
+        const centerX = Layout.W / 2;
         const labelX = centerX - 200;
         const valueX = centerX - 110;
         const barX = centerX - 80;
@@ -323,7 +324,7 @@ export default class LevelUpScene extends Phaser.Scene {
     }
 
     _drawAllBars() {
-        const centerX = GAME_WIDTH / 2;
+        const centerX = Layout.W / 2;
         const barX = centerX - 80;
 
         this.barGraphics.clear();
@@ -389,12 +390,12 @@ export default class LevelUpScene extends Phaser.Scene {
         this.confirmY = y;
 
         this.confirmGfx = this.add.graphics();
-        this.confirmText = this.add.text(GAME_WIDTH / 2, y, I18n.t('levelup.confirm'), {
+        this.confirmText = this.add.text(Layout.W / 2, y, I18n.t('levelup.confirm'), {
             fontFamily: 'monospace', fontSize: '22px', color: CSS.CREME,
             shadow: SHADOW
         }).setOrigin(0.5);
 
-        this.confirmZone = this.add.zone(GAME_WIDTH / 2, y, 180, 44)
+        this.confirmZone = this.add.zone(Layout.W / 2, y, 180, 44)
             .setInteractive({ useHandCursor: true });
 
         this.confirmZone.on('pointerdown', () => this._confirm());
@@ -406,7 +407,7 @@ export default class LevelUpScene extends Phaser.Scene {
 
     _drawConfirmBtn(hovered = false) {
         this.confirmGfx.clear();
-        const x = GAME_WIDTH / 2;
+        const x = Layout.W / 2;
         const y = this.confirmY;
         const w = 180;
         const h = 44;

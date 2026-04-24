@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH, BOULE_RAYON_TO_MM } from '../utils/Constants.js';
+import { COLORS, CSS, UI, FONT_PIXEL, SHOP_CARD_WIDTH, BOULE_RAYON_TO_MM } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { loadSave, saveSave, spendGalets, setSelectedBoule, setSelectedCochonnet } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -86,20 +87,20 @@ export default class ShopScene extends Phaser.Scene {
     _drawBackground() {
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x2A2520, 0x2A2520, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Subtle texture
         for (let i = 0; i < 60; i++) {
             bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.01, 0.03));
-            bg.fillRect(Phaser.Math.Between(0, GAME_WIDTH), Phaser.Math.Between(0, GAME_HEIGHT), 1, 1);
+            bg.fillRect(Phaser.Math.Between(0, Layout.W), Phaser.Math.Between(0, Layout.H), 1, 1);
         }
 
         // Preview panel background
         const lpg = this.add.graphics().setDepth(0);
         lpg.fillStyle(0x2A2018, 0.5);
-        lpg.fillRect(0, 40, PREVIEW_W, GAME_HEIGHT - 80);
+        lpg.fillRect(0, 40, PREVIEW_W, Layout.H - 80);
         lpg.lineStyle(1, 0xD4A574, 0.2);
-        lpg.lineBetween(PREVIEW_W, 50, PREVIEW_W, GAME_HEIGHT - 50);
+        lpg.lineBetween(PREVIEW_W, 50, PREVIEW_W, Layout.H - 50);
         UIFactory.addPanelShadow(lpg);
     }
 
@@ -121,7 +122,7 @@ export default class ShopScene extends Phaser.Scene {
     // ================================================================
     _drawTabs() {
         this._clearTabs();
-        const tabW = (GAME_WIDTH - GRID_X - 10) / TABS.length;
+        const tabW = (Layout.W - GRID_X - 10) / TABS.length;
 
         TABS.forEach((tab, i) => {
             const tx = GRID_X + i * tabW + tabW / 2;
@@ -447,7 +448,7 @@ export default class ShopScene extends Phaser.Scene {
         const totalRows = Math.ceil(items.length / GRID_COLS);
         if (totalRows > maxRows) {
             const indG = this.add.graphics().setDepth(5);
-            const scrollBarX = GAME_WIDTH - 14;
+            const scrollBarX = Layout.W - 14;
             const scrollBarH = maxRows * (CARD_H + CARD_GAP_Y) - CARD_GAP_Y;
             const thumbH = Math.max(20, scrollBarH * (maxRows / totalRows));
             const thumbY = GRID_TOP + (scrollBarH - thumbH) * (this._scrollOffset / (totalRows - maxRows));
@@ -612,15 +613,15 @@ export default class ShopScene extends Phaser.Scene {
     }
 
     _showPurchaseConfirm(item) {
-        const CX = GAME_WIDTH / 2;
-        const CY = GAME_HEIGHT / 2;
+        const CX = Layout.W / 2;
+        const CY = Layout.H / 2;
         const pw = 320, ph = 130;
         const px = CX - pw / 2, py = CY - ph / 2;
 
         // Overlay sombre
         const overlay = this.add.graphics().setDepth(200);
         overlay.fillStyle(0x1A1510, 0.7);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
 
         // Panel
         const panel = this.add.graphics().setDepth(201);

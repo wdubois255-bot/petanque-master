@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, CSS, UI, FONT_PIXEL, ROOKIE_MAX_POINTS } from '../utils/Constants.js';
+import { COLORS, CSS, UI, FONT_PIXEL, ROOKIE_MAX_POINTS } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { loadSave, setSelectedBoule, setSelectedCochonnet, formatPlaytime, getStats } from '../utils/SaveManager.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -12,7 +13,7 @@ const LEFT_W = 220;       // Character panel width
 const RIGHT_X = LEFT_W;   // Content area start
 const TAB_Y = 52;         // Tab bar Y position
 const CONTENT_Y = 80;     // Content area Y start
-const CONTENT_W = GAME_WIDTH - LEFT_W - 20;
+const CONTENT_W = Layout.W - LEFT_W - 20;
 
 export default class PlayerScene extends Phaser.Scene {
     constructor() {
@@ -68,12 +69,12 @@ export default class PlayerScene extends Phaser.Scene {
         const bg = this.add.graphics();
         // Warm dark gradient
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x2A2520, 0x2A2520, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Subtle texture dots
         for (let i = 0; i < 80; i++) {
-            const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(0, GAME_HEIGHT);
+            const gx = Phaser.Math.Between(0, Layout.W);
+            const gy = Phaser.Math.Between(0, Layout.H);
             bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.01, 0.03));
             bg.fillRect(gx, gy, 1, 1);
         }
@@ -81,10 +82,10 @@ export default class PlayerScene extends Phaser.Scene {
         // Left panel background (warm darker area for character)
         const lpg = this.add.graphics().setDepth(0);
         lpg.fillStyle(0x2A2018, 0.6);
-        lpg.fillRect(0, 0, LEFT_W, GAME_HEIGHT);
+        lpg.fillRect(0, 0, LEFT_W, Layout.H);
         // Separator line
         lpg.lineStyle(1, 0xD4A574, 0.3);
-        lpg.lineBetween(LEFT_W, 40, LEFT_W, GAME_HEIGHT - 40);
+        lpg.lineBetween(LEFT_W, 40, LEFT_W, Layout.H - 40);
     }
 
     // ================================================================
@@ -256,7 +257,7 @@ export default class PlayerScene extends Phaser.Scene {
         this._equippedElements.forEach(el => { try { el.destroy(); } catch (_) {} });
         this._equippedElements = [];
 
-        const eqY = GAME_HEIGHT - 68;
+        const eqY = Layout.H - 68;
         const boulesData = this.cache.json.get('boules');
         const equipped = boulesData?.sets?.find(s => s.id === this._save.selectedBoule);
 
@@ -932,7 +933,7 @@ export default class PlayerScene extends Phaser.Scene {
 
         const tipW = 140;
         const tipH = 50;
-        const tx = Math.min(bx - tipW / 2, GAME_WIDTH - tipW - 10);
+        const tx = Math.min(bx - tipW / 2, Layout.W - tipW - 10);
         const ty = Math.max(by - tipH, 10);
 
         const g = this.add.graphics().setDepth(100);

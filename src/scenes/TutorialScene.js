@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../utils/Constants.js';
+import { COLORS } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setSoundScene, sfxUIClick } from '../utils/SoundManager.js';
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -12,7 +13,7 @@ const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: 
 const PAGE_COUNT = 5;
 const CONTENT_W = 600;
 const CONTENT_H = 350;
-const CONTENT_X = (GAME_WIDTH - CONTENT_W) / 2;
+const CONTENT_X = (Layout.W - CONTENT_W) / 2;
 const CONTENT_Y = 50;
 const FADE_MS = 200;
 
@@ -34,15 +35,15 @@ export default class TutorialScene extends Phaser.Scene {
         // Solid dark background
         this.add.graphics()
             .fillStyle(0x1A1510, 1)
-            .fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            .fillRect(0, 0, Layout.W, Layout.H);
 
         // Subtle border frame
         const frame = this.add.graphics();
         frame.lineStyle(1, COLORS.OCRE, 0.25);
-        frame.strokeRoundedRect(20, 20, GAME_WIDTH - 40, GAME_HEIGHT - 40, 6);
+        frame.strokeRoundedRect(20, 20, Layout.W - 40, Layout.H - 40, 6);
 
         // Page indicator (top-right)
-        this._pageIndicator = this.add.text(GAME_WIDTH - 40, 35, '', {
+        this._pageIndicator = this.add.text(Layout.W - 40, 35, '', {
             fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(1, 0);
 
@@ -50,14 +51,14 @@ export default class TutorialScene extends Phaser.Scene {
         this._contentContainer = this.add.container(0, 0);
 
         // Navigation buttons (persistent, updated per page)
-        this._navLeft = this.add.text(60, GAME_HEIGHT - 45, I18n.t('tutorial.previous'), {
+        this._navLeft = this.add.text(60, Layout.H - 45, I18n.t('tutorial.previous'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
         this._navLeft.on('pointerdown', () => this._goPrev());
         this._navLeft.on('pointerover', () => this._navLeft.setColor('#FFD700'));
         this._navLeft.on('pointerout', () => this._navLeft.setColor('#D4A574'));
 
-        this._navRight = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, I18n.t('tutorial.next'), {
+        this._navRight = this.add.text(Layout.W - 60, Layout.H - 45, I18n.t('tutorial.next'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
         this._navRight.on('pointerdown', () => this._goNext());
@@ -65,7 +66,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._navRight.on('pointerout', () => this._navRight.setColor('#D4A574'));
 
         // "J'AI COMPRIS" button (last page only)
-        this._doneBtn = this.add.text(GAME_WIDTH - 60, GAME_HEIGHT - 45, I18n.t('tutorial.understood'), {
+        this._doneBtn = this.add.text(Layout.W - 60, Layout.H - 45, I18n.t('tutorial.understood'), {
             fontFamily: 'monospace', fontSize: '18px', color: '#1A1510',
             backgroundColor: '#FFD700', padding: { x: 16, y: 8 },
             shadow: { offsetX: 1, offsetY: 1, color: '#B8960A', blur: 0, fill: true }
@@ -75,7 +76,7 @@ export default class TutorialScene extends Phaser.Scene {
         this._doneBtn.on('pointerout', () => this._doneBtn.setStyle({ backgroundColor: '#FFD700' }));
 
         // Controls hint
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 16, I18n.t('tutorial.controls_hint'), {
+        this.add.text(Layout.W / 2, Layout.H - 16, I18n.t('tutorial.controls_hint'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#9E9E8E', shadow: SHADOW
         }).setOrigin(0.5);
 
@@ -180,7 +181,7 @@ export default class TutorialScene extends Phaser.Scene {
     // PAGE 1 - OBJECTIF
     // ================================================================
     _drawPageObjectif() {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page1_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
@@ -272,7 +273,7 @@ export default class TutorialScene extends Phaser.Scene {
     // PAGE 2 - COMMENT LANCER
     // ================================================================
     _drawPageLancer() {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page2_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
@@ -362,7 +363,7 @@ export default class TutorialScene extends Phaser.Scene {
     // PAGE 3 - TECHNIQUES
     // ================================================================
     _drawPageTechniques() {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page3_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
@@ -443,7 +444,7 @@ export default class TutorialScene extends Phaser.Scene {
     // PAGE 4 - SCORE
     // ================================================================
     _drawPageScore() {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page4_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
@@ -501,7 +502,7 @@ export default class TutorialScene extends Phaser.Scene {
     // PAGE 5 - ASTUCES
     // ================================================================
     _drawPageAstuces() {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const title = this.add.text(cx, CONTENT_Y + 20, I18n.t('tutorial.page5_title'), {
             fontFamily: 'monospace', fontSize: '24px', color: '#FFD700', shadow: SHADOW_HEAVY
