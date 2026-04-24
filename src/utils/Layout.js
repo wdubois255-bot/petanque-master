@@ -25,10 +25,19 @@ function detectPortraitOrientation() {
     return window.matchMedia('(orientation: portrait)').matches;
 }
 
-// Mobile = UA mobile OU (simulateur en portrait via matchMedia)
-// Permet DevTools device mode (desktop Chrome passé en mobile) de basculer.
+// Detection coarse pointer (touch-only, pas de souris) — robuste vs UA spoofing
+function detectTouchOnly() {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(pointer: coarse)').matches &&
+           !window.matchMedia('(pointer: fine)').matches;
+}
+
+// Mobile = UA mobile, OU (touch-only + petit écran portrait pour DevTools device mode)
+// On exige pointer coarse pour éviter faux positifs en iframe desktop étroite.
 function detectMobile() {
-    return detectMobileUA() || (typeof window !== 'undefined' && window.innerWidth < 800 && detectPortraitOrientation());
+    if (detectMobileUA()) return true;
+    return detectTouchOnly() && typeof window !== 'undefined' &&
+           window.innerWidth < 800 && detectPortraitOrientation();
 }
 
 // --- Résolution du mode (une seule fois au boot) ------------------------
