@@ -308,39 +308,53 @@ export default class ArcadeScene extends Phaser.Scene {
         this._drawMapBackground();
 
         // === MAP OVERLAY UI ===
+        // Portrait : chips plus hauts, textes plus gros (14/10/11 -> 17/13/14)
+        const portraitTop = Layout.isPortrait;
+        const chipH = portraitTop ? 60 : 48;
+        const chipW = portraitTop ? 180 : 220;
+        const infoChipW = portraitTop ? 170 : 160;
+        const titleFs = portraitTop ? '17px' : '14px';
+        const subtitleFs = portraitTop ? '13px' : '10px';
+        const starsFs = portraitTop ? '14px' : '11px';
+        const roundFs = portraitTop ? '14px' : '11px';
+
         // Title (top-left, on dark chip for readability)
         const titleChip = this.add.graphics().setDepth(5);
         titleChip.fillStyle(0x1A1510, 0.55);
-        titleChip.fillRoundedRect(8, 8, 220, 48, 6);
-        this.add.text(16, 16, I18n.t('arcade.title'), {
-            fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
+        titleChip.fillRoundedRect(8, 8, chipW, chipH, 6);
+        this.add.text(16, portraitTop ? 18 : 16, I18n.t('arcade.title'), {
+            fontFamily: 'monospace', fontSize: titleFs, color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setDepth(6);
-        this.add.text(16, 36, I18n.t('arcade.subtitle'), {
-            fontFamily: 'monospace', fontSize: '10px', color: '#D4A574', shadow: SHADOW
+        this.add.text(16, portraitTop ? 42 : 36, I18n.t('arcade.subtitle'), {
+            fontFamily: 'monospace', fontSize: subtitleFs, color: '#D4A574', shadow: SHADOW
         }).setDepth(6);
 
         // Stars + time (top-right chip)
         const totalStars = Object.values(save.starRatings || {}).reduce((s, v) => s + v, 0);
         const infoChip = this.add.graphics().setDepth(5);
         infoChip.fillStyle(0x1A1510, 0.55);
-        infoChip.fillRoundedRect(Layout.W - 168, 8, 160, 48, 6);
+        infoChip.fillRoundedRect(Layout.W - 8 - infoChipW, 8, infoChipW, chipH, 6);
         if (nextMatch?.time_of_day) {
-            this.add.text(Layout.W - 16, 18, I18n.t('arcade.time_' + nextMatch.time_of_day), {
-                fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', shadow: SHADOW
+            this.add.text(Layout.W - 16, portraitTop ? 20 : 18, I18n.t('arcade.time_' + nextMatch.time_of_day), {
+                fontFamily: 'monospace', fontSize: subtitleFs, color: '#F5E6D0', shadow: SHADOW
             }).setOrigin(1, 0).setDepth(6);
         }
-        this.add.text(Layout.W - 16, 36, I18n.t('arcade.stars_total', { n: totalStars }), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
+        this.add.text(Layout.W - 16, portraitTop ? 42 : 36, I18n.t('arcade.stars_total', { n: totalStars }), {
+            fontFamily: 'monospace', fontSize: starsFs, color: '#FFD700', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(6);
 
-        // Round indicator (centered top)
-        this.add.text(Layout.W / 2, 14, I18n.t('arcade.round', { n: this.currentRound, total: matches.length }), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0', shadow: SHADOW
+        // Round indicator (centered top) — portrait : sous les chips pour ne pas chevaucher
+        this.add.text(Layout.W / 2, portraitTop ? 76 : 14, I18n.t('arcade.round', { n: this.currentRound, total: matches.length }), {
+            fontFamily: 'monospace', fontSize: roundFs, color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(6);
 
         // === DIRT PATH between nodes ===
-        const NODE_POSITIONS = [
+        // Portrait : resserre les nodes sur largeur 480 (au lieu de 832)
+        const NODE_POSITIONS = Layout.isPortrait ? [
+            { x: 60,  y: 170 }, { x: 150, y: 140 }, { x: 240, y: 130 },
+            { x: 330, y: 140 }, { x: 420, y: 170 }
+        ] : [
             { x: 130, y: 145 }, { x: 270, y: 115 }, { x: 416, y: 105 },
             { x: 560, y: 120 }, { x: 700, y: 150 }
         ];
@@ -594,41 +608,49 @@ export default class ArcadeScene extends Phaser.Scene {
             const barStartY = panelY + (portrait ? 150 : 125);
 
             // Legend
-            this.add.text(barStartX + 36, barStartY - 2, I18n.t('ingame.you'), {
-                fontFamily: 'monospace', fontSize: '7px', color: '#87CEEB'
+            const legendFs = portrait ? '11px' : '7px';
+            this.add.text(barStartX + (portrait ? 50 : 36), barStartY - 2, I18n.t('ingame.you'), {
+                fontFamily: 'monospace', fontSize: legendFs, color: '#87CEEB'
             }).setDepth(6);
-            this.add.text(barStartX + 64, barStartY - 2, I18n.t('ingame.opponent'), {
-                fontFamily: 'monospace', fontSize: '7px', color: '#C44B3F'
+            this.add.text(barStartX + (portrait ? 120 : 64), barStartY - 2, I18n.t('ingame.opponent'), {
+                fontFamily: 'monospace', fontSize: legendFs, color: '#C44B3F'
             }).setDepth(6);
 
-            // Portrait : une seule colonne (plus lisible sur ecran etroit)
+            // Portrait : une seule colonne, labels 13px (vs 9), bars 8px hautes (vs 5), espacees de 30
             const statCols = portrait ? 1 : 2;
             const statColW = portrait ? 0 : 180;
+            const statLabelFs = portrait ? '13px' : '9px';
+            const statRowStep = portrait ? 32 : 24;
+            const statBarH = portrait ? 8 : 5;
+            const statBarGap = portrait ? 12 : 8;
+            const statBarOffsetX = portrait ? 50 : 32;
+            const statBarW = portrait ? 220 : barW;
             for (let i = 0; i < statNames.length; i++) {
                 const col = i % statCols;
                 const row = Math.floor(i / statCols);
                 const sx = barStartX + col * statColW;
-                const sy = barStartY + 10 + row * 24;
+                const sy = barStartY + 10 + row * statRowStep;
                 const pVal = playerStats[statNames[i]] || 5;
                 const oVal = nextOpponent.stats[statNames[i]] || 5;
 
                 this.add.text(sx, sy, statLabels[i], {
-                    fontFamily: 'monospace', fontSize: '9px', color: '#9E9E8E'
+                    fontFamily: 'monospace', fontSize: statLabelFs, color: '#D4A574'
                 }).setDepth(6);
                 barG.fillStyle(0x1A1510, 0.7);
-                barG.fillRoundedRect(sx + 32, sy, barW, 5, 2);
-                barG.fillRoundedRect(sx + 32, sy + 8, barW, 5, 2);
+                barG.fillRoundedRect(sx + statBarOffsetX, sy, statBarW, statBarH, 2);
+                barG.fillRoundedRect(sx + statBarOffsetX, sy + statBarGap, statBarW, statBarH, 2);
                 barG.fillStyle(0x87CEEB, 0.85);
-                barG.fillRoundedRect(sx + 32, sy, Math.max(2, (pVal / 10) * barW), 5, 2);
+                barG.fillRoundedRect(sx + statBarOffsetX, sy, Math.max(2, (pVal / 10) * statBarW), statBarH, 2);
                 barG.fillStyle(0xC44B3F, 0.85);
-                barG.fillRoundedRect(sx + 32, sy + 8, Math.max(2, (oVal / 10) * barW), 5, 2);
+                barG.fillRoundedRect(sx + statBarOffsetX, sy + statBarGap, Math.max(2, (oVal / 10) * statBarW), statBarH, 2);
             }
 
             // COMBATTRE button — portrait : large bas, desktop : droite du panneau
             const btnW = portrait ? (Layout.W - 80) : 180;
-            const btnH = portrait ? 56 : 50;
+            const btnH = portrait ? 64 : 50;
+            // Portrait : place le bouton apres la derniere stat (stats s'etalent sur ~130px depuis barStartY)
             const btnYPos = portrait
-                ? (panelY + 290)
+                ? (panelY + 300)
                 : (panelY + panelH / 2 - btnH / 2 + 10);
             const btnBg = this.add.graphics().setDepth(6);
             btnBg.fillStyle(0xC44B3F, 1);
@@ -643,7 +665,8 @@ export default class ArcadeScene extends Phaser.Scene {
             btnBg.strokePath();
 
             const btnText = this.add.text(btnX, btnYPos + btnH / 2, I18n.t('arcade.fight_btn'), {
-                fontFamily: 'monospace', fontSize: '20px', color: '#FFFFFF',
+                fontFamily: 'monospace', fontSize: portrait ? '26px' : '20px', color: '#FFFFFF',
+                fontStyle: 'bold',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
 
@@ -660,19 +683,22 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // === BOTTOM BUTTONS: QUITTER + RECOMMENCER ===
-        const bottomY = Layout.H - 20;
+        const portraitBottom = Layout.isPortrait;
+        const bottomY = Layout.H - (portraitBottom ? 34 : 20);
+        const bottomFs = portraitBottom ? '14px' : '11px';
+        const bottomPad = portraitBottom ? { x: 16, y: 10 } : { x: 8, y: 4 };
 
-        const quitBtn = this.add.text(50, bottomY, I18n.t('arcade.quit'), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
-            backgroundColor: '#3A2E28', padding: { x: 8, y: 4 }, shadow: SHADOW
+        const quitBtn = this.add.text(portraitBottom ? 20 : 50, bottomY, I18n.t('arcade.quit'), {
+            fontFamily: 'monospace', fontSize: bottomFs, color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: bottomPad, shadow: SHADOW
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setDepth(8);
         quitBtn.on('pointerover', () => quitBtn.setColor('#F5E6D0'));
         quitBtn.on('pointerout', () => quitBtn.setColor('#9E9E8E'));
         quitBtn.on('pointerdown', () => fadeToScene(this, 'TitleScene'));
 
-        const restartBtn = this.add.text(140, bottomY, I18n.t('arcade.restart'), {
-            fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
-            backgroundColor: '#3A2E28', padding: { x: 8, y: 4 }, shadow: SHADOW
+        const restartBtn = this.add.text(portraitBottom ? 150 : 140, bottomY, I18n.t('arcade.restart'), {
+            fontFamily: 'monospace', fontSize: bottomFs, color: '#9E9E8E',
+            backgroundColor: '#3A2E28', padding: bottomPad, shadow: SHADOW
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true }).setDepth(8);
         restartBtn.on('pointerover', () => restartBtn.setColor('#F5E6D0'));
         restartBtn.on('pointerout', () => restartBtn.setColor('#9E9E8E'));
