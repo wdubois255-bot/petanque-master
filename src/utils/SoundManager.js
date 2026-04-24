@@ -7,6 +7,7 @@ let ctx = null;
 let cigalesSource = null;
 let _scene = null;
 let _musicPlaying = null;
+let _initialized = false;
 
 // Global settings (persisted via SaveManager)
 let _masterVolume = 1.0;
@@ -1633,4 +1634,67 @@ export function setMusicTension(tense) {
     if (_musicPlaying) {
         _musicPlaying.rate = tense ? 1.12 : 1.0;
     }
+}
+
+// === Mobile / iOS Safari audio unlock ===
+//
+// iOS Safari (and some mobile browsers) blocks AudioContext until a user gesture.
+// We attach {once:true} listeners on the earliest gestures and, at first fire:
+//   1. resume() the AudioContext if suspended
+//   2. play a 1ms silent oscillator to fully unlock iOS Safari's audio pipeline
+//
+// We also pause/resume on visibilitychange so audio stops when the tab is hidden.
+
+/** Internal — play a silent 1ms tick to unlock iOS Safari audio. */
+function _playSilentUnlock(c) {
+    try {
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        gain.gain.setValueAtTime(0, c.currentTime);
+        osc.connect(gain).connect(c.destination);
+        osc.start(c.currentTime);
+        osc.stop(c.currentTime + 0.001);
+    } catch (_) { /* ignore */ }
+}
+
+/**
+ * Install one-shot gesture listeners to unlock the AudioContext on iOS Safari,
+ * plus a visibilitychange listener to suspend/resume audio when the tab hides.
+ * Safe to call multiple times — only runs once (guarded by `_initialized`).
+ * Exported so `main.js` can invoke it before `new Phaser.Game(config)`.
+ */
+export function initAudioOnFirstGesture() {
+    if (_initialized) return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    _initialized = true;
+
+    const unlock = () => {
+        const c = getCtx();
+        if (!c) return;
+        try {
+            if (c.state === 'suspended' && typeof c.resume === 'function') {
+                c.resume();
+            }
+        } catch (_) { /* ignore */ }
+        _playSilentUnlock(c);
+    };
+
+    try {
+        window.addEventListener('touchstart', unlock, { once: true, passive: true });
+        window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+        window.addEventListener('keydown', unlock, { once: true });
+    } catch (_) { /* ignore */ }
+
+    try {
+        document.addEventListener('visibilitychange', () => {
+            if (!ctx) return;
+            try {
+                if (document.hidden === true && ctx.state === 'running' && typeof ctx.suspend === 'function') {
+                    ctx.suspend();
+                } else if (document.hidden === false && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+                    ctx.resume();
+                }
+            } catch (_) { /* ignore */ }
+        });
+    } catch (_) { /* ignore */ }
 }

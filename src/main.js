@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import config from './config.js';
 import I18n from './utils/I18n.js';
+import { initAudioOnFirstGesture } from './utils/SoundManager.js';
 
 // Global error capture — stores last errors for feedback/debug
 // Errors are automatically included in FeedbackWidget reports
@@ -51,5 +52,6 @@ window.addEventListener('unhandledrejection', (e) => {
 if (typeof globalThis !== 'undefined') globalThis.__GAME_ERRORS__ = _capturedErrors;
 
 await I18n.load(I18n.detect());
+initAudioOnFirstGesture();
 const game = new Phaser.Game(config);
 if (typeof globalThis !== 'undefined') globalThis.__PHASER_GAME__ = game;
