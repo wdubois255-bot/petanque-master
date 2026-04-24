@@ -16,16 +16,21 @@ const TABS = [
     { id: 'capacites', labelKey: 'shop.tab_abilities', fallback: 'Capacites', icon: '\u2726' }
 ];
 
-// Layout: left preview panel + right grid
-const PREVIEW_W = 200;
-const GRID_X = PREVIEW_W + 15;
-const GRID_COLS = 4;
-const CARD_W = SHOP_CARD_WIDTH;
-const CARD_H = 82;
+// Layout: left preview panel + right grid (desktop) OR top preview + 2-col grid (portrait mobile)
+// Portrait mobile (W<=480) : preview panel en haut + grid 2 cols dessous (scroll vertical preserve)
+const IS_PORTRAIT = Layout.isPortrait;
+const PREVIEW_W = IS_PORTRAIT ? Layout.W : 200;
+const PREVIEW_H_PORTRAIT = 330;  // preview panel haut en portrait (assez pour sprite + desc + prix + boutons)
+const GRID_X = IS_PORTRAIT ? 10 : (PREVIEW_W + 15);
+const GRID_COLS = IS_PORTRAIT ? 2 : 4;
 const CARD_GAP_X = 8;
 const CARD_GAP_Y = 8;
-const GRID_TOP = 80;
-const TAB_Y = 50;
+const CARD_W = IS_PORTRAIT
+    ? Math.floor((Layout.W - 10 - 10 - CARD_GAP_X) / 2)   // 2 cols, margins 10px each side
+    : SHOP_CARD_WIDTH;
+const CARD_H = 82;
+const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 80) : 80;
+const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 50;
 
 export default class ShopScene extends Phaser.Scene {
     constructor() {
@@ -98,9 +103,16 @@ export default class ShopScene extends Phaser.Scene {
         // Preview panel background
         const lpg = this.add.graphics().setDepth(0);
         lpg.fillStyle(0x2A2018, 0.5);
-        lpg.fillRect(0, 40, PREVIEW_W, Layout.H - 80);
-        lpg.lineStyle(1, 0xD4A574, 0.2);
-        lpg.lineBetween(PREVIEW_W, 50, PREVIEW_W, Layout.H - 50);
+        if (IS_PORTRAIT) {
+            // Bandeau haut (w=Layout.W, h=PREVIEW_H_PORTRAIT)
+            lpg.fillRect(0, 40, Layout.W, PREVIEW_H_PORTRAIT);
+            lpg.lineStyle(1, 0xD4A574, 0.2);
+            lpg.lineBetween(10, 40 + PREVIEW_H_PORTRAIT, Layout.W - 10, 40 + PREVIEW_H_PORTRAIT);
+        } else {
+            lpg.fillRect(0, 40, PREVIEW_W, Layout.H - 80);
+            lpg.lineStyle(1, 0xD4A574, 0.2);
+            lpg.lineBetween(PREVIEW_W, 50, PREVIEW_W, Layout.H - 50);
+        }
         UIFactory.addPanelShadow(lpg);
     }
 
