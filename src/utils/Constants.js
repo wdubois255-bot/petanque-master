@@ -8,16 +8,22 @@ export const GAME_HEIGHT = 480;
 export const GAME_WIDTH_PORTRAIT = 480;
 export const GAME_HEIGHT_PORTRAIT = 960;
 
-// === TERRAIN SCALE (mobile portrait seulement) ===
+// === SCALING PORTRAIT (mobile) ===
 // Détection locale (pas d'import Layout pour éviter circular).
-// En portrait mobile, tout l'espace du jeu (terrain + physique) est scalé × 1.8
-// pour remplir visuellement l'écran 480×960. En desktop, scale = 1 (inchangé).
-// La physique réelle (distance en mètres) reste identique : PPM scale aussi,
-// et les vitesses/frictions en px/frame scalent linéairement → même comportement
-// métrique sur les deux modes.
+// Deux scales séparés pour découpler "taille visuelle terrain" de "vitesse perçue" :
+// - TERRAIN_SCALE : agrandit le terrain affiché (remplir l'écran portrait)
+// - VELOCITY_SCALE : scale les vitesses en px/frame (contrôle perception vitesse)
+// - FRICTION_SCALE : dérivé pour préserver la distance métrique exacte :
+//     d_px = v²/(2f), on veut d_px/TERRAIN_HEIGHT = constant
+//     → s_f = s_v² / s_terrain (math derivation)
+// En desktop, tous les scales = 1 → comportement strictement inchangé.
 const _IS_PORTRAIT_DEVICE = typeof navigator !== 'undefined'
     && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 1.6 : 1.0;
+const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 2.1 : 1.0;     // Terrain 378×882 (marge 50px)
+const VELOCITY_SCALE = _IS_PORTRAIT_DEVICE ? 1.6 : 1.0;    // Perception vitesse validée user
+const FRICTION_SCALE = _IS_PORTRAIT_DEVICE
+    ? (VELOCITY_SCALE * VELOCITY_SCALE) / TERRAIN_SCALE    // ≈ 1.22 → distance métrique préservée
+    : 1.0;
 
 export const TILE_SIZE = 32;
 
@@ -40,14 +46,14 @@ export const COCHONNET_MAX_DIST = Math.round(10 * PX_PER_METER);
 // Petanque - physique (scalees en portrait pour preserver la distance metrique)
 // Valeurs basees sur la physique reelle (acier sur acier COR ~0.60-0.65, bois sur acier ~0.50)
 // Sources: NIST, Engineering Toolbox, Rolling Resistance Wikipedia
-// Scale × TERRAIN_SCALE sur les grandeurs dimensionnees en px/frame :
-// v_new = s × v, f_new = s × f → distance_px_new = s × distance_px_orig
-// distance_metres_new = distance_px_new / PPM_new = distance_metres_orig ✅
-export const FRICTION_BASE = 0.15 * TERRAIN_SCALE;
-export const SPEED_THRESHOLD = 0.3 * TERRAIN_SCALE;
+// Scale séparé vitesse/friction (cf. commentaire top du fichier) :
+// - v × VELOCITY_SCALE (1.6) → perception vitesse validée user
+// - f × FRICTION_SCALE (1.22) → préserve distance métrique (14.9m desktop == 14.9m mobile)
+export const FRICTION_BASE = 0.15 * FRICTION_SCALE;
+export const SPEED_THRESHOLD = 0.3 * VELOCITY_SCALE;
 export const RESTITUTION_BOULE = 0.62;     // Acier sur acier (reel: 0.60-0.65) — ratio, pas de scale
 export const RESTITUTION_COCHONNET = 0.60; // Bois/synthétique sur acier — ratio, pas de scale
-export const MAX_THROW_SPEED = 12 * TERRAIN_SCALE;
+export const MAX_THROW_SPEED = 12 * VELOCITY_SCALE;
 export const LANDING_FACTOR_POINT = 0.65;  // Ratio, pas de scale
 export const LANDING_FACTOR_TIR = 0.3;     // Ratio, pas de scale
 export const ROLLING_EFFICIENCY = 0.7;     // Ratio, pas de scale
@@ -97,9 +103,9 @@ export const LOFT_TIR = {
 // Spin lateral (effet gauche/droite) — actif apres atterrissage uniquement
 // Force = LATERAL_SPIN_FORCE * (effetStat / 10) * spinIntensity * terrainMult
 // Avec effet 6 sur terre: deviation ~5px (visible). Effet 10 sur sable: ~20px (strategique).
-export const LATERAL_SPIN_FORCE = 0.15 * TERRAIN_SCALE;       // Force en px/frame² — scale
+export const LATERAL_SPIN_FORCE = 0.15 * FRICTION_SCALE;      // Force en px/frame² — scale friction
 export const LATERAL_SPIN_FRAMES = 35;                         // Duree en frames — pas de scale
-export const LATERAL_SPIN_MIN_SPEED = 0.5 * TERRAIN_SCALE;    // Vitesse en px/frame — scale
+export const LATERAL_SPIN_MIN_SPEED = 0.5 * VELOCITY_SCALE;   // Vitesse en px/frame — scale vitesse
 export const LATERAL_SPIN_MIN_EFFET = 8;    // Stat Effet minimum pour activer le spin
 // Duree du spin par palier: effet 8 = base, 9 = +20%, 10 = +40%
 export const LATERAL_SPIN_FRAMES_BY_EFFET = { 8: 35, 9: 42, 10: 49 };
