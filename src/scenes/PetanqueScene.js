@@ -12,7 +12,8 @@ import {
     CHALLENGE_BANNER_DURATION, CHALLENGE_REWARD_GALETS, CHALLENGE_PROBABILITY,
     CROWD_INTENSITY_BY_ROUND,
     FOCUS_CHARGES_PER_MATCH,
-    FEEDBACK_URL
+    FEEDBACK_URL,
+    CHAR_SCALE_PETANQUE
 } from '../utils/Constants.js';
 import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
@@ -1111,9 +1112,7 @@ export default class PetanqueScene extends Phaser.Scene {
         const oppId = this.opponentId?.replace('char_', '')?.replace('quickplay_', '') || '';
         this._opponentIsStatic = CHAR_STATIC_SPRITES.includes(oppId);
 
-        // Character sprite scale: 0.4x (sprites are 128x128, displayed at ~51px — avoids overlap)
-        const CHAR_SCALE = 0.65;
-        this._charScale = CHAR_SCALE;
+        this._charScale = CHAR_SCALE_PETANQUE;
 
         // Throw circle position (where the active thrower stands)
         const circleX = this.throwCircleX;
@@ -1159,11 +1158,11 @@ export default class PetanqueScene extends Phaser.Scene {
         // Player starts at the circle (first to throw)
         const playerFrame = CHAR_STATIC_SPRITES.includes(this.playerCharId) ? 0 : 12;
         this.playerSprite = this.add.sprite(circleX, circleY, this._playerTextureKey, playerFrame)
-            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE_PETANQUE);
 
         // Opponent starts watching from the right
         this.opponentSprite = this.add.sprite(this._opponentWatchX, this._opponentWatchY, this._opponentTextureKey, 0)
-            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE);
+            .setOrigin(0.5, 1).setDepth(20).setScale(CHAR_SCALE_PETANQUE);
 
         // Turn arrows (follow the active thrower at the circle)
         this.playerTurnArrow = this.add.text(circleX, circleY - 72, '\u25bc', {
