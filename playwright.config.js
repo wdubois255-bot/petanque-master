@@ -1,5 +1,26 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * Playwright config — Petanque Master
+ *
+ * Projects :
+ *  - desktop (default) : 1664×960 paysage, utilisé par TOUS les tests existants
+ *                        (health, game, visual-regression, etc.)
+ *  - iPhone SE / iPhone 14 / Pixel 5 : device emulation Playwright native
+ *                        Tournent UNIQUEMENT sur tests tagués `@mobile`.
+ *
+ * Filtering strategy (Phase 6) :
+ *  - Les projects mobile utilisent `grep: /@mobile/` — ils ne lancent que
+ *    les tests tagués @mobile (via leur titre).
+ *  - Le project desktop utilise `grepInvert: /@mobile/` — il skip les tests
+ *    @mobile et fait tourner tout le reste à la résolution historique.
+ *  - Ainsi `npx playwright test` continue de fonctionner comme avant côté
+ *    desktop SANS casser les baselines, et le script `npm run test:e2e:mobile`
+ *    cible uniquement les nouveaux tests mobile sur les 3 devices.
+ *
+ * Le `use` global (baseURL, launchOptions, screenshot, video, trace…) est
+ * mergé automatiquement avec le `use` de chaque project.
+ */
 export default defineConfig({
     testDir: './tests/e2e',
     testMatch: '**/*.pw.js',
@@ -11,7 +32,6 @@ export default defineConfig({
     use: {
         baseURL: 'http://localhost:8080',
         headless: true,
-        viewport: { width: 1664, height: 960 },
 
         // Visual regression
         screenshot: 'only-on-failure',
@@ -32,6 +52,31 @@ export default defineConfig({
         }
     },
 
+    projects: [
+        {
+            name: 'desktop',
+            use: {
+                viewport: { width: 1664, height: 960 },
+            },
+            grepInvert: /@mobile/,
+        },
+        {
+            name: 'iPhone SE',
+            use: { ...devices['iPhone SE'] },
+            grep: /@mobile/,
+        },
+        {
+            name: 'iPhone 14',
+            use: { ...devices['iPhone 14'] },
+            grep: /@mobile/,
+        },
+        {
+            name: 'Pixel 5',
+            use: { ...devices['Pixel 5'] },
+            grep: /@mobile/,
+        },
+    ],
+
     expect: {
         toHaveScreenshot: {
             maxDiffPixelRatio: 0.06,  // 6% tolerance (game has tweens, animations, procedural elements)
@@ -42,6 +87,10 @@ export default defineConfig({
     },
 
     // Snapshot storage
+    // Template : inclut `{projectName}` pour les tests mobile uniquement
+    // (sur desktop, projectName='desktop' serait un breaking change pour les
+    // baselines existantes). On ré-encode donc le device dans le NOM du
+    // screenshot côté tests mobile : `iPhone-SE-title.png`.
     snapshotDir: './tests/e2e/snapshots',
     snapshotPathTemplate: '{snapshotDir}/{testFilePath}/{arg}{ext}',
 

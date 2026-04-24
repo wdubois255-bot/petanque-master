@@ -14,6 +14,8 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:headed": "npx playwright test --headed",
     "test:e2e:debug": "npx playwright test --debug",
+    "test:e2e:mobile": "npx playwright test --grep @mobile",
+    "test:e2e:mobile:update": "npx playwright test --grep @mobile --update-snapshots",
     "test:visual": "npx playwright test visual-regression",
     "test:perf": "npx playwright test performance",
     "test:stress": "npx playwright test stress",
