@@ -527,22 +527,25 @@ export default class ArcadeScene extends Phaser.Scene {
         panelBg.strokePath();
 
         if (nextOpponent) {
-            // Layout: [Sprite | Info + Stats | Button]
-            const spriteX = 110;
-            const infoX = 210;
-            const btnX = Layout.W - 140;
+            // Layout desktop : [Sprite | Info + Stats | Button] cote-a-cote
+            // Layout portrait : Sprite haut-droit, Info pleine largeur, button bas centre
+            const portrait = Layout.isPortrait;
+            const spriteX = portrait ? (Layout.W - 80) : 110;
+            const infoX = portrait ? 30 : 210;
+            const btnX = portrait ? (Layout.W / 2) : (Layout.W - 140);
 
             // "PROCHAIN COMBAT" header (left-aligned)
             this.add.text(infoX, panelY + 12, I18n.t('arcade.next_fight'), {
                 fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', shadow: SHADOW
             }).setDepth(6);
 
-            // Opponent sprite (left)
+            // Opponent sprite — en portrait place en haut a droite du panneau (evite stats)
             const spriteKey = this._getSpriteKey(nextOpponent);
             if (spriteKey && this.textures.exists(spriteKey)) {
-                // Shadow
-                this.add.ellipse(spriteX, panelY + panelH - 30, 60, 10, 0x1A1510, 0.3).setDepth(5);
-                const oppSpr = this.add.sprite(spriteX, panelY + panelH / 2 + 10, spriteKey, 0)
+                const spriteY = portrait ? panelY + 60 : panelY + panelH / 2 + 10;
+                const shadowY = portrait ? spriteY + 30 : panelY + panelH - 30;
+                this.add.ellipse(spriteX, shadowY, 60, 10, 0x1A1510, 0.3).setDepth(5);
+                const oppSpr = this.add.sprite(spriteX, spriteY, spriteKey, 0)
                     .setScale(1.5).setOrigin(0.5).setDepth(6);
                 this.tweens.add({
                     targets: oppSpr, scaleY: 1.53, scaleX: 1.47,
@@ -551,25 +554,33 @@ export default class ArcadeScene extends Phaser.Scene {
             }
 
             // Name + title + catchphrase
+            const nameSize = portrait ? '18px' : '22px';
+            // Portrait : le sprite occupe le coin haut-droit → reduit la largeur texte
+            const wrapW = portrait ? (Layout.W - infoX - 120) : 350;
             this.add.text(infoX, panelY + 30, I18n.field(nextOpponent, 'name').toUpperCase(), {
-                fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', shadow: SHADOW
+                fontFamily: 'monospace', fontSize: nameSize, color: '#F5E6D0', shadow: SHADOW,
+                wordWrap: { width: wrapW }
             }).setDepth(6);
             this.add.text(infoX, panelY + 58, I18n.field(nextOpponent, 'title'), {
-                fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+                fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW,
+                wordWrap: { width: wrapW }
             }).setDepth(6);
             this.add.text(infoX, panelY + 78, `"${I18n.field(nextOpponent, 'catchphrase')}"`, {
                 fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', shadow: SHADOW,
-                fontStyle: 'italic', wordWrap: { width: 350 }
+                fontStyle: 'italic', wordWrap: { width: wrapW }
             }).setDepth(6);
 
-            // Terrain + difficulty (inline)
-            const metaY = panelY + 102;
+            // Terrain + difficulty — portrait : deux lignes, desktop : inline
+            const metaY = panelY + (portrait ? 108 : 102);
             if (nextTerrain) {
                 this.add.text(infoX, metaY, I18n.t('arcade.terrain_label', { name: I18n.field(nextTerrain, 'name') }), {
-                    fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
+                    fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW,
+                    wordWrap: { width: wrapW }
                 }).setDepth(6);
             }
-            this.add.text(infoX + 220, metaY, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
+            const diffX = portrait ? infoX : (infoX + 220);
+            const diffY = portrait ? (metaY + 16) : metaY;
+            this.add.text(diffX, diffY, I18n.t('arcade.difficulty', { level: I18n.field(nextMatch, 'difficulty_label') }), {
                 fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW
             }).setDepth(6);
 
@@ -580,7 +591,7 @@ export default class ArcadeScene extends Phaser.Scene {
             const barW = 80;
             const barG = this.add.graphics().setDepth(6);
             const barStartX = infoX;
-            const barStartY = panelY + 125;
+            const barStartY = panelY + (portrait ? 150 : 125);
 
             // Legend
             this.add.text(barStartX + 36, barStartY - 2, I18n.t('ingame.you'), {
@@ -590,10 +601,13 @@ export default class ArcadeScene extends Phaser.Scene {
                 fontFamily: 'monospace', fontSize: '7px', color: '#C44B3F'
             }).setDepth(6);
 
+            // Portrait : une seule colonne (plus lisible sur ecran etroit)
+            const statCols = portrait ? 1 : 2;
+            const statColW = portrait ? 0 : 180;
             for (let i = 0; i < statNames.length; i++) {
-                const col = i % 2;
-                const row = Math.floor(i / 2);
-                const sx = barStartX + col * 180;
+                const col = i % statCols;
+                const row = Math.floor(i / statCols);
+                const sx = barStartX + col * statColW;
                 const sy = barStartY + 10 + row * 24;
                 const pVal = playerStats[statNames[i]] || 5;
                 const oVal = nextOpponent.stats[statNames[i]] || 5;
@@ -610,10 +624,12 @@ export default class ArcadeScene extends Phaser.Scene {
                 barG.fillRoundedRect(sx + 32, sy + 8, Math.max(2, (oVal / 10) * barW), 5, 2);
             }
 
-            // COMBATTRE button (integrated right side of panel)
-            const btnW = 180;
-            const btnH = 50;
-            const btnYPos = panelY + panelH / 2 - btnH / 2 + 10;
+            // COMBATTRE button — portrait : large bas, desktop : droite du panneau
+            const btnW = portrait ? (Layout.W - 80) : 180;
+            const btnH = portrait ? 56 : 50;
+            const btnYPos = portrait
+                ? (panelY + 290)
+                : (panelY + panelH / 2 - btnH / 2 + 10);
             const btnBg = this.add.graphics().setDepth(6);
             btnBg.fillStyle(0xC44B3F, 1);
             btnBg.fillRoundedRect(btnX - btnW / 2, btnYPos, btnW, btnH, 8);
@@ -635,10 +651,12 @@ export default class ArcadeScene extends Phaser.Scene {
             btnText.on('pointerout', () => { btnText.setScale(1); });
             btnText.on('pointerdown', () => this._launchNextMatch());
 
-            // Controls hint (inside panel, bottom)
-            this.add.text(btnX, btnYPos + btnH + 14, I18n.t('arcade.controls'), {
-                fontFamily: 'monospace', fontSize: '9px', color: '#8A7A5A', shadow: SHADOW
-            }).setOrigin(0.5).setDepth(6);
+            // Controls hint (inside panel, bottom) — masque en portrait (pas de clavier)
+            if (!portrait) {
+                this.add.text(btnX, btnYPos + btnH + 14, I18n.t('arcade.controls'), {
+                    fontFamily: 'monospace', fontSize: '9px', color: '#8A7A5A', shadow: SHADOW
+                }).setOrigin(0.5).setDepth(6);
+            }
         }
 
         // === BOTTOM BUTTONS: QUITTER + RECOMMENCER ===
