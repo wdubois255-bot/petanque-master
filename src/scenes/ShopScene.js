@@ -404,7 +404,8 @@ export default class ShopScene extends Phaser.Scene {
         if (item.type === 'boule') {
             const bouleId = item.id.replace(/^boule_/, '');
             const bouleData = this.boulesData?.sets?.find(s => s.id === bouleId);
-            if (bouleData) {
+            // Portrait + locked: skip stats to avoid overlap with lock indicator + price area
+            if (bouleData && !(IS_PORTRAIT && locked && !owned)) {
                 // Portrait : stats serrees sous le bloc desc/lock
                 const statsY = IS_PORTRAIT
                     ? ((locked && !owned) ? YS.stats + 20 : YS.stats)
