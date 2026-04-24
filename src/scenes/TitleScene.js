@@ -46,7 +46,6 @@ export default class TitleScene extends Phaser.Scene {
         this._createTitle();
         this._createPressStart();
         this._createVersionTag();
-        if (Layout.isPortrait) this._createBottomNav();
         this._playIntroSequence();
 
         // Keyboard — reset key states to prevent stuck keys from previous scene

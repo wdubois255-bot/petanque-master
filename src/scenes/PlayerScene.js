@@ -11,7 +11,7 @@ const SHADOW = UIFactory.SHADOW;
 // Layout constants — portrait empile verticalement (character top, content below)
 // Desktop : left panel 220 + right content (inchange)
 const IS_PORTRAIT = Layout.isPortrait;
-const CHAR_PANEL_H = IS_PORTRAIT ? 340 : 0;     // portrait only : char panel pleine largeur en haut
+const CHAR_PANEL_H = IS_PORTRAIT ? 350 : 0;     // portrait only : char panel pleine largeur en haut
 const LEFT_W = IS_PORTRAIT ? Layout.W : 220;    // portrait : full width (pas de colonne gauche)
 const RIGHT_X = IS_PORTRAIT ? 0 : 220;
 const TAB_Y = IS_PORTRAIT ? (CHAR_PANEL_H + 10) : 52;
@@ -264,10 +264,10 @@ export default class PlayerScene extends Phaser.Scene {
 
         // Portrait : abilities 3 cercles sur pleine largeur
         const abW = p ? Layout.W : LEFT_W;
-        const abRadius = p ? 18 : 12;
-        const abIconFs = p ? '16px' : '10px';
-        const abLabelFs = p ? '10px' : '6px';
-        const abLabelOffset = p ? 26 : 17;
+        const abRadius = p ? 16 : 12;
+        const abIconFs = p ? '14px' : '10px';
+        const abLabelFs = p ? '9px' : '6px';
+        const abLabelOffset = p ? 22 : 17;
         const abSpacing = (abW - 20) / 3;
         abIcons.forEach((ab, i) => {
             const ax = 10 + abSpacing * i + abSpacing / 2;
@@ -303,8 +303,8 @@ export default class PlayerScene extends Phaser.Scene {
         this._equippedElements = [];
 
         const p = IS_PORTRAIT;
-        // Portrait : dans le bandeau du haut (bottom 308) / desktop : bas colonne gauche
-        const eqY = p ? 312 : (Layout.H - 68);
+        // Portrait : sous les abilities (apres ajustement spacing) / desktop : bas colonne gauche
+        const eqY = p ? 328 : (Layout.H - 68);
         const eqLeftX = p ? 30 : 30;
         const eqRightX = p ? (Layout.W - 30) : (LEFT_W - 30);
         const eqTextX = p ? 60 : 50;
