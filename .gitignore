@@ -23,4 +23,9 @@ public/border_test.html
 docs/*.json
 public/assets/maps/terrain_*.json
 tests/e2e/cleanup-screenshots/
+# Releases & footage bruts
+*.zip
+pub/
+docs/making-of/raw/
+docs/making-of/video/*.mp4
 # docs/ — inclus dans le repo (MASTER_PLAN, archives)
