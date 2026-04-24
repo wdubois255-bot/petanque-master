@@ -360,7 +360,17 @@ export default class AimingSystem {
             const idx = i;
             hitZone.on('pointerdown', (pointer) => {
                 pointer.event.stopPropagation();
-                this._selectStyle(idx);
+                if (mobile) {
+                    // Press feedback: flash button pressed state then confirm
+                    this._drawStyleButton(btnGfx, bx, by, btnW, btnH, s.color, true, true);
+                    label.setAlpha(0.6);
+                    this.scene.time.delayedCall(130, () => {
+                        label.setAlpha(1);
+                        this._selectStyle(idx);
+                    });
+                } else {
+                    this._selectStyle(idx);
+                }
             });
             hitZone.on('pointerover', () => {
                 if (this._styleSelected !== idx) {
@@ -372,9 +382,17 @@ export default class AimingSystem {
     }
 
     /** Draw a solid style button (filled rect with color accent) */
-    _drawStyleButton(gfx, cx, cy, w, h, color, selected) {
+    _drawStyleButton(gfx, cx, cy, w, h, color, selected, pressed = false) {
         gfx.clear();
         const x = cx - w / 2, y = cy - h / 2;
+        if (pressed) {
+            // Pressed state: bright color fill, inset shadow
+            gfx.fillStyle(color, 1.0);
+            gfx.fillRoundedRect(x + 2, y + 2, w - 4, h - 4, 5);
+            gfx.lineStyle(3, 0xFFFFFF, 0.4);
+            gfx.strokeRoundedRect(x + 2, y + 2, w - 4, h - 4, 5);
+            return;
+        }
         // Fill: dark if unselected, colored if selected
         gfx.fillStyle(selected ? color : 0x2A1F14, selected ? 0.85 : 0.7);
         gfx.fillRoundedRect(x, y, w, h, 6);
