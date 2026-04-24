@@ -8,6 +8,17 @@ export const GAME_HEIGHT = 480;
 export const GAME_WIDTH_PORTRAIT = 480;
 export const GAME_HEIGHT_PORTRAIT = 960;
 
+// === TERRAIN SCALE (mobile portrait seulement) ===
+// Détection locale (pas d'import Layout pour éviter circular).
+// En portrait mobile, tout l'espace du jeu (terrain + physique) est scalé × 1.8
+// pour remplir visuellement l'écran 480×960. En desktop, scale = 1 (inchangé).
+// La physique réelle (distance en mètres) reste identique : PPM scale aussi,
+// et les vitesses/frictions en px/frame scalent linéairement → même comportement
+// métrique sur les deux modes.
+const _IS_PORTRAIT_DEVICE = typeof navigator !== 'undefined'
+    && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 1.8 : 1.0;
+
 export const TILE_SIZE = 32;
 
 // Mouvement joueur
@@ -16,26 +27,30 @@ export const PLAYER_ANIM_FPS = 8;
 
 // Petanque - terrain (vertical: player bottom, cochonnet top)
 // Display: narrow & tall, terrain 13m (FIPJP 12-15m)
-export const TERRAIN_WIDTH = 180;
-export const TERRAIN_HEIGHT = 420;
+// En portrait : × TERRAIN_SCALE pour exploiter l'espace 480×960
+export const TERRAIN_WIDTH = Math.round(180 * TERRAIN_SCALE);
+export const TERRAIN_HEIGHT = Math.round(420 * TERRAIN_SCALE);
 export const TERRAIN_LENGTH_METERS = 13;
-// Conversion px <-> metres (terrain 420px = 13m)
-export const PX_PER_METER = TERRAIN_HEIGHT / TERRAIN_LENGTH_METERS;  // ~32.3 px/m
+// Conversion px <-> metres (toujours basée sur la hauteur actuelle du terrain)
+export const PX_PER_METER = TERRAIN_HEIGHT / TERRAIN_LENGTH_METERS;
 // Cochonnet: 5.5-10m from throw circle (FIPJP = 6-10m, 5.5m pour plus de choix strategique)
-export const COCHONNET_MIN_DIST = Math.round(5.5 * PX_PER_METER); // ~178px
-export const COCHONNET_MAX_DIST = Math.round(10 * PX_PER_METER);  // ~323px
+export const COCHONNET_MIN_DIST = Math.round(5.5 * PX_PER_METER);
+export const COCHONNET_MAX_DIST = Math.round(10 * PX_PER_METER);
 
-// Petanque - physique
+// Petanque - physique (scalees en portrait pour preserver la distance metrique)
 // Valeurs basees sur la physique reelle (acier sur acier COR ~0.60-0.65, bois sur acier ~0.50)
 // Sources: NIST, Engineering Toolbox, Rolling Resistance Wikipedia
-export const FRICTION_BASE = 0.15;
-export const SPEED_THRESHOLD = 0.3;
-export const RESTITUTION_BOULE = 0.62;     // Acier sur acier (reel: 0.60-0.65)
-export const RESTITUTION_COCHONNET = 0.60; // Bois/synthétique sur acier
-export const MAX_THROW_SPEED = 12;
-export const LANDING_FACTOR_POINT = 0.65;
-export const LANDING_FACTOR_TIR = 0.3;
-export const ROLLING_EFFICIENCY = 0.7;
+// Scale × TERRAIN_SCALE sur les grandeurs dimensionnees en px/frame :
+// v_new = s × v, f_new = s × f → distance_px_new = s × distance_px_orig
+// distance_metres_new = distance_px_new / PPM_new = distance_metres_orig ✅
+export const FRICTION_BASE = 0.15 * TERRAIN_SCALE;
+export const SPEED_THRESHOLD = 0.3 * TERRAIN_SCALE;
+export const RESTITUTION_BOULE = 0.62;     // Acier sur acier (reel: 0.60-0.65) — ratio, pas de scale
+export const RESTITUTION_COCHONNET = 0.60; // Bois/synthétique sur acier — ratio, pas de scale
+export const MAX_THROW_SPEED = 12 * TERRAIN_SCALE;
+export const LANDING_FACTOR_POINT = 0.65;  // Ratio, pas de scale
+export const LANDING_FACTOR_TIR = 0.3;     // Ratio, pas de scale
+export const ROLLING_EFFICIENCY = 0.7;     // Ratio, pas de scale
 
 // Petanque - IA
 export const AI_DELAY_MIN = 1000;
@@ -45,9 +60,9 @@ export const AI_MEDIUM = { angleDev: 8, powerDev: 0.10, canShoot: true, shootThr
 export const AI_HARD = { angleDev: 3, powerDev: 0.05, canShoot: true, shootThreshold: 4 };
 
 // Petanque - lancer
-export const DEAD_ZONE_PX = 30;
+export const DEAD_ZONE_PX = 30;  // Input gesture — NE scale PAS (coord ecran)
 export const THROW_FLY_DURATION = 300;
-export const THROW_SHAKE_INTENSITY = 4;
+export const THROW_SHAKE_INTENSITY = 4 * TERRAIN_SCALE;  // Shake visuel — scale portrait
 export const THROW_SHAKE_DURATION = 150;
 
 // Petanque - loft presets (research/25_cahier_des_charges_realisme.md)
@@ -56,14 +71,15 @@ export const THROW_SHAKE_DURATION = 150;
 // - Demi-portee : 50/50, arc moyen (1.5-2m reel) — default low loft
 // - Plombee : 80% vol, 20% roulement (PAS une boule morte, roule ~20% de sa trajectoire)
 // - Tir au fer : 95% vol, arc haut (2-3m), impact violent
+// arcHeight : hauteur arc en px → scale TERRAIN_SCALE en portrait
 export const LOFT_DEMI_PORTEE = {
     id: 'demi_portee', label: 'DEMI-PORTEE',
-    landingFactor: 0.50, arcHeight: -40, flyDurationMult: 0.9, rollEfficiency: 1.0,
+    landingFactor: 0.50, arcHeight: -40 * TERRAIN_SCALE, flyDurationMult: 0.9, rollEfficiency: 1.0,
     precisionPenalty: 0, retroAllowed: true
 };
 export const LOFT_PLOMBEE = {
     id: 'plombee', label: 'PLOMBEE',
-    landingFactor: 0.72, arcHeight: -80, flyDurationMult: 1.4, rollEfficiency: 1.10,
+    landingFactor: 0.72, arcHeight: -80 * TERRAIN_SCALE, flyDurationMult: 1.4, rollEfficiency: 1.10,
     precisionPenalty: 2.0, retroAllowed: true
 };
 // Tir au fer : la boule vole ~95% puis frappe a ~2.5x la vitesse du pointage
@@ -74,16 +90,16 @@ export const LOFT_PLOMBEE = {
 // arcHeight = -65 (tir au fer a un arc 2-3m reel, plus haut que demi-portee)
 export const LOFT_TIR = {
     id: 'tir', label: 'TIR',
-    landingFactor: 0.95, arcHeight: -65, flyDurationMult: 0.4, rollEfficiency: 0.3, flyOnly: true,
+    landingFactor: 0.95, arcHeight: -65 * TERRAIN_SCALE, flyDurationMult: 0.4, rollEfficiency: 0.3, flyOnly: true,
     precisionPenalty: 1.0, retroAllowed: true, isTir: true
 };
 
 // Spin lateral (effet gauche/droite) — actif apres atterrissage uniquement
 // Force = LATERAL_SPIN_FORCE * (effetStat / 10) * spinIntensity * terrainMult
 // Avec effet 6 sur terre: deviation ~5px (visible). Effet 10 sur sable: ~20px (strategique).
-export const LATERAL_SPIN_FORCE = 0.15;
-export const LATERAL_SPIN_FRAMES = 35;
-export const LATERAL_SPIN_MIN_SPEED = 0.5;  // Arrete le spin quand la boule est quasi immobile
+export const LATERAL_SPIN_FORCE = 0.15 * TERRAIN_SCALE;       // Force en px/frame² — scale
+export const LATERAL_SPIN_FRAMES = 35;                         // Duree en frames — pas de scale
+export const LATERAL_SPIN_MIN_SPEED = 0.5 * TERRAIN_SCALE;    // Vitesse en px/frame — scale
 export const LATERAL_SPIN_MIN_EFFET = 8;    // Stat Effet minimum pour activer le spin
 // Duree du spin par palier: effet 8 = base, 9 = +20%, 10 = +40%
 export const LATERAL_SPIN_FRAMES_BY_EFFET = { 8: 35, 9: 42, 10: 49 };
