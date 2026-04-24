@@ -774,8 +774,9 @@ export default class PlayerScene extends Phaser.Scene {
         const totalMatches = save.stats?.totalMatches || (statsWins + statsLosses);
         const winRate = totalMatches > 0 ? Math.round(statsWins / totalMatches * 100) : 0;
 
-        // Win/Loss cards
-        const cardW = 130;
+        // Win/Loss cards — portrait 2×2 (4×130=544px débordait l'écran 480px)
+        const STAT_COLS = IS_PORTRAIT ? 2 : 4;
+        const cardW = IS_PORTRAIT ? Math.floor((CONTENT_W - 48) / 2) : 130;
         const cardH = 70;
         const statsCards = [
             { label: I18n.t('player.stats.victories'), value: `${statsWins}`, sub: `${winRate}%`, color: 0x44CC44 },
@@ -785,9 +786,10 @@ export default class PlayerScene extends Phaser.Scene {
         ];
 
         statsCards.forEach((card, i) => {
-            const col = i % 4;
+            const col = i % STAT_COLS;
+            const row = Math.floor(i / STAT_COLS);
             const cx = x + col * (cardW + 8);
-            const cy = y + 18;
+            const cy = y + 18 + row * (cardH + 10);
 
             const cg = this.add.graphics().setDepth(5);
             cg.fillStyle(0x2A2018, 0.7);
@@ -813,7 +815,8 @@ export default class PlayerScene extends Phaser.Scene {
         });
 
         // ===== ARCADE PROGRESS =====
-        const arcY = y + 100;
+        // Portrait : 2 lignes de cartes (2×80px) → arcY décalé vers le bas
+        const arcY = IS_PORTRAIT ? (y + 18 + Math.ceil(4 / STAT_COLS) * (cardH + 10) + 10) : y + 100;
         this._addContent(this.add.text(x, arcY, 'PROGRESSION ARCADE', {
             fontFamily: FONT_PIXEL, fontSize: '10px', color: CSS.OR, shadow: SHADOW
         }).setDepth(5));
@@ -821,9 +824,10 @@ export default class PlayerScene extends Phaser.Scene {
         const arcadeMatches = this.cache.json.get('arcade')?.matches || [];
         const arcProgress = save.arcadeProgress || 0;
 
-        // Progress dots
+        // Progress dots \u2014 portrait : 5\u00d7110=550px d\u00e9passe 480px \u2192 spacing r\u00e9duit \u00e0 86px
+        const arcStep = IS_PORTRAIT ? 86 : 110;
         arcadeMatches.forEach((match, i) => {
-            const dx = x + i * 110;
+            const dx = x + i * arcStep;
             const dy = arcY + 22;
             const done = i < arcProgress;
             const current = i === arcProgress;
@@ -839,7 +843,7 @@ export default class PlayerScene extends Phaser.Scene {
             // Connector line
             if (i < arcadeMatches.length - 1) {
                 ag.lineStyle(2, done ? 0x44CC44 : 0x3A3A2A, 0.4);
-                ag.lineBetween(dx + 30, dy + 14, dx + 110, dy + 14);
+                ag.lineBetween(dx + 30, dy + 14, dx + arcStep, dy + 14);
             }
             this._addContent(ag);
 
@@ -864,7 +868,7 @@ export default class PlayerScene extends Phaser.Scene {
         });
 
         if (save.arcadePerfect) {
-            this._addContent(this.add.text(x + arcadeMatches.length * 110 + 20, arcY + 34, '\u2605 PERFECT RUN', {
+            this._addContent(this.add.text(x + arcadeMatches.length * arcStep + 20, arcY + 34, '\u2605 PERFECT RUN', {
                 fontFamily: FONT_PIXEL, fontSize: '8px', color: CSS.OR, shadow: SHADOW
             }).setDepth(6));
         }
@@ -883,12 +887,14 @@ export default class PlayerScene extends Phaser.Scene {
         };
 
         const unlocked = save.unlockedCharacters || [];
-        const charCols = 4;
+        // Portrait : 2 cols × 220px (4×145=580px débordait 480px)
+        const charCols = IS_PORTRAIT ? 2 : 4;
+        const charColStep = IS_PORTRAIT ? Math.floor(CONTENT_W / 2) : 145;
 
         unlocked.forEach((id, i) => {
             const col = i % charCols;
             const row = Math.floor(i / charCols);
-            const ccx = x + col * 145;
+            const ccx = x + col * charColStep;
             const ccy = charsY + 18 + row * 28;
 
             // Character sprite mini (if available)
@@ -977,10 +983,13 @@ export default class PlayerScene extends Phaser.Scene {
                 `Meilleure mene: ${ps.bestMeneScore || 0} pts`
             ];
 
+            // Portrait : 2 cols (3×195=585px débordait), desktop : 3 cols
+            const psCols = IS_PORTRAIT ? 2 : 3;
+            const psColStep = IS_PORTRAIT ? Math.floor(CONTENT_W / 2) : 195;
             psItems.forEach((txt, i) => {
-                const col = i % 3;
-                const row = Math.floor(i / 3);
-                this._addContent(this.add.text(x + col * 195, psY + 16 + row * 16, txt, {
+                const col = i % psCols;
+                const row = Math.floor(i / psCols);
+                this._addContent(this.add.text(x + col * psColStep, psY + 16 + row * 16, txt, {
                     fontFamily: 'monospace', fontSize: '9px', color: CSS.CREME, shadow: SHADOW
                 }).setDepth(6));
             });
