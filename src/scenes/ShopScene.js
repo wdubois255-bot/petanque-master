@@ -29,8 +29,11 @@ const CARD_W = IS_PORTRAIT
     ? Math.floor((Layout.W - 10 - 10 - CARD_GAP_X) / 2)   // 2 cols, margins 10px each side
     : SHOP_CARD_WIDTH;
 const CARD_H = 82;
-const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 80) : 80;
-const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 50;
+// Featured deal banner (portrait only) — insert band entre preview et tabs
+const FEATURED_DEAL_H = IS_PORTRAIT ? 80 : 0;
+const FEATURED_DEAL_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 0; // y top du bandeau
+const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 80 + FEATURED_DEAL_H) : 80;
+const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50 + FEATURED_DEAL_H) : 50;
 
 export default class ShopScene extends Phaser.Scene {
     constructor() {
@@ -66,6 +69,7 @@ export default class ShopScene extends Phaser.Scene {
 
         this._drawBackground();
         this._drawHeader();
+        this._drawFeaturedDeal();
         this._drawTabs();
         this._drawPreview();
         this._drawItems();
@@ -167,6 +171,95 @@ export default class ShopScene extends Phaser.Scene {
     _clearTabs() {
         this._tabElements.forEach(el => el.destroy());
         this._tabElements = [];
+    }
+
+    // ================================================================
+    // FEATURED DEAL (portrait only) — banner deal du jour avec countdown
+    // ================================================================
+    _drawFeaturedDeal() {
+        if (!IS_PORTRAIT || FEATURED_DEAL_H === 0) return;
+        if (!this.shopData?.categories) return;
+
+        // Pool de candidats : boules > prix 0 (= achetables)
+        const boules = (this.shopData.categories.find(c => c.id === 'boules')?.items || [])
+            .filter(it => it.price > 0);
+        if (boules.length === 0) return;
+
+        // Seed deterministe base sur date du jour — meme item toute la journee
+        const today = new Date().toDateString();
+        let hash = 0;
+        for (let i = 0; i < today.length; i++) hash = ((hash << 5) - hash + today.charCodeAt(i)) | 0;
+        const dealIndex = Math.abs(hash) % boules.length;
+        const deal = boules[dealIndex];
+        const discountPct = 30;
+        const finalPrice = Math.max(1, Math.floor(deal.price * (100 - discountPct) / 100));
+
+        const bx = 10;
+        const by = FEATURED_DEAL_Y;
+        const bw = Layout.W - 20;
+        const bh = FEATURED_DEAL_H - 6;
+
+        // Background gradient or -> terracotta
+        const bg = this.add.graphics().setDepth(4);
+        bg.fillGradientStyle(0xFFD700, 0xC4854A, 0xFFD700, 0xC4854A, 0.85);
+        bg.fillRoundedRect(bx, by, bw, bh, 8);
+        bg.lineStyle(2, 0xFFD700, 0.95);
+        bg.strokeRoundedRect(bx, by, bw, bh, 8);
+
+        // Pastille "DEAL" top-left
+        const tagG = this.add.graphics().setDepth(5);
+        tagG.fillStyle(0xC44B3F, 1);
+        tagG.fillRoundedRect(bx + 6, by + 6, 44, 16, 4);
+        this.add.text(bx + 28, by + 14, 'DEAL', {
+            fontFamily: FONT_PIXEL, fontSize: '8px', color: '#FFFFFF', shadow: SHADOW
+        }).setOrigin(0.5).setDepth(6);
+
+        // Nom deal + discount
+        const dealName = I18n.field(deal, 'name') || deal.name || deal.id;
+        this.add.text(bx + 60, by + 12, `${dealName}`, {
+            fontFamily: FONT_PIXEL, fontSize: '10px', color: '#1A1510', shadow: SHADOW
+        }).setDepth(6);
+
+        this.add.text(bx + 60, by + 30, `-${discountPct}% : ${finalPrice}G`, {
+            fontFamily: FONT_PIXEL, fontSize: '9px', color: '#5A1A1A', shadow: SHADOW
+        }).setDepth(6);
+
+        // Countdown text bottom-right
+        this._featuredCountdown = this.add.text(bx + bw - 8, by + bh - 8, '', {
+            fontFamily: FONT_PIXEL, fontSize: '9px', color: '#1A1510', shadow: SHADOW
+        }).setOrigin(1, 1).setDepth(6);
+
+        const updateCountdown = () => {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setHours(24, 0, 0, 0);
+            const ms = tomorrow - now;
+            const hh = String(Math.floor(ms / 3600000)).padStart(2, '0');
+            const mm = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+            const ss = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+            if (this._featuredCountdown && this._featuredCountdown.active) {
+                this._featuredCountdown.setText(`⏱ ${hh}:${mm}:${ss}`);
+            }
+        };
+        updateCountdown();
+        this.time.addEvent({ delay: 1000, loop: true, callback: updateCountdown });
+
+        // Zone tap -> selectionne l'item dans la grille
+        const zone = this.add.zone(bx + bw / 2, by + bh / 2, bw, bh)
+            .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(7);
+        zone.on('pointerdown', () => {
+            sfxUIClick();
+            // Passe sur l'onglet boules
+            if (this.activeTab !== 0) this._switchTab(0);
+            const cat = this.shopData.categories.find(c => c.id === 'boules');
+            const idx = cat?.items.findIndex(it => it.id === deal.id) ?? -1;
+            if (idx >= 0) {
+                this.selectedIndex = idx;
+                this._clearCards();
+                this._drawItems();
+                this._refreshPreview();
+            }
+        });
     }
 
     _switchTab(index) {
