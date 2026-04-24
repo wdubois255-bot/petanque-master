@@ -20,8 +20,8 @@ const TABS = [
 // Portrait mobile : preview compact top + featured deal + tabs + grille 2 cols cartes larges
 const IS_PORTRAIT = Layout.isPortrait;
 const PREVIEW_W = IS_PORTRAIT ? Layout.W : 200;
-// Portrait : preview reduit de 330 -> 240 (supprime l'enorme espace vide milieu)
-const PREVIEW_H_PORTRAIT = 240;
+// Portrait : preview 270px (240 etait trop court → prix et bonus se chevauchaient)
+const PREVIEW_H_PORTRAIT = 270;
 const GRID_X = IS_PORTRAIT ? 16 : (PREVIEW_W + 15);
 const GRID_COLS = IS_PORTRAIT ? 2 : 4;
 const CARD_GAP_X = IS_PORTRAIT ? 14 : 8;
@@ -319,9 +319,10 @@ export default class ShopScene extends Phaser.Scene {
         const locked = item.minWins && totalWins < item.minWins;
         const cx = PREVIEW_W / 2;
 
-        // Y offsets — portrait compacte le flux vertical dans 200px au lieu de 330
+        // Y offsets — portrait : panel 270px (y=40..310). action repoussé à 255 pour éviter
+        // le chevauchement entre bonus (statsY+16≈196) et prix (action−32≈223).
         const YS = IS_PORTRAIT
-            ? { sprite: 88, name: 128, desc: 148, stats: 180, bonus: 198, action: 226 }
+            ? { sprite: 88, name: 128, desc: 148, stats: 180, bonus: 198, action: 255 }
             : { sprite: 115, name: 155, desc: 175, stats: 210, bonus: 228, action: 310 };
 
         // Item sprite (large)
