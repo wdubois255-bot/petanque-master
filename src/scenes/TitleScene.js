@@ -119,8 +119,8 @@ export default class TitleScene extends Phaser.Scene {
             }).setOrigin(0.5).setDepth(52);
             this._bottomNav.push(iconText);
 
-            const labelText = this.add.text(cx, cy + 16, item.label, {
-                fontFamily: FONT_PIXEL, fontSize: '8px',
+            const labelText = this.add.text(cx, cy + 18, item.label, {
+                fontFamily: FONT_PIXEL, fontSize: '11px',
                 color: item.active ? '#FFD700' : '#D4A574',
                 align: 'center'
             }).setOrigin(0.5).setDepth(52);
@@ -249,12 +249,15 @@ export default class TitleScene extends Phaser.Scene {
     // TITLE
     // ================================================================
     _createTitle() {
+        // Portrait : logo plus grand + descendu pour plus d'impact visuel
+        const logoY = Layout.isPortrait ? 170 : 90;
+        const logoScale = Layout.isPortrait ? 1.35 : 1.0;
         if (this.textures.exists('v2_logo')) {
             this._titleOutlines = [];
-            this._titleText = this.add.image(Layout.W / 2, 90, 'v2_logo')
-                .setOrigin(0.5).setAlpha(0).setDepth(5);
-            this._titleGlow = this.add.image(Layout.W / 2, 90, 'v2_logo')
-                .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0);
+            this._titleText = this.add.image(Layout.W / 2, logoY, 'v2_logo')
+                .setOrigin(0.5).setAlpha(0).setDepth(5).setScale(logoScale);
+            this._titleGlow = this.add.image(Layout.W / 2, logoY, 'v2_logo')
+                .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0).setScale(logoScale);
 
             // Triple-click → DevTestScene
             this._logoClickCount = 0;
@@ -303,10 +306,11 @@ export default class TitleScene extends Phaser.Scene {
             }).setOrigin(0.5).setAlpha(0);
         }
 
-        // Subtitle
-        this._subtitle = this.add.text(Layout.W / 2, 172, I18n.t('title.subtitle'), {
+        // Subtitle — portrait : sous le logo agrandi
+        const subtitleY = Layout.isPortrait ? 310 : 172;
+        this._subtitle = this.add.text(Layout.W / 2, subtitleY, I18n.t('title.subtitle'), {
             fontFamily: 'monospace',
-            fontSize: '14px',
+            fontSize: Layout.isPortrait ? '16px' : '14px',
             color: '#F5E6D0',
             align: 'center',
             shadow: SHADOW
@@ -314,7 +318,7 @@ export default class TitleScene extends Phaser.Scene {
 
         // Decorative divider under subtitle
         this._titleLine = this.add.graphics().setAlpha(0);
-        const lineY = 192;
+        const lineY = Layout.isPortrait ? 335 : 192;
         this._titleLine.lineStyle(2, 0xFFD700, 0.6);
         this._titleLine.beginPath();
         this._titleLine.moveTo(Layout.W / 2 - 140, lineY);

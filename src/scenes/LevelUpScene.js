@@ -153,8 +153,9 @@ export default class LevelUpScene extends Phaser.Scene {
             shadow: SHADOW
         }).setOrigin(0.5);
 
-        // Stat rows
-        const startY = 160;
+        // Stat rows — portrait : espacement plus large pour remplir l'ecran 960px
+        const startY = Layout.isPortrait ? 240 : 160;
+        const rowHeight = Layout.isPortrait ? 110 : ROW_HEIGHT;
         this.statRows = [];
         this.barGraphics = this.add.graphics();
 
@@ -167,7 +168,7 @@ export default class LevelUpScene extends Phaser.Scene {
 
         for (let i = 0; i < STAT_DEFS.length; i++) {
             const def = STAT_DEFS[i];
-            const rowY = startY + i * ROW_HEIGHT;
+            const rowY = startY + i * rowHeight;
             const row = this._createStatRow(def, rowY, i);
             this.statRows.push(row);
         }
@@ -175,7 +176,7 @@ export default class LevelUpScene extends Phaser.Scene {
         this._drawAllBars();
 
         // Confirm button
-        this._createConfirmButton(startY + STAT_DEFS.length * ROW_HEIGHT + 40);
+        this._createConfirmButton(startY + STAT_DEFS.length * rowHeight + 40);
 
         // Controls hint
         UIFactory.addControlsHint(this, '1-4 Ajouter     Entree Confirmer     Echap Menu');
