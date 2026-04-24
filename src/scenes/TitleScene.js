@@ -27,6 +27,7 @@ export default class TitleScene extends Phaser.Scene {
         this._transitioning = false;
         this._galetsDisplay = null;
         this._pressStart = null;
+        this._pressStartTapZone = null;
         this._bottomNav = null;
     }
 
@@ -331,9 +332,16 @@ export default class TitleScene extends Phaser.Scene {
     // PRESS START
     // ================================================================
     _createPressStart() {
-        this._pressStart = this.add.text(Layout.W / 2, 280, I18n.t('title.press_start'), {
+        // Portrait mobile : pas de clavier → libelle "TOUCHEZ POUR COMMENCER"
+        // et tap global sur le canvas declenche _showMainMenu (FR) / tutoriel FTUE.
+        const labelKey = Layout.isPortrait ? 'title.tap_start' : 'title.press_start';
+        const label = I18n.t(labelKey) !== labelKey
+            ? I18n.t(labelKey)
+            : (Layout.isPortrait ? 'TOUCHEZ POUR COMMENCER' : I18n.t('title.press_start'));
+
+        this._pressStart = this.add.text(Layout.W / 2, Layout.isPortrait ? Layout.H * 0.45 : 280, label, {
             fontFamily: FONT_PIXEL,
-            fontSize: '16px',
+            fontSize: Layout.isPortrait ? '14px' : '16px',
             color: '#FFD700',
             align: 'center',
             shadow: SHADOW
@@ -348,6 +356,18 @@ export default class TitleScene extends Phaser.Scene {
             ease: 'Sine.easeInOut',
             paused: true
         });
+
+        // Mobile : tap n'importe ou dans la moitie haute (hors bottom nav) -> menu
+        if (Layout.isPortrait) {
+            const tapZone = this.add.zone(Layout.W / 2, (Layout.H - 72) / 2, Layout.W, Layout.H - 72)
+                .setOrigin(0.5).setDepth(4).setInteractive({ useHandCursor: true });
+            tapZone.on('pointerdown', () => {
+                if (this._mode !== 'pressstart' || !this._inputEnabled) return;
+                sfxUIClick();
+                this._showMainMenu();
+            });
+            this._pressStartTapZone = tapZone;
+        }
     }
 
     _createVersionTag() {
@@ -456,6 +476,12 @@ export default class TitleScene extends Phaser.Scene {
         if (this._pressStart) {
             this._pressStartTween.pause();
             this._pressStart.setAlpha(0);
+        }
+        // Mobile : desactive la tap zone globale une fois le menu affiche (sinon
+        // tap sur menu buttons serait capture par la zone qui couvre tout l'ecran)
+        if (this._pressStartTapZone) {
+            this._pressStartTapZone.destroy();
+            this._pressStartTapZone = null;
         }
 
         // Galets display
