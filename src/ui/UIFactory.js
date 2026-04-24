@@ -5,6 +5,34 @@ import { sfxUIClick } from '../utils/SoundManager.js';
 import I18n from '../utils/I18n.js';
 
 /**
+ * Juicy squash/stretch feedback on tap (Royal Match / Stumble Guys style).
+ * Preserves original scale after yoyo. Safe to call on destroyed/inactive targets.
+ * @param {Phaser.Scene} scene
+ * @param {Phaser.GameObjects.GameObject} target - any object with scaleX/scaleY
+ * @param {Function} [onComplete] - optional callback after tween ends
+ */
+export function juicyTap(scene, target, onComplete) {
+    if (!target || !target.scene || !scene || !scene.tweens) return;
+    const scaleX = target.scaleX;
+    const scaleY = target.scaleY;
+    scene.tweens.add({
+        targets: target,
+        scaleX: scaleX * 0.92,
+        scaleY: scaleY * 0.92,
+        duration: 80,
+        ease: 'Quad.easeOut',
+        yoyo: true,
+        onComplete: () => {
+            if (target.active) {
+                target.scaleX = scaleX;
+                target.scaleY = scaleY;
+            }
+            if (onComplete) onComplete();
+        }
+    });
+}
+
+/**
  * UIFactory — centralized UI component creation for Petanque Master.
  * V3: Professional pixel art UI system with wood/parchment panels,
  * bitmap font, proper button states, and scene transitions.
@@ -19,6 +47,11 @@ export default class UIFactory {
 
     static SHADOW = SHADOW_TEXT;
     static SHADOW_HEAVY = SHADOW_HEAVY;
+
+    /** Juicy squash/stretch tap helper (see exported juicyTap below). */
+    static juicyTap(scene, target, onComplete) {
+        return juicyTap(scene, target, onComplete);
+    }
 
     // ================================================================
     // TEXT STYLES
@@ -423,15 +456,16 @@ export default class UIFactory {
             scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100, ease: 'Sine.easeOut' });
         });
 
-        // Press state
+        // Press state — juicy squash/stretch (Royal Match style) + onClick
         hitZone.on('pointerdown', () => {
-            scene.tweens.add({ targets: container, scaleX: 0.95, scaleY: 0.95, duration: 60, ease: 'Sine.easeIn' });
+            juicyTap(scene, container);
             if (onDown) {
                 sfxUIClick();
                 scene.time.delayedCall(80, onDown);
             }
         });
         hitZone.on('pointerup', () => {
+            // Safety restore in case juicyTap yoyo was interrupted
             scene.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 100, ease: 'Back.easeOut' });
         });
 
