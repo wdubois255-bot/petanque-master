@@ -18,6 +18,7 @@ import PetanqueEngine from '../petanque/PetanqueEngine.js';
 import AimingSystem from '../petanque/AimingSystem.js';
 import PetanqueAI from '../petanque/PetanqueAI.js';
 import ScorePanel from '../ui/ScorePanel.js';
+import MatchProgressBar from '../ui/MatchProgressBar.js';
 import TerrainRenderer from '../petanque/TerrainRenderer.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import { setSoundScene, startTerrainAmbiance, stopTerrainAmbiance, startCrowdAmbiance, stopCrowdAmbiance, startMusic, stopMusic, stopRollingSound, setMusicVolume, setMasterVolume, setMusicTension, sfxCrowdApplause, sfxCrowdCheer, sfxCrowdGroan, sfxCrowdGasp, sfxCrowdBoo, sfxCrowdOoh, sfxUIClick, sfxUIHover, toggleMute, getAudioSettings } from '../utils/SoundManager.js';
@@ -215,6 +216,9 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // Score panel
         this.scorePanel = new ScorePanel(this, this.engine);
+
+        // Match progress bar (portrait only — no-op in landscape)
+        this.matchProgressBar = new MatchProgressBar(this, this.engine);
 
         // VS label (fade out after 5s)
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
@@ -928,6 +932,7 @@ export default class PetanqueScene extends Phaser.Scene {
             if (this._inGameTutorial) { this._inGameTutorial.destroy(); this._inGameTutorial = null; }
             if (this.aimingSystem) this.aimingSystem.destroy();
             if (this.scorePanel) this.scorePanel.destroy();
+            if (this.matchProgressBar) { this.matchProgressBar.destroy(); this.matchProgressBar = null; }
             if (this.engine?.renderer) this.engine.renderer.destroy();
             // Phase 5 cleanup
             if (this._momentumGlow) { this._momentumGlow.destroy(); this._momentumGlow = null; }
@@ -2107,6 +2112,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this.engine) this.engine.update(delta);
         if (this.aimingSystem) this.aimingSystem.update();
         if (this.scorePanel) this.scorePanel.update();
+        if (this.matchProgressBar) this.matchProgressBar.update();
 
         // === SAFETY WATCHDOG: force transition if stuck in GAME_OVER ===
         // If engine is in GAME_OVER state but we're still in PetanqueScene after 8s,
