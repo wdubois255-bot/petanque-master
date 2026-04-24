@@ -23,7 +23,7 @@ async function gotoTitle(page, opts = {}) {
     if (!opts.freshSave) {
         await page.addInitScript(() => {
             const save = {
-                version: 1,
+                version: 2,
                 arcadeProgress: 1,
                 tutorialPhasesDone: ['tutorial_done'],
                 purchases: [],
@@ -133,5 +133,27 @@ test.describe('Mobile screenshots @mobile', () => {
         await tapCanvas(page, 0.7, 0.95);
         await page.waitForTimeout(2000);
         await shoot(page, '07-arcade');
+    });
+
+    test('08 — PlayerScene (via menu MON PERSO)', async ({ page }) => {
+        await gotoTitle(page);
+        // Tap center to show main menu (tap-to-start portrait)
+        await tapCanvas(page, 0.5, 0.45);
+        await page.waitForTimeout(1200);
+        // MON PERSO is menuDefs[3] — left col of 2nd row of 2x2 grid at y~630
+        // In portrait: cx - 96 ≈ 144 pixel → 0.3 ratio × W, y=630 → 0.65 ratio × H
+        await tapCanvas(page, 0.3, 0.65);
+        await page.waitForTimeout(2000);
+        await shoot(page, '08-player');
+    });
+
+    test('09 — QuickPlayScene (via menu PARTIE RAPIDE)', async ({ page }) => {
+        await gotoTitle(page);
+        await tapCanvas(page, 0.5, 0.45);
+        await page.waitForTimeout(1200);
+        // PARTIE RAPIDE menuDefs[2] — right col of 1st row at y~530
+        await tapCanvas(page, 0.7, 0.55);
+        await page.waitForTimeout(2000);
+        await shoot(page, '09-quickplay');
     });
 });
