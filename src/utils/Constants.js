@@ -332,6 +332,17 @@ export const CSS = {
 export const SHADOW_TEXT = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
 export const SHADOW_HEAVY = { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 2, fill: true };
 
+// Rareté personnages (cohérent avec CharSelect + Shop glow)
+// 5 niveaux de rareté — source unique, consommé par CharSelect + Shop
+// Mapping par personnage : cf. public/data/characters.json field "rarity"
+export const RARITY_COLORS = {
+    common:    { base: 0x9E9E8E, glow: 0xC0C0B0, label: 'COMMUN' },
+    rare:      { base: 0x4A90D9, glow: 0x87CEEB, label: 'RARE' },
+    epic:      { base: 0x9B7BB8, glow: 0xC8A0E8, label: 'ÉPIQUE' },
+    legendary: { base: 0xFFD700, glow: 0xFFF0A0, label: 'LÉGENDAIRE' },
+    mythic:    { base: 0xC44B3F, glow: 0xFF6B60, label: 'MYTHIQUE' }
+};
+
 // Font families
 export const FONT_PIXEL = "'PressStart2P', monospace";
 export const FONT_BODY = 'monospace';

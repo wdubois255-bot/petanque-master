@@ -23,6 +23,7 @@
       "description": "Le Rookie vient d'arriver au boulodrome. Il n'a pas d'experience, mais il a du potentiel. Ses stats evoluent avec chaque victoire — a terme, il peut devenir le joueur le plus polyvalent du jeu.",
       "description_en": "The Rookie just showed up at the boulodrome. No experience, but plenty of potential. His stats grow with every win — in time, he could become the most versatile player in the game.",
       "archetype": "adaptable",
+      "rarity": "common",
       "stats": {
         "precision": 4,
         "puissance": 4,
@@ -107,6 +108,7 @@
       "description": "La Choupe tire comme un canon. Sa puissance est legendaire — quand il envoie, les boules volent et le terrain tremble. Il pointe correctement mais sans finesse. Son vrai plaisir, c'est d'envoyer du lourd. Il ne connait pas la demi-mesure.",
       "description_en": "La Choupe shoots like a cannon. His power is legendary — when he lets fly, boules take off and the ground shakes. He can point, but finesse isn't his thing. His real joy is sending it hard. Half-measures are not in his vocabulary.",
       "archetype": "tireur",
+      "rarity": "rare",
       "stats": {
         "precision": 6,
         "puissance": 10,
@@ -192,6 +194,7 @@
       "description": "Ley ne pointe que quand il y est oblige. Son truc, c'est le tir — precis, puissant, avec un effet vicieux qui fait devier les boules adverses. Il enchaine les carreaux comme d'autres enchainent les aperitifs. Agressif et sur de lui, il ne laisse jamais une boule adverse tranquille.",
       "description_en": "Ley only points when he has no choice. His thing is shooting — precise, powerful, with a vicious spin that deflects opponent boules. He chains carreaux the way others chain aperitifs. Aggressive and self-assured, he never leaves an opponent's boule in peace.",
       "archetype": "tireur",
+      "rarity": "legendary",
       "stats": {
         "precision": 8,
         "puissance": 9,
@@ -277,6 +280,7 @@
       "description": "Balthazar, 1m90, criniere blanche et chaine en or. Legende vivante du boulodrome, il transforme chaque partie en show. Milieu polyvalent, il excelle partout mais adore surtout impressionner la galerie.",
       "description_en": "Balthazar, 6'3\", white mane and gold chain. A living legend of the boulodrome, he turns every game into a show. A versatile all-rounder, he excels everywhere but loves above all to wow the crowd.",
       "archetype": "milieu",
+      "rarity": "epic",
       "stats": {
         "precision": 8,
         "puissance": 7,
@@ -362,6 +366,7 @@
       "description": "Fernand, 14 fois champion du boulodrome de La Ciotat. Le tireur le plus decore de la region. Sa precision au tir est chirurgicale, son calme legendaire. Il ne parle pas beaucoup — il laisse ses carreaux parler.",
       "description_en": "Fernand, 14-time champion of La Ciotat's boulodrome. The most decorated shooter in the region. His shooting precision is surgical, his composure legendary. He doesn't talk much — he lets his carreaux speak.",
       "archetype": "tireur",
+      "rarity": "legendary",
       "stats": {
         "precision": 9,
         "puissance": 8,
@@ -447,6 +452,7 @@
       "description": "Pasquier, elu joueur du siecle au boulodrome de La Ciotat. Methodique, analytique, il ne laisse rien au hasard. Son regard pergant lit le terrain comme un livre ouvert. Polyvalent et regulier, il incarne la perfection petanquiere.",
       "description_en": "Pasquier, voted player of the century at La Ciotat's boulodrome. Methodical, analytical, he leaves nothing to chance. His piercing gaze reads the terrain like an open book. Versatile and consistent, he embodies petanque perfection.",
       "archetype": "equilibre",
+      "rarity": "legendary",
       "stats": {
         "precision": 9,
         "puissance": 6,
@@ -532,6 +538,7 @@
       "description": "Gabin, 9 fois champion du canton avant 30 ans. Le prodige de la nouvelle generation. Aussi a l'aise au tir qu'a la pointe, il combine talent brut et mentalite de competiteur. Son style moderne derange les anciens.",
       "description_en": "Gabin, 9-time local champion before age 30. The prodigy of the new generation. Equally at home shooting or pointing, he combines raw talent with a competitor's mindset. His modern style unsettles the old guard.",
       "archetype": "complet",
+      "rarity": "epic",
       "stats": {
         "precision": 8,
         "puissance": 8,
@@ -617,6 +624,7 @@
       "description": "Berenger, tireur redoutable au sang-froid d'acier. Pas de fioritures, pas de spectacle — juste des carreaux secs et precis. Quand il vise, il ne rate pas. Son regard glacial suffit a destabiliser l'adversaire.",
       "description_en": "Berenger, a fearsome shooter with nerves of steel. No fuss, no show — just clean, dry carreaux. When he aims, he doesn't miss. His icy stare alone is enough to unsettle an opponent.",
       "archetype": "tireur",
+      "rarity": "epic",
       "stats": {
         "precision": 8,
         "puissance": 8,
@@ -702,6 +710,7 @@
       "description": "Mamie Josette, 72 ans, lunettes rondes et sourire innocent. Ne vous fiez pas aux apparences — derriere ses airs de grand-mere se cache une pointeuse redoutable. Son calme est legendaire, sa patience infinie. Elle a battu des champions et elle le sait.",
       "description_en": "Mamie Josette, 72, round glasses and an innocent smile. Don't be fooled — behind that grandmotherly air hides a fearsome pointer. Her calm is legendary, her patience infinite. She has beaten champions, and she knows it.",
       "archetype": "pointeur",
+      "rarity": "rare",
       "stats": {
         "precision": 7,
         "puissance": 3,
@@ -787,6 +796,7 @@
       "description": "Sofia, 30 ans, queue de cheval et regard serein. Elegante et calculatrice, elle lit le jeu comme personne. Sa pointe est chirurgicale, ses placements strategiques. Elle ne joue pas un coup — elle joue une partie entiere.",
       "description_en": "Sofia, 30, ponytail and serene gaze. Elegant and calculated, she reads the game like no one else. Her pointing is surgical, her placements strategic. She doesn't play a shot — she plays an entire game.",
       "archetype": "pointeur",
+      "rarity": "epic",
       "stats": {
         "precision": 9,
         "puissance": 5,
@@ -872,6 +882,7 @@
       "description": "Rene Carletti, 58 ans, corpulence de rugbyman et regard de predateur. Champion regional en titre. Il ecrase ses adversaires avec une autorite tranquille — pas besoin de crier quand chaque boule atterrit exactement ou il le decide.",
       "description_en": "Rene Carletti, 58, a rugby player's build and a predator's gaze. Reigning regional champion. He crushes opponents with quiet authority — no need to shout when every boule lands exactly where he decides.",
       "archetype": "pointeur",
+      "rarity": "rare",
       "stats": {
         "precision": 8,
         "puissance": 6,
@@ -957,6 +968,7 @@
       "description": "Valentini, champion italien du boulodrome. Style impeccable, gestes fluides, effet devastateur. Il joue a la petanque comme on danse — avec grace et precision. Son effet lateral est le meilleur du circuit.",
       "description_en": "Valentini, Italian boulodrome champion. Impeccable style, fluid gestures, devastating spin. He plays petanque like dancing — with grace and precision. His lateral spin is the best on the circuit.",
       "archetype": "complet",
+      "rarity": "legendary",
       "stats": {
         "precision": 8,
         "puissance": 7,
@@ -1042,6 +1054,7 @@
       "description": "Chai, 24 ans, est champion de petanque thaïlandaise — oui, ca existe, et la Thaïlande gagne souvent. Il a traverse la moitie du monde pour jouer sur le boulodrome de La Ciotat. Pointeur zen et redoutable, il ne tire presque jamais mais place ses boules avec une precision qui defie la physique. Son sang-froid est absolu : il n'a jamais tremble de sa vie.",
       "description_en": "Chai, 24, is a Thai petanque champion — yes, that's a thing, and Thailand wins a lot. He crossed half the world to play at La Ciotat's boulodrome. A zen and fearsome pointer, he almost never shoots but places his boules with physics-defying precision. His composure is absolute: he has never trembled in his life.",
       "archetype": "pointeur",
+      "rarity": "legendary",
       "stats": {
         "precision": 9,
         "puissance": 5,
@@ -1128,6 +1141,7 @@
       "description": "La Loutre ne tire pas fort — il glisse. Ses boules epousent les courbes du terrain avec une fluidite deconcertante, s'insinuant entre les adverses, contournant l'impossible. Technique, flamboyant et sur de lui, il sait exactement ou il va. Son copain Pierrot l'applaudit depuis les gradins, et ca l'inspire.",
       "description_en": "La Loutre doesn't shoot hard — he glides. His boules hug the terrain's curves with baffling fluidity, slipping between opponents, going around the impossible. Technical, flamboyant and self-assured, he always knows exactly where he's headed. His boyfriend Pierrot cheers from the sidelines, and it fires him up.",
       "archetype": "glisseur",
+      "rarity": "epic",
       "stats": {
         "precision": 8,
         "puissance": 4,
