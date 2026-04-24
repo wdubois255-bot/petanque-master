@@ -616,6 +616,15 @@ export default class UIFactory {
     // ================================================================
 
     static addControlsHint(scene, text, options = {}) {
+        // Mobile portrait : pas de clavier — les indications "Fleches / Entree / Echap"
+        // n'ont aucun sens au pouce et chevauchent le bouton Retour pilule en bas.
+        // On renvoie un objet factice "invisible" pour rester compatible avec les
+        // appelants qui capturent le retour (ex: QuickPlayScene._bottomObjects.push).
+        if (Layout.isPortrait && !options.forceMobile) {
+            const stub = scene.add.text(-9999, -9999, '', { fontFamily: FONT_BODY, fontSize: '1px' });
+            stub.setVisible(false);
+            return stub;
+        }
         const { y, depth = 0 } = options;
         const hintY = y ?? scene.scale.height - 16;
         return UIFactory.addText(scene, scene.scale.width / 2, hintY, text, '12px', CSS.GRIS, {
