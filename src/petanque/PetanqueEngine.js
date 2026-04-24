@@ -3,7 +3,7 @@ import Cochonnet from './Cochonnet.js';
 import EngineRenderer from './EngineRenderer.js';
 import I18n from '../utils/I18n.js';
 import {
-    VICTORY_SCORE, BALL_COLORS,
+    VICTORY_SCORE, BALL_COLORS, BALL_RADIUS,
     COCHONNET_MIN_DIST, COCHONNET_MAX_DIST,
     FRICTION_BASE,
     THROW_FLY_DURATION, THROW_SHAKE_INTENSITY, THROW_SHAKE_DURATION,
@@ -1580,7 +1580,7 @@ export default class PetanqueEngine {
                 if (bonus.startsWith('knockback_x')) knockbackMult = parseFloat(bonus.split('x')[1]) || 1;
                 return {
                     mass: set.stats.masse,
-                    radius: set.stats.rayon,
+                    radius: BALL_RADIUS,
                     color: colorNum,
                     textureKey: set.textureKey || null,
                     frictionMult,
