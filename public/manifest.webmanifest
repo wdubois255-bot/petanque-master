@@ -1,0 +1,16 @@
+{
+  "name": "Petanque Master",
+  "short_name": "Petanque",
+  "description": "Jeu de pétanque pixel art provençal. 12 personnages, 5 terrains, physique réaliste.",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#3A2E28",
+  "theme_color": "#3A2E28",
+  "lang": "fr",
+  "categories": ["games", "casual"],
+  "icons": [
+    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
