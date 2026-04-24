@@ -55,3 +55,41 @@ await I18n.load(I18n.detect());
 initAudioOnFirstGesture();
 const game = new Phaser.Game(config);
 if (typeof globalThis !== 'undefined') globalThis.__PHASER_GAME__ = game;
+
+// === Mobile: orientation lock + paysage warning + auto-fullscreen ===
+if (typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent)) {
+    // 1. Lock portrait — Android Chrome uniquement, echec silencieux sur iOS
+    if (screen?.orientation?.lock) {
+        screen.orientation.lock('portrait-primary').catch(() => {});
+    }
+
+    // 2. Overlay si l'utilisateur tourne quand meme en paysage (iOS ou lock echoue)
+    const orientOverlay = document.createElement('div');
+    orientOverlay.style.cssText = [
+        'display:none', 'position:fixed', 'inset:0', 'z-index:10000',
+        'background:#1A1510', 'color:#F5E6D0', 'font-family:monospace',
+        'font-size:15px', 'line-height:1.8', 'text-align:center',
+        'flex-direction:column', 'justify-content:center', 'align-items:center',
+        'gap:20px', 'padding:24px', 'pointer-events:none'
+    ].join(';');
+    orientOverlay.innerHTML =
+        '<div style="font-size:52px">↻</div>' +
+        '<div>Retournez votre telephone<br>en mode portrait</div>';
+    document.body.appendChild(orientOverlay);
+    const checkOrient = () => {
+        orientOverlay.style.display =
+            window.matchMedia('(orientation:landscape)').matches ? 'flex' : 'none';
+    };
+    window.addEventListener('orientationchange', checkOrient);
+    window.addEventListener('resize', checkOrient);
+    checkOrient();
+
+    // 3. Auto-fullscreen au premier geste (itch.io iframe supporte allowfullscreen)
+    document.addEventListener('pointerdown', () => {
+        const el = document.documentElement;
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
+            req.call(el).catch(() => {});
+        }
+    }, { once: true });
+}
