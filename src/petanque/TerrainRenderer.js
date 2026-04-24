@@ -1,4 +1,5 @@
-import { GAME_WIDTH, GAME_HEIGHT, TERRAIN_WIDTH, TERRAIN_HEIGHT, COLORS } from '../utils/Constants.js';
+import { TERRAIN_WIDTH, TERRAIN_HEIGHT, COLORS } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 
 // ============================================================
 // TerrainRenderer - Rendu visuel complet des terrains de petanque
@@ -228,14 +229,14 @@ export default class TerrainRenderer {
     _drawSky() {
         const key = `sky_${this.terrainId}`;
         if (this.scene.textures.exists(key)) this.scene.textures.remove(key);
-        const tex = this.scene.textures.createCanvas(key, GAME_WIDTH, GAME_HEIGHT);
+        const tex = this.scene.textures.createCanvas(key, Layout.W, Layout.H);
         const ctx = tex.getContext();
 
         ctx.fillStyle = this.vis.bgColor;
-        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        ctx.fillRect(0, 0, Layout.W, Layout.H);
 
         tex.refresh();
-        this.scene.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, key).setDepth(0);
+        this.scene.add.image(Layout.W / 2, Layout.H / 2, key).setDepth(0);
     }
 
     // GROUND supprime — fond uni unique (bgColor couvre tout)
@@ -1137,8 +1138,8 @@ export default class TerrainRenderer {
     // ============================================================
     showHorsJeu(x, y) {
         // Clamp position to screen
-        const px = Phaser.Math.Clamp(x, 60, GAME_WIDTH - 60);
-        const py = Phaser.Math.Clamp(y, 30, GAME_HEIGHT - 30);
+        const px = Phaser.Math.Clamp(x, 60, Layout.W - 60);
+        const py = Phaser.Math.Clamp(y, 30, Layout.H - 30);
 
         // Red flash at exit point
         const flash = this.scene.add.graphics().setDepth(50);

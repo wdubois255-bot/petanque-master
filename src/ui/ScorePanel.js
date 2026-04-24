@@ -1,4 +1,5 @@
-import { GAME_WIDTH, GAME_HEIGHT, COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI, SCORE_PANEL_COMPACT_W, SCORE_PANEL_COMPACT_H, PX_PER_METER } from '../utils/Constants.js';
+import { COLORS, BALL_COLORS, FONT_PIXEL, SHADOW_TEXT, UI, SCORE_PANEL_COMPACT_W, SCORE_PANEL_COMPACT_H, PX_PER_METER } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import UIFactory from './UIFactory.js';
 import I18n from '../utils/I18n.js';
 
@@ -18,7 +19,7 @@ export default class ScorePanel {
         // === COMPACT PANEL (always visible) ===
         const cw = SCORE_PANEL_COMPACT_W;  // 94
         const ch = SCORE_PANEL_COMPACT_H;  // 50
-        this.compactX = GAME_WIDTH - cw - 6;
+        this.compactX = Layout.W - cw - 6;
         this.compactY = 6;
 
         this._compactBg = scene.add.graphics().setDepth(90);
@@ -124,7 +125,7 @@ export default class ScorePanel {
             this._rankLabels.push(label);
         }
 
-        this._rankHint = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 6, I18n.t('ingame.tab_hint'), {
+        this._rankHint = scene.add.text(Layout.W / 2, Layout.H - 6, I18n.t('ingame.tab_hint'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#9E9E8E', align: 'center'
         }).setOrigin(0.5, 1).setDepth(90).setAlpha(0.5);
 
@@ -356,7 +357,7 @@ export default class ScorePanel {
             onRepeat: () => scoreTextObj.setColor('#F5E6D0'),
             onComplete: () => scoreTextObj.setColor('#F5E6D0')
         });
-        UIFactory.showFloatingText(this.scene, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40,
+        UIFactory.showFloatingText(this.scene, Layout.W / 2, Layout.H / 2 - 40,
             'MATCH POINT !', '#FFD700', { fontSize: '16px', rise: 30, duration: 2000, depth: 95 });
     }
 
@@ -369,7 +370,7 @@ export default class ScorePanel {
         this.ballsBg.clear();
 
         const baseX = 16;
-        const baseY = GAME_HEIGHT - 22;
+        const baseY = Layout.H - 22;
         const dotR = 7;
         const spacing = 20;
 

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
+import Layout from '../utils/Layout.js';
 import {
-    GAME_WIDTH, GAME_HEIGHT,
     TERRAIN_WIDTH, TERRAIN_HEIGHT,
     TERRAIN_COLORS, TERRAIN_FRICTION,
     COLORS, THROW_CIRCLE_RADIUS, THROW_CIRCLE_Y_OFFSET,
@@ -138,8 +138,8 @@ export default class PetanqueScene extends Phaser.Scene {
         const surfaceType = terrainData?.surface || this.terrainType;
         this.frictionMult = TERRAIN_FRICTION[surfaceType] || 1.0;
 
-        this.terrainX = (GAME_WIDTH - TERRAIN_WIDTH) / 2;
-        this.terrainY = (GAME_HEIGHT - TERRAIN_HEIGHT) / 2;
+        this.terrainX = (Layout.W - TERRAIN_WIDTH) / 2;
+        this.terrainY = (Layout.H - TERRAIN_HEIGHT) / 2;
 
         // Render terrain with TerrainRenderer (textures, borders, decor, dead lines)
         this.terrainRenderer = new TerrainRenderer(
@@ -148,7 +148,7 @@ export default class PetanqueScene extends Phaser.Scene {
         this.terrainRenderer.render();
 
         // Throw circle (draw on top of terrain)
-        this.throwCircleX = GAME_WIDTH / 2;
+        this.throwCircleX = Layout.W / 2;
         this.throwCircleY = this.terrainY + TERRAIN_HEIGHT - THROW_CIRCLE_Y_OFFSET;
         const circleG = this.add.graphics().setDepth(4);
         // Outer glow
@@ -219,7 +219,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // VS label (fade out after 5s)
         const shadow = { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true };
         const vsLabel = this.add.text(
-            GAME_WIDTH / 2, this.terrainY - 12,
+            Layout.W / 2, this.terrainY - 12,
             `VS ${this.opponentCharacter ? I18n.field(this.opponentCharacter, 'name') : this.opponentName}`,
             { fontFamily: 'monospace', fontSize: '16px', color: '#D4A574', align: 'center', shadow }
         ).setOrigin(0.5, 1).setDepth(5);
@@ -344,8 +344,8 @@ export default class PetanqueScene extends Phaser.Scene {
         this.events.on('slowmo-start', () => {
             if (this._vignetteGraphics) return;
             const g = this.add.graphics().setDepth(150).setAlpha(0);
-            const w = GAME_WIDTH;
-            const h = GAME_HEIGHT;
+            const w = Layout.W;
+            const h = Layout.H;
             // Vignette: concentric bands from edges to center with decreasing opacity
             const bands = 12;
             for (let i = 0; i < bands; i++) {
@@ -381,7 +381,7 @@ export default class PetanqueScene extends Phaser.Scene {
                 const cx = this.engine.cochonnet.x;
                 const cy = this.engine.cochonnet.y;
                 // Set scroll to center zoom on cochonnet area
-                cam.centerOn(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+                cam.centerOn(Layout.W / 2, Layout.H / 2);
                 this.tweens.add({
                     targets: cam,
                     zoom: 1.1,
@@ -687,7 +687,7 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this._pressureActive) return;
         this._pressureActive = true;
 
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
         const y = 18;
 
         // Dramatic vignette overlay (subtle darkening)
@@ -695,10 +695,10 @@ export default class PetanqueScene extends Phaser.Scene {
         this._pressureVignette.fillStyle(0x1A1510, 0);
         // Top vignette
         this._pressureVignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.25, 0.25, 0, 0);
-        this._pressureVignette.fillRect(0, 0, GAME_WIDTH, 80);
+        this._pressureVignette.fillRect(0, 0, Layout.W, 80);
         // Bottom vignette
         this._pressureVignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.25, 0.25);
-        this._pressureVignette.fillRect(0, GAME_HEIGHT - 80, GAME_WIDTH, 80);
+        this._pressureVignette.fillRect(0, Layout.H - 80, Layout.W, 80);
         this._pressureVignette.setAlpha(0);
         this.tweens.add({ targets: this._pressureVignette, alpha: 1, duration: 800 });
 
@@ -727,7 +727,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
     // === Challenge panel (persistent, right side) ===
     _createChallengePanel(name, description, reward) {
-        const px = GAME_WIDTH - 148;
+        const px = Layout.W - 148;
         const py = 80;  // Below cochonnet distance badge (ends at y=77)
         const pw = 142;
         const ph = 52;
@@ -771,8 +771,8 @@ export default class PetanqueScene extends Phaser.Scene {
 
     // === Galet/Shop explanation (first arcade challenge only) ===
     _showGaletExplanation(onComplete) {
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const pw = 340;
         const ph = 72;
 
@@ -821,8 +821,8 @@ export default class PetanqueScene extends Phaser.Scene {
     _showChallengeBanner(text) {
         if (this._challengeBanner) { this._challengeBanner.destroy(); this._challengeBanner = null; }
 
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const pw = 320;
         const ph = 60;
 
@@ -878,7 +878,7 @@ export default class PetanqueScene extends Phaser.Scene {
             ? I18n.t('arcade.challenge_complete', { galets })
             : I18n.t('arcade.challenge_failed');
         const color = success ? '#FFD700' : '#C44B3F';
-        const resultTxt = this.add.text(GAME_WIDTH / 2, 75, text, {
+        const resultTxt = this.add.text(Layout.W / 2, 75, text, {
             fontFamily: 'monospace', fontSize: '12px', color,
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(96).setAlpha(0);
@@ -956,19 +956,19 @@ export default class PetanqueScene extends Phaser.Scene {
         const steps = [
             {
                 text: I18n.t('ingame.tuto_welcome'),
-                y: GAME_HEIGHT / 2
+                y: Layout.H / 2
             },
             {
                 text: I18n.t('ingame.tuto_objective'),
-                y: GAME_HEIGHT / 2
+                y: Layout.H / 2
             },
             {
                 text: I18n.t('ingame.tuto_techniques'),
-                y: GAME_HEIGHT / 2
+                y: Layout.H / 2
             },
             {
                 text: I18n.t('ingame.tuto_scoring'),
-                y: GAME_HEIGHT / 2
+                y: Layout.H / 2
             }
         ];
 
@@ -982,15 +982,15 @@ export default class PetanqueScene extends Phaser.Scene {
         const s = steps[step];
         const overlay = this.add.graphics().setDepth(200);
         overlay.fillStyle(0x1A1510, 0.75);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
 
-        const txt = this.add.text(GAME_WIDTH / 2, s.y, s.text, {
+        const txt = this.add.text(Layout.W / 2, s.y, s.text, {
             fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
             align: 'center', lineSpacing: 4,
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(201);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 40, `(${step + 1}/${steps.length}) Cliquez pour continuer`, {
+        const hint = this.add.text(Layout.W / 2, Layout.H - 40, `(${step + 1}/${steps.length}) Cliquez pour continuer`, {
             fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(201);
@@ -1124,7 +1124,18 @@ export default class PetanqueScene extends Phaser.Scene {
             plage:    { leftX: 130, leftY: 300, rightX: 670, rightY: 420 },
             docks:    { leftX: 205, leftY: 310, rightX: 660, rightY: 400 },
         };
-        const wp = WATCHER_POS[terrainId] || WATCHER_POS.village;
+        // Portrait (480×960): terrain centré laisse 150px de marge horizontale
+        // Watchers placés dans les marges latérales, à mi-hauteur du terrain
+        const terrainCenterY = this.terrainY + TERRAIN_HEIGHT / 2;
+        const WATCHER_POS_PORTRAIT = {
+            leftX: Math.round(this.terrainX / 2),
+            leftY: terrainCenterY,
+            rightX: Math.round(this.terrainX + TERRAIN_WIDTH + (Layout.W - this.terrainX - TERRAIN_WIDTH) / 2),
+            rightY: terrainCenterY
+        };
+        const wp = Layout.isPortrait
+            ? WATCHER_POS_PORTRAIT
+            : (WATCHER_POS[terrainId] || WATCHER_POS.village);
         this._playerWatchX = wp.leftX;
         this._playerWatchY = wp.leftY;
         this._opponentWatchX = wp.rightX;
@@ -1784,8 +1795,8 @@ export default class PetanqueScene extends Phaser.Scene {
         if (this._arcadeBadgeBg)    this._arcadeBadgeBg.setVisible(false);
         if (this._arcadeBadgeLabel) this._arcadeBadgeLabel.setVisible(false);
 
-        const CX = GAME_WIDTH / 2;
-        const CY = GAME_HEIGHT / 2;
+        const CX = Layout.W / 2;
+        const CY = Layout.H / 2;
         const pw = 400, ph = 320;
         const px = CX - pw / 2, py = CY - ph / 2;
 
@@ -1795,7 +1806,7 @@ export default class PetanqueScene extends Phaser.Scene {
         // === Overlay sombre plein écran ===
         const overlay = this.add.graphics();
         overlay.fillStyle(0x1A1510, 0.7);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
         container.add(overlay);
 
         // === Panel principal ===
@@ -1989,14 +2000,14 @@ export default class PetanqueScene extends Phaser.Scene {
 
     _showAbandonConfirm(pauseContainer) {
         // Overlay de confirmation par-dessus le menu pause
-        const CX = GAME_WIDTH / 2;
-        const CY = GAME_HEIGHT / 2;
+        const CX = Layout.W / 2;
+        const CY = Layout.H / 2;
         const cw = 280, ch = 100;
         const cx = CX - cw / 2, cy = CY - ch / 2;
 
         const confGfx = this.add.graphics().setDepth(260);
         confGfx.fillStyle(0x1A1510, 0.92);
-        confGfx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        confGfx.fillRect(0, 0, Layout.W, Layout.H);
         confGfx.fillStyle(0x3A2E28, 1);
         confGfx.fillRoundedRect(cx, cy, cw, ch, 10);
         confGfx.lineStyle(2, 0xCC4444, 0.8);
@@ -2054,8 +2065,8 @@ export default class PetanqueScene extends Phaser.Scene {
     }
 
     _playIrisOpen() {
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const maxRadius = Math.sqrt(cx * cx + cy * cy) + 20;
 
         // Iris-open effect: shrinking dark overlay circle (no mask — Phaser 4 WebGL compatible)
@@ -2067,13 +2078,13 @@ export default class PetanqueScene extends Phaser.Scene {
             // Draw dark overlay with a circular hole
             overlay.fillStyle(0x1A1510, 1);
             // Top
-            overlay.fillRect(0, 0, GAME_WIDTH, Math.max(0, cy - anim.r));
+            overlay.fillRect(0, 0, Layout.W, Math.max(0, cy - anim.r));
             // Bottom
-            overlay.fillRect(0, Math.min(GAME_HEIGHT, cy + anim.r), GAME_WIDTH, GAME_HEIGHT);
+            overlay.fillRect(0, Math.min(Layout.H, cy + anim.r), Layout.W, Layout.H);
             // Left
             overlay.fillRect(0, Math.max(0, cy - anim.r), Math.max(0, cx - anim.r), anim.r * 2);
             // Right
-            overlay.fillRect(Math.min(GAME_WIDTH, cx + anim.r), Math.max(0, cy - anim.r), GAME_WIDTH, anim.r * 2);
+            overlay.fillRect(Math.min(Layout.W, cx + anim.r), Math.max(0, cy - anim.r), Layout.W, anim.r * 2);
         };
         drawFrame();
 
