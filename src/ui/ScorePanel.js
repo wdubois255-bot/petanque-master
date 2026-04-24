@@ -358,7 +358,7 @@ export default class ScorePanel {
             onComplete: () => scoreTextObj.setColor('#F5E6D0')
         });
         UIFactory.showFloatingText(this.scene, Layout.W / 2, Layout.H / 2 - 40,
-            'MATCH POINT !', '#FFD700', { fontSize: '16px', rise: 30, duration: 2000, depth: 95 });
+            'MATCH POINT !', '#FFD700', { fontSize: '16px', rise: 30, duration: 2000, depth: 95, legacyRise: true });
     }
 
     _showFloatingPoints(scoreTextObj, points, color) {

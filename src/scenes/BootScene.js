@@ -300,7 +300,7 @@ export default class BootScene extends Phaser.Scene {
             if (activeScene) {
                 UIFactory.showFloatingText(activeScene, Layout.W / 2, 20,
                     I18n.t('boot.save_failed'), '#C44B3F',
-                    { fontSize: '12px', duration: 3000, depth: 200 });
+                    { fontSize: '12px', duration: 3000, depth: 200, legacyRise: true });
             }
         });
 

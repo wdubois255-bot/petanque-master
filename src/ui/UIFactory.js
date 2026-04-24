@@ -627,18 +627,69 @@ export default class UIFactory {
     // FLOATING TEXT (animated text that rises and fades)
     // ================================================================
 
+    /**
+     * Floating text — reward/damage number that pops in, holds, then rises while fading.
+     * Anim sequence (Royal Match style) :
+     *   - spawn scale 0 → 1.1 (150ms, Back.easeOut)
+     *   - settle to 1 (100ms, delay 150ms)
+     *   - rise +fade over 500ms after 300ms hold (total ~800ms visible)
+     *
+     * Legacy callers passing { duration, rise } still work (values clamped to new envelope)
+     * and older "slow rise" effect can be opted into with options.legacyRise=true.
+     */
     static showFloatingText(scene, x, y, text, color = CSS.OR, options = {}) {
-        const { fontSize = '20px', rise = 40, duration = 1200, depth = 95 } = options;
+        const {
+            fontSize = '18px',
+            rise = 40,
+            depth = 200,
+            legacyRise = false,
+            duration = 800
+        } = options;
 
         const floater = scene.add.text(x, y, text, {
-            fontFamily: FONT_BODY, fontSize, color,
+            fontFamily: FONT_BODY,
+            fontSize,
+            color,
+            fontStyle: 'bold',
+            stroke: '#1A1510',
+            strokeThickness: 3,
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
-        }).setOrigin(0.5).setDepth(depth);
+        }).setOrigin(0.5).setDepth(depth).setScale(0);
 
+        // Legacy simple-rise mode (kept for backward compat / long-duration callers)
+        if (legacyRise) {
+            floater.setScale(1);
+            scene.tweens.add({
+                targets: floater,
+                y: y - rise, alpha: 0,
+                duration, ease: 'Cubic.easeOut',
+                onComplete: () => floater.destroy()
+            });
+            return floater;
+        }
+
+        // Pop in (scale 0 → 1.1)
         scene.tweens.add({
             targets: floater,
-            y: y - rise, alpha: 0,
-            duration, ease: 'Cubic.easeOut',
+            scale: 1.1,
+            duration: 150,
+            ease: 'Back.easeOut'
+        });
+        // Settle to 1
+        scene.tweens.add({
+            targets: floater,
+            scale: 1,
+            duration: 100,
+            delay: 150
+        });
+        // Rise + fade (after 300ms hold)
+        scene.tweens.add({
+            targets: floater,
+            y: y - rise,
+            alpha: 0,
+            duration: 500,
+            delay: 300,
+            ease: 'Sine.easeIn',
             onComplete: () => floater.destroy()
         });
 
