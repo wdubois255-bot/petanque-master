@@ -493,9 +493,26 @@ export default class TitleScene extends Phaser.Scene {
 
         this._menuContainer = this.add.container(0, 0).setDepth(5);
 
-        // Menu layout: hero button + 2x2 grid + settings
+        // Menu layout — mobile-first en portrait : hero JOUER + 2x2 cards + settings bas
+        // Desktop inchange (ratio 832x480 ne souffre pas du meme probleme d'echelle).
         const cx = Layout.W / 2;
-        const menuDefs = [
+        const portrait = Layout.isPortrait;
+        const menuDefs = portrait ? (() => {
+            // Portrait : hero 400x76 Y=420, 2x2 196x88 Y=520/620, settings Y=780 above bottom nav (Y=888)
+            const heroW = Layout.W - 40;          // 440 sur 480 → marge 20 chaque cote
+            const heroH = 88;
+            const secW = (Layout.W - 40 - 16) / 2; // 2 colonnes avec gap 16 → ~192
+            const secH = 88;
+            const gapX = 16;
+            return [
+                { label: I18n.t('title.menu.play'),       x: cx,                  y: 420, w: heroW, h: heroH, hero: true },
+                { label: I18n.t('title.menu.arcade'),     x: cx - secW / 2 - gapX / 2, y: 530, w: secW, h: secH },
+                { label: I18n.t('title.menu.quickplay'),  x: cx + secW / 2 + gapX / 2, y: 530, w: secW, h: secH },
+                { label: I18n.t('title.menu.character'),  x: cx - secW / 2 - gapX / 2, y: 630, w: secW, h: secH },
+                { label: I18n.t('title.menu.shop'),       x: cx + secW / 2 + gapX / 2, y: 630, w: secW, h: secH },
+                { label: I18n.t('title.menu.settings'),   x: cx,                  y: 740, w: 240,   h: 56 }
+            ];
+        })() : [
             { label: I18n.t('title.menu.play'),       x: cx,       y: 230, w: 260, h: 46, hero: true },
             { label: I18n.t('title.menu.arcade'),     x: cx - 105, y: 286, w: 196, h: 36 },
             { label: I18n.t('title.menu.quickplay'),  x: cx + 105, y: 286, w: 196, h: 36 },
@@ -508,8 +525,11 @@ export default class TitleScene extends Phaser.Scene {
         this._menuPositions = menuDefs;
 
         menuDefs.forEach((def, i) => {
+            // Fonts plus grosses en portrait (ratio ecran vs desktop)
+            const heroFs = portrait ? '26px' : '16px';
+            const normFs = portrait ? '16px' : '10px';
             const btn = UIFactory.createWoodButton(this, def.x, def.y, def.w, def.h, def.label, {
-                fontSize: def.hero ? '16px' : '10px',
+                fontSize: def.hero ? heroFs : normFs,
                 depth: 6,
                 selected: i === 0,
                 onDown: () => {
@@ -939,14 +959,16 @@ export default class TitleScene extends Phaser.Scene {
     // ================================================================
     _drawMenuIcon(container, index, def) {
         const g = this.add.graphics();
-        const iconX = -def.w / 2 + (def.hero ? 24 : 18);
+        const portrait = Layout.isPortrait;
+        // Portrait : icones plus grosses car boutons plus grands, text decale plus a droite
+        const iconX = -def.w / 2 + (def.hero ? (portrait ? 48 : 24) : (portrait ? 28 : 18));
         const iconY = 0;
-        const s = def.hero ? 1.4 : 1; // scale for hero button
+        const s = def.hero ? (portrait ? 2.4 : 1.4) : (portrait ? 1.4 : 1);
 
-        // Shift button text slightly right to make room for icon
+        // Shift button text right to leave clear space after icon (no overlap)
         const textNode = container.list.find(c => c.type === 'Text');
         if (textNode && index < 5) {
-            textNode.setX(textNode.x + (def.hero ? 10 : 8));
+            textNode.setX(textNode.x + (def.hero ? (portrait ? 40 : 10) : (portrait ? 24 : 8)));
         }
 
         switch (index) {

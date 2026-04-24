@@ -353,21 +353,34 @@ export const FONT_BODY = 'monospace';
 // passe hors-champ. Calcul local basé sur _IS_PORTRAIT_DEVICE (pas d'import Layout → circular).
 const _UI_W = _IS_PORTRAIT_DEVICE ? GAME_WIDTH_PORTRAIT : GAME_WIDTH;
 const _UI_H = _IS_PORTRAIT_DEVICE ? GAME_HEIGHT_PORTRAIT : GAME_HEIGHT;
+const _P = _IS_PORTRAIT_DEVICE;
 export const UI = {
-    TITLE_SIZE: '24px',
-    MENU_SIZE: '14px',
-    BODY_SIZE: '12px',
-    HINT_SIZE: '10px',
-    SMALL_SIZE: '8px',
+    // Typographie — tailles natives portrait significativement plus grosses
+    // (480x960 est un canvas ~2x plus petit que 832x480 en diagonale ; le FIT scale
+    // compense en pixels reels, mais le ratio texte/ecran reste trop petit sur mobile).
+    TITLE_SIZE: _P ? '32px' : '24px',
+    HERO_SIZE:  _P ? '24px' : '18px',  // bouton principal (JOUER)
+    MENU_SIZE:  _P ? '18px' : '14px',
+    BODY_SIZE:  _P ? '16px' : '12px',
+    HINT_SIZE:  _P ? '14px' : '10px',
+    SMALL_SIZE: _P ? '12px' : '8px',
     HINT_Y: _UI_H - 16,
-    HEADER_Y: 30,
-    PILL_W: 280,
-    PILL_H: 38,
-    PILL_SPACING: 43,
-    BACK_X: _IS_PORTRAIT_DEVICE ? 40 : 60,
-    BACK_Y: _UI_H - (_IS_PORTRAIT_DEVICE ? 36 : 20),
-    GALETS_X: _UI_W - 90,
-    GALETS_Y: 28,
+    HEADER_Y: _P ? 42 : 30,
+    PILL_W: _P ? 400 : 280,
+    PILL_H: _P ? 64 : 38,
+    PILL_SPACING: _P ? 76 : 43,
+    BACK_X: _P ? 40 : 60,
+    BACK_Y: _UI_H - (_P ? 40 : 20),
+    GALETS_X: _UI_W - (_P ? 90 : 90),
+    GALETS_Y: _P ? 38 : 28,
+    // --- Mobile design system (card layout) ---
+    GUTTER:       _P ? 20 : 16,   // marge laterale des ecrans
+    CARD_GAP:     _P ? 14 : 8,    // gap entre cartes verticales
+    CARD_RADIUS:  _P ? 14 : 8,
+    CARD_PADDING: _P ? 16 : 10,
+    HERO_H:       _P ? 76 : 46,   // bouton hero (CTA principal)
+    PRIMARY_H:    _P ? 60 : 36,   // boutons secondaires
+    SMALL_BTN_H:  _P ? 44 : 28,
     // Depth layers (centralized)
     DEPTH_BG: 0,
     DEPTH_DECOR: 5,
