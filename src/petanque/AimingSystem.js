@@ -86,6 +86,10 @@ export default class AimingSystem {
         this.arrowGfx = scene.add.graphics().setDepth(50);
         this._predictionGfx = scene.add.graphics().setDepth(49);
 
+        // Power meter ring (Golf Clash style) — mobile portrait only to avoid cluttering desktop
+        // Drawn around the throw circle while dragging, fill sweeps clockwise from top.
+        this._powerRingGfx = IS_MOBILE ? scene.add.graphics().setDepth(48) : null;
+
         // Pointer events
         scene.input.on('pointerdown', this.onPointerDown, this);
         scene.input.on('pointermove', this.onPointerMove, this);
@@ -950,6 +954,7 @@ export default class AimingSystem {
         this.isDragging = false;
         this.arrowGfx.clear();
         this._predictionGfx.clear();
+        if (this._powerRingGfx) this._powerRingGfx.clear();
         if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
 
         const dx = this.startX - this.currentX;
@@ -1039,6 +1044,7 @@ export default class AimingSystem {
         stopChargingSound();
         this.arrowGfx.clear();
         this._predictionGfx.clear();
+        if (this._powerRingGfx) this._powerRingGfx.clear();
         if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
     }
 
@@ -1124,6 +1130,45 @@ export default class AimingSystem {
         }
     }
 
+    // --- POWER RING (Golf Clash style, mobile only) ---
+    // Circular gauge around the throw circle — fills clockwise from top (-π/2).
+    // Color graded green → yellow → red; small golden sweet-spot arc at ~0.75.
+    _drawPowerRing(cx, cy, power) {
+        const g = this._powerRingGfx;
+        if (!g) return; // desktop : helper no-op
+        g.clear();
+
+        const p = Math.max(0, Math.min(1, power));
+        const radius = IS_MOBILE ? Math.round(TOUCH_BUTTON_SIZE / 1.4) : 28;
+
+        // Background ring
+        g.lineStyle(4, 0xCCCCCC, 0.3);
+        g.strokeCircle(cx, cy, radius);
+
+        if (p > 0.001) {
+            // Color grade: green < 0.4, yellow 0.4-0.75, red > 0.75
+            let fillColor;
+            if (p < 0.4) fillColor = 0x4ADE80;
+            else if (p < 0.75) fillColor = 0xFCD34D;
+            else fillColor = 0xC44B3F;
+
+            const startAngle = -Math.PI / 2;
+            const endAngle = startAngle + Math.PI * 2 * p;
+            g.lineStyle(4, fillColor, 0.95);
+            g.beginPath();
+            g.arc(cx, cy, radius, startAngle, endAngle, false);
+            g.strokePath();
+        }
+
+        // Sweet-spot arc (optimal carreau ~0.72-0.78) — faint gold tick
+        const sweetStart = -Math.PI / 2 + Math.PI * 2 * 0.72;
+        const sweetEnd = -Math.PI / 2 + Math.PI * 2 * 0.78;
+        g.lineStyle(3, 0xFFD700, 0.9);
+        g.beginPath();
+        g.arc(cx, cy, radius + 6, sweetStart, sweetEnd, false);
+        g.strokePath();
+    }
+
     // --- UPDATE LOOP ---
 
     update() {
@@ -1172,6 +1217,7 @@ export default class AimingSystem {
         // Draw aiming arrow + prediction
         this.arrowGfx.clear();
         this._predictionGfx.clear();
+        if (this._powerRingGfx) this._powerRingGfx.clear();
 
         if (!this.isDragging || !this.engine.aimingEnabled) {
             if (this._powerText) { this._powerText.destroy(); this._powerText = null; }
@@ -1204,6 +1250,9 @@ export default class AimingSystem {
 
         const originX = this.scene.throwCircleX;
         const originY = this.scene.throwCircleY;
+
+        // Power ring (Golf Clash style) — mobile only, behind arrow
+        this._drawPowerRing(originX, originY, rawPower);
 
         // Compute wobbled angle + power: EXACT same formulas as onPointerUp
         // so the marker shows precisely where the ball will go if released NOW
@@ -1375,6 +1424,7 @@ export default class AimingSystem {
         this.scene.input.off('pointerup', this.onPointerUp, this);
         this.arrowGfx.destroy();
         this._predictionGfx.destroy();
+        if (this._powerRingGfx) { this._powerRingGfx.destroy(); this._powerRingGfx = null; }
         this._clearModeUI();
         this._clearLoftUI();
         this._clearTargetHighlights();
