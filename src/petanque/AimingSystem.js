@@ -1345,16 +1345,16 @@ export default class AimingSystem {
             this._predictionGfx.strokeCircle(baseX, baseY, scaledAmp);
         }
 
-        // Marker cross at exact predicted LANDING position (first ground contact)
-        // Sur mobile : cercle +20% pour meilleure lisibilite (5 → 6)
-        const markerRadius = IS_MOBILE ? 6 : 5;
-        this._predictionGfx.lineStyle(1.5, color, 0.6);
+        // Marker cross — mobile : radius 10 + lignes ±12px pour être visible au doigt
+        const markerRadius = IS_MOBILE ? 10 : 5;
+        const crossLen = IS_MOBILE ? 12 : 4;
+        this._predictionGfx.lineStyle(IS_MOBILE ? 2 : 1.5, color, IS_MOBILE ? 0.9 : 0.6);
         this._predictionGfx.strokeCircle(markerX, markerY, markerRadius);
         this._predictionGfx.beginPath();
-        this._predictionGfx.moveTo(markerX - 4, markerY);
-        this._predictionGfx.lineTo(markerX + 4, markerY);
-        this._predictionGfx.moveTo(markerX, markerY - 4);
-        this._predictionGfx.lineTo(markerX, markerY + 4);
+        this._predictionGfx.moveTo(markerX - crossLen, markerY);
+        this._predictionGfx.lineTo(markerX + crossLen, markerY);
+        this._predictionGfx.moveTo(markerX, markerY - crossLen);
+        this._predictionGfx.lineTo(markerX, markerY + crossLen);
         this._predictionGfx.strokePath();
 
         // Retro indicator on arrow: small arc near tip
