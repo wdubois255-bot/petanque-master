@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Mockup v3 — Patterns Tier S (Golf Clash style)</title>
+<style>
+  :root {
+    --ocre: #D4A574; --ocre-dark: #B08855;
+    --terracotta: #C4854A; --terracotta-dark: #9A6636;
+    --olive: #6B8E4E; --lavande: #9B7BB8;
+    --ciel: #87CEEB; --ciel-dark: #5A94C8;
+    --creme: #F5E6D0; --creme-soft: #E8D4B4;
+    --ombre: #3A2E28; --ombre-deep: #1A1510;
+    --accent: #C44B3F; --or: #FFD700; --or-soft: #E8C030;
+    --gris: #9E9E8E;
+    --vert: #4ADE80; --jaune: #FCD34D;
+    /* Rareté */
+    --r-common: #9E9E8E; --r-rare: #4A90D9; --r-epic: #9B7BB8;
+    --r-legendary: #FFD700; --r-mythic: #C44B3F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Segoe UI', monospace;
+    background: radial-gradient(ellipse at top, #2a1f1a 0%, #0f0a08 70%);
+    color: var(--creme); padding: 40px 20px; min-height: 100vh;
+  }
+  .intro {
+    max-width: 1100px; margin: 0 auto 40px; padding: 28px 32px;
+    background: linear-gradient(135deg, #2a1f1a, #1a1510);
+    border-left: 4px solid var(--or); border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5); line-height: 1.7;
+  }
+  .intro h1 { color: var(--or); margin-bottom: 14px; font-size: 26px; letter-spacing: 1px; }
+  .intro p { margin-bottom: 12px; font-size: 14px; }
+  .intro code {
+    color: var(--ocre); background: #0f0a08; padding: 3px 8px; border-radius: 4px;
+    font-family: 'SF Mono', Consolas, monospace; font-size: 13px;
+  }
+  .intro b { color: var(--creme); }
+  .intro .tag {
+    display: inline-block; padding: 2px 8px; background: var(--or); color: var(--ombre-deep);
+    border-radius: 3px; font-size: 10px; font-weight: 700; margin-right: 6px; letter-spacing: 1px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(520px, 1fr)); gap: 48px; max-width: 1700px; margin: 0 auto; }
+  .scene {
+    background: linear-gradient(180deg, #2a1f1a, #1f1612);
+    border: 1px solid #3a2f24; border-radius: 12px; padding: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .scene h2 { color: var(--ocre); margin-bottom: 8px; font-size: 18px; font-family: 'SF Mono', monospace; letter-spacing: 1px; }
+  .scene .caption { font-size: 12px; color: var(--gris); margin-bottom: 20px; line-height: 1.5; }
+  .frame {
+    width: 480px; height: 960px; background: var(--ombre);
+    position: relative; margin: 0 auto;
+    border: 6px solid #0a0806; border-radius: 36px; overflow: hidden;
+    box-shadow: 0 0 0 2px #2a1f1a, 0 20px 60px rgba(0,0,0,0.6);
+    font-family: 'SF Mono', monospace;
+  }
+  .frame::before {
+    content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 28px; background: #0a0806;
+    border-radius: 0 0 18px 18px; z-index: 1000;
+  }
+  .note {
+    position: absolute; background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.4); padding: 4px 9px;
+    font-size: 9px; color: var(--or); z-index: 999; border-radius: 3px;
+    backdrop-filter: blur(4px); letter-spacing: 0.5px; font-weight: 700;
+  }
+  .specs {
+    margin-top: 18px; padding: 14px 16px; background: #0f0a08;
+    border-radius: 6px; font-size: 11px; color: var(--gris); line-height: 1.7;
+    font-family: 'SF Mono', monospace;
+  }
+  .specs b { color: var(--ocre); }
+  .specs .tier { color: var(--or); }
+
+  /* ============================================================
+     MATCH SCENE — Tier S ultimate
+     ============================================================ */
+  .m-scene {
+    background:
+      radial-gradient(ellipse at 50% 10%, rgba(255,220,140,0.25), transparent 50%),
+      linear-gradient(180deg, #5A94C8 0%, #7AAA80 30%, #A89060 55%, #8B6030 80%, #6B4820 100%);
+  }
+
+  /* PROGRESS BAR (sous score) */
+  .m-progress {
+    position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 24px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5));
+    border: 1px solid rgba(212,165,116,0.4); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 3px;
+    padding: 0 10px; backdrop-filter: blur(6px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    z-index: 21;
+  }
+  .m-progress-info {
+    position: absolute; left: 10px; font-size: 8px; color: var(--gris);
+    letter-spacing: 1px;
+  }
+  .m-progress-info .mene { color: var(--or); font-weight: 700; }
+  .progress-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+  }
+  .progress-dot.player { background: var(--ciel); box-shadow: 0 0 4px var(--ciel); }
+  .progress-dot.opp { background: var(--accent); box-shadow: 0 0 4px var(--accent); }
+  .progress-target {
+    position: absolute; right: 10px; font-size: 9px; color: var(--or);
+    font-weight: 700; letter-spacing: 1px;
+  }
+
+  /* SCORE (plus petit, top center) */
+  .m-score {
+    position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+    width: 260px; height: 46px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.92), rgba(42,31,26,0.92));
+    border: 1.5px solid var(--ocre); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    font-family: 'Impact', sans-serif; font-size: 22px; letter-spacing: 2px;
+    backdrop-filter: blur(10px); z-index: 20;
+  }
+  .m-score .player { color: var(--ciel); text-shadow: 0 0 8px rgba(135,206,235,0.6); }
+  .m-score .opp { color: var(--accent); text-shadow: 0 0 8px rgba(196,75,63,0.6); }
+  .m-score .sep { color: var(--ocre); font-size: 16px; }
+
+  /* PAUSE */
+  .m-pause {
+    position: absolute; top: 40px; left: 20px;
+    width: 46px; height: 46px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.92), rgba(42,31,26,0.92));
+    border: 1.5px solid var(--ocre); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px); z-index: 20;
+  }
+  .m-pause::before {
+    content: ""; width: 4px; height: 14px; background: var(--creme);
+    box-shadow: 8px 0 0 var(--creme);
+  }
+
+  /* DIST BADGE (repositionné sous progress) */
+  .m-dist {
+    position: absolute; top: 136px; left: 50%; transform: translateX(-50%);
+    padding: 4px 12px 4px 8px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1px solid var(--or); border-radius: 12px;
+    font-size: 10px; color: var(--or); font-family: 'SF Mono', monospace;
+    display: flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(6px); z-index: 20;
+  }
+  .m-dist::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff0a0, #FFD700);
+    box-shadow: 0 0 6px rgba(255,215,0,0.7);
+  }
+
+  /* WIND (coin droit haut) */
+  .m-wind {
+    position: absolute; top: 96px; right: 20px;
+    padding: 6px 10px;
+    background: rgba(26,21,16,0.85);
+    border: 1px solid var(--ciel); border-radius: 8px;
+    font-size: 9px; color: var(--ciel); font-family: 'SF Mono', monospace;
+    display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;
+    backdrop-filter: blur(6px); z-index: 20;
+  }
+  .m-wind .arrow { font-size: 12px; }
+
+  /* TERRAIN */
+  .m-terrain {
+    position: absolute; left: 50px; top: 170px;
+    width: 380px; height: 720px;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 100%),
+      repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 6px),
+      linear-gradient(180deg, #9A6a36 0%, #8B5A2B 40%, #7a4e22 75%, #6b421a 100%);
+    border: 3px solid #5a3618; border-radius: 4px;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.4), 0 8px 25px rgba(0,0,0,0.6);
+  }
+  .m-terrain::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence baseFrequency='2.5' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.15'/></svg>");
+    mix-blend-mode: multiply; pointer-events: none;
+  }
+  .t-cochonnet {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    width: 16px; height: 16px;
+    background: radial-gradient(circle at 30% 30%, #fff, #FFD700 50%, #B8860B 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 14px var(--or), 0 3px 6px rgba(0,0,0,0.7);
+  }
+  .t-ball {
+    position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.7), inset -3px -3px 5px rgba(0,0,0,0.4);
+  }
+  .t-ball.player { background: radial-gradient(circle at 30% 30%, #B0D8E8, #4A7A9A 70%, #2a4a6a 100%); }
+  .t-ball.opp { background: radial-gradient(circle at 30% 30%, #E88070, #8B3528 70%, #4a1c12 100%); }
+  .t-shadow {
+    position: absolute; width: 24px; height: 8px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.4), transparent 70%);
+    border-radius: 50%; pointer-events: none;
+  }
+
+  /* GHOST BALL (preview where the throw lands) */
+  .t-ghost {
+    position: absolute; top: 150px; left: 50%; transform: translateX(-50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px dashed var(--creme);
+    background: rgba(245,230,208,0.15);
+    animation: ghostPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ghostPulse {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+    50% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+  }
+
+  /* PREDICTIVE ARC (trajectoire visible pendant drag) */
+  .t-arc {
+    position: absolute; left: 0; top: 0; pointer-events: none;
+  }
+
+  /* POWER METER CIRCULAIRE (autour de la boule active) */
+  .t-powermeter {
+    position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 80px;
+  }
+  .t-powermeter svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+
+  /* SWEET SPOT indicator (discreetly at 75% ring) */
+  .t-sweet {
+    font-size: 8px; color: var(--or);
+    position: absolute; bottom: 92px; right: 118px;
+    background: rgba(255,215,0,0.2); padding: 2px 6px; border-radius: 3px;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+
+  /* PERSO (joueur au centre bas) */
+  .m-player {
+    position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 64px; z-index: 15;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+  }
+  .m-opp-watch {
+    position: absolute; right: 6px; top: 50%;
+    width: 40px; height: 58px; z-index: 15;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)) grayscale(0.2);
+  }
+  .m-opp-halo {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    width: 48px; height: 24px;
+    background: radial-gradient(ellipse, rgba(245,230,208,0.3), transparent 70%);
+    z-index: 14; pointer-events: none;
+  }
+  .m-circle {
+    position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%);
+    width: 48px; height: 14px;
+    border: 2px solid var(--creme); border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(245,230,208,0.25), transparent 70%);
+    box-shadow: 0 0 10px rgba(245,230,208,0.4); z-index: 10;
+  }
+
+  /* MODES (en bas, compact) */
+  .m-modes {
+    position: absolute; bottom: 90px; left: 20px; right: 20px;
+    display: flex; gap: 8px; z-index: 20;
+  }
+  .m-mode-btn {
+    flex: 1; height: 58px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1.5px solid var(--ocre); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Impact', sans-serif; font-size: 12px; letter-spacing: 1px;
+    color: var(--creme);
+    backdrop-filter: blur(8px); box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .m-mode-btn.selected {
+    border-color: var(--or);
+    background: linear-gradient(180deg, rgba(90,63,45,0.95), rgba(58,37,24,0.95));
+    box-shadow: 0 4px 14px rgba(255,215,0,0.35);
+    color: var(--or);
+  }
+  .m-mode-btn .sub {
+    font-family: 'SF Mono', monospace; font-size: 8px; color: var(--gris); margin-top: 2px;
+    font-weight: normal; letter-spacing: 0.5px;
+  }
+  .m-mode-btn.selected .sub { color: var(--creme-soft); }
+
+  /* HUD abilities (bottom strip) */
+  .m-hud {
+    position: absolute; bottom: 20px; left: 20px; right: 20px;
+    display: flex; gap: 8px; z-index: 20;
+  }
+  .hud-btn {
+    height: 52px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1.5px solid var(--ocre); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: 'Impact', sans-serif; font-size: 11px; letter-spacing: 1px;
+    color: var(--creme); padding: 0 10px;
+    backdrop-filter: blur(8px); box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .hud-btn.back { width: 52px; font-size: 18px; }
+  .hud-btn.focus { flex: 1; border-color: var(--ciel); color: var(--ciel); box-shadow: 0 4px 10px rgba(135,206,235,0.3); }
+  .hud-btn.ability { flex: 1; border-color: var(--or); color: var(--or); box-shadow: 0 4px 10px rgba(255,215,0,0.3); }
+  .hud-dots { display: flex; gap: 3px; margin-left: 3px; }
+  .hud-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 4px currentColor; }
+  .hud-dot.empty { background: rgba(255,255,255,0.15); box-shadow: none; }
+
+  /* CROWD REACTION (floating emoji) */
+  .m-reaction {
+    position: absolute; top: 280px; right: 80px;
+    font-size: 24px;
+    animation: reactionFloat 1.5s ease-out forwards;
+  }
+  @keyframes reactionFloat {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { transform: translateY(-10px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+  }
+
+  /* FLOATING TEXT (reward +50 Galets) */
+  .m-float {
+    position: absolute; top: 380px; left: 50%; transform: translateX(-50%);
+    font-family: 'Impact', sans-serif; font-size: 22px;
+    color: var(--or);
+    text-shadow: 2px 2px 0 var(--ombre-deep), 0 0 10px rgba(255,215,0,0.6);
+    animation: floatUp 1.2s ease-out;
+    letter-spacing: 2px;
+  }
+  @keyframes floatUp {
+    0% { transform: translateX(-50%) translateY(0) scale(0.3); opacity: 0; }
+    20% { transform: translateX(-50%) translateY(-10px) scale(1.2); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-80px) scale(1); opacity: 0; }
+  }
+
+  /* ============================================================
+     CHARSELECT with rarity colors
+     ============================================================ */
+  .c-bg {
+    background:
+      radial-gradient(circle at 50% 20%, #5a3f2d 0%, transparent 60%),
+      linear-gradient(180deg, #2a2018 0%, #1a1510 100%);
+  }
+  .c-header {
+    position: absolute; top: 32px; left: 20px; right: 20px; height: 52px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+    border: 1px solid rgba(212,165,116,0.3); border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; backdrop-filter: blur(10px);
+    font-family: 'Impact', sans-serif; color: var(--or); letter-spacing: 3px; font-size: 14px;
+  }
+  .c-grid {
+    position: absolute; top: 108px; left: 20px; right: 20px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .c-card {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding: 8px 4px; position: relative; overflow: hidden;
+    font-family: 'SF Mono', monospace;
+    font-size: 9px; color: var(--creme); text-align: center;
+    border: 2px solid var(--ombre);
+    transition: all 0.3s;
+  }
+  /* Rarity tints sur background card */
+  .c-card.common { background: linear-gradient(180deg, #2a2018 0%, #1a1510 100%); border-color: var(--r-common); }
+  .c-card.rare { background: linear-gradient(180deg, #1a2a38 0%, #0f1828 100%); border-color: var(--r-rare); box-shadow: 0 0 12px rgba(74,144,217,0.3); }
+  .c-card.epic { background: linear-gradient(180deg, #2a1a38 0%, #180f28 100%); border-color: var(--r-epic); box-shadow: 0 0 14px rgba(155,123,184,0.4); }
+  .c-card.legendary { background: linear-gradient(180deg, #3a2a0a 0%, #1f1810 100%); border-color: var(--r-legendary); box-shadow: 0 0 16px rgba(255,215,0,0.5); }
+  .c-card.mythic { background: linear-gradient(180deg, #3a1510 0%, #1f0808 100%); border-color: var(--r-mythic); box-shadow: 0 0 18px rgba(196,75,63,0.6); }
+  .c-card.locked { opacity: 0.4; filter: grayscale(0.8); box-shadow: none; }
+  .c-card.locked .lock { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; }
+  .c-sprite {
+    width: 52px; height: 52px; margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .c-name { font-weight: 700; color: var(--creme-soft); letter-spacing: 0.5px; }
+  .c-rarity-label {
+    position: absolute; top: 4px; right: 4px;
+    font-size: 7px; letter-spacing: 0.5px;
+    padding: 1px 4px; border-radius: 2px; background: rgba(0,0,0,0.5);
+  }
+  .c-rarity-label.common { color: var(--r-common); }
+  .c-rarity-label.rare { color: var(--r-rare); }
+  .c-rarity-label.epic { color: var(--r-epic); }
+  .c-rarity-label.legendary { color: var(--r-legendary); }
+  .c-rarity-label.mythic { color: var(--r-mythic); }
+  .c-progress-mini {
+    position: absolute; bottom: 4px; left: 4px; right: 4px; height: 3px;
+    background: rgba(0,0,0,0.5); border-radius: 2px; overflow: hidden;
+  }
+  .c-progress-mini .bar { height: 100%; background: var(--or); }
+
+  /* Result stage */
+  .r-bg {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,215,0,0.25), transparent 55%),
+      radial-gradient(ellipse at center, #5a3f2d 0%, var(--ombre) 50%, var(--ombre-deep) 100%);
+  }
+  /* 60 particules confettis stylisés */
+  .confetti {
+    position: absolute; width: 8px; height: 14px;
+    pointer-events: none;
+  }
+  .confetti.c1 { top: 8%; left: 15%; background: var(--or); transform: rotate(22deg); animation: fall 3s ease-in infinite; }
+  .confetti.c2 { top: 12%; left: 35%; background: var(--ciel); transform: rotate(-15deg); animation: fall 2.8s 0.3s ease-in infinite; }
+  .confetti.c3 { top: 5%; left: 55%; background: var(--accent); transform: rotate(45deg); animation: fall 3.2s 0.6s ease-in infinite; }
+  .confetti.c4 { top: 10%; left: 75%; background: var(--olive); transform: rotate(-30deg); animation: fall 2.6s 0.1s ease-in infinite; }
+  .confetti.c5 { top: 6%; left: 85%; background: var(--lavande); transform: rotate(60deg); animation: fall 3.4s 0.5s ease-in infinite; }
+  .confetti.c6 { top: 14%; left: 25%; background: var(--or); transform: rotate(-45deg); animation: fall 2.9s 0.2s ease-in infinite; }
+  .confetti.c7 { top: 18%; left: 65%; background: var(--ciel); transform: rotate(30deg); animation: fall 3.1s 0.7s ease-in infinite; }
+  .confetti.c8 { top: 22%; left: 45%; background: var(--accent); transform: rotate(-60deg); animation: fall 2.7s 0.4s ease-in infinite; }
+  @keyframes fall {
+    to { top: 110%; transform: translateY(100px) rotate(720deg); opacity: 0; }
+  }
+  .r-title {
+    position: absolute; top: 120px; left: 50%;
+    font-family: 'Impact', sans-serif; font-size: 54px; letter-spacing: 5px;
+    color: var(--or);
+    text-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.4), 3px 3px 0 var(--ombre-deep);
+    transform: translateX(-50%) rotate(-1deg);
+  }
+  .r-subtitle {
+    position: absolute; top: 185px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; letter-spacing: 4px; color: var(--creme-soft);
+    text-transform: uppercase;
+  }
+  .r-score {
+    position: absolute; top: 260px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 20px; align-items: center;
+    font-family: 'Impact', sans-serif; font-size: 96px; color: var(--creme);
+    text-shadow: 4px 4px 0 var(--ombre-deep), 0 0 30px rgba(255,215,0,0.2);
+  }
+  .r-score .sep { color: var(--gris); font-size: 60px; }
+  .r-score .acc { color: var(--accent); }
+
+  /* MVP Badge */
+  .r-mvp {
+    position: absolute; top: 420px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.2), transparent);
+    border-radius: 20px;
+  }
+  .r-mvp-badge {
+    font-family: 'Impact', sans-serif; color: var(--or);
+    font-size: 14px; letter-spacing: 2px;
+    padding: 4px 10px; background: rgba(0,0,0,0.5); border: 1px solid var(--or);
+    border-radius: 4px;
+  }
+  .r-mvp-name { color: var(--creme); font-size: 14px; }
+
+  .r-reward {
+    position: absolute; top: 490px; left: 50%; transform: translateX(-50%);
+    width: 360px;
+    background: linear-gradient(180deg, rgba(58,37,24,0.95), rgba(26,21,16,0.95));
+    padding: 20px; border: 2px solid var(--or); border-radius: 12px; text-align: center;
+    box-shadow: 0 8px 30px rgba(255,215,0,0.2);
+  }
+  .r-reward h3 {
+    color: var(--or); margin-bottom: 12px;
+    font-family: 'Impact', sans-serif; font-size: 15px; letter-spacing: 3px;
+  }
+  .r-reward .amount {
+    color: var(--creme); font-size: 22px; font-family: 'Impact', sans-serif;
+    letter-spacing: 1.5px; line-height: 1.4;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .r-reward .amount.gold { color: var(--or); text-shadow: 0 0 12px rgba(255,215,0,0.5); }
+  .r-reward .coin {
+    display: inline-block; width: 20px; height: 20px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #FFF0A0, #FFD700 50%, #B8860B 100%);
+    box-shadow: 0 0 8px rgba(255,215,0,0.5);
+  }
+  .r-xp-bar {
+    margin-top: 12px; padding-top: 10px; border-top: 1px solid #3a2f24;
+    font-size: 10px; color: var(--gris); font-family: 'SF Mono', monospace; letter-spacing: 1px;
+  }
+  .r-xp-track {
+    margin-top: 6px; height: 6px; background: #1a1510; border-radius: 3px; overflow: hidden;
+    border: 1px solid #3a2f24;
+  }
+  .r-xp-fill {
+    height: 100%; background: linear-gradient(90deg, var(--terracotta), var(--or));
+    width: 68%; border-radius: 3px;
+  }
+  .r-actions {
+    position: absolute; bottom: 90px; left: 20px; right: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .r-actions .btn { height: 54px; }
+
+  /* Share + next opponent teaser */
+  .r-share {
+    position: absolute; bottom: 28px; left: 20px; right: 20px;
+    display: flex; gap: 10px;
+  }
+  .r-share .btn-small {
+    flex: 1; height: 44px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1px solid var(--ocre); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 11px; color: var(--creme-soft); letter-spacing: 1px;
+  }
+  .r-next-opp {
+    color: var(--or); font-size: 10px;
+  }
+
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-family: 'Impact', sans-serif; font-size: 18px; letter-spacing: 2px;
+    border-radius: 8px; position: relative; cursor: pointer;
+  }
+  .btn-terracotta {
+    background: linear-gradient(180deg, var(--terracotta), var(--terracotta-dark));
+    color: var(--creme); border: 2px solid var(--or);
+    box-shadow: 0 4px 0 var(--ombre-deep), 0 8px 20px rgba(255,215,0,0.3);
+  }
+  .btn-ocre {
+    background: linear-gradient(180deg, var(--ocre), var(--ocre-dark));
+    color: var(--ombre-deep); border: 2px solid var(--creme-soft);
+    box-shadow: 0 4px 0 var(--ombre-deep), 0 6px 12px rgba(0,0,0,0.3);
+  }
+  .btn-outline {
+    background: rgba(58,46,40,0.7); color: var(--creme-soft); border: 2px solid var(--ocre);
+    box-shadow: 0 4px 0 var(--ombre-deep); backdrop-filter: blur(8px);
+  }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Mockup v3 — Patterns « Tier S » inspirés jeux pros</h1>
+  <p>
+    Focus sur les <b>3 scènes avec le plus d'impact visuel</b> après validation du scale 2.1
+    (terrain quasi plein écran avec marge watcher 50px). Les patterns Tier S du doc
+    <code>docs/mobile/UX_INSPIRATIONS.md</code> sont ici rendus visuellement.
+  </p>
+  <p>
+    <span class="tag">NEW</span>
+    <b>PetanqueScene (match)</b> — Progress bar mènes + score cible • Power meter circulaire
+    (Golf Clash) • Arc trajectoire coloré selon probabilité • Boule fantôme preview • Wind
+    indicator • Crowd reaction emoji • Floating text récompenses.
+  </p>
+  <p>
+    <span class="tag">NEW</span>
+    <b>CharSelectScene</b> — Système rareté 5 niveaux (commun / rare / épique / légendaire /
+    mythique) avec glow couleur, badge rareté coin carte, mini progress bar unlock.
+  </p>
+  <p>
+    <span class="tag">NEW</span>
+    <b>ResultScene</b> — Confettis rectangles animés (60 particules, rotation + gravity) au
+    lieu de dots statiques • MVP badge avec nom du perso dominant • XP bar progression
+    niveau • Share button partageable • Teaser prochain adversaire.
+  </p>
+  <p style="color: var(--gris); margin-top: 14px;">
+    Ouvre et compare avec <code>docs/mobile/DESIGN_MOCKUPS.html</code> (v2) pour voir le delta.
+  </p>
+</div>
+
+<div class="grid">
+
+  <!-- ============ MATCH SCENE TIER S ============ -->
+  <div class="scene">
+    <h2>4. PetanqueScene — Tier S</h2>
+    <p class="caption">Power meter circulaire autour de la boule, progress bar 13 pastilles (score cible), wind indicator, ghost ball preview, arc trajectoire coloré, emoji crowd reaction, floating text récompense.</p>
+    <div class="frame m-scene">
+
+      <!-- Pause + Score + Progress Bar + Dist + Wind -->
+      <div class="m-pause"></div>
+      <div class="m-score">
+        <span class="player">3</span><span class="sep">—</span><span class="opp">2</span>
+      </div>
+
+      <div class="m-progress">
+        <div class="m-progress-info">MÈNE <span class="mene">4</span></div>
+        <!-- 13 dots, player à 3, opp à 2, reste empty -->
+        <div class="progress-dot player"></div>
+        <div class="progress-dot player"></div>
+        <div class="progress-dot player"></div>
+        <div class="progress-dot opp"></div>
+        <div class="progress-dot opp"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-target">13</div>
+      </div>
+
+      <div class="m-dist">7.1m</div>
+
+      <div class="m-wind">
+        <span class="arrow">↗</span>
+        <span>VENT</span>
+        <span>2</span>
+      </div>
+
+      <!-- Terrain -->
+      <div class="m-terrain">
+        <div class="t-cochonnet"></div>
+
+        <!-- Ghost preview (where the throw lands) -->
+        <div class="t-ghost"></div>
+
+        <!-- Predictive arc trajectory (SVG curve green=good) -->
+        <svg class="t-arc" width="380" height="720" viewBox="0 0 380 720">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#4ADE80"/>
+            </marker>
+            <linearGradient id="arcGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#4ADE80" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#4ADE80" stop-opacity="0.9"/>
+            </linearGradient>
+          </defs>
+          <path
+            d="M 190 620 Q 195 400 190 160"
+            stroke="url(#arcGrad)" stroke-width="3" fill="none"
+            stroke-dasharray="8 6" opacity="0.8"
+            marker-end="url(#arrow)"
+          />
+        </svg>
+
+        <!-- Existing balls -->
+        <div class="t-shadow" style="top: 186px; left: 190px;"></div>
+        <div class="t-ball player" style="top: 178px; left: 188px;"></div>
+
+        <div class="t-shadow" style="top: 146px; left: 130px;"></div>
+        <div class="t-ball opp" style="top: 138px; left: 128px;"></div>
+
+        <div class="t-shadow" style="top: 260px; left: 220px;"></div>
+        <div class="t-ball player" style="top: 252px; left: 218px;"></div>
+
+        <div class="t-shadow" style="top: 310px; left: 150px;"></div>
+        <div class="t-ball opp" style="top: 302px; left: 148px;"></div>
+
+        <!-- Joueur perso + cercle -->
+        <div class="m-player">
+          <svg viewBox="0 0 44 64">
+            <ellipse cx="22" cy="62" rx="16" ry="3" fill="rgba(0,0,0,0.35)"/>
+            <rect x="22" y="38" width="8" height="20" rx="2" fill="#3050A0"/>
+            <rect x="14" y="38" width="8" height="20" rx="2" fill="#2a4490"/>
+            <rect x="11" y="20" width="22" height="22" rx="3" fill="#E8DFC8"/>
+            <rect x="30" y="22" width="6" height="16" rx="2" fill="#D4A574"/>
+            <rect x="8" y="22" width="6" height="12" rx="2" fill="#D4A574"/>
+            <ellipse cx="22" cy="14" rx="9" ry="10" fill="#6B4A2B"/>
+            <rect x="19" y="19" width="6" height="4" fill="#D4A574"/>
+          </svg>
+        </div>
+        <div class="m-circle"></div>
+
+        <!-- Power meter circulaire autour de la boule (visible uniquement pendant drag) -->
+        <div class="t-powermeter">
+          <svg viewBox="0 0 80 80">
+            <!-- Ring background -->
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="6"/>
+            <!-- Power fill : vert (0-40%), jaune (40-75%), rouge (75-100%). Ici ~68% -->
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#FCD34D" stroke-width="6"
+                    stroke-dasharray="213 320" stroke-dashoffset="0"
+                    transform="rotate(-90 40 40)"
+                    stroke-linecap="round"/>
+            <!-- Sweet spot marker à 75% -->
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#FFD700" stroke-width="8"
+                    stroke-dasharray="4 315" stroke-dashoffset="-225"
+                    transform="rotate(-90 40 40)"/>
+            <!-- Texte power au centre -->
+            <text x="40" y="40" text-anchor="middle" font-family="Impact" font-size="18" fill="#FCD34D" dy="0">68</text>
+            <text x="40" y="54" text-anchor="middle" font-family="monospace" font-size="8" fill="#9E9E8E" letter-spacing="1">POWER</text>
+          </svg>
+        </div>
+        <div class="t-sweet">★ SWEET 75</div>
+      </div>
+
+      <!-- Adversaire watcher marge droite -->
+      <div class="m-opp-halo"></div>
+      <div class="m-opp-watch">
+        <svg viewBox="0 0 44 64">
+          <ellipse cx="22" cy="62" rx="16" ry="3" fill="rgba(0,0,0,0.35)"/>
+          <rect x="22" y="38" width="8" height="20" rx="2" fill="#202020"/>
+          <rect x="14" y="38" width="8" height="20" rx="2" fill="#181818"/>
+          <rect x="11" y="20" width="22" height="22" rx="3" fill="#8B3528"/>
+          <rect x="30" y="22" width="6" height="14" rx="2" fill="#D4A574"/>
+          <rect x="8" y="22" width="6" height="14" rx="2" fill="#D4A574"/>
+          <ellipse cx="22" cy="14" rx="9" ry="10" fill="#C0C0B0"/>
+          <rect x="19" y="19" width="6" height="4" fill="#D4A574"/>
+        </svg>
+      </div>
+
+      <!-- Crowd reaction emoji -->
+      <div class="m-reaction">👏</div>
+
+      <!-- Floating text récompense -->
+      <div class="m-float">+15 CARREAU</div>
+
+      <!-- Modes + HUD -->
+      <div class="m-modes">
+        <div class="m-mode-btn selected">DEMI-PORTÉE<div class="sub">polyvalent</div></div>
+        <div class="m-mode-btn">PLOMBÉE<div class="sub">roule moins</div></div>
+        <div class="m-mode-btn">TIR FER<div class="sub">carreau</div></div>
+      </div>
+      <div class="m-hud">
+        <div class="hud-btn back">←</div>
+        <div class="hud-btn focus">
+          RESPIRE
+          <div class="hud-dots">
+            <div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div>
+            <div class="hud-dot"></div><div class="hud-dot empty"></div>
+          </div>
+        </div>
+        <div class="hud-btn ability">
+          CAPA
+          <div class="hud-dots">
+            <div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot empty"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Tier S -->
+      <div class="note" style="top: 100px; right: 4px;">▲ PROGRESS BAR</div>
+      <div class="note" style="top: 170px; left: 4px;">▲ WIND</div>
+      <div class="note" style="top: 260px; left: 4px;">◀ GHOST</div>
+      <div class="note" style="bottom: 230px; right: 4px;">POWER METER ▶</div>
+    </div>
+    <div class="specs">
+      <span class="tier">TIER S</span> — Progress bar 300×24 • Power meter 80×80 circle centre<br>
+      <b>Patterns :</b> progress, power, arc predictif, ghost, wind, reaction, float reward<br>
+      <b>Trigger :</b> power meter visible pendant pointerdown+move uniquement
+    </div>
+  </div>
+
+  <!-- ============ CHARSELECT with rarity ============ -->
+  <div class="scene">
+    <h2>2. CharSelect — Rarity system</h2>
+    <p class="caption">5 niveaux rareté avec glow coloré. Rookie commun gris, La Choupe rare bleu, Foyot épique violet, Ley légendaire or, futur mythique rouge. Badge coin + progress mini.</p>
+    <div class="frame c-bg">
+      <div class="c-header">
+        <span>←</span>
+        <span>12 PERSONNAGES</span>
+        <span style="color: var(--or); font-size: 12px;">2/12</span>
+      </div>
+      <div class="c-grid">
+        <div class="c-card common">
+          <div class="c-rarity-label common">COMMON</div>
+          <div class="c-sprite">👤</div>
+          <div class="c-name">ROOKIE</div>
+          <div class="c-progress-mini"><div class="bar" style="width: 35%"></div></div>
+        </div>
+        <div class="c-card rare">
+          <div class="c-rarity-label rare">RARE</div>
+          <div class="c-sprite">👩</div>
+          <div class="c-name">LA CHOUPE</div>
+          <div class="c-progress-mini"><div class="bar" style="width: 100%; background: #4A90D9"></div></div>
+        </div>
+        <div class="c-card rare locked">
+          <div class="lock">🔒</div>
+          <div class="c-name">MAMIE</div>
+        </div>
+        <div class="c-card rare locked"><div class="lock">🔒</div><div class="c-name">PAPI</div></div>
+        <div class="c-card epic locked"><div class="lock">🔒</div><div class="c-name">FOYOT</div></div>
+        <div class="c-card epic locked"><div class="lock">🔒</div><div class="c-name">ROCHER</div></div>
+        <div class="c-card epic locked"><div class="lock">🔒</div><div class="c-name">ROBINEAU</div></div>
+        <div class="c-card epic locked"><div class="lock">🔒</div><div class="c-name">SOFIA</div></div>
+        <div class="c-card legendary locked"><div class="lock">🔒</div><div class="c-name">LEY</div></div>
+        <div class="c-card legendary locked"><div class="lock">🔒</div><div class="c-name">SUCHAUD</div></div>
+        <div class="c-card legendary locked"><div class="lock">🔒</div><div class="c-name">FAZZINO</div></div>
+        <div class="c-card legendary locked"><div class="lock">🔒</div><div class="c-name">RIZZI</div></div>
+      </div>
+
+      <div style="position:absolute; bottom:130px; left:20px; right:20px; background: linear-gradient(180deg, rgba(26,21,16,0.95), rgba(42,31,26,0.95)); border: 1px solid var(--r-rare); border-radius: 8px; padding: 14px; box-shadow: 0 0 14px rgba(74,144,217,0.25);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <h3 style="color: var(--r-rare); font-family: Impact; font-size: 15px; letter-spacing: 2px; flex: 1;">LA CHOUPE <span style="color: var(--r-rare); font-size: 9px; letter-spacing: 1px;">★ RARE</span></h3>
+          <span style="color: var(--gris); font-size: 9px;">Archétype : Tireur</span>
+        </div>
+        <div style="display: flex; gap: 6px; font-size: 9px; color: var(--gris); font-family: monospace;">
+          <div style="flex: 1;">PREC<div style="margin-top: 3px; height: 6px; background: #1a1510; border-radius: 3px; border: 1px solid #3a2f24;"><div style="height:100%; width:60%; background: linear-gradient(90deg, var(--r-rare), #87CEEB); border-radius: 3px;"></div></div></div>
+          <div style="flex: 1;">PUIS<div style="margin-top: 3px; height: 6px; background: #1a1510; border-radius: 3px; border: 1px solid #3a2f24;"><div style="height:100%; width:100%; background: linear-gradient(90deg, var(--r-rare), #87CEEB); border-radius: 3px;"></div></div></div>
+          <div style="flex: 1;">EFFT<div style="margin-top: 3px; height: 6px; background: #1a1510; border-radius: 3px; border: 1px solid #3a2f24;"><div style="height:100%; width:30%; background: linear-gradient(90deg, var(--r-rare), #87CEEB); border-radius: 3px;"></div></div></div>
+          <div style="flex: 1;">SF<div style="margin-top: 3px; height: 6px; background: #1a1510; border-radius: 3px; border: 1px solid #3a2f24;"><div style="height:100%; width:80%; background: linear-gradient(90deg, var(--r-rare), #87CEEB); border-radius: 3px;"></div></div></div>
+        </div>
+      </div>
+
+      <div style="position: absolute; bottom: 28px; left: 20px; right: 20px; display: flex; gap: 10px;">
+        <div class="btn btn-outline" style="flex: 0 0 100px; height: 52px;">ANNULER</div>
+        <div class="btn btn-terracotta" style="flex: 1; height: 52px;">▶ VALIDER</div>
+      </div>
+    </div>
+    <div class="specs">
+      <span class="tier">TIER A</span> — 5 raretés (common/rare/epic/legendary/mythic) avec glow box-shadow<br>
+      <b>Mapping proposé :</b> Rookie=common, Mamie/Papi/Choupe=rare, Foyot/Rocher/Robineau/Sofia=epic<br>
+      <b>Legendary :</b> Ley/Suchaud/Fazzino/Rizzi • Mythic réservé (perso secret futur)
+    </div>
+  </div>
+
+  <!-- ============ RESULT Tier S ============ -->
+  <div class="scene">
+    <h2>5. Result — Tier S (juicy)</h2>
+    <p class="caption">Confettis rectangles animés (gravity + rotation, 8 visibles), MVP badge du perso dominant, XP bar progression niveau, share button partage social, teaser prochain adversaire arcade.</p>
+    <div class="frame r-bg">
+      <!-- 8 confettis animés -->
+      <div class="confetti c1"></div>
+      <div class="confetti c2"></div>
+      <div class="confetti c3"></div>
+      <div class="confetti c4"></div>
+      <div class="confetti c5"></div>
+      <div class="confetti c6"></div>
+      <div class="confetti c7"></div>
+      <div class="confetti c8"></div>
+
+      <div class="r-title">VICTOIRE !</div>
+      <div class="r-subtitle">MATCH TERMINÉ</div>
+      <div class="r-score">
+        <span>13</span>
+        <span class="sep">–</span>
+        <span class="acc">9</span>
+      </div>
+
+      <div class="r-mvp">
+        <div class="r-mvp-badge">★ MVP</div>
+        <div class="r-mvp-name">ROOKIE — 2 CARREAUX</div>
+      </div>
+
+      <div class="r-reward">
+        <h3>▸ RÉCOMPENSES ◂</h3>
+        <div class="amount">+ 100 <span class="coin"></span> Galets</div>
+        <div class="amount gold">+ 1 CARREAU !</div>
+        <div class="r-xp-bar">
+          NIVEAU 4 — 680 / 1000 XP
+          <div class="r-xp-track"><div class="r-xp-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="r-actions">
+        <div class="btn btn-terracotta">▶ CONTINUER</div>
+        <div class="btn btn-ocre">REJOUER</div>
+      </div>
+
+      <div class="r-share">
+        <div class="btn-small">↗ PARTAGER</div>
+        <div class="btn-small r-next-opp">▸ SUIVANT : SUCHAUD</div>
+      </div>
+
+      <div class="note" style="top: 420px; left: 4px;">MVP BADGE</div>
+      <div class="note" style="top: 620px; right: 4px;">XP BAR</div>
+      <div class="note" style="bottom: 80px; left: 4px;">SHARE + TEASER</div>
+    </div>
+    <div class="specs">
+      <span class="tier">TIER S</span> — Confettis rectangle animés CSS (gravity + rotation)<br>
+      <b>MVP badge :</b> 1 ligne, perso dominant + stat highlight (ex: 2 carreaux)<br>
+      <b>XP bar :</b> progression niveau avec gradient terracotta→or, pourcentage anime<br>
+      <b>Share/Teaser :</b> 2 boutons 44×flex, copy image → réseaux sociaux
+    </div>
+  </div>
+
+</div>
+
+<div class="intro" style="margin: 48px auto 0; border-left-color: var(--olive);">
+  <h1 style="color: var(--olive);">Implémentation prioritaire en code</h1>
+  <p>
+    L'agent Phase 2 polish (background) est en train d'implémenter les 5 patterns Tier S
+    du doc UX_INSPIRATIONS. Dès qu'il rend :
+  </p>
+  <p>
+    • <b>Juicy tap</b> (squash/stretch sur boutons) → immédiat sur toutes les scènes<br>
+    • <b>Floating text</b> (+100 Galets, +15 CARREAU) → match + result<br>
+    • <b>Match progress bar</b> → au-dessus du terrain portrait<br>
+    • <b>Power meter circulaire</b> → pendant aim drag (visible ici en action)<br>
+    • <b>Confetti particles</b> → Result victoire (remplace les radial-dots statiques)
+  </p>
+  <p style="color: var(--gris); margin-top: 14px;">
+    Les patterns Tier A (rarity colors, shop featured deal, bottom nav, portrait HD cards)
+    viendront dans un second sprint Phase 2B, après validation du scale et des patterns Tier S.
+  </p>
+</div>
+
+</body>
+</html>

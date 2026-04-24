@@ -1,0 +1,37 @@
+{
+  "scene": "TitleScene",
+  "mode": "portrait",
+  "anchors": {
+    "logo":         { "x": 240, "y": 150, "origin": [0.5, 0] },
+    "menuPrimary":  { "x": 240, "y": 420, "w": 340, "h": 66 },
+    "menuStack":    { "step": 80, "count": 4 },
+    "footer":       { "x": 240, "y": 930 },
+    "versionTag":   { "x": 20, "y": 930, "origin": [0, 1] }
+  },
+  "components": {
+    "primaryButton": {
+      "width": 340,
+      "height": 66,
+      "borderRadius": 8,
+      "fillFrom": "#C4854A",
+      "fillTo": "#9A6636",
+      "borderColor": "#FFD700",
+      "fontSize": 20,
+      "letterSpacing": 2
+    },
+    "secondaryButton": {
+      "width": 340,
+      "height": 66,
+      "borderRadius": 8,
+      "fillFrom": "#D4A574",
+      "fillTo": "#B08855",
+      "borderColor": "#F5E6D0",
+      "fontSize": 20
+    }
+  },
+  "_meta": {
+    "source": "Claude Design session 2026-04-24",
+    "author": "Claude Design AI",
+    "baseResolution": "480x960"
+  }
+}
