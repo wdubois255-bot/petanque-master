@@ -1,10 +1,10 @@
 import { loadSave, saveSave } from '../utils/SaveManager.js';
 import {
-    GAME_WIDTH, GAME_HEIGHT,
     TUTORIAL_PHASE_AIM, TUTORIAL_PHASE_LOFT, TUTORIAL_PHASE_SCORE,
     TUTORIAL_PHASE_TURN_RULE, TUTORIAL_PHASE_GOAL, TUTORIAL_PHASE_FOCUS,
     PLOMBEE_UNLOCK_WINS
 } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import I18n from '../utils/I18n.js';
 
 const DEPTH = 200;
@@ -213,15 +213,15 @@ export default class InGameTutorial {
         this._goalActive = true;
         if (this.scene) this.scene._tutorialActive = true;
 
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const pw = 480;
         const ph = 80;
 
         // Full-screen dim
         const dim = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
         dim.fillStyle(0x1A1510, 0.5);
-        dim.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        dim.fillRect(0, 0, Layout.W, Layout.H);
 
         // Centered panel
         const panel = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
@@ -279,8 +279,8 @@ export default class InGameTutorial {
         this._clearElements();
 
         const s = this.scene;
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const dragDist = 90; // px the finger travels down
         const startY = cy - 20;
         const endY = startY + dragDist;
@@ -288,7 +288,7 @@ export default class InGameTutorial {
         // Semi-transparent full-screen dim
         const dim = s.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
         dim.fillStyle(0x1A1510, 0.45);
-        dim.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        dim.fillRect(0, 0, Layout.W, Layout.H);
 
         // --- Finger graphic (container) ---
         const fingerCt = s.add.container(cx, startY).setDepth(DEPTH + 1).setAlpha(0);
@@ -431,11 +431,11 @@ export default class InGameTutorial {
         if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();
 
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
         bg.fillStyle(0x1A1510, 0.5);
-        bg.fillRect(0, 0, GAME_WIDTH, 76);
+        bg.fillRect(0, 0, Layout.W, 76);
 
         const main = this.scene.add.text(cx, 34,
             I18n.t('tutorial.turn_rule'),
@@ -470,8 +470,8 @@ export default class InGameTutorial {
         this._phase2Active = true;
         if (this.scene) this.scene._tutorialActive = true;
 
-        const cx = GAME_WIDTH / 2;
-        const y = GAME_HEIGHT - 65;
+        const cx = Layout.W / 2;
+        const y = Layout.H - 65;
 
         // Mini panel en bas
         const bg = this.scene.add.graphics().setDepth(DEPTH).setAlpha(0);
@@ -578,8 +578,8 @@ export default class InGameTutorial {
         this._phaseFocusActive = true;
         if (this.scene) this.scene._tutorialActive = true;
 
-        const cx = GAME_WIDTH / 2;
-        const y = GAME_HEIGHT - 65;
+        const cx = Layout.W / 2;
+        const y = Layout.H - 65;
 
         // Mini panel en bas (same style as Phase 2)
         const bg = this.scene.add.graphics().setDepth(DEPTH).setAlpha(0);
@@ -667,16 +667,16 @@ export default class InGameTutorial {
         if (this.scene) this.scene._tutorialActive = true;
         this._clearElements();
 
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
         const panelW = 480;
         const panelH = 140;
         const panelX = cx - panelW / 2;
-        const panelY = GAME_HEIGHT / 2 - panelH / 2;
+        const panelY = Layout.H / 2 - panelH / 2;
 
         // Background dim
         const dim = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
         dim.fillStyle(0x1A1510, 0.6);
-        dim.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        dim.fillRect(0, 0, Layout.W, Layout.H);
 
         // Panel
         const panel = this.scene.add.graphics().setDepth(DEPTH).setAlpha(0);
@@ -770,11 +770,11 @@ export default class InGameTutorial {
     }
 
     _showTerrainHintOverlay(message) {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const bg = this.scene.add.graphics().setDepth(DEPTH - 1).setAlpha(0);
         bg.fillStyle(0x1A1510, 0.5);
-        bg.fillRect(0, 0, GAME_WIDTH, 80);
+        bg.fillRect(0, 0, Layout.W, 80);
 
         const main = this.scene.add.text(cx, 40, message, {
             ...TEXT_STYLE,
@@ -814,8 +814,8 @@ export default class InGameTutorial {
         save.hintsShown[hintId] = true;
         saveSave(save);
 
-        const cx = GAME_WIDTH / 2;
-        const y = GAME_HEIGHT - 65;
+        const cx = Layout.W / 2;
+        const y = Layout.H - 65;
 
         const bg = scene.add.graphics().setDepth(HINT_DEPTH);
         bg.fillStyle(0x3A2E28, 0.85);

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC, PLOMBEE_UNLOCK_WINS } from '../utils/Constants.js';
+import { getCharSpriteKey, CHAR_STATIC_SPRITES, PIXELS_TO_METERS, ROOKIE_XP_ARCADE, ROOKIE_XP_QUICKPLAY, GALET_LOSS, ROOKIE_XP_LOSS, CHAR_SCALE_RESULT, CHAR_SCALE_RESULT_STATIC, PLOMBEE_UNLOCK_WINS } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setSoundScene, sfxVictory, sfxDefeat, sfxScore } from '../utils/SoundManager.js';
 import { addGalets, loadSave, saveSave, unlockCochonnet, unlockBoule, recordWin, recordMatchStats, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -52,21 +53,21 @@ export default class ResultScene extends Phaser.Scene {
             // Dark red-brown → muted brown (somber but warm)
             bg.fillGradientStyle(0x2A1816, 0x2A1816, 0x2A2220, 0x2A2220, 1);
         }
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Subtle radial vignette (darker edges)
         const vignette = this.add.graphics().setDepth(0);
         vignette.fillStyle(0x1A1510, 0.3);
-        vignette.fillRect(0, 0, 40, GAME_HEIGHT);
-        vignette.fillRect(GAME_WIDTH - 40, 0, 40, GAME_HEIGHT);
+        vignette.fillRect(0, 0, 40, Layout.H);
+        vignette.fillRect(Layout.W - 40, 0, 40, Layout.H);
         vignette.fillStyle(0x1A1510, 0.15);
-        vignette.fillRect(40, 0, 30, GAME_HEIGHT);
-        vignette.fillRect(GAME_WIDTH - 70, 0, 30, GAME_HEIGHT);
+        vignette.fillRect(40, 0, 30, Layout.H);
+        vignette.fillRect(Layout.W - 70, 0, 30, Layout.H);
 
         // Horizontal separator line (subtle gold)
         const sepLine = this.add.graphics().setDepth(1);
         sepLine.lineStyle(1, this.won ? 0xD4A574 : 0x6B4A3A, 0.3);
-        sepLine.beginPath(); sepLine.moveTo(60, 140); sepLine.lineTo(GAME_WIDTH - 60, 140); sepLine.strokePath();
+        sepLine.beginPath(); sepLine.moveTo(60, 140); sepLine.lineTo(Layout.W - 60, 140); sepLine.strokePath();
 
         // ════════════════════════════════════════════════════════
         //  TOP ZONE — Title + Score + Stars (0-140px)
@@ -76,7 +77,7 @@ export default class ResultScene extends Phaser.Scene {
             ? I18n.t('result.victory') || 'VICTOIRE !'
             : I18n.t('result.defeat') || 'DEFAITE...';
 
-        const title = this.add.text(GAME_WIDTH / 2, 36, titleText, {
+        const title = this.add.text(Layout.W / 2, 36, titleText, {
             fontFamily: 'monospace', fontSize: '36px', color: titleColor,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setScale(0).setDepth(10);
@@ -93,7 +94,7 @@ export default class ResultScene extends Phaser.Scene {
 
         // Score — big, clean
         const scoreColor = this.won ? '#F5E6D0' : '#D4A574';
-        const scoreText = this.add.text(GAME_WIDTH / 2, 82,
+        const scoreText = this.add.text(Layout.W / 2, 82,
             `${this.scores.player}  —  ${this.scores.opponent}`, {
                 fontFamily: 'monospace', fontSize: '28px', color: scoreColor,
                 shadow: HEAVY_SHADOW
@@ -103,7 +104,7 @@ export default class ResultScene extends Phaser.Scene {
         // Stars (victory only)
         if (this.won) {
             const stars = this._calculateStars();
-            this._drawStars(GAME_WIDTH / 2, 116, stars);
+            this._drawStars(Layout.W / 2, 116, stars);
             this._saveStarRating(stars);
         }
 
@@ -111,7 +112,7 @@ export default class ResultScene extends Phaser.Scene {
         if (!this.won) {
             const advice = this._getDefeatAdvice();
             if (advice) {
-                const adviceText = this.add.text(GAME_WIDTH / 2, 116, advice, {
+                const adviceText = this.add.text(Layout.W / 2, 116, advice, {
                     fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
                     shadow: SHADOW, wordWrap: { width: 500 }, align: 'center',
                     fontStyle: 'italic'
@@ -322,7 +323,7 @@ export default class ResultScene extends Phaser.Scene {
         // ════════════════════════════════════════════════════════
         //  BOTTOM ZONE — Buttons (380-480px)
         // ════════════════════════════════════════════════════════
-        const btnY = GAME_HEIGHT - 80;
+        const btnY = Layout.H - 80;
         const btnContainer = this.add.container(0, 0).setAlpha(0).setDepth(10);
 
         // Main action button (styled rectangle, not text backgroundColor)
@@ -332,7 +333,7 @@ export default class ResultScene extends Phaser.Scene {
         const mainBtnColor = this.won ? 0x6B8E4E : 0xC44B3F; // olive (victory) or terracotta (defeat)
         const mainBtnW = 200;
         const mainBtnH = 44;
-        const mainBtnX = GAME_WIDTH / 2;
+        const mainBtnX = Layout.W / 2;
 
         const mainBg = this.add.graphics();
         mainBg.fillStyle(mainBtnColor, 0.9);
@@ -360,7 +361,7 @@ export default class ResultScene extends Phaser.Scene {
         });
 
         // Secondary "Menu" button — top-right corner, away from main action
-        const menuBtn = this.add.text(GAME_WIDTH - 16, 16, I18n.t('result.menu'), {
+        const menuBtn = this.add.text(Layout.W - 16, 16, I18n.t('result.menu'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
         menuBtn.on('pointerover', () => menuBtn.setColor('#D4A574'));
@@ -369,7 +370,7 @@ export default class ResultScene extends Phaser.Scene {
         btnContainer.add(menuBtn);
 
         // Feedback link — discreet, next to Menu
-        const fbBtn = this.add.text(GAME_WIDTH - 16, 30, I18n.t('title.settings.feedback'), {
+        const fbBtn = this.add.text(Layout.W - 16, 30, I18n.t('title.settings.feedback'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#9B7BB8', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
         fbBtn.on('pointerover', () => fbBtn.setColor('#C49BE8'));
@@ -386,7 +387,7 @@ export default class ResultScene extends Phaser.Scene {
         this.tweens.add({ targets: btnContainer, alpha: 1, duration: 400, delay: 2600 });
 
         // Controls hint (very subtle, bottom edge)
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 10, I18n.t('result.controls'), {
+        this.add.text(Layout.W / 2, Layout.H - 10, I18n.t('result.controls'), {
             fontFamily: 'monospace', fontSize: '9px', color: '#5A4A38', shadow: SHADOW
         }).setOrigin(0.5).setDepth(1);
 
@@ -448,14 +449,14 @@ export default class ResultScene extends Phaser.Scene {
         const container = this.add.container(0, 0).setDepth(200);
 
         const boxH = 70;
-        const boxY = GAME_HEIGHT - boxH - 10;
+        const boxY = Layout.H - boxH - 10;
 
         // Parchment box
         const boxBg = this.add.graphics();
         boxBg.fillStyle(0x1A1510, 0.88);
-        boxBg.fillRoundedRect(12, boxY, GAME_WIDTH - 24, boxH, 6);
+        boxBg.fillRoundedRect(12, boxY, Layout.W - 24, boxH, 6);
         boxBg.lineStyle(1, 0x8B6B3D, 0.5);
-        boxBg.strokeRoundedRect(12, boxY, GAME_WIDTH - 24, boxH, 6);
+        boxBg.strokeRoundedRect(12, boxY, Layout.W - 24, boxH, 6);
         container.add(boxBg);
 
         const nameTag = this.add.text(28, boxY - 14, '', {
@@ -466,11 +467,11 @@ export default class ResultScene extends Phaser.Scene {
 
         const dialogText = this.add.text(28, boxY + 14, '', {
             fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0',
-            shadow: SHADOW, wordWrap: { width: GAME_WIDTH - 56 }
+            shadow: SHADOW, wordWrap: { width: Layout.W - 56 }
         }).setDepth(201);
         container.add(dialogText);
 
-        const arrow = this.add.text(GAME_WIDTH - 28, boxY + boxH - 18, '▼', {
+        const arrow = this.add.text(Layout.W - 28, boxY + boxH - 18, '▼', {
             fontFamily: 'monospace', fontSize: '12px', color: '#8B6B3D'
         }).setAlpha(0).setDepth(201);
         container.add(arrow);
@@ -576,15 +577,15 @@ export default class ResultScene extends Phaser.Scene {
 
         const overlay = this.add.graphics().setDepth(300);
         overlay.fillStyle(0x1A1510, 0.85);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
         overlay.setAlpha(0);
         this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
 
         // Golden stars burst
         for (let i = 0; i < 20; i++) {
             const star = this.add.text(
-                GAME_WIDTH / 2 + Phaser.Math.Between(-220, 220),
-                GAME_HEIGHT / 2 + Phaser.Math.Between(-120, 120),
+                Layout.W / 2 + Phaser.Math.Between(-220, 220),
+                Layout.H / 2 + Phaser.Math.Between(-120, 120),
                 '★', {
                     fontFamily: 'monospace', fontSize: `${Phaser.Math.Between(10, 22)}px`,
                     color: '#FFD700'
@@ -600,8 +601,8 @@ export default class ResultScene extends Phaser.Scene {
         // Panel
         const panelW = 460;
         const panelH = 160;
-        const panelX = GAME_WIDTH / 2 - panelW / 2;
-        const panelY = GAME_HEIGHT / 2 - panelH / 2;
+        const panelX = Layout.W / 2 - panelW / 2;
+        const panelY = Layout.H / 2 - panelH / 2;
 
         const panel = this.add.graphics().setDepth(302);
         panel.fillStyle(0x2A1F14, 0.98);
@@ -611,30 +612,30 @@ export default class ResultScene extends Phaser.Scene {
         panel.setScale(0);
         this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
-        const unlockLabel = this.add.text(GAME_WIDTH / 2, panelY + 28, '★ NOUVEAU PERSONNAGE ★', {
+        const unlockLabel = this.add.text(Layout.W / 2, panelY + 28, '★ NOUVEAU PERSONNAGE ★', {
             fontFamily: 'monospace', fontSize: '18px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setScale(0);
         this.tweens.add({ targets: unlockLabel, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
 
-        const charName = this.add.text(GAME_WIDTH / 2, panelY + 60, I18n.field(char, 'name'), {
+        const charName = this.add.text(Layout.W / 2, panelY + 60, I18n.field(char, 'name'), {
             fontFamily: 'monospace', fontSize: '28px', color: '#F5E6D0',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: charName, alpha: 1, y: panelY + 58, duration: 400, ease: 'Quad.easeOut', delay: 300 });
 
-        const charTitle = this.add.text(GAME_WIDTH / 2, panelY + 90, I18n.field(char, 'title') || '', {
+        const charTitle = this.add.text(Layout.W / 2, panelY + 90, I18n.field(char, 'title') || '', {
             fontFamily: 'monospace', fontSize: '13px', color: '#D4A574',
             shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: charTitle, alpha: 1, duration: 300, delay: 500 });
 
-        const joinText = this.add.text(GAME_WIDTH / 2, panelY + 118, I18n.t('result_extra.unlocked_character', { name: I18n.field(char, 'name') || char.name }), {
+        const joinText = this.add.text(Layout.W / 2, panelY + 118, I18n.t('result_extra.unlocked_character', { name: I18n.field(char, 'name') || char.name }), {
             fontFamily: 'monospace', fontSize: '13px', color: '#9B7BB8', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: joinText, alpha: 1, duration: 300, delay: 600 });
 
-        const continueHint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
+        const continueHint = this.add.text(Layout.W / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: continueHint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
@@ -663,13 +664,13 @@ export default class ResultScene extends Phaser.Scene {
 
         const overlay = this.add.graphics().setDepth(300);
         overlay.fillStyle(0x1A1510, 0.85);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
         overlay.setAlpha(0);
         this.tweens.add({ targets: overlay, alpha: 1, duration: 300 });
 
         const panelW = 420, panelH = 180;
-        const panelX = GAME_WIDTH / 2 - panelW / 2;
-        const panelY = GAME_HEIGHT / 2 - panelH / 2;
+        const panelX = Layout.W / 2 - panelW / 2;
+        const panelY = Layout.H / 2 - panelH / 2;
 
         const panel = this.add.graphics().setDepth(302);
         panel.fillStyle(0x2A1F14, 0.98);
@@ -679,13 +680,13 @@ export default class ResultScene extends Phaser.Scene {
         panel.setScale(0);
         this.tweens.add({ targets: panel, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
-        const title = this.add.text(GAME_WIDTH / 2, panelY + 24, I18n.t('result_extra.new_technique'), {
+        const title = this.add.text(Layout.W / 2, panelY + 24, I18n.t('result_extra.new_technique'), {
             fontFamily: 'monospace', fontSize: '16px', color: colorHex,
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setScale(0);
         this.tweens.add({ targets: title, scale: 1, duration: 400, ease: 'Back.easeOut', delay: 150 });
 
-        const nameText = this.add.text(GAME_WIDTH / 2, panelY + 54, name, {
+        const nameText = this.add.text(Layout.W / 2, panelY + 54, name, {
             fontFamily: 'monospace', fontSize: '26px', color: '#F5E6D0',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
@@ -693,7 +694,7 @@ export default class ResultScene extends Phaser.Scene {
 
         // Mini trajectory arcs: demi-portée (low) vs plombée (high)
         const arcGfx = this.add.graphics().setDepth(303).setAlpha(0);
-        const arcCx = GAME_WIDTH / 2;
+        const arcCx = Layout.W / 2;
         const arcY = panelY + 84;
         // Demi-portée arc (low, olive)
         arcGfx.lineStyle(2, 0x6B8E4E, 0.7);
@@ -722,18 +723,18 @@ export default class ResultScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: [arcGfx, demiLabel, plomLabel], alpha: 1, duration: 400, delay: 400 });
 
-        const descText = this.add.text(GAME_WIDTH / 2, panelY + 118, description, {
+        const descText = this.add.text(Layout.W / 2, panelY + 118, description, {
             fontFamily: 'monospace', fontSize: '11px', color: '#D4A574', shadow: SHADOW,
             align: 'center', lineSpacing: 2
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: descText, alpha: 1, duration: 300, delay: 500 });
 
-        const keyHint = this.add.text(GAME_WIDTH / 2, panelY + 160, I18n.t('result_extra.technique_key_hint'), {
+        const keyHint = this.add.text(Layout.W / 2, panelY + 160, I18n.t('result_extra.technique_key_hint'), {
             fontFamily: 'monospace', fontSize: '10px', color: '#87CEEB', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: keyHint, alpha: 0.8, duration: 300, delay: 600 });
 
-        const hint = this.add.text(GAME_WIDTH / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
+        const hint = this.add.text(Layout.W / 2, panelY + panelH + 16, I18n.t('result_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#8B7A5A', shadow: SHADOW
         }).setOrigin(0.5).setDepth(303).setAlpha(0);
         this.tweens.add({ targets: hint, alpha: 0.6, duration: 500, delay: 1000, yoyo: true, repeat: -1 });
@@ -819,7 +820,7 @@ export default class ResultScene extends Phaser.Scene {
     _showMilestoneToasts(toasts) {
         toasts.forEach((toast, i) => {
             const y = 18 + i * 34;
-            const toastText = this.add.text(GAME_WIDTH / 2, y + 10,
+            const toastText = this.add.text(Layout.W / 2, y + 10,
                 I18n.t('result_extra.milestone_toast', { text: toast.text, reward: toast.reward }), {
                     fontFamily: 'monospace', fontSize: '13px', color: '#FFD700',
                     backgroundColor: '#2A1F14', padding: { x: 12, y: 6 },
@@ -845,7 +846,7 @@ export default class ResultScene extends Phaser.Scene {
     _spawnConfetti() {
         const colors = [0xFFD700, 0xC2703E, 0x9B7BB8, 0x6B8E4E, 0x87CEEB];
         for (let i = 0; i < 40; i++) {
-            const x = Phaser.Math.Between(40, GAME_WIDTH - 40);
+            const x = Phaser.Math.Between(40, Layout.W - 40);
             const startY = Phaser.Math.Between(-60, -200);
             const color = colors[Math.floor(Math.random() * colors.length)];
             const w = Phaser.Math.Between(4, 8);
@@ -858,7 +859,7 @@ export default class ResultScene extends Phaser.Scene {
 
             this.tweens.add({
                 targets: conf,
-                y: GAME_HEIGHT + 50,
+                y: Layout.H + 50,
                 x: x + Phaser.Math.Between(-100, 100),
                 angle: Phaser.Math.Between(-540, 540),
                 duration: Phaser.Math.Between(1800, 4000),
@@ -1012,14 +1013,14 @@ export default class ResultScene extends Phaser.Scene {
 
     _showUnlockNotification(unlocks) {
         const text = unlocks.join('\n');
-        const notif = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 130, text, {
+        const notif = this.add.text(Layout.W / 2, Layout.H - 130, text, {
             fontFamily: 'monospace', fontSize: '14px', color: '#FFD700',
             shadow: SHADOW, align: 'center', backgroundColor: '#3A2E28',
             padding: { x: 12, y: 8 }
         }).setOrigin(0.5).setDepth(200).setAlpha(0);
 
         this.tweens.add({
-            targets: notif, alpha: 1, y: GAME_HEIGHT - 140,
+            targets: notif, alpha: 1, y: Layout.H - 140,
             duration: 500, ease: 'Back.easeOut', delay: 1500
         });
     }
@@ -1097,7 +1098,7 @@ export default class ResultScene extends Phaser.Scene {
     // === PROCHAIN OBJECTIF : teaser galets + rookie ability ===
     _showNextUnlockTeaser(isRookie) {
         const save = loadSave();
-        const teaserY = GAME_HEIGHT - 36; // Just above controls hint
+        const teaserY = Layout.H - 36; // Just above controls hint
         const cx = 160; // Left side, under character
         const SHADOW_SM = { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true };
 

@@ -1,4 +1,5 @@
-import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY, GAME_WIDTH, GAME_HEIGHT, UI, FONT_PIXEL, FONT_BODY } from '../utils/Constants.js';
+import { COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY, UI, FONT_PIXEL, FONT_BODY } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { loadSave } from '../utils/SaveManager.js';
 import { sfxUIClick } from '../utils/SoundManager.js';
 import I18n from '../utils/I18n.js';
@@ -654,7 +655,7 @@ export default class UIFactory {
         const { depth = 10 } = options;
         const tabWidth = 140;
         const totalW = tabWidth * tabs.length;
-        const startX = (GAME_WIDTH - totalW) / 2;
+        const startX = (Layout.W - totalW) / 2;
         const objects = [];
 
         for (let i = 0; i < tabs.length; i++) {
@@ -748,7 +749,7 @@ export default class UIFactory {
         const { topColor = 0x1A1510, bottomColor = 0x3A2E28, alpha = 1 } = options;
         const bg = scene.add.graphics();
         bg.fillGradientStyle(topColor, topColor, bottomColor, bottomColor, alpha);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
         return bg;
     }
 
@@ -786,7 +787,7 @@ export default class UIFactory {
      * Add particle dust/pollen effect.
      */
     static createDustParticles(scene, count = 20, options = {}) {
-        const { minY = 0, maxY = GAME_HEIGHT, depth = 3 } = options;
+        const { minY = 0, maxY = Layout.H, depth = 3 } = options;
         const particles = [];
 
         for (let i = 0; i < count; i++) {
@@ -795,7 +796,7 @@ export default class UIFactory {
             const color = Phaser.Math.RND.pick([0xFFE8A0, 0xFFD700, 0xF5E6D0, 0xFFFFFF]);
             p.fillStyle(color, Phaser.Math.FloatBetween(0.15, 0.4));
             p.fillCircle(0, 0, size);
-            p.x = Phaser.Math.Between(0, GAME_WIDTH);
+            p.x = Phaser.Math.Between(0, Layout.W);
             p.y = Phaser.Math.Between(minY, maxY);
             p.setData('speedX', Phaser.Math.FloatBetween(-0.3, 0.3));
             p.setData('speedY', Phaser.Math.FloatBetween(-0.5, -0.1));
@@ -816,9 +817,9 @@ export default class UIFactory {
             p.setData('drift', drift);
             p.x += p.getData('speedX') + Math.sin(drift) * 0.3;
             p.y += p.getData('speedY');
-            if (p.y < -10) { p.y = GAME_HEIGHT + 10; p.x = Phaser.Math.Between(0, GAME_WIDTH); }
-            if (p.x < -10) p.x = GAME_WIDTH + 10;
-            if (p.x > GAME_WIDTH + 10) p.x = -10;
+            if (p.y < -10) { p.y = Layout.H + 10; p.x = Phaser.Math.Between(0, Layout.W); }
+            if (p.x < -10) p.x = Layout.W + 10;
+            if (p.x > Layout.W + 10) p.x = -10;
         }
     }
 
@@ -831,14 +832,14 @@ export default class UIFactory {
 
         const backdrop = scene.add.graphics().setDepth(depth);
         backdrop.fillStyle(0x1A1510, 0.65);
-        backdrop.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        backdrop.fillRect(0, 0, Layout.W, Layout.H);
         backdrop.setInteractive(
-            new Phaser.Geom.Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT),
+            new Phaser.Geom.Rectangle(0, 0, Layout.W, Layout.H),
             Phaser.Geom.Rectangle.Contains
         );
 
-        const px = (GAME_WIDTH - w) / 2;
-        const py = (GAME_HEIGHT - h) / 2;
+        const px = (Layout.W - w) / 2;
+        const py = (Layout.H - h) / 2;
 
         // Wood panel for modal
         const panel = UIFactory.createWoodPanel(scene, px, py, w, h, { depth: depth + 1 });
@@ -846,7 +847,7 @@ export default class UIFactory {
         const objects = [backdrop, panel];
 
         if (title) {
-            const titleText = UIFactory.addTitle(scene, GAME_WIDTH / 2, py + 28, title, { depth: depth + 2 });
+            const titleText = UIFactory.addTitle(scene, Layout.W / 2, py + 28, title, { depth: depth + 2 });
             objects.push(titleText);
         }
 

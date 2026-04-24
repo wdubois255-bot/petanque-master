@@ -1,4 +1,5 @@
-import { GAME_WIDTH, GAME_HEIGHT, FEEDBACK_URL, IS_MOBILE } from '../utils/Constants.js';
+import { FEEDBACK_URL, IS_MOBILE } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { loadSave } from '../utils/SaveManager.js';
 import { sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import I18n from '../utils/I18n.js';
@@ -40,17 +41,17 @@ export default class FeedbackWidget {
         let selectedRating = null;
         let commentText = '';
 
-        const CX = GAME_WIDTH / 2;
-        const CY = GAME_HEIGHT / 2;
+        const CX = Layout.W / 2;
+        const CY = Layout.H / 2;
         const pw = 380, ph = 260;
         const px = CX - pw / 2, py = CY - ph / 2;
 
         // === Overlay ===
         const overlay = scene.add.graphics().setDepth(DEPTH);
         overlay.fillStyle(0x1A1510, 0.75);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
         overlay.setInteractive(
-            new Phaser.Geom.Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT),
+            new Phaser.Geom.Rectangle(0, 0, Layout.W, Layout.H),
             Phaser.Geom.Rectangle.Contains
         );
         elements.push(overlay);
@@ -178,8 +179,8 @@ export default class FeedbackWidget {
         const updateInputPosition = () => {
             const canvas = scene.game.canvas;
             const rect = canvas.getBoundingClientRect();
-            const scaleX = rect.width / GAME_WIDTH;
-            const scaleY = rect.height / GAME_HEIGHT;
+            const scaleX = rect.width / Layout.W;
+            const scaleY = rect.height / Layout.H;
             domInput.style.left = `${rect.left + inputX * scaleX}px`;
             domInput.style.top = `${rect.top + inputY * scaleY}px`;
             domInput.style.width = `${inputW * scaleX}px`;
@@ -216,8 +217,8 @@ export default class FeedbackWidget {
         const updateSendPosition = () => {
             const canvas = scene.game.canvas;
             const rect = canvas.getBoundingClientRect();
-            const scaleX = rect.width / GAME_WIDTH;
-            const scaleY = rect.height / GAME_HEIGHT;
+            const scaleX = rect.width / Layout.W;
+            const scaleY = rect.height / Layout.H;
             domSendBtn.style.left = `${rect.left + (px + 16) * scaleX}px`;
             domSendBtn.style.top = `${rect.top + sendY * scaleY}px`;
             domSendBtn.style.width = `${sendW * scaleX}px`;
@@ -328,7 +329,7 @@ export default class FeedbackWidget {
     // CONFIRMATION TOAST
     // ================================================================
     static _showConfirmation(scene) {
-        const msg = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 40,
+        const msg = scene.add.text(Layout.W / 2, Layout.H - 40,
             I18n.t('feedback.thanks'), {
                 fontFamily: 'monospace', fontSize: '13px', color: '#6B8E4E',
                 shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }

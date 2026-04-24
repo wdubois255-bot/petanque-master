@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, CAMERA_LERP } from '../utils/Constants.js';
+import { CAMERA_LERP } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { generateCharacterSprite, PALETTES } from '../world/SpriteGenerator.js';
 import MapManager from '../world/MapManager.js';
 import NPCManager from '../world/NPCManager.js';
@@ -353,19 +354,19 @@ export default class OverworldScene extends Phaser.Scene {
         this.cameras.main.flash(300, 255, 215, 0);
 
         // Badge notification
-        const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 440, 180, 0x3A2E28, 0.95)
+        const overlay = this.add.rectangle(Layout.W / 2, Layout.H / 2, 440, 180, 0x3A2E28, 0.95)
             .setDepth(200).setStrokeStyle(3, 0xFFD700).setScrollFactor(0);
 
-        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 48, 'BADGE OBTENU !', {
+        const title = this.add.text(Layout.W / 2, Layout.H / 2 - 48, 'BADGE OBTENU !', {
             fontFamily: 'monospace', fontSize: '28px', color: '#FFD700', align: 'center',
             shadow: { offsetX: 3, offsetY: 3, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-        const name = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 8, badgeName, {
+        const name = this.add.text(Layout.W / 2, Layout.H / 2 + 8, badgeName, {
             fontFamily: 'monospace', fontSize: '22px', color: '#F5E6D0', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 48, I18n.t('overworld_extra.press_space'), {
+        const hint = this.add.text(Layout.W / 2, Layout.H / 2 + 48, I18n.t('overworld_extra.press_space'), {
             fontFamily: 'monospace', fontSize: '16px', color: '#9E9E8E', align: 'center', shadow
         }).setOrigin(0.5).setDepth(201).setScrollFactor(0);
 
@@ -389,9 +390,9 @@ export default class OverworldScene extends Phaser.Scene {
     }
 
     _showControlHints() {
-        const bg = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 32, 520, 48, 0x3A2E28, 0.9)
+        const bg = this.add.rectangle(Layout.W / 2, Layout.H - 32, 520, 48, 0x3A2E28, 0.9)
             .setDepth(150).setScrollFactor(0);
-        const text = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 32,
+        const text = this.add.text(Layout.W / 2, Layout.H - 32,
             I18n.t('overworld_extra.controls_hint'), {
                 fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', align: 'center',
                 shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
