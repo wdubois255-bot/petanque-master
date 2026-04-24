@@ -459,23 +459,40 @@ export default class AimingSystem {
             labelText.on('pointerdown', (p) => { p.event.stopPropagation(); this._toggleSpinLateral(); });
         }
 
-        // === BACK BUTTON (return to style selector) ===
+        // === BACK BUTTON — toujours visible pendant aiming (remplace ESC sur mobile)
+        // Mobile : zone tactile 56×56 WCAG. Desktop : texte discret.
+        this._createBackButton();
+    }
+
+    _createBackButton() {
+        const W = this.scene.scale.width;
+        const H = this.scene.scale.height;
         const backBtnY = H - AIMING_UI_BOTTOM_OFFSET;
+
         const backBtn = this.scene.add.text(8, backBtnY - 12, I18n.t('aiming.back'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
             shadow: SHADOW
-        }).setDepth(97).setAlpha(0.6).setInteractive({ useHandCursor: true });
+        }).setDepth(97).setAlpha(0.6);
+
+        // Hit zone élargie (56×56 sur mobile) — WCAG min tactile
+        const hitSize = IS_MOBILE ? TOUCH_BUTTON_SIZE : 40;
+        const hitZone = this.scene.add.zone(8 + hitSize / 4, backBtnY - 12, hitSize, hitSize)
+            .setOrigin(0, 0.5).setDepth(98).setInteractive({ useHandCursor: true });
+
         backBtn.on('pointerover', () => backBtn.setAlpha(1));
         backBtn.on('pointerout', () => backBtn.setAlpha(0.6));
-        backBtn.on('pointerdown', (p) => {
-            p.event.stopPropagation();
+        const triggerBack = (p) => {
+            if (p?.event) p.event.stopPropagation();
             sfxUIClick();
             this.cancel();
             this._clearTargetHighlights();
             this._clearTogglePanel();
             this._showShotModeChoice();
-        });
-        this._togglePanelRows.push(backBtn);
+        };
+        hitZone.on('pointerdown', triggerBack);
+        backBtn.setInteractive({ useHandCursor: true }).on('pointerdown', triggerBack);
+
+        this._togglePanelRows.push(backBtn, hitZone);
     }
 
     _refreshTogglePanel() {
