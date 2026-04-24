@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI } from '../utils/Constants.js';
+import { getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI, RARITY_COLORS } from '../utils/Constants.js';
 import Layout from '../utils/Layout.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
@@ -158,14 +158,24 @@ export default class CharSelectScene extends Phaser.Scene {
                     fontFamily: 'monospace', fontSize: '12px', color: '#5A4A38', shadow: SHADOW
                 }).setOrigin(0.5);
             } else {
-                // Unlocked card — wood background with character
+                // Unlocked card — rarity-tinted wood background
+                const rarity = RARITY_COLORS[char.rarity] || RARITY_COLORS.common;
+                const rx = cx - cellW / 2 + 4;
+                const ry = cy - cellH / 2 + 4;
+                const rw = cellW - 8;
+                const rh = cellH - 8;
+                // Base wood
                 cellBg.fillStyle(0x5A4030, 0.85);
-                cellBg.fillRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
-                // Top bevel
-                cellBg.fillStyle(0x8B6B3D, 0.15);
-                cellBg.fillRoundedRect(cx - cellW / 2 + 6, cy - cellH / 2 + 6, cellW - 12, 12, { tl: 4, tr: 4, bl: 0, br: 0 });
-                cellBg.lineStyle(1, 0x8B6B3D, 0.4);
-                cellBg.strokeRoundedRect(cx - cellW / 2 + 4, cy - cellH / 2 + 4, cellW - 8, cellH - 8, 6);
+                cellBg.fillRoundedRect(rx, ry, rw, rh, 6);
+                // Rarity gradient tint (base color at ~30% alpha over wood)
+                cellBg.fillStyle(rarity.base, 0.25);
+                cellBg.fillRoundedRect(rx, ry, rw, rh, 6);
+                // Top bevel (rarity glow)
+                cellBg.fillStyle(rarity.glow, 0.25);
+                cellBg.fillRoundedRect(rx + 2, ry + 2, rw - 4, 12, { tl: 4, tr: 4, bl: 0, br: 0 });
+                // Rarity border (replaces generic wood border)
+                cellBg.lineStyle(2, rarity.base, 0.9);
+                cellBg.strokeRoundedRect(rx, ry, rw, rh, 6);
 
                 const spriteKey = this._getCharSpriteKey(char);
                 const charIsStatic2 = CHAR_STATIC_SPRITES.includes(char.id);
@@ -192,6 +202,17 @@ export default class CharSelectScene extends Phaser.Scene {
                 this.add.text(cx, cy + 32, char.name, {
                     fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0', shadow: SHADOW
                 }).setOrigin(0.5);
+
+                // Rarity badge (top-right) — petit dot + premiere lettre du label
+                const badgeX = cx + cellW / 2 - 12;
+                const badgeY = cy - cellH / 2 + 12;
+                const badgeBg = this.add.graphics();
+                badgeBg.fillStyle(0x1A1510, 0.85);
+                badgeBg.fillCircle(badgeX, badgeY, 6);
+                badgeBg.lineStyle(1, rarity.glow, 0.9);
+                badgeBg.strokeCircle(badgeX, badgeY, 6);
+                badgeBg.fillStyle(rarity.glow, 1);
+                badgeBg.fillCircle(badgeX, badgeY, 3);
             }
 
             this._cells.push({
@@ -200,6 +221,9 @@ export default class CharSelectScene extends Phaser.Scene {
                 rosterIndex: isInRoster ? this.roster.indexOf(char) : -1
             });
         }
+
+        // Selection halo (rarity-tinted glow behind card, below cursor)
+        this._selHalo = this.add.graphics().setDepth(9);
 
         // Selection cursor (animated golden border)
         this._selCursor = this.add.graphics().setDepth(10);
@@ -316,7 +340,15 @@ export default class CharSelectScene extends Phaser.Scene {
         }
         const char = cell.char;
 
-        // Update cursor
+        // Update cursor + halo (rarity-tinted glow)
+        const rarity = RARITY_COLORS[char.rarity] || RARITY_COLORS.common;
+        this._selHalo.clear();
+        this._selHalo.fillStyle(rarity.glow, 0.18);
+        this._selHalo.fillRoundedRect(
+            cell.x - cell.w / 2 - 4, cell.y - cell.h / 2 - 4,
+            cell.w + 8, cell.h + 8, 10
+        );
+
         this._selCursor.clear();
         const t = this._selPulse.t;
         const alpha = 0.6 + t * 0.4;
@@ -443,12 +475,23 @@ export default class CharSelectScene extends Phaser.Scene {
             this._confirmSelection();
         }
 
-        // Animate cursor pulse
+        // Animate cursor pulse + halo
         if (this._selCursor && this._cells.length > 0) {
             const availableCells = this._cells.filter(c => !c.isLocked);
             const cell = availableCells[this._selectedIndex % availableCells.length];
-            this._selCursor.clear();
+            const rarity = RARITY_COLORS[cell.char.rarity] || RARITY_COLORS.common;
             const t = this._selPulse.t;
+
+            if (this._selHalo) {
+                this._selHalo.clear();
+                this._selHalo.fillStyle(rarity.glow, 0.12 + t * 0.12);
+                this._selHalo.fillRoundedRect(
+                    cell.x - cell.w / 2 - 4, cell.y - cell.h / 2 - 4,
+                    cell.w + 8, cell.h + 8, 10
+                );
+            }
+
+            this._selCursor.clear();
             const alpha = 0.6 + t * 0.4;
             this._selCursor.lineStyle(2 + t, 0xFFD700, alpha);
             this._selCursor.strokeRoundedRect(
