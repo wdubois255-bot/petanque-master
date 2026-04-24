@@ -17,7 +17,7 @@ export const GAME_HEIGHT_PORTRAIT = 960;
 // métrique sur les deux modes.
 const _IS_PORTRAIT_DEVICE = typeof navigator !== 'undefined'
     && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 1.8 : 1.0;
+const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 1.4 : 1.0;
 
 export const TILE_SIZE = 32;
 
