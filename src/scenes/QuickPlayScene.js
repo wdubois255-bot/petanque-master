@@ -726,6 +726,11 @@ export default class QuickPlayScene extends Phaser.Scene {
     // TAB: EQUIPEMENT
     // ----------------------------------------------------------------
     _buildTabEquipement() {
+        if (IS_PORTRAIT_Q) {
+            this._buildEquipementPortrait();
+            return;
+        }
+
         const colW = (Layout.W - 64) / 2;
         const leftX = 32;
         const rightX = 32 + colW + 8;
@@ -750,6 +755,116 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // Cochonnet display
         this._buildCochonnetColumn(rightX, topY + 18, colW - 8);
+    }
+
+    // Portrait: boule top fullwidth, cochonnet bottom fullwidth, 56px arrows
+    _buildEquipementPortrait() {
+        const W = Layout.W;
+        const btnSize = 56;
+        const midY = TAB_CONTENT_Y + 360;
+
+        // === BOULE ===
+        const bSpriteY = TAB_CONTENT_Y + 90;
+        const boule = this._ownedBoules[this._bouleIndex] || this._allBoules[0];
+
+        this._tabObjects.push(this._text(CX, TAB_CONTENT_Y + 14, I18n.t('quickplay.labels.boules'), '14px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+
+        if (boule) {
+            const texKey = boule.textureKey || ('ball_' + boule.id);
+            if (this.textures.exists(texKey)) {
+                this._tabObjects.push(
+                    this.add.sprite(CX, bSpriteY, texKey).setScale(2.0).setDepth(UI.DEPTH_PANEL + 3)
+                );
+            } else {
+                const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+                const c = parseInt((boule.color || '#A8B5C2').replace('#', ''), 16);
+                gfx.fillStyle(c, 1); gfx.fillCircle(CX, bSpriteY, 36);
+                gfx.lineStyle(2, 0xFFFFFF, 0.3); gfx.strokeCircle(CX, bSpriteY, 36);
+                gfx.fillStyle(0xFFFFFF, 0.25); gfx.fillCircle(CX - 9, bSpriteY - 12, 12);
+                this._tabObjects.push(gfx);
+            }
+
+            this._tabObjects.push(this._createArrowButton(CX - 140, bSpriteY, '<', () => {
+                this._bouleIndex = (this._bouleIndex - 1 + this._ownedBoules.length) % this._ownedBoules.length;
+                this._buildTabContent(); this._updateSummary();
+            }, btnSize));
+            this._tabObjects.push(this._createArrowButton(CX + 140, bSpriteY, '>', () => {
+                this._bouleIndex = (this._bouleIndex + 1) % this._ownedBoules.length;
+                this._buildTabContent(); this._updateSummary();
+            }, btnSize));
+
+            this._tabObjects.push(this._text(CX, bSpriteY + 52, I18n.field(boule, 'name'), '14px', CSS.OR, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
+            this._tabObjects.push(this._text(CX, bSpriteY + 74, I18n.field(boule, 'description') || '', '11px', CSS.CREME, {
+                depth: UI.DEPTH_PANEL + 3, wrapWidth: W - 80, align: 'center'
+            }));
+            this._tabObjects.push(this._text(CX, bSpriteY + 100,
+                `${boule.stats?.masse || 700}g  ⌀${(boule.stats?.rayon || 10) * 2}`, '12px', CSS.OCRE, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 3
+                }));
+            if (boule.bonus) {
+                this._tabObjects.push(this._text(CX, bSpriteY + 120,
+                    I18n.field(boule, 'effect') || boule.bonus, '11px', CSS.LAVANDE, {
+                        pixel: true, depth: UI.DEPTH_PANEL + 3
+                    }));
+            }
+            this._tabObjects.push(this._text(CX, bSpriteY + 144,
+                `${this._bouleIndex + 1} / ${this._ownedBoules.length}`, '9px', CSS.GRIS, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 3
+                }));
+        }
+
+        // Divider
+        const divGfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+        divGfx.lineStyle(1, COLORS.OR, 0.25);
+        divGfx.lineBetween(20, midY, W - 20, midY);
+        this._tabObjects.push(divGfx);
+
+        // === COCHONNET ===
+        const cSpriteY = midY + 90;
+        const coch = this._ownedCochonnets[this._cochonnetIndex] || this._allCochonnets[0];
+
+        this._tabObjects.push(this._text(CX, midY + 14, I18n.t('quickplay.labels.cochonnet'), '14px', CSS.OR, {
+            pixel: true, depth: UI.DEPTH_PANEL + 2
+        }));
+
+        if (coch) {
+            const cochTexKey = coch.textureKey || 'ball_cochonnet';
+            if (this.textures.exists(cochTexKey)) {
+                this._tabObjects.push(
+                    this.add.sprite(CX, cSpriteY, cochTexKey).setScale(2.5).setDepth(UI.DEPTH_PANEL + 3)
+                );
+            } else {
+                const gfx = this.add.graphics().setDepth(UI.DEPTH_PANEL + 3);
+                const c = parseInt((coch.color || '#FFD700').replace('#', ''), 16);
+                gfx.fillStyle(c, 1); gfx.fillCircle(CX, cSpriteY, 28);
+                gfx.fillStyle(0xFFFFFF, 0.3); gfx.fillCircle(CX - 7, cSpriteY - 9, 9);
+                this._tabObjects.push(gfx);
+            }
+
+            this._tabObjects.push(this._createArrowButton(CX - 140, cSpriteY, '<', () => {
+                this._cochonnetIndex = (this._cochonnetIndex - 1 + this._ownedCochonnets.length) % this._ownedCochonnets.length;
+                this._buildTabContent(); this._updateSummary();
+            }, btnSize));
+            this._tabObjects.push(this._createArrowButton(CX + 140, cSpriteY, '>', () => {
+                this._cochonnetIndex = (this._cochonnetIndex + 1) % this._ownedCochonnets.length;
+                this._buildTabContent(); this._updateSummary();
+            }, btnSize));
+
+            this._tabObjects.push(this._text(CX, cSpriteY + 46, I18n.field(coch, 'name'), '14px', CSS.OR, {
+                pixel: true, depth: UI.DEPTH_PANEL + 3
+            }));
+            this._tabObjects.push(this._text(CX, cSpriteY + 66, I18n.field(coch, 'description') || '', '11px', CSS.CREME, {
+                depth: UI.DEPTH_PANEL + 3, wrapWidth: W - 80, align: 'center'
+            }));
+            this._tabObjects.push(this._text(CX, cSpriteY + 92,
+                `${this._cochonnetIndex + 1} / ${this._ownedCochonnets.length}`, '9px', CSS.GRIS, {
+                    pixel: true, depth: UI.DEPTH_PANEL + 3
+                }));
+        }
     }
 
     _buildBouleColumn(x, y, w) {
@@ -1178,16 +1293,18 @@ export default class QuickPlayScene extends Phaser.Scene {
     // ================================================================
     // ARROW BUTTON HELPER
     // ================================================================
-    _createArrowButton(x, y, label, onClick) {
+    _createArrowButton(x, y, label, onClick, size = 28) {
+        const half = size / 2;
+        const fontSize = `${Math.round(size * 0.5)}px`;
         const arrowBg = this.add.graphics().setDepth(UI.DEPTH_PANEL + 4);
         arrowBg.fillStyle(0x3A2E28, 0.8);
-        arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+        arrowBg.fillRoundedRect(x - half, y - half, size, size, 6);
         arrowBg.lineStyle(1, COLORS.OR, 0.3);
-        arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+        arrowBg.strokeRoundedRect(x - half, y - half, size, size, 6);
 
         const arrow = this.add.text(x, y, label, {
             fontFamily: FONT_PIXEL,
-            fontSize: '14px',
+            fontSize,
             color: CSS.CREME,
             shadow: NO_SHADOW
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 5).setInteractive({ useHandCursor: true });
@@ -1196,17 +1313,17 @@ export default class QuickPlayScene extends Phaser.Scene {
             arrow.setColor(CSS.OR);
             arrowBg.clear();
             arrowBg.fillStyle(0x5A4A38, 0.9);
-            arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.fillRoundedRect(x - half, y - half, size, size, 6);
             arrowBg.lineStyle(1, COLORS.OR, 0.6);
-            arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.strokeRoundedRect(x - half, y - half, size, size, 6);
         });
         arrow.on('pointerout', () => {
             arrow.setColor(CSS.CREME);
             arrowBg.clear();
             arrowBg.fillStyle(0x3A2E28, 0.8);
-            arrowBg.fillRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.fillRoundedRect(x - half, y - half, size, size, 6);
             arrowBg.lineStyle(1, COLORS.OR, 0.3);
-            arrowBg.strokeRoundedRect(x - 14, y - 14, 28, 28, 6);
+            arrowBg.strokeRoundedRect(x - half, y - half, size, size, 6);
         });
         arrow.on('pointerdown', () => {
             sfxUIClick();
