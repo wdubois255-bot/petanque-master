@@ -1116,7 +1116,7 @@ export default class PetanqueScene extends Phaser.Scene {
 
         // Throw circle position (where the active thrower stands)
         const circleX = this.throwCircleX;
-        const circleY = this.throwCircleY + 20;
+        const circleY = this.throwCircleY;
 
         // Fixed watcher positions per terrain — avoids all decor sprites
         // X computed from tree canopy extents, Y chosen in gaps between decor clusters

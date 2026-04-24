@@ -452,7 +452,7 @@ export const FILTER_GLOW_STRENGTH = 4;
 export const FILTER_GLOW_QUALITY = 4;
 
 // Circle de lancer - doubled
-export const THROW_CIRCLE_RADIUS = 16;
+export const THROW_CIRCLE_RADIUS = 28;
 export const THROW_CIRCLE_Y_OFFSET = 20;
 
 // Character ID → spritesheet key mapping (centralized, used by all scenes)
