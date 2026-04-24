@@ -102,11 +102,14 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _createCharacterGrid() {
-        const gridX = 40;
-        const gridY = 64;
-        const cellW = 90;
-        const cellH = 100;
-        const cols = 5;
+        // Portrait mobile : grid 3 cols × 4 rows, preview en bas.
+        // Desktop : grid 5 cols × N rows, preview a droite (inchange).
+        const portrait = Layout.isPortrait;
+        const gridX = portrait ? 15 : 40;
+        const gridY = portrait ? 60 : 64;
+        const cols = portrait ? 3 : 5;
+        const cellW = portrait ? Math.floor((Layout.W - 2 * gridX) / cols) : 90;
+        const cellH = portrait ? 95 : 100;
 
         this._cells = [];
         this._gridCols = cols;
@@ -239,10 +242,16 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _createPreviewPanel() {
-        const px = Layout.W - 220;
-        const py = 64;
-        const pw = 200;
-        const ph = 360;
+        // Portrait : panneau pleine largeur en bas sous la grille.
+        // Desktop : panneau droite (inchange).
+        const portrait = Layout.isPortrait;
+        const pw = portrait ? (Layout.W - 20) : 200;
+        const ph = portrait ? 420 : 360;
+        const px = portrait ? (Layout.W / 2) : (Layout.W - 220);
+        const py = portrait ? 450 : 64;
+        // Expose pour les refs downstream (sprite preview, stat fill anim)
+        this._previewPx = px;
+        this._previewPy = py;
 
         // Wood panel background
         UIFactory.createWoodPanel(this, px - pw / 2, py, pw, ph, { depth: 1 });
@@ -259,7 +268,7 @@ export default class CharSelectScene extends Phaser.Scene {
         this._previewCatchphrase = this.add.text(px, py + 55, '', {
             fontFamily: 'monospace', fontSize: '11px', color: '#3A2E28',
             shadow: { offsetX: 0, offsetY: 0, color: 'rgba(0,0,0,0)', blur: 0, fill: false },
-            wordWrap: { width: 180 }, align: 'center', lineSpacing: 3
+            wordWrap: { width: portrait ? pw - 30 : 180 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0).setDepth(2);
 
         // Stat bars
@@ -296,7 +305,7 @@ export default class CharSelectScene extends Phaser.Scene {
         // Description
         this._previewDesc = this.add.text(px, barStartY + 150, '', {
             fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
-            shadow: SHADOW, wordWrap: { width: 180 }, align: 'center', lineSpacing: 3
+            shadow: SHADOW, wordWrap: { width: portrait ? pw - 30 : 180 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0).setDepth(10);
 
         this._previewSprite = null;
@@ -309,11 +318,13 @@ export default class CharSelectScene extends Phaser.Scene {
         }).setOrigin(0.5, 0).setDepth(10);
 
         this._abilityTexts = [];
+        const abLineLeftX = portrait ? (px - pw / 2 + 20) : (px - 88);
+        const abWrapWidth = portrait ? (pw - 40) : 168;
         for (let i = 0; i < 3; i++) {
             const lineY = abY + 14 + i * 22;
-            const t = this.add.text(px - 88, lineY, '', {
+            const t = this.add.text(abLineLeftX, lineY, '', {
                 fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
-                wordWrap: { width: 168 }, lineSpacing: 1
+                wordWrap: { width: abWrapWidth }, lineSpacing: 1
             }).setOrigin(0, 0).setDepth(10);
             this._abilityTexts.push(t);
         }
@@ -381,7 +392,7 @@ export default class CharSelectScene extends Phaser.Scene {
             const bar = this._statBars[stat];
             const value = rookieStats ? (rookieStats[stat] ?? char.stats[stat]) : char.stats[stat];
             const targetWidth = (value / 10) * 120;
-            const bx = Layout.W - 220 - 40;
+            const bx = (this._previewPx ?? (Layout.W - 220)) - 40;
             const by = bar.y - 6;
 
             bar.fill.clear();
@@ -412,15 +423,22 @@ export default class CharSelectScene extends Phaser.Scene {
         const spriteKey = this._getCharSpriteKey(char);
         const isStatic = CHAR_STATIC_SPRITES.includes(char.id);
         if (this.textures.exists(spriteKey)) {
+            // Sprite preview : suit l'ancre px du panneau (portrait = milieu panneau bas, desktop = W-220)
+            const spX = this._previewPx ?? (Layout.W - 220);
+            const spBaseY = this._previewPy ?? 64;
+            const spShadowY = spBaseY + 354;  // py+354 (desktop 418 quand py=64)
+            const spImgY = spBaseY + 336;     // py+336 (desktop 400)
+            const spSprY = spBaseY + 341;     // py+341 (desktop 405)
+
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
-            this._previewShadow.fillEllipse(Layout.W - 220, 418, 30, 8);
+            this._previewShadow.fillEllipse(spX, spShadowY, 30, 8);
 
             if (isStatic) {
-                this._previewSprite = this.add.image(Layout.W - 220, 400, spriteKey)
+                this._previewSprite = this.add.image(spX, spImgY, spriteKey)
                     .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
             } else {
-                this._previewSprite = this.add.sprite(Layout.W - 220, 405, spriteKey, 0)
+                this._previewSprite = this.add.sprite(spX, spSprY, spriteKey, 0)
                     .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
 
                 const animKey = `preview_walk_${char.id}`;
