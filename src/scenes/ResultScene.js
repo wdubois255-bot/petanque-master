@@ -32,6 +32,7 @@ export default class ResultScene extends Phaser.Scene {
         // Reset flags — Phaser reuses scene instances!
         this._returning = false;
         this._postDialogDone = false;
+        this._confettiContainer = null;
     }
 
     create() {
@@ -843,29 +844,60 @@ export default class ResultScene extends Phaser.Scene {
         });
     }
 
+    /**
+     * Confetti particle system — 60 rectangles falling with gravity + rotation.
+     * Palette : or (#FFD700), ciel (#87CEEB), carreau (#C44B3F), olive (#6B8E4E).
+     * Physique simple : vx constante, vy = vy0 + g·t. Rotation constante.
+     * Fade out après 3-4s. Victoire uniquement (guardé par le caller).
+     */
     _spawnConfetti() {
-        const colors = [0xFFD700, 0xC2703E, 0x9B7BB8, 0x6B8E4E, 0x87CEEB];
-        for (let i = 0; i < 40; i++) {
-            const x = Phaser.Math.Between(40, Layout.W - 40);
-            const startY = Phaser.Math.Between(-60, -200);
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const w = Phaser.Math.Between(4, 8);
-            const h = Phaser.Math.Between(6, 12);
+        // Container pour cleanup facile
+        this._confettiContainer = this.add.container(0, 0).setDepth(150);
 
-            const conf = this.add.graphics().setDepth(150);
-            conf.fillStyle(color, 0.85);
-            conf.fillRect(-w / 2, -h / 2, w, h);
-            conf.setPosition(x, startY);
+        const colors = [0xFFD700, 0x87CEEB, 0xC44B3F, 0x6B8E4E];
+        const COUNT = 60;
+        const GRAVITY = 100; // px/s²
 
-            this.tweens.add({
-                targets: conf,
-                y: Layout.H + 50,
-                x: x + Phaser.Math.Between(-100, 100),
-                angle: Phaser.Math.Between(-540, 540),
-                duration: Phaser.Math.Between(1800, 4000),
-                ease: 'Sine.easeIn',
-                delay: Phaser.Math.Between(0, 1200),
-                onComplete: () => conf.destroy()
+        for (let i = 0; i < COUNT; i++) {
+            const color = colors[i % colors.length];
+            const x = Phaser.Math.Between(20, Layout.W - 20);
+            const y = Phaser.Math.Between(-120, -10);
+
+            // Petit rectangle 6x10 px
+            const rect = this.add.rectangle(x, y, 6, 10, color, 0.9);
+            rect.setAngle(Phaser.Math.Between(0, 360));
+            this._confettiContainer.add(rect);
+
+            // Physique manuelle : vx constant, vy accéléré, rot constant
+            const vx = Phaser.Math.FloatBetween(-60, 60);
+            let vy = Phaser.Math.FloatBetween(40, 120);
+            const vr = Phaser.Math.FloatBetween(-360, 360); // deg/s
+
+            const lifetime = Phaser.Math.Between(3000, 4000);
+            const startTime = this.time.now;
+
+            // Animation frame-by-frame via time events
+            const tickEvt = this.time.addEvent({
+                delay: 16,
+                loop: true,
+                callback: () => {
+                    if (!rect.active) { tickEvt.remove(false); return; }
+                    const dt = 0.016;
+                    vy += GRAVITY * dt;
+                    rect.x += vx * dt;
+                    rect.y += vy * dt;
+                    rect.angle += vr * dt;
+
+                    const elapsed = this.time.now - startTime;
+                    if (elapsed > lifetime - 500) {
+                        // Fade out last 500ms
+                        rect.alpha = Math.max(0, 0.9 * (1 - (elapsed - (lifetime - 500)) / 500));
+                    }
+                    if (elapsed > lifetime || rect.y > Layout.H + 40) {
+                        tickEvt.remove(false);
+                        rect.destroy();
+                    }
+                }
             });
         }
     }
@@ -889,6 +921,10 @@ export default class ResultScene extends Phaser.Scene {
     _shutdown() {
         this.input.keyboard.removeAllListeners();
         this.tweens.killAll();
+        if (this._confettiContainer) {
+            this._confettiContainer.destroy(true);
+            this._confettiContainer = null;
+        }
     }
 
     // === STAR RATING ===
