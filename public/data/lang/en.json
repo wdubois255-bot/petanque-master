@@ -478,6 +478,7 @@
   },
   "arcade_extra": {
     "skip_hint": "~ Space ~",
+    "skip_hint_mobile": "~ Tap to continue ~",
     "galets_label": "{amount} Pebbles",
     "milestone_reward": "+{amount} Pebbles"
   },

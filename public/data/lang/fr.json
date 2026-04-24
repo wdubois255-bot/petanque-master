@@ -478,6 +478,7 @@
   },
   "arcade_extra": {
     "skip_hint": "~ Espace ~",
+    "skip_hint_mobile": "~ Touchez pour continuer ~",
     "galets_label": "{amount} Galets",
     "milestone_reward": "+{amount} Galets"
   },

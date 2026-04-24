@@ -197,9 +197,10 @@ export default class ArcadeScene extends Phaser.Scene {
 
         for (let i = 0; i < lines.length; i++) {
             const txt = this.add.text(Layout.W / 2, startY + i * lineSpacing, '', {
-                fontFamily: 'Georgia, serif', fontSize: '15px', color: '#C8A06A',
+                fontFamily: 'Georgia, serif', fontSize: Layout.isPortrait ? '13px' : '15px', color: '#C8A06A',
                 shadow: { offsetX: 1, offsetY: 1, color: '#3A2E18', blur: 1, fill: true },
-                align: 'center'
+                align: 'center',
+                wordWrap: { width: Layout.W - 60 }
             }).setOrigin(0.5).setAlpha(1);
             lineObjects.push(txt);
         }
@@ -234,9 +235,13 @@ export default class ArcadeScene extends Phaser.Scene {
             }
         });
 
-        // Skip hint (appears after 2s)
-        const skipHint = this.add.text(Layout.W / 2, Layout.H - 24, I18n.t('arcade_extra.skip_hint'), {
-            fontFamily: 'Georgia, serif', fontSize: '11px', color: '#8A7A5A',
+        // Skip hint (appears after 2s) — portrait : libelle tap-friendly
+        const hintLabel = Layout.isPortrait
+            ? (I18n.t('arcade_extra.skip_hint_mobile') !== 'arcade_extra.skip_hint_mobile'
+                ? I18n.t('arcade_extra.skip_hint_mobile') : '~ Touchez pour continuer ~')
+            : I18n.t('arcade_extra.skip_hint');
+        const skipHint = this.add.text(Layout.W / 2, Layout.H - 24, hintLabel, {
+            fontFamily: 'Georgia, serif', fontSize: Layout.isPortrait ? '12px' : '11px', color: '#8A7A5A',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setAlpha(0);
 
