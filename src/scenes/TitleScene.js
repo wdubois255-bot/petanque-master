@@ -27,6 +27,7 @@ export default class TitleScene extends Phaser.Scene {
         this._transitioning = false;
         this._galetsDisplay = null;
         this._pressStart = null;
+        this._bottomNav = null;
     }
 
     create() {
@@ -44,6 +45,7 @@ export default class TitleScene extends Phaser.Scene {
         this._createTitle();
         this._createPressStart();
         this._createVersionTag();
+        if (Layout.isPortrait) this._createBottomNav();
         this._playIntroSequence();
 
         // Keyboard — reset key states to prevent stuck keys from previous scene
@@ -60,8 +62,83 @@ export default class TitleScene extends Phaser.Scene {
         stopMusic();
         this.input.keyboard.removeAllListeners();
         this._clearMenu();
+        if (this._bottomNav) {
+            this._bottomNav.forEach(e => { try { e.destroy(); } catch (_) {} });
+            this._bottomNav = null;
+        }
         if (this._pressStartTween) { this._pressStartTween.stop(); this._pressStartTween = null; }
         this.tweens.killAll();
+    }
+
+    // ================================================================
+    // BOTTOM NAV (portrait mobile) — Clash Royale 5-icônes pattern
+    // ================================================================
+    _createBottomNav() {
+        const H = Layout.H;
+        const W = Layout.W;
+        const navH = 72;
+        const navY = H - navH;
+        this._bottomNav = [];
+
+        // Fond bandeau
+        const bg = this.add.graphics().setDepth(50);
+        bg.fillStyle(0x1A1510, 0.95);
+        bg.fillRect(0, navY, W, navH);
+        bg.lineStyle(2, 0xD4A574, 0.6);
+        bg.beginPath();
+        bg.moveTo(0, navY);
+        bg.lineTo(W, navY);
+        bg.strokePath();
+        this._bottomNav.push(bg);
+
+        // 5 icônes équi-espacées
+        const items = [
+            { icon: '🏠', label: 'ACCUEIL', action: null, active: true },
+            { icon: '🛒', label: 'BOUTIQUE', action: 'ShopScene' },
+            { icon: '👥', label: 'PERSOS', action: 'CharSelectScene' },
+            { icon: '🏆', label: 'ARCADE', action: 'ArcadeScene' },
+            { icon: '⚙️', label: 'OPTIONS', action: null }
+        ];
+        const slotW = W / items.length;
+
+        items.forEach((item, i) => {
+            const cx = slotW * i + slotW / 2;
+            const cy = navY + navH / 2;
+
+            // Highlight fond si actif
+            if (item.active) {
+                const hl = this.add.graphics().setDepth(51);
+                hl.fillStyle(0xD4A574, 0.18);
+                hl.fillRoundedRect(cx - slotW / 2 + 4, navY + 4, slotW - 8, navH - 8, 6);
+                this._bottomNav.push(hl);
+            }
+
+            const iconText = this.add.text(cx, cy - 10, item.icon, {
+                fontFamily: 'Arial', fontSize: '24px'
+            }).setOrigin(0.5).setDepth(52);
+            this._bottomNav.push(iconText);
+
+            const labelText = this.add.text(cx, cy + 16, item.label, {
+                fontFamily: FONT_PIXEL, fontSize: '8px',
+                color: item.active ? '#FFD700' : '#D4A574',
+                align: 'center'
+            }).setOrigin(0.5).setDepth(52);
+            this._bottomNav.push(labelText);
+
+            // Hit zone tactile
+            const hit = this.add.zone(cx, cy, slotW - 4, navH - 4)
+                .setOrigin(0.5).setDepth(53).setInteractive({ useHandCursor: true });
+            hit.on('pointerdown', () => {
+                if (this._transitioning || item.active) return;
+                sfxUIClick();
+                if (item.action) {
+                    this._transitioning = true;
+                    trackMenuClick(item.label.toLowerCase());
+                    fadeToScene(this, item.action);
+                }
+            });
+            this._bottomNav.push(hit);
+        });
     }
 
     // ================================================================
