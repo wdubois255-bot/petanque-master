@@ -428,8 +428,8 @@ export const BALL_SHADOW_STRETCH_SPEED = 0.003;
 export const BALL_SQUASH_RADIUS_BOOST = 2;
 
 // Ball sizes (pixels in game) - physics radius
-export const BALL_RADIUS = 12;
-export const COCHONNET_RADIUS = 8;
+export const BALL_RADIUS = 14;
+export const COCHONNET_RADIUS = 9;
 // Conversion rayon jeu (px) → diamètre réel FIPJP (mm). Plage autorisée : 70.5–80mm.
 export const BOULE_RAYON_TO_MM = { 9: 71, 10: 74, 11: 78, 12: 82, 8: 67 };
 // Visual scale for sprites (aligne le visuel sur la hitbox physique)
