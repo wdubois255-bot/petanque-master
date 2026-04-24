@@ -658,9 +658,9 @@ describe('9. Dead lines visuelles == bounds physiques du terrain', () => {
         const isOut = ballOnLine.x + ballOnLine.radius < bounds.x; // 326 + 10 < 326 → false
         expect(isOut).toBe(false);
 
-        // Boule entierement dehors (centre = bounds.x - 11)
-        const ballOut = { x: bounds.x - 11, radius: BALL_RADIUS };
-        const isOutFull = ballOut.x + ballOut.radius < bounds.x; // 315 + 10 = 325 < 326 → true
+        // Boule entierement dehors (centre = bounds.x - BALL_RADIUS - 1, 1px de marge)
+        const ballOut = { x: bounds.x - BALL_RADIUS - 1, radius: BALL_RADIUS };
+        const isOutFull = ballOut.x + ballOut.radius < bounds.x; // bounds.x - 1 < bounds.x → true
         expect(isOutFull).toBe(true);
     });
 
