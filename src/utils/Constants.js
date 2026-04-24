@@ -348,20 +348,25 @@ export const FONT_PIXEL = "'PressStart2P', monospace";
 export const FONT_BODY = 'monospace';
 
 // UI typography hierarchy
+// Portrait : les ancres HINT_Y / BACK_Y / GALETS_X / GALETS_Y doivent utiliser
+// les dimensions portrait (W=480, H=960) sinon BACK tombe à mi-écran et GALETS
+// passe hors-champ. Calcul local basé sur _IS_PORTRAIT_DEVICE (pas d'import Layout → circular).
+const _UI_W = _IS_PORTRAIT_DEVICE ? GAME_WIDTH_PORTRAIT : GAME_WIDTH;
+const _UI_H = _IS_PORTRAIT_DEVICE ? GAME_HEIGHT_PORTRAIT : GAME_HEIGHT;
 export const UI = {
     TITLE_SIZE: '24px',
     MENU_SIZE: '14px',
     BODY_SIZE: '12px',
     HINT_SIZE: '10px',
     SMALL_SIZE: '8px',
-    HINT_Y: GAME_HEIGHT - 16,
+    HINT_Y: _UI_H - 16,
     HEADER_Y: 30,
     PILL_W: 280,
     PILL_H: 38,
     PILL_SPACING: 43,
-    BACK_X: 60,
-    BACK_Y: GAME_HEIGHT - 20,
-    GALETS_X: GAME_WIDTH - 90,
+    BACK_X: _IS_PORTRAIT_DEVICE ? 40 : 60,
+    BACK_Y: _UI_H - (_IS_PORTRAIT_DEVICE ? 36 : 20),
+    GALETS_X: _UI_W - 90,
     GALETS_Y: 28,
     // Depth layers (centralized)
     DEPTH_BG: 0,
