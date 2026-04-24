@@ -1,6 +1,13 @@
 // Resolution (doubled from 416x240 for 32x32 tiles)
+// Desktop default (paysage). Pour le mode mobile portrait, utiliser Layout.js.
 export const GAME_WIDTH = 832;
 export const GAME_HEIGHT = 480;
+
+// Mobile portrait (D1-D2 décidés 24/04/2026 — ratio 1:2 pour terrain pétanque long)
+// Ne JAMAIS utiliser ces constantes directement dans les scènes : passer par Layout.W/H
+export const GAME_WIDTH_PORTRAIT = 480;
+export const GAME_HEIGHT_PORTRAIT = 960;
+
 export const TILE_SIZE = 32;
 
 // Mouvement joueur

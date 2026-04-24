@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, COLORS } from './utils/Constants.js';
+import { COLORS } from './utils/Constants.js';
+import Layout from './utils/Layout.js';
 
 import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
@@ -21,14 +22,17 @@ import CreditsScene from './scenes/CreditsScene.js';
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container',
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
+    width: Layout.W,
+    height: Layout.H,
     pixelArt: true,
     roundPixels: true,
     backgroundColor: COLORS.OMBRE,
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    input: {
+        activePointers: 3
     },
     physics: {
         default: 'arcade',
