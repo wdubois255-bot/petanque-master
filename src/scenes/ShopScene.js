@@ -32,8 +32,10 @@ const CARD_H = 82;
 // Featured deal banner (portrait only) — insert band entre preview et tabs
 const FEATURED_DEAL_H = IS_PORTRAIT ? 80 : 0;
 const FEATURED_DEAL_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 0; // y top du bandeau
-const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 80 + FEATURED_DEAL_H) : 80;
-const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50 + FEATURED_DEAL_H) : 50;
+// Portrait : tabs 44px (tap target WCAG) — desktop reste 22px
+const TAB_H = IS_PORTRAIT ? 44 : 22;
+const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H + TAB_H + 6) : 80;
+const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H) : 50;
 
 export default class ShopScene extends Phaser.Scene {
     constructor() {
@@ -145,7 +147,21 @@ export default class ShopScene extends Phaser.Scene {
             const isActive = i === this.activeTab;
 
             const tbg = this.add.graphics().setDepth(5);
-            if (isActive) {
+            if (IS_PORTRAIT) {
+                // Portrait : fond tab plus visible (actif et inactif) pour clarifier zone tap
+                tbg.fillStyle(isActive ? 0x4A3A28 : 0x2A2218, isActive ? 0.95 : 0.65);
+                tbg.fillRoundedRect(tx - tabW / 2 + 2, TAB_Y, tabW - 4, TAB_H, 8);
+                if (isActive) {
+                    tbg.lineStyle(2, 0xFFD700, 0.85);
+                    tbg.strokeRoundedRect(tx - tabW / 2 + 2, TAB_Y, tabW - 4, TAB_H, 8);
+                    // Soulignement or bas
+                    tbg.fillStyle(0xFFD700, 0.9);
+                    tbg.fillRect(tx - 25, TAB_Y + TAB_H - 3, 50, 2);
+                } else {
+                    tbg.lineStyle(1, 0xD4A574, 0.25);
+                    tbg.strokeRoundedRect(tx - tabW / 2 + 2, TAB_Y, tabW - 4, TAB_H, 8);
+                }
+            } else if (isActive) {
                 tbg.fillStyle(0x3A2E28, 0.8);
                 tbg.fillRoundedRect(tx - tabW / 2 + 2, TAB_Y - 2, tabW - 4, 22, { tl: 6, tr: 6, bl: 0, br: 0 });
                 tbg.fillStyle(0xFFD700, 0.8);
@@ -153,12 +169,13 @@ export default class ShopScene extends Phaser.Scene {
             }
 
             const tabLabel = I18n.t(tab.labelKey) !== tab.labelKey ? I18n.t(tab.labelKey) : tab.fallback;
-            const txt = this.add.text(tx, TAB_Y + 8, `${tab.icon} ${tabLabel}`, {
-                fontFamily: FONT_PIXEL, fontSize: '8px',
+            const txtY = IS_PORTRAIT ? (TAB_Y + TAB_H / 2) : (TAB_Y + 8);
+            const txt = this.add.text(tx, txtY, `${tab.icon} ${tabLabel}`, {
+                fontFamily: FONT_PIXEL, fontSize: IS_PORTRAIT ? '10px' : '8px',
                 color: isActive ? CSS.OR : CSS.GRIS, shadow: SHADOW
             }).setOrigin(0.5).setDepth(6);
 
-            const zone = this.add.zone(tx, TAB_Y + 8, tabW - 4, 22)
+            const zone = this.add.zone(tx, txtY, tabW - 4, TAB_H)
                 .setOrigin(0.5).setInteractive({ useHandCursor: true });
             zone.on('pointerdown', () => { sfxUIClick(); this._switchTab(i); });
             zone.on('pointerover', () => { if (i !== this.activeTab) { txt.setColor(CSS.OCRE); sfxUIHover(); } });
