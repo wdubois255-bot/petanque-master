@@ -40,12 +40,15 @@ function getModes() {
 
 const CX = Layout.W / 2;
 
-// Layout constants
-const BANNER_H = 32;
+// Layout constants — portrait vs desktop (mobile-first redesign)
+const IS_PORTRAIT_Q = Layout.isPortrait;
+const BANNER_H = IS_PORTRAIT_Q ? 72 : 32;    // portrait : deux lignes (titre + VS)
+const TAB_BAR_H = IS_PORTRAIT_Q ? 56 : 26;   // portrait : tap target WCAG
 const TAB_BAR_Y = BANNER_H + 2;
-const TAB_CONTENT_Y = TAB_BAR_Y + 26;
-const TAB_CONTENT_H = 310;
-const BOTTOM_Y = 428;
+const TAB_CONTENT_Y = TAB_BAR_Y + TAB_BAR_H;
+// Portrait : contenu occupe l'espace jusqu'a BOTTOM_Y
+const TAB_CONTENT_H = IS_PORTRAIT_Q ? 680 : 310;
+const BOTTOM_Y = IS_PORTRAIT_Q ? (Layout.H - 120) : 428;  // portrait : 840
 
 const STAT_NAMES = ['precision', 'puissance', 'effet', 'sang_froid'];
 const STAT_LABELS = ['PRC', 'PUI', 'EFF', 'SDF'];
@@ -167,37 +170,65 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._destroyList(this._bannerObjects);
         this._bannerObjects = [];
 
-        // Title left-aligned
-        this._bannerObjects.push(
-            this.add.text(16, 14, I18n.t('quickplay.title'), {
-                fontFamily: FONT_PIXEL, fontSize: '14px',
-                color: CSS.OR,
-                shadow: NO_SHADOW
-            }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI)
-        );
-
-        // VS summary right-aligned: "J1 name  VS  J2 name"
         const p1Char = _charValues[this._p1Index];
         const p2Char = _charValues[this._p2Index];
 
-        this._p1NameText = this.add.text(Layout.W - 220, 14, p1Char.display, {
-            fontFamily: 'monospace', fontSize: '10px',
-            color: '#5B9BD5', shadow: NO_SHADOW
-        }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
-        this._bannerObjects.push(this._p1NameText);
+        if (IS_PORTRAIT_Q) {
+            // Portrait : titre centre ligne 1, VS summary centre ligne 2
+            this._bannerObjects.push(
+                this.add.text(CX, 20, I18n.t('quickplay.title'), {
+                    fontFamily: FONT_PIXEL, fontSize: '18px',
+                    color: CSS.OR, shadow: NO_SHADOW
+                }).setOrigin(0.5).setDepth(UI.DEPTH_UI)
+            );
 
-        this._bannerObjects.push(
-            this.add.text(Layout.W - 200, 14, 'VS', {
-                fontFamily: FONT_PIXEL, fontSize: '10px',
-                color: CSS.ACCENT, shadow: NO_SHADOW
-            }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
-        );
+            // VS summary : J1 VS J2 centre
+            this._p1NameText = this.add.text(CX - 30, 50, p1Char.display, {
+                fontFamily: 'monospace', fontSize: '13px',
+                color: '#5B9BD5', shadow: NO_SHADOW
+            }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
+            this._bannerObjects.push(this._p1NameText);
 
-        this._p2NameText = this.add.text(Layout.W - 180, 14, p2Char.display, {
-            fontFamily: 'monospace', fontSize: '10px',
-            color: '#C44B3F', shadow: NO_SHADOW
-        }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
-        this._bannerObjects.push(this._p2NameText);
+            this._bannerObjects.push(
+                this.add.text(CX, 50, 'VS', {
+                    fontFamily: FONT_PIXEL, fontSize: '13px',
+                    color: CSS.ACCENT, shadow: NO_SHADOW
+                }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
+            );
+
+            this._p2NameText = this.add.text(CX + 30, 50, p2Char.display, {
+                fontFamily: 'monospace', fontSize: '13px',
+                color: '#C44B3F', shadow: NO_SHADOW
+            }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
+            this._bannerObjects.push(this._p2NameText);
+        } else {
+            // Desktop : titre gauche, VS summary droite (inchange)
+            this._bannerObjects.push(
+                this.add.text(16, 14, I18n.t('quickplay.title'), {
+                    fontFamily: FONT_PIXEL, fontSize: '14px',
+                    color: CSS.OR, shadow: NO_SHADOW
+                }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI)
+            );
+
+            this._p1NameText = this.add.text(Layout.W - 220, 14, p1Char.display, {
+                fontFamily: 'monospace', fontSize: '10px',
+                color: '#5B9BD5', shadow: NO_SHADOW
+            }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
+            this._bannerObjects.push(this._p1NameText);
+
+            this._bannerObjects.push(
+                this.add.text(Layout.W - 200, 14, 'VS', {
+                    fontFamily: FONT_PIXEL, fontSize: '10px',
+                    color: CSS.ACCENT, shadow: NO_SHADOW
+                }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
+            );
+
+            this._p2NameText = this.add.text(Layout.W - 180, 14, p2Char.display, {
+                fontFamily: 'monospace', fontSize: '10px',
+                color: '#C44B3F', shadow: NO_SHADOW
+            }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
+            this._bannerObjects.push(this._p2NameText);
+        }
     }
 
     // Future: _createBannerSprite will be used for greeting animations per character
@@ -220,9 +251,14 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._destroyList(this._tabBarObjects);
         this._tabBarObjects = [];
 
-        const tabW = 170;
-        const totalW = tabW * TAB_KEYS.length;
-        const startX = (Layout.W - totalW) / 2;
+        // Portrait : 4 tabs repartis sur la largeur ecran (no kbd hint)
+        // Desktop : tabs 170px centres (inchange)
+        const p = IS_PORTRAIT_Q;
+        const tabW = p ? ((Layout.W - 16) / TAB_KEYS.length) : 170;
+        const startX = p ? 8 : ((Layout.W - tabW * TAB_KEYS.length) / 2);
+        const tabH = p ? TAB_BAR_H : 26;
+        const tabFs = p ? '10px' : '9px';
+        const labelY = p ? (TAB_BAR_Y + tabH / 2 - 12) : TAB_BAR_Y;
 
         for (let i = 0; i < TAB_KEYS.length; i++) {
             const x = startX + i * tabW + tabW / 2;
@@ -231,24 +267,26 @@ export default class QuickPlayScene extends Phaser.Scene {
             // Tab background panel
             const tabBg = this.add.graphics().setDepth(UI.DEPTH_PANEL);
             tabBg.fillStyle(isActive ? 0x6B4F2D : 0x3A2E28, isActive ? 0.95 : 0.7);
-            tabBg.fillRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, 26,
+            tabBg.fillRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, tabH,
                 { tl: 6, tr: 6, bl: 0, br: 0 });
             if (isActive) {
                 tabBg.lineStyle(2, COLORS.OR, 0.6);
-                tabBg.strokeRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, 26,
+                tabBg.strokeRoundedRect(x - tabW / 2 + 2, TAB_BAR_Y - 12, tabW - 4, tabH,
                     { tl: 6, tr: 6, bl: 0, br: 0 });
             }
             this._tabBarObjects.push(tabBg);
 
-            // Number hint (1-4)
-            const numHint = this._text(x - tabW / 2 + 14, TAB_BAR_Y,
-                `${i + 1}`, '8px', isActive ? CSS.OR : CSS.OMBRE, {
-                    pixel: true, depth: UI.DEPTH_PANEL + 1, alpha: 0.5
-                });
-            this._tabBarObjects.push(numHint);
+            // Number hint — desktop seulement (clavier 1-4)
+            if (!p) {
+                const numHint = this._text(x - tabW / 2 + 14, TAB_BAR_Y,
+                    `${i + 1}`, '8px', isActive ? CSS.OR : CSS.OMBRE, {
+                        pixel: true, depth: UI.DEPTH_PANEL + 1, alpha: 0.5
+                    });
+                this._tabBarObjects.push(numHint);
+            }
 
-            const label = this._text(x + 4, TAB_BAR_Y,
-                I18n.t(TAB_I18N[i]), '9px',
+            const label = this._text(x + (p ? 0 : 4), labelY,
+                I18n.t(TAB_I18N[i]), tabFs,
                 isActive ? CSS.OR : CSS.GRIS,
                 { pixel: true, depth: UI.DEPTH_PANEL + 1 }
             );
@@ -261,6 +299,14 @@ export default class QuickPlayScene extends Phaser.Scene {
             label.on('pointerover', () => { if (tabIndex !== this._activeTab) { label.setColor(CSS.CREME); sfxUIHover(); } });
             label.on('pointerout', () => { if (tabIndex !== this._activeTab) label.setColor(CSS.GRIS); });
             this._tabBarObjects.push(label);
+
+            // Mobile : zone tap plein tab (le label seul est trop petit)
+            if (p) {
+                const zone = this.add.zone(x, TAB_BAR_Y + tabH / 2 - 12, tabW - 4, tabH)
+                    .setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(UI.DEPTH_PANEL + 2);
+                zone.on('pointerdown', () => { sfxUIClick(); this._switchTab(tabIndex); });
+                this._tabBarObjects.push(zone);
+            }
         }
     }
 
@@ -298,66 +344,119 @@ export default class QuickPlayScene extends Phaser.Scene {
     // ----------------------------------------------------------------
     _buildTabPersonnages() {
         const roster = this._charsData?.roster || [];
+        const p = IS_PORTRAIT_Q;
         const topY = TAB_CONTENT_Y + 8;
+        const isLocal = getModes()[this._modeIndex].key === 'local';
 
-        // === ROSTER GRID (fighting game style) ===
-        // 2 rows of 6 = 12 characters, each as a clickable card
-        const gridCols = 6;
-        const cellW = 80;
-        const cellH = 82;
-        const cellGap = 4;
+        // === ROSTER GRID ===
+        // Portrait : 4 cols × 3 rows, cellules 104×96 pleine largeur, preview J1/J2 en bandeau haut
+        // Desktop : 6 cols × 2 rows avec preview J1/J2 sur les cotes (inchange)
+        const gridCols = p ? 4 : 6;
+        const cellW = p ? 104 : 80;
+        const cellH = p ? 96 : 82;
+        const cellGap = p ? 6 : 4;
         const gridW = gridCols * (cellW + cellGap) - cellGap;
         const gridX = CX - gridW / 2;
 
-        // J1 preview sprite (left of grid, vertically centered) — animated greeting
-        const leftSpace = gridX - 24;
-        const sideX = 12 + leftSpace / 2;
-        const sideY = topY + 14 + cellH; // middle of the 2 rows
         const p1Char = _charValues[this._p1Index];
-        const p1GreetKey = `${p1Char.charId}_greeting`;
-        const p1AnimKey = `${p1Char.charId}_greet`;
-        if (this.textures.exists(p1GreetKey) && this.anims.exists(p1AnimKey)) {
-            const spr = this.add.sprite(sideX, sideY - 10, p1GreetKey, 0)
-                .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4);
-            spr.play(p1AnimKey);
-            this._tabObjects.push(spr);
-        } else if (this.textures.exists(p1Char.sprite)) {
-            this._tabObjects.push(
-                this.add.sprite(sideX, sideY - 10, p1Char.sprite, 0)
-                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4)
-            );
-        }
-        const isLocal = getModes()[this._modeIndex].key === 'local';
-        this._tabObjects.push(this.add.text(sideX, sideY + 28, isLocal ? 'J1' : I18n.t('ingame.you'), {
-            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: NO_SHADOW
-        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
-
-        // J2 preview sprite (right of grid) — animated greeting
-        const rightSpace = Layout.W - 24 - gridX - gridW;
-        const rightX = gridX + gridW + 12 + rightSpace / 2;
         const p2Char = _charValues[this._p2Index];
-        const p2GreetKey = `${p2Char.charId}_greeting`;
-        const p2AnimKey = `${p2Char.charId}_greet`;
-        if (this.textures.exists(p2GreetKey) && this.anims.exists(p2AnimKey)) {
-            const spr = this.add.sprite(rightX, sideY - 10, p2GreetKey, 0)
-                .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
-            spr.play(p2AnimKey);
-            this._tabObjects.push(spr);
-        } else if (this.textures.exists(p2Char.sprite)) {
-            this._tabObjects.push(
-                this.add.sprite(rightX, sideY - 10, p2Char.sprite, 0)
-                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
-            );
-        }
-        this._tabObjects.push(this.add.text(rightX, sideY + 28, isLocal ? 'J2' : I18n.t('ingame.opponent'), {
-            fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: NO_SHADOW
-        }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
+        if (p) {
+            // === PORTRAIT : preview J1 / VS / J2 en bandeau superieur ===
+            const previewY = topY + 48;
+            const j1X = CX - 80;
+            const j2X = CX + 80;
+
+            // J1 preview
+            const p1GreetKey = `${p1Char.charId}_greeting`;
+            const p1AnimKey = `${p1Char.charId}_greet`;
+            if (this.textures.exists(p1GreetKey) && this.anims.exists(p1AnimKey)) {
+                const spr = this.add.sprite(j1X, previewY, p1GreetKey, 0)
+                    .setScale(1.4).setDepth(UI.DEPTH_PANEL + 4);
+                spr.play(p1AnimKey);
+                this._tabObjects.push(spr);
+            } else if (this.textures.exists(p1Char.sprite)) {
+                this._tabObjects.push(
+                    this.add.sprite(j1X, previewY, p1Char.sprite, 0)
+                        .setScale(1.4).setDepth(UI.DEPTH_PANEL + 4)
+                );
+            }
+            this._tabObjects.push(this.add.text(j1X, previewY + 44, isLocal ? 'J1' : I18n.t('ingame.you'), {
+                fontFamily: FONT_PIXEL, fontSize: '11px', color: '#5B9BD5', shadow: NO_SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+
+            // VS
+            this._tabObjects.push(this.add.text(CX, previewY, 'VS', {
+                fontFamily: FONT_PIXEL, fontSize: '18px', color: CSS.ACCENT, shadow: NO_SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+
+            // J2 preview
+            const p2GreetKey = `${p2Char.charId}_greeting`;
+            const p2AnimKey = `${p2Char.charId}_greet`;
+            if (this.textures.exists(p2GreetKey) && this.anims.exists(p2AnimKey)) {
+                const spr = this.add.sprite(j2X, previewY, p2GreetKey, 0)
+                    .setScale(1.4).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
+                spr.play(p2AnimKey);
+                this._tabObjects.push(spr);
+            } else if (this.textures.exists(p2Char.sprite)) {
+                this._tabObjects.push(
+                    this.add.sprite(j2X, previewY, p2Char.sprite, 0)
+                        .setScale(1.4).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
+                );
+            }
+            this._tabObjects.push(this.add.text(j2X, previewY + 44, isLocal ? 'J2' : I18n.t('ingame.opponent'), {
+                fontFamily: FONT_PIXEL, fontSize: '11px', color: '#C44B3F', shadow: NO_SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+        } else {
+            // === DESKTOP : preview J1/J2 sur les cotes du grid ===
+            const leftSpace = gridX - 24;
+            const sideX = 12 + leftSpace / 2;
+            const sideY = topY + 14 + cellH;
+
+            const p1GreetKey = `${p1Char.charId}_greeting`;
+            const p1AnimKey = `${p1Char.charId}_greet`;
+            if (this.textures.exists(p1GreetKey) && this.anims.exists(p1AnimKey)) {
+                const spr = this.add.sprite(sideX, sideY - 10, p1GreetKey, 0)
+                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4);
+                spr.play(p1AnimKey);
+                this._tabObjects.push(spr);
+            } else if (this.textures.exists(p1Char.sprite)) {
+                this._tabObjects.push(
+                    this.add.sprite(sideX, sideY - 10, p1Char.sprite, 0)
+                        .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4)
+                );
+            }
+            this._tabObjects.push(this.add.text(sideX, sideY + 28, isLocal ? 'J1' : I18n.t('ingame.you'), {
+                fontFamily: FONT_PIXEL, fontSize: '7px', color: '#5B9BD5', shadow: NO_SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+
+            const rightSpace = Layout.W - 24 - gridX - gridW;
+            const rightX = gridX + gridW + 12 + rightSpace / 2;
+            const p2GreetKey = `${p2Char.charId}_greeting`;
+            const p2AnimKey = `${p2Char.charId}_greet`;
+            if (this.textures.exists(p2GreetKey) && this.anims.exists(p2AnimKey)) {
+                const spr = this.add.sprite(rightX, sideY - 10, p2GreetKey, 0)
+                    .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true);
+                spr.play(p2AnimKey);
+                this._tabObjects.push(spr);
+            } else if (this.textures.exists(p2Char.sprite)) {
+                this._tabObjects.push(
+                    this.add.sprite(rightX, sideY - 10, p2Char.sprite, 0)
+                        .setScale(1.0).setDepth(UI.DEPTH_PANEL + 4).setFlipX(true)
+                );
+            }
+            this._tabObjects.push(this.add.text(rightX, sideY + 28, isLocal ? 'J2' : I18n.t('ingame.opponent'), {
+                fontFamily: FONT_PIXEL, fontSize: '7px', color: '#C44B3F', shadow: NO_SHADOW
+            }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
+        }
+
+        // Portrait : grille sous le preview J1/J2 (offset Y)
+        const gridYOffset = p ? 100 : 14;
         for (let i = 0; i < _charValues.length; i++) {
             const col = i % gridCols;
             const row = Math.floor(i / gridCols);
             const cx = gridX + col * (cellW + cellGap) + cellW / 2;
-            const cy = topY + 14 + row * (cellH + cellGap) + cellH / 2;
+            const cy = topY + gridYOffset + row * (cellH + cellGap) + cellH / 2;
             const char = _charValues[i];
             const isLocked = char.locked;
             const isP1 = !isLocked && i === this._p1Index;
@@ -501,8 +600,10 @@ export default class QuickPlayScene extends Phaser.Scene {
         }
 
         // === SELECTED CHARACTERS DETAIL (below grid) ===
-        const detailY = topY + 14 + 2 * (cellH + cellGap) + 8;
-        const halfW = (Layout.W - 80) / 2;
+        const gridRows = Math.ceil(_charValues.length / gridCols);
+        const detailY = topY + gridYOffset + gridRows * (cellH + cellGap) + 8;
+        const p1Label = isLocal ? 'J1' : I18n.t('ingame.you');
+        const p2Label = isLocal ? 'J2' : I18n.t('ingame.opponent');
 
         // Horizontal divider above details
         const topDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
@@ -510,27 +611,34 @@ export default class QuickPlayScene extends Phaser.Scene {
         topDiv.lineBetween(40, detailY - 4, Layout.W - 40, detailY - 4);
         this._tabObjects.push(topDiv);
 
-        // Vertical divider between P1 and P2
-        const midDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
-        midDiv.lineStyle(1, COLORS.OR, 0.15);
-        midDiv.lineBetween(CX, detailY, CX, detailY + 90);
-        this._tabObjects.push(midDiv);
-
-        // P1 detail
-        const p1Label = isLocal ? 'J1' : I18n.t('ingame.you');
-        const p2Label = isLocal ? 'J2' : I18n.t('ingame.opponent');
-        this._buildCharDetail(40, detailY + 2, halfW, this._p1Index, p1Label, '#5B9BD5');
-        // P2 detail
-        this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, p2Label, '#C44B3F');
+        if (p) {
+            // Portrait : stack P1/P2 vertical (evite compression texte)
+            this._buildCharDetail(20, detailY + 4, Layout.W - 40, this._p1Index, p1Label, '#5B9BD5');
+            const hDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+            hDiv.lineStyle(1, COLORS.OR, 0.1);
+            hDiv.lineBetween(40, detailY + 104, Layout.W - 40, detailY + 104);
+            this._tabObjects.push(hDiv);
+            this._buildCharDetail(20, detailY + 110, Layout.W - 40, this._p2Index, p2Label, '#C44B3F');
+        } else {
+            const halfW = (Layout.W - 80) / 2;
+            // Vertical divider between P1 and P2
+            const midDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
+            midDiv.lineStyle(1, COLORS.OR, 0.15);
+            midDiv.lineBetween(CX, detailY, CX, detailY + 90);
+            this._tabObjects.push(midDiv);
+            this._buildCharDetail(40, detailY + 2, halfW, this._p1Index, p1Label, '#5B9BD5');
+            this._buildCharDetail(40 + halfW + 8, detailY + 2, halfW, this._p2Index, p2Label, '#C44B3F');
+        }
 
         // Active slot indicator (shows who the next click will assign to)
         const slotLabel = this._selectingSlot === 'p1'
             ? (isLocal ? 'J1' : I18n.t('ingame.you'))
             : (isLocal ? 'J2' : I18n.t('ingame.opponent'));
         const slotColor = this._selectingSlot === 'p1' ? '#5B9BD5' : '#C44B3F';
-        this._tabObjects.push(this.add.text(CX, detailY + 95,
+        const slotIndicatorY = p ? (detailY + 210) : (detailY + 95);
+        this._tabObjects.push(this.add.text(CX, slotIndicatorY,
             `${I18n.t('quickplay.selecting')}: ${slotLabel}`, {
-                fontFamily: 'monospace', fontSize: '8px',
+                fontFamily: 'monospace', fontSize: p ? '11px' : '8px',
                 color: slotColor, shadow: NO_SHADOW
             }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 2));
     }
@@ -1014,19 +1122,22 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._destroyList(this._bottomObjects);
         this._bottomObjects = [];
 
+        const p = IS_PORTRAIT_Q;
+
         // Summary text
         const summaryText = this._getSummaryText();
-        this._summaryLabel = this.add.text(CX, BOTTOM_Y - 4, summaryText, {
-            fontFamily: 'monospace', fontSize: '8px',
-            color: CSS.OCRE, shadow: NO_SHADOW, alpha: 0.7
+        this._summaryLabel = this.add.text(CX, BOTTOM_Y - (p ? 20 : 4), summaryText, {
+            fontFamily: 'monospace', fontSize: p ? '11px' : '8px',
+            color: CSS.OCRE, shadow: NO_SHADOW, alpha: 0.85,
+            wordWrap: { width: Layout.W - 20 }, align: 'center'
         }).setOrigin(0.5).setDepth(UI.DEPTH_UI);
         this._bottomObjects.push(this._summaryLabel);
 
-        // JOUER button
-        const btnW = 220;
-        const btnH = 36;
-        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + 22, btnW, btnH, I18n.t('quickplay.play_btn'), {
-            fontSize: '16px',
+        // JOUER button — portrait : gros CTA pleine largeur
+        const btnW = p ? (Layout.W - 60) : 220;
+        const btnH = p ? 72 : 36;
+        const btn = UIFactory.createWoodButton(this, CX, BOTTOM_Y + (p ? 32 : 22), btnW, btnH, I18n.t('quickplay.play_btn'), {
+            fontSize: p ? '26px' : '16px',
             selectedTextColor: CSS.OR,
             depth: UI.DEPTH_UI,
             onDown: () => this._launchGame()
@@ -1041,7 +1152,7 @@ export default class QuickPlayScene extends Phaser.Scene {
             ease: 'Sine.easeInOut'
         });
 
-        // Controls hint
+        // Controls hint — auto-masque en portrait via UIFactory.addControlsHint
         this._bottomObjects.push(UIFactory.addControlsHint(this,
             I18n.t('quickplay.controls_hint'),
             { depth: UI.DEPTH_UI }
