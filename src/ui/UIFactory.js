@@ -812,7 +812,9 @@ export default class UIFactory {
             }).setOrigin(0.5);
             container.add(arrow);
 
-            const txt = scene.add.text(28, 0, label, {
+            // On a deja la fleche dediee : strip les prefixes redondants < ou ← du label
+            const cleanLabel = label.replace(/^[<←]\s*/, '').replace(/^\[ESC\]\s*/, '');
+            const txt = scene.add.text(28, 0, cleanLabel, {
                 fontFamily: FONT_PIXEL, fontSize: UI.HINT_SIZE,
                 color: CSS.OCRE, shadow: SHADOW_TEXT
             }).setOrigin(0, 0.5);

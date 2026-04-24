@@ -231,19 +231,22 @@ export default class ShopScene extends Phaser.Scene {
             fontFamily: FONT_PIXEL, fontSize: '8px', color: '#FFFFFF', shadow: SHADOW
         }).setOrigin(0.5).setDepth(6);
 
-        // Nom deal + discount
+        // Nom deal + discount — stroke marron pour lisibilite sur gradient or
         const dealName = I18n.field(deal, 'name') || deal.name || deal.id;
         this.add.text(bx + 60, by + 12, `${dealName}`, {
-            fontFamily: FONT_PIXEL, fontSize: '10px', color: '#1A1510', shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '11px', color: '#FFFFFF',
+            stroke: '#3A1810', strokeThickness: 3
         }).setDepth(6);
 
-        this.add.text(bx + 60, by + 30, `-${discountPct}% : ${finalPrice}G`, {
-            fontFamily: FONT_PIXEL, fontSize: '9px', color: '#5A1A1A', shadow: SHADOW
+        this.add.text(bx + 60, by + 32, `-${discountPct}% : ${finalPrice}G`, {
+            fontFamily: FONT_PIXEL, fontSize: '10px', color: '#FFE8A0',
+            stroke: '#5A1A1A', strokeThickness: 3
         }).setDepth(6);
 
         // Countdown text bottom-right
         this._featuredCountdown = this.add.text(bx + bw - 8, by + bh - 8, '', {
-            fontFamily: FONT_PIXEL, fontSize: '9px', color: '#1A1510', shadow: SHADOW
+            fontFamily: FONT_PIXEL, fontSize: '10px', color: '#FFFFFF',
+            stroke: '#3A1810', strokeThickness: 3
         }).setOrigin(1, 1).setDepth(6);
 
         const updateCountdown = () => {
