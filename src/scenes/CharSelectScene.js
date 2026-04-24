@@ -65,9 +65,11 @@ export default class CharSelectScene extends Phaser.Scene {
             stripes.fillRect(i, 0, 12, Layout.H);
         }
 
-        // Title
-        UIFactory.addTitle(this, Layout.W / 2, 26, 'CHOIX DU PERSONNAGE', { depth: 5, fontSize: '14px' });
-        UIFactory.addDivider(this, Layout.W / 2, 44, 280, { depth: 5 });
+        // Title — portrait : plus grand pour lisibilite mobile
+        const titleFs = Layout.isPortrait ? '20px' : '14px';
+        const dividerY = Layout.isPortrait ? 50 : 44;
+        UIFactory.addTitle(this, Layout.W / 2, Layout.isPortrait ? 28 : 26, 'CHOIX DU PERSONNAGE', { depth: 5, fontSize: titleFs });
+        UIFactory.addDivider(this, Layout.W / 2, dividerY, Layout.isPortrait ? 360 : 280, { depth: 5 });
 
         // Character grid
         this._createCharacterGrid();
@@ -106,10 +108,10 @@ export default class CharSelectScene extends Phaser.Scene {
         // Desktop : grid 5 cols × N rows, preview a droite (inchange).
         const portrait = Layout.isPortrait;
         const gridX = portrait ? 15 : 40;
-        const gridY = portrait ? 60 : 64;
+        const gridY = portrait ? 70 : 64;
         const cols = portrait ? 3 : 5;
         const cellW = portrait ? Math.floor((Layout.W - 2 * gridX) / cols) : 90;
-        const cellH = portrait ? 95 : 100;
+        const cellH = portrait ? 100 : 100;
 
         this._cells = [];
         this._gridCols = cols;
@@ -203,7 +205,7 @@ export default class CharSelectScene extends Phaser.Scene {
 
                 // Name on card
                 this.add.text(cx, cy + 32, char.name, {
-                    fontFamily: 'monospace', fontSize: '12px', color: '#F5E6D0', shadow: SHADOW
+                    fontFamily: 'monospace', fontSize: portrait ? '14px' : '12px', color: '#F5E6D0', shadow: SHADOW
                 }).setOrigin(0.5);
 
                 // Rarity badge (top-right) — petit dot + premiere lettre du label
@@ -246,9 +248,9 @@ export default class CharSelectScene extends Phaser.Scene {
         // Desktop : panneau droite (inchange).
         const portrait = Layout.isPortrait;
         const pw = portrait ? (Layout.W - 20) : 200;
-        const ph = portrait ? 420 : 360;
+        const ph = portrait ? 400 : 360;
         const px = portrait ? (Layout.W / 2) : (Layout.W - 220);
-        const py = portrait ? 450 : 64;
+        const py = portrait ? 480 : 64;
         // Expose pour les refs downstream (sprite preview, stat fill anim)
         this._previewPx = px;
         this._previewPy = py;
@@ -256,17 +258,20 @@ export default class CharSelectScene extends Phaser.Scene {
         // Wood panel background
         UIFactory.createWoodPanel(this, px - pw / 2, py, pw, ph, { depth: 1 });
 
-        // Preview elements
-        this._previewName = this.add.text(px, py + 20, '', {
-            fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
+        // Preview elements — portrait : typos plus grosses pour lisibilite
+        const nameFs  = portrait ? '22px' : '16px';
+        const titleFs = portrait ? '14px' : '12px';
+        const catchFs = portrait ? '13px' : '11px';
+        this._previewName = this.add.text(px, py + 22, '', {
+            fontFamily: 'monospace', fontSize: nameFs, color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5).setDepth(2);
 
-        this._previewTitle = this.add.text(px, py + 38, '', {
-            fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+        this._previewTitle = this.add.text(px, py + 48, '', {
+            fontFamily: 'monospace', fontSize: titleFs, color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5).setDepth(2);
 
-        this._previewCatchphrase = this.add.text(px, py + 55, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#3A2E28',
+        this._previewCatchphrase = this.add.text(px, py + 68, '', {
+            fontFamily: 'monospace', fontSize: catchFs, color: '#3A2E28',
             shadow: { offsetX: 0, offsetY: 0, color: 'rgba(0,0,0,0)', blur: 0, fill: false },
             wordWrap: { width: portrait ? pw - 30 : 180 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0).setDepth(2);
@@ -281,22 +286,27 @@ export default class CharSelectScene extends Phaser.Scene {
         // Divider above stats
         UIFactory.addDivider(this, px, barStartY - 12, 160, { depth: 2, color: 0x8B6B3D });
 
+        // Portrait : bar plus large et fonts plus grosses
+        const barW = portrait ? 160 : 120;
+        const barH = portrait ? 14 : 10;
+        const statLabelFs = portrait ? '14px' : '12px';
+        const statNumFs = portrait ? '16px' : '13px';
         for (let i = 0; i < statNames.length; i++) {
             const by = barStartY + i * 36;
 
-            this.add.text(px - 85, by - 2, statLabels[i], {
-                fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
+            this.add.text(px - (portrait ? 105 : 85), by - 2, statLabels[i], {
+                fontFamily: 'monospace', fontSize: statLabelFs, color: '#D4A574', shadow: SHADOW
             }).setOrigin(0, 0.5).setDepth(2);
 
             const barBg = this.add.graphics().setDepth(2);
             barBg.fillStyle(0x1A1510, 0.6);
-            barBg.fillRoundedRect(px - 40, by - 8, 120, 10, 3);
+            barBg.fillRoundedRect(px - (portrait ? 50 : 40), by - barH / 2 - 2, barW, barH, 3);
             barBg.lineStyle(1, 0x5A4A38, 0.3);
-            barBg.strokeRoundedRect(px - 40, by - 8, 120, 10, 3);
+            barBg.strokeRoundedRect(px - (portrait ? 50 : 40), by - barH / 2 - 2, barW, barH, 3);
 
             const barFill = this.add.graphics().setDepth(2);
-            const numText = this.add.text(px + 88, by - 2, '', {
-                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0', shadow: SHADOW
+            const numText = this.add.text(px + (portrait ? 124 : 88), by - 2, '', {
+                fontFamily: 'monospace', fontSize: statNumFs, color: '#F5E6D0', shadow: SHADOW
             }).setOrigin(0.5).setDepth(2);
 
             this._statBars[statNames[i]] = { fill: barFill, num: numText, color: statColors[i], y: by - 2 };
@@ -304,26 +314,28 @@ export default class CharSelectScene extends Phaser.Scene {
 
         // Description
         this._previewDesc = this.add.text(px, barStartY + 150, '', {
-            fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
+            fontFamily: 'monospace', fontSize: portrait ? '13px' : '11px', color: '#F5E6D0',
             shadow: SHADOW, wordWrap: { width: portrait ? pw - 30 : 180 }, align: 'center', lineSpacing: 3
         }).setOrigin(0.5, 0).setDepth(10);
 
         this._previewSprite = null;
         this._portraitImage = null;
 
-        // Rookie abilities section (sprite area, y≈368-424)
-        const abY = py + 304; // 368
+        // Rookie abilities section
+        const abY = py + (portrait ? 286 : 304);
         this._abilitiesLabel = this.add.text(px, abY, '', {
-            fontFamily: 'monospace', fontSize: '10px', color: '#FFD700', shadow: SHADOW
+            fontFamily: 'monospace', fontSize: portrait ? '13px' : '10px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(10);
 
         this._abilityTexts = [];
         const abLineLeftX = portrait ? (px - pw / 2 + 20) : (px - 88);
         const abWrapWidth = portrait ? (pw - 40) : 168;
+        const abFs = portrait ? '12px' : '10px';
+        const abLineStep = portrait ? 26 : 22;
         for (let i = 0; i < 3; i++) {
-            const lineY = abY + 14 + i * 22;
+            const lineY = abY + 16 + i * abLineStep;
             const t = this.add.text(abLineLeftX, lineY, '', {
-                fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
+                fontFamily: 'monospace', fontSize: abFs, color: '#D4A574',
                 wordWrap: { width: abWrapWidth }, lineSpacing: 1
             }).setOrigin(0, 0).setDepth(10);
             this._abilityTexts.push(t);
@@ -391,9 +403,12 @@ export default class CharSelectScene extends Phaser.Scene {
         for (const stat of statNames) {
             const bar = this._statBars[stat];
             const value = rookieStats ? (rookieStats[stat] ?? char.stats[stat]) : char.stats[stat];
-            const targetWidth = (value / 10) * 120;
-            const bx = (this._previewPx ?? (Layout.W - 220)) - 40;
-            const by = bar.y - 6;
+            const portraitNow = Layout.isPortrait;
+            const fullBarW = portraitNow ? 160 : 120;
+            const fullBarH = portraitNow ? 14 : 10;
+            const targetWidth = (value / 10) * fullBarW;
+            const bx = (this._previewPx ?? (Layout.W - 220)) - (portraitNow ? 50 : 40);
+            const by = bar.y - fullBarH / 2 - 1;
 
             bar.fill.clear();
             const anim = { w: 0 };
@@ -405,9 +420,9 @@ export default class CharSelectScene extends Phaser.Scene {
                 onUpdate: () => {
                     bar.fill.clear();
                     bar.fill.fillStyle(bar.color, 0.8);
-                    bar.fill.fillRoundedRect(bx, by, anim.w, 10, 3);
+                    bar.fill.fillRoundedRect(bx, by, anim.w, fullBarH, 3);
                     bar.fill.fillStyle(0xFFFFFF, 0.15);
-                    bar.fill.fillRoundedRect(bx, by, anim.w, 5, 3);
+                    bar.fill.fillRoundedRect(bx, by, anim.w, fullBarH / 2, 3);
                 }
             });
             bar.num.setText(value.toString());
