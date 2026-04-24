@@ -2,304 +2,744 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Mockups portrait — Petanque Master (démo Claude Design)</title>
+<title>Mockups portrait — Petanque Master v2 (démo Claude Design)</title>
 <style>
   :root {
     --ocre: #D4A574;
+    --ocre-dark: #B08855;
     --terracotta: #C4854A;
+    --terracotta-dark: #9A6636;
     --olive: #6B8E4E;
+    --olive-dark: #4F6B38;
     --lavande: #9B7BB8;
     --ciel: #87CEEB;
+    --ciel-dark: #5A94C8;
     --creme: #F5E6D0;
+    --creme-soft: #E8D4B4;
     --ombre: #3A2E28;
     --ombre-deep: #1A1510;
     --accent: #C44B3F;
     --or: #FFD700;
+    --or-soft: #E8C030;
     --gris: #9E9E8E;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #1a1510;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+    background: radial-gradient(ellipse at top, #2a1f1a 0%, #0f0a08 70%);
     color: var(--creme);
     padding: 40px 20px;
+    min-height: 100vh;
   }
   .intro {
-    max-width: 900px;
-    margin: 0 auto 40px;
-    padding: 24px;
-    background: #2a1f1a;
+    max-width: 1000px;
+    margin: 0 auto 48px;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #2a1f1a 0%, #1a1510 100%);
     border-left: 4px solid var(--or);
-    line-height: 1.6;
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    line-height: 1.7;
   }
-  .intro h1 { color: var(--or); margin-bottom: 12px; }
-  .intro p { margin-bottom: 10px; }
-  .intro code { color: var(--ocre); background: #0f0a08; padding: 2px 6px; border-radius: 3px; }
+  .intro h1 { color: var(--or); margin-bottom: 14px; font-size: 26px; letter-spacing: 1px; }
+  .intro p { margin-bottom: 12px; font-size: 14px; }
+  .intro code {
+    color: var(--ocre); background: #0f0a08; padding: 3px 8px; border-radius: 4px;
+    font-family: 'SF Mono', Consolas, monospace; font-size: 13px;
+  }
+  .intro b { color: var(--creme); }
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-    gap: 40px;
-    max-width: 1600px;
+    grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+    gap: 48px;
+    max-width: 1700px;
     margin: 0 auto;
   }
   .scene {
-    background: #2a1f1a;
-    border: 1px solid var(--ombre);
-    padding: 20px;
+    background: linear-gradient(180deg, #2a1f1a 0%, #1f1612 100%);
+    border: 1px solid #3a2f24;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
-  .scene h2 { color: var(--ocre); margin-bottom: 8px; }
+  .scene h2 {
+    color: var(--ocre); margin-bottom: 8px; font-size: 18px;
+    font-family: 'SF Mono', Consolas, monospace; letter-spacing: 1px;
+  }
   .scene .caption {
-    font-size: 12px; color: var(--gris); margin-bottom: 16px; line-height: 1.4;
+    font-size: 12px; color: var(--gris); margin-bottom: 20px; line-height: 1.5;
   }
+
+  /* ========== FRAME (cadre smartphone) ========== */
   .frame {
     width: 480px; height: 960px;
     background: var(--ombre);
     position: relative;
     margin: 0 auto;
-    border: 2px solid var(--terracotta);
+    border: 6px solid #0a0806;
+    border-radius: 36px;
     overflow: hidden;
-    image-rendering: pixelated;
+    box-shadow:
+      0 0 0 2px #2a1f1a,
+      0 20px 60px rgba(0,0,0,0.6),
+      inset 0 0 0 1px rgba(255,215,0,0.05);
+    font-family: 'SF Mono', Consolas, monospace;
   }
+  .frame::before {
+    /* Notch stylé */
+    content: "";
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 28px;
+    background: #0a0806;
+    border-radius: 0 0 18px 18px;
+    z-index: 1000;
+  }
+
   .note {
     position: absolute;
-    background: rgba(255,215,0,0.15);
-    border-left: 2px solid var(--or);
+    background: rgba(255,215,0,0.12);
+    border: 1px solid rgba(255,215,0,0.35);
     padding: 4px 8px;
-    font-size: 10px;
+    font-size: 9px;
     color: var(--or);
-    z-index: 99;
+    z-index: 999;
+    border-radius: 3px;
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.5px;
   }
   .specs {
-    margin-top: 16px; padding: 12px; background: #0f0a08; font-size: 12px;
-    color: var(--gris); line-height: 1.5;
+    margin-top: 18px; padding: 14px 16px;
+    background: #0f0a08;
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--gris); line-height: 1.7;
+    font-family: 'SF Mono', Consolas, monospace;
   }
   .specs b { color: var(--ocre); }
 
-  /* ============ TITLE SCENE ============ */
-  .title-scene { background: linear-gradient(180deg, #5A94C8 0%, #E8B868 50%, #8B6030 100%); }
-  .title-logo {
-    position: absolute; top: 140px; left: 50%; transform: translateX(-50%);
-    font-size: 32px; color: var(--ombre); text-shadow: 2px 2px 0 var(--or);
-    letter-spacing: 3px; text-align: center; line-height: 1.3;
-    font-weight: bold;
+  /* Texture SVG commune */
+  .noise {
+    position: absolute; inset: 0; pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/></filter><rect width='80' height='80' filter='url(%23n)'/></svg>");
   }
-  .title-sub { font-size: 10px; color: var(--ombre); margin-top: 8px; letter-spacing: 2px; }
+
+  /* ================================================================
+     1. TITLE SCENE
+     ================================================================ */
+  .title-scene {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,232,160,0.5) 0%, transparent 55%),
+      linear-gradient(180deg, #5A94C8 0%, #8BB3D0 20%, #E8B868 55%, #D4A060 75%, #8B6030 100%);
+  }
+  .title-hills {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 200px;
+    opacity: 0.6;
+    background: linear-gradient(180deg, transparent 0%, #6B5030 100%);
+  }
+  .title-logo {
+    position: absolute; top: 150px; left: 50%; transform: translateX(-50%);
+    text-align: center;
+  }
+  .title-logo .name {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 58px; font-weight: 900;
+    color: var(--creme);
+    letter-spacing: 2px; line-height: 0.9;
+    text-shadow:
+      4px 4px 0 var(--ombre),
+      8px 8px 0 var(--ombre-deep),
+      0 0 30px rgba(255,215,0,0.4);
+    transform: rotate(-2deg);
+  }
+  .title-logo .sub {
+    margin-top: 20px;
+    font-size: 10px; color: var(--ombre); letter-spacing: 6px; font-weight: 700;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+  }
+  .title-logo .boule {
+    display: inline-block;
+    width: 52px; height: 52px;
+    margin: -6px 0 16px;
+    background: radial-gradient(circle at 30% 30%, #e8e8e8 0%, #808080 50%, #303030 100%);
+    border-radius: 50%;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset -3px -3px 6px rgba(0,0,0,0.3);
+  }
   .title-menu {
-    position: absolute; top: 380px; left: 50%; transform: translateX(-50%);
-    width: 340px; display: flex; flex-direction: column; gap: 16px;
+    position: absolute; top: 420px; left: 50%; transform: translateX(-50%);
+    width: 340px; display: flex; flex-direction: column; gap: 14px;
   }
   .btn {
-    height: 64px; background: var(--ombre); color: var(--creme);
-    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
-    font-size: 18px; letter-spacing: 1px; box-shadow: 3px 3px 0 var(--ombre-deep);
+    height: 66px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Impact', sans-serif; font-size: 20px;
+    letter-spacing: 2px;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
   }
-  .btn.primary { background: var(--terracotta); border-color: var(--or); }
-  .btn.secondary { background: var(--olive); }
+  .btn-ocre {
+    background: linear-gradient(180deg, var(--ocre) 0%, var(--ocre-dark) 100%);
+    color: var(--ombre-deep);
+    border: 2px solid var(--creme-soft);
+    box-shadow: 0 4px 0 var(--ombre-deep), 0 6px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .btn-terracotta {
+    background: linear-gradient(180deg, var(--terracotta) 0%, var(--terracotta-dark) 100%);
+    color: var(--creme);
+    border: 2px solid var(--or);
+    box-shadow: 0 4px 0 var(--ombre-deep), 0 8px 20px rgba(255,215,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .btn-olive {
+    background: linear-gradient(180deg, var(--olive) 0%, var(--olive-dark) 100%);
+    color: var(--creme);
+    border: 2px solid var(--creme-soft);
+    box-shadow: 0 4px 0 var(--ombre-deep), 0 6px 12px rgba(0,0,0,0.3);
+  }
+  .btn-outline {
+    background: rgba(58,46,40,0.7);
+    color: var(--creme-soft);
+    border: 2px solid var(--ocre);
+    box-shadow: 0 4px 0 var(--ombre-deep), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(8px);
+  }
   .title-footer {
-    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
-    font-size: 10px; color: var(--ombre); display: flex; gap: 20px;
+    position: absolute; bottom: 30px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 28px;
+    font-size: 10px; color: var(--ombre); font-weight: 700; letter-spacing: 1px;
+  }
+  .footer-icon {
+    width: 28px; height: 28px;
+    background: rgba(58,46,40,0.8); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.2);
   }
 
-  /* ============ CHARSELECT SCENE ============ */
+  /* ================================================================
+     2. CHARSELECT SCENE
+     ================================================================ */
+  .charselect-bg {
+    background:
+      radial-gradient(circle at 50% 20%, #5a3f2d 0%, transparent 60%),
+      linear-gradient(180deg, #2a2018 0%, #1a1510 100%);
+  }
   .charselect-header {
-    position: absolute; top: 16px; left: 0; right: 0; height: 60px;
-    background: var(--ombre-deep); display: flex; align-items: center; justify-content: center;
-    font-size: 14px; color: var(--or); border-bottom: 2px solid var(--ocre);
+    position: absolute; top: 32px; left: 20px; right: 20px; height: 52px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+    border: 1px solid rgba(212,165,116,0.3);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    font-family: 'Impact', sans-serif;
+    color: var(--or); letter-spacing: 3px; font-size: 14px;
+    backdrop-filter: blur(10px);
+  }
+  .back-icon {
+    color: var(--creme); font-size: 20px; cursor: pointer;
   }
   .charselect-grid {
-    position: absolute; top: 96px; left: 24px; right: 24px;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    position: absolute; top: 108px; left: 20px; right: 20px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
   .char-card {
-    aspect-ratio: 1; background: var(--ombre-deep); border: 2px solid var(--ocre);
-    display: flex; align-items: center; justify-content: center; position: relative;
-    font-size: 9px; color: var(--creme); text-align: center; padding: 4px;
+    aspect-ratio: 1;
+    background: linear-gradient(180deg, #2a1f1a 0%, #1a1510 100%);
+    border: 2px solid #3a2f24;
+    border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding: 8px 4px; position: relative;
+    font-family: 'SF Mono', monospace;
+    font-size: 9px; color: var(--creme); text-align: center;
+    overflow: hidden;
+    transition: all 0.3s;
   }
-  .char-card.selected { border-color: var(--or); box-shadow: 0 0 10px var(--or); background: #5a3f2d; }
-  .char-card.locked { opacity: 0.4; }
+  .char-sprite {
+    width: 48px; height: 48px;
+    margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+  }
+  .char-name { letter-spacing: 0.5px; font-weight: 700; color: var(--creme-soft); }
+  .char-score { font-size: 8px; color: var(--or); margin-top: 2px; }
+  .char-card.selected {
+    border: 2px solid var(--or);
+    background: linear-gradient(180deg, #5a3f2d 0%, #3a2518 100%);
+    box-shadow: 0 0 20px rgba(255,215,0,0.4), inset 0 0 20px rgba(255,215,0,0.1);
+    transform: scale(1.05);
+  }
+  .char-card.locked {
+    opacity: 0.35;
+    background: #1a1510;
+  }
+  .char-card.locked .lock {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 24px; color: var(--ocre);
+  }
   .char-stats {
-    position: absolute; bottom: 140px; left: 24px; right: 24px;
-    background: var(--ombre-deep); padding: 16px; border: 1px solid var(--ocre);
+    position: absolute; bottom: 120px; left: 20px; right: 20px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.95), rgba(42,31,26,0.95));
+    padding: 16px 20px;
+    border: 1px solid var(--ocre);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
   }
-  .char-stats h3 { color: var(--or); font-size: 14px; margin-bottom: 8px; }
-  .stat-bar { display: flex; justify-content: space-between; margin: 4px 0; font-size: 11px; }
+  .char-stats h3 {
+    color: var(--or); font-family: 'Impact', sans-serif;
+    font-size: 16px; letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .char-stats .arche { color: var(--gris); font-size: 10px; margin-bottom: 10px; }
+  .stat-bar {
+    display: flex; align-items: center; gap: 10px; margin: 5px 0;
+    font-size: 10px; color: var(--creme-soft); font-family: 'SF Mono', monospace;
+  }
+  .stat-bar .label { width: 75px; letter-spacing: 0.5px; }
+  .stat-bar .track {
+    flex: 1; height: 8px; background: #1a1510; border-radius: 4px; overflow: hidden;
+    border: 1px solid #3a2f24;
+  }
+  .stat-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--terracotta), var(--or));
+    border-radius: 4px;
+  }
   .charselect-footer {
-    position: absolute; bottom: 24px; left: 24px; right: 24px;
+    position: absolute; bottom: 28px; left: 20px; right: 20px;
     display: flex; gap: 12px;
   }
-  .charselect-footer .btn { flex: 1; height: 56px; font-size: 14px; }
+  .charselect-footer .btn { flex: 1; height: 54px; font-size: 15px; }
 
-  /* ============ SHOP SCENE ============ */
+  /* ================================================================
+     3. SHOP SCENE
+     ================================================================ */
+  .shop-bg {
+    background:
+      radial-gradient(circle at top right, rgba(255,215,0,0.08), transparent 40%),
+      linear-gradient(180deg, #2a2018 0%, #1a1510 100%);
+  }
   .shop-header {
-    position: absolute; top: 16px; left: 0; right: 0; padding: 12px 24px;
+    position: absolute; top: 32px; left: 20px; right: 20px; height: 52px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3));
+    border: 1px solid rgba(212,165,116,0.3);
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--ombre-deep); border-bottom: 2px solid var(--ocre);
+    padding: 0 20px;
+    backdrop-filter: blur(10px);
+  }
+  .shop-header .title {
+    font-family: 'Impact', sans-serif;
+    color: var(--or); letter-spacing: 3px; font-size: 16px;
   }
   .shop-galets {
-    display: flex; align-items: center; gap: 6px; color: var(--or); font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--or); font-size: 15px; font-weight: 700;
   }
-  .shop-galets::before { content: "●"; color: var(--or); font-size: 18px; }
+  .shop-galets .coin {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #FFF0A0, #FFD700 50%, #B8860B 100%);
+    box-shadow: 0 0 12px rgba(255,215,0,0.6), inset -2px -2px 4px rgba(0,0,0,0.3);
+  }
   .shop-tabs {
-    position: absolute; top: 80px; left: 0; right: 0; display: flex; height: 48px;
+    position: absolute; top: 100px; left: 20px; right: 20px;
+    display: flex; gap: 6px;
+    background: rgba(0,0,0,0.4);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(212,165,116,0.2);
   }
   .shop-tab {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    background: var(--ombre-deep); color: var(--gris); font-size: 12px;
-    border-bottom: 2px solid transparent;
+    flex: 1; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'SF Mono', monospace; font-size: 11px; letter-spacing: 1px;
+    color: var(--gris); border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .shop-tab.active { color: var(--or); background: var(--ombre); border-bottom-color: var(--or); }
+  .shop-tab.active {
+    color: var(--ombre-deep);
+    background: linear-gradient(180deg, var(--ocre), var(--ocre-dark));
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(212,165,116,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
   .shop-list {
-    position: absolute; top: 136px; bottom: 96px; left: 16px; right: 16px;
-    overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+    position: absolute; top: 164px; bottom: 100px; left: 20px; right: 20px;
+    overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    padding-right: 2px;
   }
   .shop-item {
-    display: flex; align-items: center; gap: 12px; padding: 12px;
-    background: var(--ombre-deep); border: 1px solid var(--ocre);
+    display: flex; align-items: center; gap: 14px; padding: 14px;
+    background: linear-gradient(180deg, rgba(42,31,26,0.9), rgba(26,21,16,0.9));
+    border: 1px solid #3a2f24;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
   }
-  .shop-item-icon { width: 48px; height: 48px; background: var(--terracotta); border-radius: 50%; }
-  .shop-item-info { flex: 1; font-size: 12px; }
-  .shop-item-info .name { color: var(--creme); margin-bottom: 4px; }
-  .shop-item-info .desc { color: var(--gris); font-size: 10px; }
-  .shop-item-price { color: var(--or); font-size: 14px; }
+  .shop-item:hover, .shop-item.selected {
+    border-color: var(--or);
+    box-shadow: 0 0 16px rgba(255,215,0,0.2);
+    background: linear-gradient(180deg, rgba(90,63,45,0.7), rgba(42,31,26,0.9));
+  }
+  .shop-item-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .shop-item-icon.chrome { background: radial-gradient(circle at 30% 30%, #fff, #a8a8a8 50%, #404040 100%); }
+  .shop-item-icon.bronze { background: radial-gradient(circle at 30% 30%, #e0a060, #8b5a2b 60%, #4a2e15 100%); }
+  .shop-item-icon.dore  {
+    background: radial-gradient(circle at 30% 30%, #fff0a0, #FFD700 50%, #8B6B0B 100%);
+    box-shadow: 0 4px 16px rgba(255,215,0,0.6), inset -3px -3px 6px rgba(0,0,0,0.2);
+  }
+  .shop-item-icon.titane { background: radial-gradient(circle at 30% 30%, #e0e0e0, #606060 50%, #202020 100%); }
+  .shop-item-info { flex: 1; }
+  .shop-item-info .name {
+    color: var(--creme); font-size: 13px; font-weight: 700; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .shop-item-info .name .star { color: var(--or); margin-left: 6px; }
+  .shop-item-info .desc { color: var(--gris); font-size: 10px; line-height: 1.4; }
+  .shop-item-price {
+    color: var(--or); font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'SF Mono', monospace;
+  }
+  .shop-item-price::before {
+    content: "";
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff0a0, #FFD700);
+  }
+  .shop-item-price.equipped {
+    color: var(--olive); font-size: 11px; letter-spacing: 1px;
+  }
+  .shop-item-price.equipped::before { display: none; }
   .shop-buy {
-    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    position: absolute; bottom: 28px; left: 20px; right: 20px;
     height: 56px;
   }
 
-  /* ============ PETANQUE SCENE ============ */
-  .petanque-scene { background: linear-gradient(180deg, #5A94C8 0%, #8BA878 40%, #8B6030 100%); }
-  .petanque-score {
-    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
-    width: 320px; height: 56px; background: var(--ombre-deep);
-    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
-    gap: 20px; font-size: 18px;
+  /* ================================================================
+     4. PETANQUE SCENE — refonte avec marge watcher 50px
+     ================================================================ */
+  .petanque-scene {
+    background:
+      radial-gradient(ellipse at 50% 10%, rgba(255,220,140,0.25), transparent 50%),
+      linear-gradient(180deg, #5A94C8 0%, #7AAA80 30%, #A89060 55%, #8B6030 80%, #6B4820 100%);
   }
-  .petanque-score .player { color: var(--ciel); }
-  .petanque-score .opp { color: var(--accent); }
-  .petanque-score .sep { color: var(--ocre); font-size: 14px; }
-  .petanque-score .mene { font-size: 10px; color: var(--or); margin-left: 12px; }
+  .petanque-score {
+    position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+    width: 280px; height: 52px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.92), rgba(42,31,26,0.92));
+    border: 1.5px solid var(--ocre);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    font-family: 'Impact', sans-serif;
+    font-size: 24px; letter-spacing: 2px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.15);
+    backdrop-filter: blur(10px);
+    z-index: 20;
+  }
+  .petanque-score .player { color: var(--ciel); text-shadow: 0 0 10px rgba(135,206,235,0.6); }
+  .petanque-score .opp { color: var(--accent); text-shadow: 0 0 10px rgba(196,75,63,0.6); }
+  .petanque-score .sep { color: var(--ocre); font-size: 18px; }
+  .petanque-score .mene {
+    font-size: 9px; color: var(--or); letter-spacing: 2px; font-family: 'SF Mono', monospace;
+    margin-left: 8px; font-weight: 700;
+  }
   .petanque-pause {
-    position: absolute; top: 16px; left: 16px;
-    width: 48px; height: 48px; background: var(--ombre-deep);
-    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
-    font-size: 16px; color: var(--creme);
+    position: absolute; top: 40px; left: 20px;
+    width: 48px; height: 48px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.92), rgba(42,31,26,0.92));
+    border: 1.5px solid var(--ocre);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--creme);
+    backdrop-filter: blur(10px);
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .petanque-pause::before {
+    content: ""; width: 4px; height: 14px; background: var(--creme);
+    box-shadow: 8px 0 0 var(--creme);
   }
   .petanque-dist {
-    position: absolute; top: 84px; left: 50%; transform: translateX(-50%);
-    padding: 4px 12px; background: var(--ombre-deep); border: 1px solid var(--ocre);
-    font-size: 12px; color: var(--or);
+    position: absolute; top: 98px; left: 50%; transform: translateX(-50%);
+    padding: 5px 14px 5px 10px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1px solid var(--or);
+    border-radius: 12px;
+    font-size: 11px; color: var(--or); font-family: 'SF Mono', monospace;
+    display: flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(6px);
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
+  .petanque-dist::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff0a0, #FFD700);
+    box-shadow: 0 0 6px rgba(255,215,0,0.7);
+  }
+  /* Terrain agrandi : 380×850 (scale ~2.11). Marges : 50px latérales, 45px haut, 65px bas */
   .petanque-terrain {
-    position: absolute; left: 50%; top: 144px;
-    width: 288px; height: 672px;
-    transform: translateX(-50%);
-    background: #8B6030;
-    border: 4px solid #6B4F2D;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+    position: absolute;
+    left: 50px; top: 45px;
+    width: 380px; height: 850px;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.25) 100%),
+      repeating-linear-gradient(45deg, transparent 0, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 6px),
+      linear-gradient(180deg, #9A6a36 0%, #8B5A2B 40%, #7a4e22 75%, #6b421a 100%);
+    border: 3px solid #5a3618;
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 50px rgba(0,0,0,0.4),
+      inset 0 0 100px rgba(0,0,0,0.2),
+      0 8px 25px rgba(0,0,0,0.6);
+  }
+  .petanque-terrain::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence baseFrequency='2.5' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.15'/></svg>");
+    pointer-events: none;
+    mix-blend-mode: multiply;
   }
   .terrain-cochonnet {
-    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-    width: 14px; height: 14px; background: var(--or); border-radius: 50%;
-    box-shadow: 0 0 8px var(--or);
+    position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px;
+    background: radial-gradient(circle at 30% 30%, #fff, #FFD700 50%, #B8860B 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 14px var(--or), 0 3px 6px rgba(0,0,0,0.7);
   }
   .terrain-ball {
-    position: absolute; width: 18px; height: 18px; border-radius: 50%;
-    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+    position: absolute; width: 22px; height: 22px; border-radius: 50%;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.7), inset -3px -3px 5px rgba(0,0,0,0.4);
   }
-  .terrain-ball.player { background: var(--ciel); }
-  .terrain-ball.opp { background: var(--accent); }
+  .terrain-ball.player { background: radial-gradient(circle at 30% 30%, #B0D8E8, #4A7A9A 70%, #2a4a6a 100%); }
+  .terrain-ball.opp    { background: radial-gradient(circle at 30% 30%, #E88070, #8B3528 70%, #4a1c12 100%); }
+  .terrain-ball.glow-player { box-shadow: 0 3px 6px rgba(0,0,0,0.7), inset -3px -3px 5px rgba(0,0,0,0.4), 0 0 12px var(--ciel); }
+  .terrain-shadow {
+    position: absolute;
+    width: 24px; height: 8px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* Sprites personnages SVG stylisés (vue de dos) */
+  .person {
+    position: absolute;
+    width: 44px; height: 64px;
+    z-index: 15;
+  }
+  .person svg { width: 100%; height: 100%; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); }
+
+  /* Joueur qui tire (au centre, bas du terrain) */
   .petanque-player {
-    position: absolute; bottom: 270px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 60px; background: var(--terracotta); border-radius: 4px;
-    display: flex; align-items: center; justify-content: center; font-size: 9px; color: white;
+    bottom: 130px; left: 50%; transform: translateX(-50%);
   }
+  /* Cercle de lancer */
   .petanque-circle {
-    position: absolute; bottom: 260px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 40px; border: 2px solid var(--creme); border-radius: 50%;
+    position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 12px;
+    border: 2px solid var(--creme); border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(245,230,208,0.2) 0%, transparent 70%);
+    box-shadow: 0 0 8px rgba(245,230,208,0.4);
+    z-index: 10;
   }
+  /* Adversaire watcher — marge latérale 50px, donc X = 3px (moitié sprite dans marge, moitié sur bord terrain) */
   .petanque-opponent {
-    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-    width: 40px; height: 60px; background: var(--ombre-deep);
-    display: flex; align-items: center; justify-content: center; font-size: 9px; color: white;
-    border: 1px solid var(--ocre);
+    right: 6px; top: 45%;
+    width: 40px; height: 58px;
+    filter: grayscale(0.2);
   }
+  .opponent-halo {
+    position: absolute; right: 0; top: 45%;
+    width: 48px; height: 24px; transform: translateY(-50%);
+    background: radial-gradient(ellipse, rgba(245,230,208,0.3), transparent 70%);
+    z-index: 14;
+    pointer-events: none;
+  }
+
   .petanque-modes {
-    position: absolute; bottom: 128px; left: 16px; right: 16px;
-    display: flex; gap: 12px;
+    position: absolute; bottom: 90px; left: 20px; right: 20px;
+    display: flex; gap: 8px; z-index: 20;
   }
   .mode-btn {
-    flex: 1; height: 64px; background: var(--ombre-deep); border: 2px solid var(--ocre);
+    flex: 1; height: 60px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1.5px solid var(--ocre);
+    border-radius: 8px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 11px; color: var(--creme);
+    font-family: 'Impact', sans-serif;
+    font-size: 12px; letter-spacing: 1px;
+    color: var(--creme);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
   }
-  .mode-btn.selected { border-color: var(--or); background: #5a3f2d; }
-  .mode-btn .sub { font-size: 9px; color: var(--gris); margin-top: 2px; }
+  .mode-btn.selected {
+    border-color: var(--or);
+    background: linear-gradient(180deg, rgba(90,63,45,0.95), rgba(58,37,24,0.95));
+    box-shadow: 0 4px 14px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,215,0,0.2);
+    color: var(--or);
+  }
+  .mode-btn .sub {
+    font-family: 'SF Mono', monospace;
+    font-size: 8px; color: var(--gris); margin-top: 3px; font-weight: normal; letter-spacing: 0.5px;
+  }
+  .mode-btn.selected .sub { color: var(--creme-soft); }
   .petanque-hud {
-    position: absolute; bottom: 24px; left: 16px; right: 16px;
-    display: flex; gap: 12px;
+    position: absolute; bottom: 20px; left: 20px; right: 20px;
+    display: flex; gap: 8px; z-index: 20;
   }
   .hud-btn {
-    height: 56px; background: var(--ombre-deep); border: 2px solid var(--ocre);
+    height: 56px;
+    background: linear-gradient(180deg, rgba(26,21,16,0.9), rgba(42,31,26,0.9));
+    border: 1.5px solid var(--ocre);
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 11px; color: var(--creme); padding: 0 10px;
+    font-family: 'Impact', sans-serif;
+    font-size: 11px; letter-spacing: 1px;
+    color: var(--creme); padding: 0 10px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
   }
-  .hud-btn.back { width: 56px; }
-  .hud-btn.focus { flex: 1; border-color: var(--ciel); color: var(--ciel); }
-  .hud-btn.ability { flex: 1; border-color: var(--or); color: var(--or); }
-  .hud-dots { display: flex; gap: 3px; margin-left: 4px; }
-  .hud-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .hud-btn.back { width: 56px; font-size: 18px; }
+  .hud-btn.focus {
+    flex: 1;
+    border-color: var(--ciel);
+    color: var(--ciel);
+    box-shadow: 0 4px 10px rgba(135,206,235,0.3);
+  }
+  .hud-btn.ability {
+    flex: 1;
+    border-color: var(--or);
+    color: var(--or);
+    box-shadow: 0 4px 10px rgba(255,215,0,0.3);
+  }
+  .hud-dots { display: flex; gap: 3px; margin-left: 3px; }
+  .hud-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 4px currentColor;
+  }
+  .hud-dot.empty { background: rgba(255,255,255,0.15); box-shadow: none; }
 
-  /* ============ RESULT SCENE ============ */
+  /* ================================================================
+     5. RESULT SCENE
+     ================================================================ */
   .result-bg {
-    background: radial-gradient(circle at center, #5a3f2d 0%, var(--ombre) 60%, var(--ombre-deep) 100%);
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,215,0,0.25), transparent 55%),
+      radial-gradient(ellipse at center, #5a3f2d 0%, var(--ombre) 50%, var(--ombre-deep) 100%);
+  }
+  .result-confetti {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 20% 30%, var(--or) 2px, transparent 3px),
+      radial-gradient(circle at 80% 20%, var(--ciel) 2px, transparent 3px),
+      radial-gradient(circle at 60% 40%, var(--accent) 2px, transparent 3px),
+      radial-gradient(circle at 30% 60%, var(--olive) 2px, transparent 3px),
+      radial-gradient(circle at 85% 55%, var(--or) 2px, transparent 3px),
+      radial-gradient(circle at 15% 80%, var(--ciel) 2px, transparent 3px);
+    opacity: 0.6;
   }
   .result-title {
-    position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
-    font-size: 48px; color: var(--or); text-shadow: 0 0 20px var(--or);
-    letter-spacing: 4px;
+    position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+    font-family: 'Impact', sans-serif;
+    font-size: 54px; letter-spacing: 5px;
+    color: var(--or);
+    text-shadow:
+      0 0 20px rgba(255,215,0,0.8),
+      0 0 40px rgba(255,215,0,0.4),
+      3px 3px 0 var(--ombre-deep);
+    transform: translateX(-50%) rotate(-1deg);
+  }
+  .result-subtitle {
+    position: absolute; top: 185px; left: 50%; transform: translateX(-50%);
+    font-family: 'SF Mono', monospace;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--creme-soft);
+    text-transform: uppercase;
   }
   .result-score {
-    position: absolute; top: 220px; left: 50%; transform: translateX(-50%);
-    font-size: 72px; color: var(--creme); letter-spacing: 8px;
+    position: absolute; top: 260px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 20px; align-items: center;
+    font-family: 'Impact', sans-serif;
+    font-size: 96px;
+    color: var(--creme);
+    text-shadow: 4px 4px 0 var(--ombre-deep), 0 0 30px rgba(255,215,0,0.2);
   }
+  .result-score .sep { color: var(--gris); font-size: 60px; }
   .result-score .acc { color: var(--accent); }
   .result-reward {
-    position: absolute; top: 400px; left: 50%; transform: translateX(-50%);
-    width: 360px; background: var(--ombre-deep); padding: 20px;
-    border: 2px solid var(--or); text-align: center;
+    position: absolute; top: 440px; left: 50%; transform: translateX(-50%);
+    width: 360px;
+    background: linear-gradient(180deg, rgba(58,37,24,0.95), rgba(26,21,16,0.95));
+    padding: 22px 20px;
+    border: 2px solid var(--or);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(255,215,0,0.2), inset 0 1px 0 rgba(255,215,0,0.2);
+    backdrop-filter: blur(10px);
   }
-  .result-reward h3 { color: var(--or); margin-bottom: 10px; }
-  .result-reward .amount { color: var(--creme); font-size: 24px; }
+  .result-reward h3 {
+    color: var(--or); margin-bottom: 14px;
+    font-family: 'Impact', sans-serif;
+    font-size: 16px; letter-spacing: 3px;
+  }
+  .result-reward .amount {
+    color: var(--creme); font-size: 22px; font-family: 'Impact', sans-serif;
+    letter-spacing: 1.5px; line-height: 1.4;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .result-reward .amount .coin {
+    display: inline-block;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #FFF0A0, #FFD700 50%, #B8860B 100%);
+    box-shadow: 0 0 8px rgba(255,215,0,0.5);
+  }
+  .result-reward .amount.gold {
+    color: var(--or);
+    text-shadow: 0 0 12px rgba(255,215,0,0.5);
+  }
+  .result-reward .bonus {
+    color: var(--gris); font-size: 11px; margin-top: 12px;
+    font-family: 'SF Mono', monospace;
+    padding-top: 10px; border-top: 1px solid #3a2f24;
+    letter-spacing: 1px;
+  }
   .result-actions {
-    position: absolute; bottom: 32px; left: 24px; right: 24px;
+    position: absolute; bottom: 30px; left: 20px; right: 20px;
     display: flex; flex-direction: column; gap: 12px;
   }
-  .result-actions .btn { height: 56px; }
+  .result-actions .btn { height: 56px; font-size: 16px; }
 </style>
 </head>
 <body>
 
 <div class="intro">
-  <h1>Démo « Claude Design » — Petanque Master portrait mobile</h1>
+  <h1>Mockups portrait v2 — Petanque Master (démo Claude Design)</h1>
   <p>
-    Ce fichier est un <b>exemple de livrable</b> que <code>Claude Design</code> produirait en quelques
-    prompts conversationnels à partir de ton codebase. Il montre une refonte des 5 scènes clés en
-    portrait 480×960 respectant ta palette provençale, tes conventions de taille (boutons 56px+ WCAG),
-    et les ancres définies dans <code>src/utils/Layout.js</code>.
+    Version 2 avec <b>rendu visuel enrichi</b> : sprites personnages SVG (vue de dos), textures
+    terrain procédurales (bruit SVG), ombres en couches, gradients multi-stops, bords arrondis
+    iOS-style, notch smartphone stylisé, palette provençale affinée, typographie Impact + SF Mono.
   </p>
   <p>
-    <b>Valeur démonstrée :</b> au lieu d'itérer coordonnée par coordonnée dans Phaser pour chaque
-    scène, un mockup comme celui-ci sert de <b>source de vérité visuelle</b>. Chaque agent Sonnet
-    qui attaque une scène (Phase 2 polish) a un référent pixel-précis à reproduire. Gain estimé :
-    ~50% de temps de polish, et cohérence globale garantie.
+    <b>Changement structurel principal</b> — marge watcher passée de <code>96px</code> à <code>50px</code>.
+    Le terrain en match fait désormais <code>380 × 850</code> (scale ~2.11) dans un écran <code>480×960</code>,
+    soit 88.5% de la hauteur. Les sprites adversaire (watcher) sont positionnés sur le bord du terrain,
+    moitié visible dans la marge 50px, moitié chevauchant le terrain — plus dynamique et "plein écran".
   </p>
   <p>
-    <b>Ce qui manque dans ce fichier vs Claude Design réel :</b> export Figma/PDF/PPT, édition live
-    par conversation, extraction automatique du design system depuis le codebase, capture web du
-    produit existant. Ici c'est du HTML/CSS statique fait main pour illustrer.
+    <b>Impact physique côté code</b> — scale 2.11 &gt; 1.6 actuel. La vitesse visuelle augmenterait
+    (+31%). Deux options d'implémentation :
+    <br>• <b>Scale physique 2.11 + réduction MAX_THROW_SPEED</b> de 15% pour compenser (garde la
+    distance métrique identique mais ralentit la perception).
+    <br>• <b>Scale visuel seul</b> : terrain rendu en 380×850 mais zone de physique interne reste
+    288×672, avec conversion coord physique → rendu par facteur 1.32 (plus complexe mais physique
+    100% préservée).
   </p>
-  <p style="margin-top: 16px; color: var(--gris);">
-    Ouvre ce fichier dans ton navigateur : <code>docs/mobile/DESIGN_MOCKUPS.html</code>. Les 5 cadres
-    480×960 ci-dessous simulent un écran mobile portrait.
+  <p style="margin-top: 14px; color: var(--gris);">
+    Tu valides ce look visuel + marge 50px → je traduis en code Phaser avec l'option de ton choix.
   </p>
 </div>
 
@@ -308,79 +748,96 @@
   <!-- ====== TITLE ====== -->
   <div class="scene">
     <h2>1. TitleScene</h2>
-    <p class="caption">Logo grand + menu vertical 4 boutons gros + tag version. Hiérarchie claire, pouces naturellement sur le menu.</p>
+    <p class="caption">Logo rotated -2° avec triple-shadow, boule stylée entre titre et sous-titre. Menu 4 boutons bois sculptés (gradient + shadow 3D). Footer icons discrets.</p>
     <div class="frame title-scene">
+      <div class="noise"></div>
+      <div class="title-hills"></div>
       <div class="title-logo">
-        PETANQUE<br>MASTER
-        <div class="title-sub">PIXEL ART PROVENÇAL</div>
+        <div class="name">PÉTANQUE<br>MASTER</div>
+        <div class="boule"></div>
+        <div class="sub">PIXEL ART PROVENÇAL</div>
       </div>
       <div class="title-menu">
-        <div class="btn primary">JOUER ARCADE</div>
-        <div class="btn">PARTIE RAPIDE</div>
-        <div class="btn secondary">BOUTIQUE</div>
-        <div class="btn secondary">TUTO / PROFIL</div>
+        <div class="btn btn-terracotta">▶ JOUER ARCADE</div>
+        <div class="btn btn-ocre">PARTIE RAPIDE</div>
+        <div class="btn btn-olive">BOUTIQUE &amp; STATS</div>
+        <div class="btn btn-outline">TUTO — PROFIL</div>
       </div>
       <div class="title-footer">
-        <span>v1.0.2</span><span>🔊</span><span>🇫🇷</span>
+        <div class="footer-icon">v1</div>
+        <div class="footer-icon">🔊</div>
+        <div class="footer-icon">FR</div>
       </div>
-      <div class="note" style="top: 380px; left: 20px;">Btn 64×340, shadow 3px</div>
-      <div class="note" style="top: 140px; right: 20px;">Logo centered 140px top</div>
     </div>
     <div class="specs">
-      <b>Ancres :</b> logo (W/2, 140) • menu (W/2, 380) step 80px • footer (W/2, H-32)<br>
-      <b>Dimensions :</b> boutons 340×64, spacing 16px • tag version 11px<br>
-      <b>Palette :</b> gradient ciel→ocre→terracotta, btn ombre/olive, accent or
+      <b>Ancres Phaser :</b> logo Y=150 • menu Y=420 stack 80 • footer Y=H-30<br>
+      <b>Logo :</b> rotate -2°, Impact 58px, triple shadow (4+8px + glow)<br>
+      <b>Boutons :</b> 340×66, gradient 180°, shadow bottom 4px depth
     </div>
   </div>
 
   <!-- ====== CHARSELECT ====== -->
   <div class="scene">
     <h2>2. CharSelectScene</h2>
-    <p class="caption">Grille 3×4 (vs 4×3 paysage), stats bas, boutons action en pied. Scroll vertical si plus de 12 persos.</p>
-    <div class="frame" style="background: #2a2018;">
-      <div class="charselect-header">CHOIX DU PERSONNAGE</div>
+    <p class="caption">Header translucide, grille 3×4 avec sprite preview 48×48 et badges locked. Panel stats animé avec barres gradient. Footer 2 actions.</p>
+    <div class="frame charselect-bg">
+      <div class="noise"></div>
+      <div class="charselect-header">
+        <span class="back-icon">←</span>
+        <span>CHOIX DU PERSONNAGE</span>
+        <span style="color: var(--or); font-size: 12px;">1/12</span>
+      </div>
       <div class="charselect-grid">
-        <div class="char-card selected">ROOKIE<br>14/40</div>
-        <div class="char-card">LA CHOUPE<br>27</div>
-        <div class="char-card locked">🔒<br>LEY</div>
-        <div class="char-card locked">🔒<br>FOYOT</div>
-        <div class="char-card locked">🔒<br>SUCHAUD</div>
-        <div class="char-card locked">🔒<br>FAZZINO</div>
-        <div class="char-card locked">🔒<br>ROCHER</div>
-        <div class="char-card locked">🔒<br>ROBINEAU</div>
-        <div class="char-card locked">🔒<br>MAMIE</div>
-        <div class="char-card locked">🔒<br>SOFIA</div>
-        <div class="char-card locked">🔒<br>PAPI</div>
-        <div class="char-card locked">🔒<br>RIZZI</div>
+        <div class="char-card selected">
+          <div class="char-sprite">👤</div>
+          <div class="char-name">ROOKIE</div>
+          <div class="char-score">14/40</div>
+        </div>
+        <div class="char-card">
+          <div class="char-sprite">👩</div>
+          <div class="char-name">LA CHOUPE</div>
+          <div class="char-score">27/40</div>
+        </div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">LEY</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">FOYOT</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">SUCHAUD</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">FAZZINO</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">ROCHER</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">ROBINEAU</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">MAMIE</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">SOFIA</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">PAPI</div></div>
+        <div class="char-card locked"><div class="lock">🔒</div><div class="char-name">RIZZI</div></div>
       </div>
       <div class="char-stats">
-        <h3>LE ROOKIE — Adaptable</h3>
-        <div class="stat-bar"><span>PRÉCISION</span><span>★★★★☆☆☆☆☆☆</span></div>
-        <div class="stat-bar"><span>PUISSANCE</span><span>★★★★☆☆☆☆☆☆</span></div>
-        <div class="stat-bar"><span>EFFET</span><span>★★★☆☆☆☆☆☆☆</span></div>
-        <div class="stat-bar"><span>SANG-FROID</span><span>★★★☆☆☆☆☆☆☆</span></div>
+        <h3>LE ROOKIE</h3>
+        <div class="arche">Archétype : Adaptable • Évoluable</div>
+        <div class="stat-bar"><span class="label">PRÉCISION</span><div class="track"><div class="fill" style="width: 40%"></div></div></div>
+        <div class="stat-bar"><span class="label">PUISSANCE</span><div class="track"><div class="fill" style="width: 40%"></div></div></div>
+        <div class="stat-bar"><span class="label">EFFET</span><div class="track"><div class="fill" style="width: 30%"></div></div></div>
+        <div class="stat-bar"><span class="label">SANG-FROID</span><div class="track"><div class="fill" style="width: 30%"></div></div></div>
       </div>
       <div class="charselect-footer">
-        <div class="btn" style="flex:0 0 100px;">RETOUR</div>
-        <div class="btn primary">VALIDER</div>
+        <div class="btn btn-outline" style="flex: 0 0 110px;">ANNULER</div>
+        <div class="btn btn-terracotta">▶ VALIDER</div>
       </div>
-      <div class="note" style="top: 100px; right: 4px;">Grille 3×4 fixe, 12 persos</div>
     </div>
     <div class="specs">
-      <b>Ancres :</b> header (0, 16) • grille (24, 96) 3 cols • stats panel (24, H-260) • btn (24, H-80)<br>
-      <b>Cartes :</b> aspect 1:1, ~136×136 chacune, border 2px, selected = glow or<br>
-      <b>UX :</b> tap carte → select + stats panel update. Double tap = valider
+      <b>Grille :</b> 3 cols aspect 1:1, selected scale(1.05) + glow or<br>
+      <b>Stats panel :</b> bas 120px, barres gradient terracotta→or, sticky en bottom<br>
+      <b>Cards :</b> layout emoji placeholder (sprite Phaser réel 48×48 downscale)
     </div>
   </div>
 
   <!-- ====== SHOP ====== -->
   <div class="scene">
     <h2>3. ShopScene</h2>
-    <p class="caption">Onglets haut horizontaux, liste verticale scrollable, bouton achat full-width bas.</p>
-    <div class="frame" style="background: #2a2018;">
+    <p class="caption">Header galets counter avec coin or 3D, onglets pilule active glow. Items card radial gradient, sélection border or. CTA achat full-width.</p>
+    <div class="frame shop-bg">
+      <div class="noise"></div>
       <div class="shop-header">
-        <span>BOUTIQUE</span>
-        <div class="shop-galets">1 247</div>
+        <span class="title">BOUTIQUE</span>
+        <div class="shop-galets"><span class="coin"></span><span>1 247</span></div>
       </div>
       <div class="shop-tabs">
         <div class="shop-tab active">BOULES</div>
@@ -389,148 +846,226 @@
       </div>
       <div class="shop-list">
         <div class="shop-item">
-          <div class="shop-item-icon" style="background: silver;"></div>
+          <div class="shop-item-icon chrome"></div>
           <div class="shop-item-info">
             <div class="name">BOULE CHROME</div>
-            <div class="desc">+10% restitution, +5% friction</div>
+            <div class="desc">+10% restitution • +5% friction</div>
           </div>
           <div class="shop-item-price">250</div>
         </div>
         <div class="shop-item">
-          <div class="shop-item-icon" style="background: #8b4513;"></div>
+          <div class="shop-item-icon bronze"></div>
           <div class="shop-item-info">
             <div class="name">BOULE BRONZE</div>
-            <div class="desc">Équilibrée — pas de bonus</div>
+            <div class="desc">Équilibrée — pas de bonus spécifique</div>
           </div>
           <div class="shop-item-price">100</div>
         </div>
-        <div class="shop-item" style="border-color: var(--or); background: #3a2f1a;">
-          <div class="shop-item-icon" style="background: var(--or);"></div>
+        <div class="shop-item selected">
+          <div class="shop-item-icon dore"></div>
           <div class="shop-item-info">
-            <div class="name" style="color: var(--or);">BOULE DORÉE ★</div>
-            <div class="desc">+15% précision, rare</div>
+            <div class="name">BOULE DORÉE <span class="star">★</span></div>
+            <div class="desc">+15% précision • rare • drop arcade</div>
           </div>
           <div class="shop-item-price">800</div>
         </div>
         <div class="shop-item" style="opacity: 0.5;">
-          <div class="shop-item-icon" style="background: #333;"></div>
+          <div class="shop-item-icon titane"></div>
           <div class="shop-item-info">
             <div class="name">BOULE TITANE</div>
-            <div class="desc">Équipée</div>
+            <div class="desc">Légèreté +20% précision — actuellement équipée</div>
           </div>
-          <div class="shop-item-price">✓</div>
+          <div class="shop-item-price equipped">✓ ÉQUIPÉE</div>
         </div>
       </div>
-      <div class="btn primary shop-buy">ACHETER — 250 GALETS</div>
-      <div class="note" style="top: 80px; right: 4px;">Tabs horiz 3 × 160px</div>
+      <div class="btn btn-terracotta shop-buy">ACHETER — 800 GALETS</div>
     </div>
     <div class="specs">
-      <b>Ancres :</b> header (0, 16) • tabs (0, 80) • list (16, 136) scrollable • buy (16, H-80)<br>
-      <b>Items :</b> hauteur 72px, icon 48×48, padding 12, price right • selected glow or<br>
-      <b>UX :</b> tap item → focus + bouton ACHETER active. Swipe vertical = scroll
+      <b>Header :</b> glass blur panel avec galets live, tabs pilule pill 44px<br>
+      <b>Items :</b> icon radial gradient 3D (chrome/bronze/doré réalistes)<br>
+      <b>Selected :</b> border or, halo lueur, glow box-shadow 16px
     </div>
   </div>
 
   <!-- ====== PETANQUE ====== -->
   <div class="scene">
-    <h2>4. PetanqueScene (match)</h2>
-    <p class="caption">Terrain plein écran vertical, score haut, HUD compact bas, modes en ligne. Watchers latéraux visibles dans les marges.</p>
+    <h2>4. PetanqueScene — marge watcher 50px (nouveau)</h2>
+    <p class="caption">Terrain 380×850 quasi plein écran. UI en overlay glass (score, pause, dist, modes, HUD) avec blur backdrop. Adversaire en pied de marge latérale droite.</p>
     <div class="frame petanque-scene">
-      <div class="petanque-pause">II</div>
-      <div class="petanque-score">
-        <span class="player">3</span><span class="sep">—</span><span class="opp">2</span>
-        <span class="mene">MENE 4</span>
-      </div>
-      <div class="petanque-dist">● 7.1m</div>
+      <div class="noise"></div>
+
+      <!-- Terrain -->
       <div class="petanque-terrain">
         <div class="terrain-cochonnet"></div>
-        <div class="terrain-ball player" style="top: 140px; left: 130px;"></div>
-        <div class="terrain-ball opp" style="top: 110px; left: 90px;"></div>
-        <div class="terrain-ball player" style="top: 200px; left: 160px;"></div>
-        <div class="terrain-ball opp" style="top: 230px; left: 110px;"></div>
+
+        <!-- Boules avec ombres sous -->
+        <div class="terrain-shadow" style="top: 186px; left: 190px;"></div>
+        <div class="terrain-ball player glow-player" style="top: 178px; left: 188px;"></div>
+
+        <div class="terrain-shadow" style="top: 146px; left: 130px;"></div>
+        <div class="terrain-ball opp" style="top: 138px; left: 128px;"></div>
+
+        <div class="terrain-shadow" style="top: 260px; left: 220px;"></div>
+        <div class="terrain-ball player" style="top: 252px; left: 218px;"></div>
+
+        <div class="terrain-shadow" style="top: 310px; left: 150px;"></div>
+        <div class="terrain-ball opp" style="top: 302px; left: 148px;"></div>
+
+        <!-- Joueur qui tire (au centre, proche du cercle) -->
+        <div class="person petanque-player">
+          <svg viewBox="0 0 44 64">
+            <!-- Ombre au sol -->
+            <ellipse cx="22" cy="62" rx="16" ry="3" fill="rgba(0,0,0,0.35)"/>
+            <!-- Jambe droite -->
+            <rect x="22" y="38" width="8" height="20" rx="2" fill="#3050A0"/>
+            <!-- Jambe gauche -->
+            <rect x="14" y="38" width="8" height="20" rx="2" fill="#2a4490"/>
+            <!-- Torse (T-shirt blanc, dos) -->
+            <rect x="11" y="20" width="22" height="22" rx="3" fill="#E8DFC8"/>
+            <!-- Bras (en position de lancer, derrière) -->
+            <rect x="30" y="22" width="6" height="16" rx="2" fill="#D4A574"/>
+            <rect x="8" y="22" width="6" height="12" rx="2" fill="#D4A574"/>
+            <!-- Tête (cheveux bruns de dos) -->
+            <ellipse cx="22" cy="14" rx="9" ry="10" fill="#6B4A2B"/>
+            <!-- Cou -->
+            <rect x="19" y="19" width="6" height="4" fill="#D4A574"/>
+          </svg>
+        </div>
+
+        <!-- Cercle de lancer -->
+        <div style="position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); width: 48px; height: 14px; border: 2px solid var(--creme); border-radius: 50%; background: radial-gradient(ellipse, rgba(245,230,208,0.25), transparent 70%); box-shadow: 0 0 10px rgba(245,230,208,0.4); z-index: 10;"></div>
       </div>
-      <div class="petanque-player">JOU</div>
-      <div class="petanque-circle"></div>
-      <div class="petanque-opponent">ADV</div>
+
+      <!-- HUD overlay -->
+      <div class="petanque-pause"></div>
+      <div class="petanque-score">
+        <span class="player">3</span>
+        <span class="sep">—</span>
+        <span class="opp">2</span>
+        <span class="mene">MENE 4</span>
+      </div>
+      <div class="petanque-dist">7.1m</div>
+
+      <!-- Adversaire en marge droite (50px) -->
+      <div class="opponent-halo"></div>
+      <div class="person petanque-opponent">
+        <svg viewBox="0 0 44 64">
+          <ellipse cx="22" cy="62" rx="16" ry="3" fill="rgba(0,0,0,0.35)"/>
+          <rect x="22" y="38" width="8" height="20" rx="2" fill="#202020"/>
+          <rect x="14" y="38" width="8" height="20" rx="2" fill="#181818"/>
+          <rect x="11" y="20" width="22" height="22" rx="3" fill="#8B3528"/>
+          <rect x="30" y="22" width="6" height="14" rx="2" fill="#D4A574"/>
+          <rect x="8" y="22" width="6" height="14" rx="2" fill="#D4A574"/>
+          <ellipse cx="22" cy="14" rx="9" ry="10" fill="#C0C0B0"/>
+          <rect x="19" y="19" width="6" height="4" fill="#D4A574"/>
+        </svg>
+      </div>
+
+      <!-- Boutons mode -->
       <div class="petanque-modes">
-        <div class="mode-btn selected">DEMI-PORTÉE<div class="sub">polyvalent</div></div>
-        <div class="mode-btn">PLOMBÉE<div class="sub">roule moins</div></div>
-        <div class="mode-btn">TIR FER<div class="sub">carreau</div></div>
+        <div class="mode-btn selected">
+          DEMI-PORTÉE
+          <div class="sub">polyvalent</div>
+        </div>
+        <div class="mode-btn">
+          PLOMBÉE
+          <div class="sub">roule moins</div>
+        </div>
+        <div class="mode-btn">
+          TIR FER
+          <div class="sub">carreau</div>
+        </div>
       </div>
+
+      <!-- HUD abilities -->
       <div class="petanque-hud">
-        <div class="hud-btn back">← RET</div>
+        <div class="hud-btn back">←</div>
         <div class="hud-btn focus">
           RESPIRE
-          <div class="hud-dots"><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div></div>
+          <div class="hud-dots">
+            <div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div>
+            <div class="hud-dot"></div><div class="hud-dot empty"></div>
+          </div>
         </div>
         <div class="hud-btn ability">
           CAPA
-          <div class="hud-dots"><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div></div>
+          <div class="hud-dots">
+            <div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot empty"></div>
+          </div>
         </div>
       </div>
-      <div class="note" style="top: 144px; left: 4px;">Terrain 288×672</div>
-      <div class="note" style="bottom: 200px; right: 4px;">Watcher marge 96px</div>
+
+      <!-- Notes -->
+      <div class="note" style="top: 48px; left: 2px;">Terrain 380×850</div>
+      <div class="note" style="top: 450px; right: 2px;">Marge watcher 50px</div>
     </div>
     <div class="specs">
-      <b>Terrain :</b> 288×672 (scale 1.6), centré X, Y=144. Marges 96px latérales pour watchers<br>
-      <b>Score :</b> bandeau 320×56 centré haut. Pause 48×48 coin gauche. Distance badge sous<br>
-      <b>Modes :</b> 3 boutons flex 64px • HUD: 3 boutons (back 56, focus flex, ability flex)
+      <b>Terrain :</b> 380×850 (scale 2.11), X=50, Y=45, border #5a3618 3px<br>
+      <b>UI overlay :</b> score glass blur backdrop 280×52 center top • pause 48 rond left<br>
+      <b>Adversaire :</b> X=440, Y=50%, halo beige derrière pour lisibilité<br>
+      <b>Modes :</b> 3 boutons flex 60px, selected = halo or glow
     </div>
   </div>
 
   <!-- ====== RESULT ====== -->
   <div class="scene">
     <h2>5. ResultScene</h2>
-    <p class="caption">Titre dramatique, score géant, reward centré, 2 actions claires en bas.</p>
+    <p class="caption">Titre tilted -1° avec triple glow, score 96px letter-spacing 8, confettis radial dots, reward panel blur, 3 actions stack.</p>
     <div class="frame result-bg">
+      <div class="result-confetti"></div>
       <div class="result-title">VICTOIRE !</div>
-      <div class="result-score"><span>13</span><span style="color: var(--gris)">–</span><span class="acc">9</span></div>
+      <div class="result-subtitle">MATCH TERMINÉ</div>
+      <div class="result-score">
+        <span>13</span>
+        <span class="sep">–</span>
+        <span class="acc">9</span>
+      </div>
       <div class="result-reward">
-        <h3>RÉCOMPENSES</h3>
-        <div class="amount">+ 100 Galets</div>
-        <div class="amount" style="color: var(--or); margin-top: 8px;">+ 1 Carreau !</div>
-        <div style="color: var(--gris); font-size: 11px; margin-top: 10px;">Bonus run : +15 Galets</div>
+        <h3>▸ RÉCOMPENSES ◂</h3>
+        <div class="amount">+ 100 <span class="coin"></span> Galets</div>
+        <div class="amount gold">+ 1 CARREAU !</div>
+        <div class="bonus">Bonus run : +15 Galets • Temps : 4:12</div>
       </div>
       <div class="result-actions">
-        <div class="btn primary">CONTINUER</div>
-        <div class="btn">REJOUER</div>
-        <div class="btn secondary">RETOUR AU MENU</div>
+        <div class="btn btn-terracotta">▶ CONTINUER</div>
+        <div class="btn btn-ocre">REJOUER</div>
+        <div class="btn btn-outline">RETOUR MENU</div>
       </div>
     </div>
     <div class="specs">
-      <b>Ancres :</b> titre (W/2, 100) • score (W/2, 220) • reward (W/2, 400) • actions (24, H-220)<br>
-      <b>Titre :</b> 48px, glow or, letter-spacing 4 • Score : 72px, letter-spacing 8<br>
-      <b>Actions :</b> 3 boutons pleine largeur 360px hauteur 56, stack vertical
+      <b>Titre :</b> Impact 54, rotate -1°, glow triple (20+40px) + shadow noire<br>
+      <b>Score :</b> 96px letter-spacing 5, shadow texte noire 4px<br>
+      <b>Reward :</b> panel 360 border or, coin or réaliste radial gradient
     </div>
   </div>
 
 </div>
 
-<div class="intro" style="margin: 40px auto 0; border-left-color: var(--olive);">
+<div class="intro" style="margin: 48px auto 0; border-left-color: var(--olive);">
   <h1 style="color: var(--olive);">Workflow réel avec Claude Design</h1>
   <p>
     <b>1. Extraction design system</b> — Claude Design lit <code>src/utils/Constants.js</code>
-    (palette COLORS), <code>public/data/characters.json</code>, les sprites et détecte automatiquement
-    ocre #D4A574, terracotta #C4854A, olive #6B8E4E, etc. Il propose ensuite des composants (bouton
-    bois, panel ombré, carte perso).
+    (palette COLORS), <code>public/data/characters.json</code>, les sprites v2_new, et détecte
+    automatiquement la palette provençale et tes conventions (boutons bois, panels ombrés).
   </p>
   <p>
-    <b>2. Conversation itérative</b> — « Redessine la TitleScene en portrait mobile 480×960 en gardant
-    le gradient ciel/ocre ». Claude Design produit une version interactive, tu commentes inline
-    (« le logo trop bas », « je veux 4 boutons pas 6 »), il ajuste en direct.
+    <b>2. Itération conversationnelle</b> — « J'ai changé d'avis, marge watcher 50px au lieu de
+    96px ». Claude Design recompute toutes les scènes en live, tu valides à l'œil, il exporte
+    les specs finales pour chaque élément.
   </p>
   <p>
-    <b>3. Export spec</b> — chaque élément a ses coordonnées, tailles, couleurs exactes. Un agent
-    Sonnet lit la spec et produit le code Phaser correspondant en une passe au lieu de 5 itérations.
+    <b>3. Code generation</b> — les specs sortent en JSON structuré (position, taille, couleur,
+    type de composant). Un agent Sonnet (Claude Code) lit le JSON et génère le code Phaser en
+    une passe — plus d'itérations aveugles sur les coordonnées.
   </p>
   <p>
-    <b>4. Pitch / marketing</b> — le même outil génère la fiche itch.io visuelle, les slides pour
-    Poki/CrazyGames, les banners social media. Tout dans la même identité visuelle.
+    <b>4. Marketing multi-supports</b> — le même design system génère : fiche itch.io, bannière
+    CrazyGames, slides pitch Poki, posts social media. Tout reste cohérent visuellement.
   </p>
-  <p style="color: var(--gris); margin-top: 12px;">
-    Limite connue : Claude Design ne génère pas des <b>sprites pixel art</b> (rester sur PixelLab)
-    ni du <b>code Phaser</b> (rester sur Claude Code). C'est un outil de conception visuelle, pas
-    de production asset ni d'implémentation.
+  <p style="color: var(--gris); margin-top: 14px;">
+    <b>Limites pour notre jeu :</b> Claude Design ne génère pas de <b>sprites pixel art 32×32</b>
+    (PixelLab reste le choix), ni de <b>code Phaser 4</b> (Claude Code reste le bon outil).
+    C'est un outil de conception visuelle, pas de production d'assets ni d'implémentation.
   </p>
 </div>
 
