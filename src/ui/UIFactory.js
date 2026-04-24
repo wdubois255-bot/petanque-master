@@ -776,24 +776,61 @@ export default class UIFactory {
     static addBackButton(scene, targetScene, options = {}) {
         const { x = UI.BACK_X, y = UI.BACK_Y, label = I18n.t('ui.back'), depth = 50, onBack = null } = options;
 
+        const handleBack = () => {
+            sfxUIClick();
+            if (onBack) onBack();
+            else UIFactory.transitionTo(scene, targetScene);
+        };
+
+        // ESC keybinding (desktop)
+        scene.input.keyboard.on('keydown-ESC', handleBack);
+
+        if (Layout.isPortrait) {
+            // Mobile : pilule avec fond + fleche, tap target 56x40 (WCAG AAA)
+            const pillW = 72, pillH = 40;
+            const container = scene.add.container(x, y).setDepth(depth);
+
+            const bg = scene.add.graphics();
+            bg.fillStyle(0x3A2E28, 0.92);
+            bg.fillRoundedRect(-6, -pillH / 2, pillW, pillH, 10);
+            bg.lineStyle(2, 0xD4A574, 0.7);
+            bg.strokeRoundedRect(-6, -pillH / 2, pillW, pillH, 10);
+            container.add(bg);
+
+            const arrow = scene.add.text(8, 0, '←', {
+                fontFamily: FONT_BODY, fontSize: '18px', color: CSS.OR,
+                fontStyle: 'bold', shadow: SHADOW_TEXT
+            }).setOrigin(0.5);
+            container.add(arrow);
+
+            const txt = scene.add.text(28, 0, label, {
+                fontFamily: FONT_PIXEL, fontSize: UI.HINT_SIZE,
+                color: CSS.OCRE, shadow: SHADOW_TEXT
+            }).setOrigin(0, 0.5);
+            container.add(txt);
+
+            const hit = scene.add.zone(pillW / 2 - 6, 0, pillW + 8, pillH + 8)
+                .setOrigin(0.5).setInteractive({ useHandCursor: true });
+            container.add(hit);
+
+            hit.on('pointerover', () => txt.setColor(CSS.OR));
+            hit.on('pointerout', () => txt.setColor(CSS.OCRE));
+            hit.on('pointerdown', () => {
+                juicyTap(scene, container);
+                scene.time.delayedCall(60, handleBack);
+            });
+
+            return container;
+        }
+
+        // Desktop : texte simple (inchange)
         const btn = UIFactory.addText(scene, x, y, label, UI.HINT_SIZE, CSS.OCRE, {
             originX: 0, originY: 0.5, depth
         });
         btn.setInteractive({ useHandCursor: true });
         btn.on('pointerover', () => btn.setColor(CSS.OR));
         btn.on('pointerout', () => btn.setColor(CSS.OCRE));
-        btn.on('pointerdown', () => {
-            sfxUIClick();
-            if (onBack) onBack();
-            else UIFactory.transitionTo(scene, targetScene);
-        });
-
-        // ESC keybinding
-        scene.input.keyboard.on('keydown-ESC', () => {
-            sfxUIClick();
-            if (onBack) onBack();
-            else UIFactory.transitionTo(scene, targetScene);
-        });
+        btn.on('pointerdown', handleBack);
 
         return btn;
     }
