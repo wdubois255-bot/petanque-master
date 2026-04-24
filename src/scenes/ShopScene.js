@@ -17,25 +17,27 @@ const TABS = [
 ];
 
 // Layout: left preview panel + right grid (desktop) OR top preview + 2-col grid (portrait mobile)
-// Portrait mobile (W<=480) : preview panel en haut + grid 2 cols dessous (scroll vertical preserve)
+// Portrait mobile : preview compact top + featured deal + tabs + grille 2 cols cartes larges
 const IS_PORTRAIT = Layout.isPortrait;
 const PREVIEW_W = IS_PORTRAIT ? Layout.W : 200;
-const PREVIEW_H_PORTRAIT = 330;  // preview panel haut en portrait (assez pour sprite + desc + prix + boutons)
-const GRID_X = IS_PORTRAIT ? 10 : (PREVIEW_W + 15);
+// Portrait : preview reduit de 330 -> 240 (supprime l'enorme espace vide milieu)
+const PREVIEW_H_PORTRAIT = 240;
+const GRID_X = IS_PORTRAIT ? 16 : (PREVIEW_W + 15);
 const GRID_COLS = IS_PORTRAIT ? 2 : 4;
-const CARD_GAP_X = 8;
-const CARD_GAP_Y = 8;
+const CARD_GAP_X = IS_PORTRAIT ? 14 : 8;
+const CARD_GAP_Y = IS_PORTRAIT ? 14 : 8;
 const CARD_W = IS_PORTRAIT
-    ? Math.floor((Layout.W - 10 - 10 - CARD_GAP_X) / 2)   // 2 cols, margins 10px each side
+    ? Math.floor((Layout.W - 2 * GRID_X - CARD_GAP_X) / 2)
     : SHOP_CARD_WIDTH;
-const CARD_H = 82;
+// Portrait : cartes plus grandes (132px) pour fonts lisibles + zone tap confortable
+const CARD_H = IS_PORTRAIT ? 132 : 82;
 // Featured deal banner (portrait only) — insert band entre preview et tabs
-const FEATURED_DEAL_H = IS_PORTRAIT ? 80 : 0;
-const FEATURED_DEAL_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 0; // y top du bandeau
-// Portrait : tabs 44px (tap target WCAG) — desktop reste 22px
-const TAB_H = IS_PORTRAIT ? 44 : 22;
-const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H + TAB_H + 6) : 80;
-const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H) : 50;
+const FEATURED_DEAL_H = IS_PORTRAIT ? 76 : 0;
+const FEATURED_DEAL_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 50) : 0;
+// Portrait : tabs 52px (plus confortable)
+const TAB_H = IS_PORTRAIT ? 52 : 22;
+const GRID_TOP = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H + TAB_H + 12) : 80;
+const TAB_Y = IS_PORTRAIT ? (PREVIEW_H_PORTRAIT + 60 + FEATURED_DEAL_H + 6) : 50;
 
 export default class ShopScene extends Phaser.Scene {
     constructor() {
@@ -126,8 +128,8 @@ export default class ShopScene extends Phaser.Scene {
     // HEADER
     // ================================================================
     _drawHeader() {
-        this.add.text(16, 18, I18n.t('shop_extra.title'), {
-            fontFamily: FONT_PIXEL, fontSize: '16px',
+        this.add.text(IS_PORTRAIT ? 20 : 16, IS_PORTRAIT ? 22 : 18, I18n.t('shop_extra.title'), {
+            fontFamily: FONT_PIXEL, fontSize: IS_PORTRAIT ? '22px' : '16px',
             color: CSS.OR, shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setDepth(5);
 
@@ -317,8 +319,13 @@ export default class ShopScene extends Phaser.Scene {
         const locked = item.minWins && totalWins < item.minWins;
         const cx = PREVIEW_W / 2;
 
+        // Y offsets — portrait compacte le flux vertical dans 200px au lieu de 330
+        const YS = IS_PORTRAIT
+            ? { sprite: 88, name: 128, desc: 148, stats: 180, bonus: 198, action: 226 }
+            : { sprite: 115, name: 155, desc: 175, stats: 210, bonus: 228, action: 310 };
+
         // Item sprite (large)
-        const spriteY = 115;
+        const spriteY = YS.sprite;
         if (item.icon && this.textures.exists(item.icon)) {
             const tex = this.textures.get(item.icon);
             const isSheet = tex.frameTotal > 2;
@@ -351,27 +358,27 @@ export default class ShopScene extends Phaser.Scene {
             );
         }
 
-        // Item name
+        // Item name — portrait font 14px, desktop 10px
         const shortName = I18n.field(item, 'name').replace('Boule ', '').replace('Cochonnet ', '').replace('Ball ', '').replace('Jack ', '');
         this._previewElements.push(
-            this.add.text(cx, 155, shortName, {
-                fontFamily: FONT_PIXEL, fontSize: '10px',
+            this.add.text(cx, YS.name, shortName, {
+                fontFamily: FONT_PIXEL, fontSize: IS_PORTRAIT ? '14px' : '10px',
                 color: CSS.CREME, shadow: SHADOW
             }).setOrigin(0.5).setDepth(5)
         );
 
         // Full description (wrapped)
         this._previewElements.push(
-            this.add.text(cx, 175, I18n.field(item, 'description'), {
-                fontFamily: 'monospace', fontSize: '8px',
+            this.add.text(cx, YS.desc, I18n.field(item, 'description'), {
+                fontFamily: 'monospace', fontSize: IS_PORTRAIT ? '11px' : '8px',
                 color: CSS.GRIS, shadow: SHADOW,
-                wordWrap: { width: PREVIEW_W - 30 }, align: 'center'
+                wordWrap: { width: PREVIEW_W - 40 }, align: 'center'
             }).setOrigin(0.5, 0).setDepth(5)
         );
 
         // Lock gate indicator
         if (locked && !owned) {
-            const lockY = 200;
+            const lockY = IS_PORTRAIT ? 175 : 200;
             const lockBg = this.add.graphics().setDepth(5);
             lockBg.fillStyle(0x5A1A1A, 0.6);
             lockBg.fillRoundedRect(cx - 80, lockY - 8, 160, 20, 4);
@@ -397,13 +404,16 @@ export default class ShopScene extends Phaser.Scene {
             const bouleId = item.id.replace(/^boule_/, '');
             const bouleData = this.boulesData?.sets?.find(s => s.id === bouleId);
             if (bouleData) {
-                const statsY = (locked && !owned) ? 240 : 210;
+                // Portrait : stats serrees sous le bloc desc/lock
+                const statsY = IS_PORTRAIT
+                    ? ((locked && !owned) ? YS.stats + 20 : YS.stats)
+                    : ((locked && !owned) ? 240 : 210);
 
                 // Mass + diameter (FIPJP: 650-800g, 70.5-80mm)
                 const diam = BOULE_RAYON_TO_MM[bouleData.stats.rayon] ?? (bouleData.stats.rayon * 7);
                 this._previewElements.push(
                     this.add.text(cx, statsY, `${bouleData.stats.masse}g · ${diam}mm`, {
-                        fontFamily: FONT_PIXEL, fontSize: '11px',
+                        fontFamily: FONT_PIXEL, fontSize: IS_PORTRAIT ? '13px' : '11px',
                         color: CSS.OCRE, shadow: SHADOW
                     }).setOrigin(0.5).setDepth(5)
                 );
@@ -412,9 +422,10 @@ export default class ShopScene extends Phaser.Scene {
                 if (bouleData.bonus) {
                     const bonusTxt = I18n.field(bouleData, 'effect') || bouleData.bonus;
                     this._previewElements.push(
-                        this.add.text(cx, statsY + 18, bonusTxt, {
-                            fontFamily: FONT_PIXEL, fontSize: '10px',
-                            color: '#87CEEB', shadow: SHADOW
+                        this.add.text(cx, statsY + (IS_PORTRAIT ? 16 : 18), bonusTxt, {
+                            fontFamily: FONT_PIXEL, fontSize: IS_PORTRAIT ? '11px' : '10px',
+                            color: '#87CEEB', shadow: SHADOW,
+                            wordWrap: { width: PREVIEW_W - 40 }, align: 'center'
                         }).setOrigin(0.5).setDepth(5)
                     );
                 }
@@ -422,20 +433,24 @@ export default class ShopScene extends Phaser.Scene {
         }
 
         // ===== PRICE / STATUS =====
-        const actionY = 310;
+        const actionY = YS.action;
+        // Dimensions des boutons d'action — portrait : plus grands tap targets
+        const BTN = IS_PORTRAIT
+            ? { w: 220, h: 44, ex: 110, eh: 36, priceFs: '14px', btnFs: '13px' }
+            : { w: 110, h: 28, ex: 55,  eh: 22, priceFs: '11px', btnFs: '10px' };
 
         if (owned) {
             // Owned badge
             const badgeBg = this.add.graphics().setDepth(5);
             badgeBg.fillStyle(0x2A4A1A, 0.8);
-            badgeBg.fillRoundedRect(cx - 55, actionY - 10, 110, 24, 6);
+            badgeBg.fillRoundedRect(cx - BTN.w / 2, actionY - BTN.h / 2, BTN.w, BTN.h, 8);
             badgeBg.lineStyle(1, 0x44CC44, 0.5);
-            badgeBg.strokeRoundedRect(cx - 55, actionY - 10, 110, 24, 6);
+            badgeBg.strokeRoundedRect(cx - BTN.w / 2, actionY - BTN.h / 2, BTN.w, BTN.h, 8);
             this._previewElements.push(badgeBg);
 
             this._previewElements.push(
-                this.add.text(cx, actionY + 2, I18n.t('shop_extra.owned'), {
-                    fontFamily: FONT_PIXEL, fontSize: '9px',
+                this.add.text(cx, actionY, I18n.t('shop_extra.owned'), {
+                    fontFamily: FONT_PIXEL, fontSize: BTN.btnFs,
                     color: '#44CC44', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6)
             );
@@ -446,21 +461,22 @@ export default class ShopScene extends Phaser.Scene {
                     ? save.selectedBoule === item.id.replace(/^boule_/, '')
                     : save.selectedCochonnet === item.id.replace(/^cochonnet_/, '');
 
+                const equipY = actionY + BTN.h / 2 + BTN.eh / 2 + 8;
                 if (!equipped) {
                     const equipBg = this.add.graphics().setDepth(5);
                     equipBg.fillStyle(0x3A4A5A, 0.8);
-                    equipBg.fillRoundedRect(cx - 45, actionY + 20, 90, 22, 6);
+                    equipBg.fillRoundedRect(cx - BTN.ex, equipY - BTN.eh / 2, BTN.ex * 2, BTN.eh, 8);
                     equipBg.lineStyle(1, 0x87CEEB, 0.5);
-                    equipBg.strokeRoundedRect(cx - 45, actionY + 20, 90, 22, 6);
+                    equipBg.strokeRoundedRect(cx - BTN.ex, equipY - BTN.eh / 2, BTN.ex * 2, BTN.eh, 8);
                     this._previewElements.push(equipBg);
 
-                    const equipTxt = this.add.text(cx, actionY + 31, I18n.t('shop_extra.equip'), {
-                        fontFamily: FONT_PIXEL, fontSize: '8px',
+                    const equipTxt = this.add.text(cx, equipY, I18n.t('shop_extra.equip'), {
+                        fontFamily: FONT_PIXEL, fontSize: BTN.btnFs,
                         color: '#87CEEB', shadow: SHADOW
                     }).setOrigin(0.5).setDepth(6);
                     this._previewElements.push(equipTxt);
 
-                    const equipZone = this.add.zone(cx, actionY + 31, 90, 22)
+                    const equipZone = this.add.zone(cx, equipY, BTN.ex * 2, BTN.eh)
                         .setOrigin(0.5).setInteractive({ useHandCursor: true });
                     equipZone.on('pointerdown', () => {
                         sfxUIClick();
@@ -472,32 +488,32 @@ export default class ShopScene extends Phaser.Scene {
                     this._previewElements.push(equipZone);
                 } else {
                     this._previewElements.push(
-                        this.add.text(cx, actionY + 30, I18n.t('shop_extra.equipped'), {
-                            fontFamily: 'monospace', fontSize: '8px',
+                        this.add.text(cx, equipY, I18n.t('shop_extra.equipped'), {
+                            fontFamily: 'monospace', fontSize: BTN.btnFs,
                             color: CSS.OCRE, shadow: SHADOW
                         }).setOrigin(0.5).setDepth(5)
                     );
                 }
             }
         } else if (locked) {
-            // Locked by progression
+            // Price + locked pill
             this._previewElements.push(
-                this.add.text(cx, actionY - 5, I18n.t('shop_extra.price_galets', { price: item.price }), {
-                    fontFamily: FONT_PIXEL, fontSize: '11px',
+                this.add.text(cx, actionY - BTN.h / 2 - 10, I18n.t('shop_extra.price_galets', { price: item.price }), {
+                    fontFamily: FONT_PIXEL, fontSize: BTN.priceFs,
                     color: CSS.GRIS, shadow: SHADOW
                 }).setOrigin(0.5).setDepth(5)
             );
 
             const lockBtnBg = this.add.graphics().setDepth(5);
             lockBtnBg.fillStyle(0x3A2E28, 0.6);
-            lockBtnBg.fillRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
+            lockBtnBg.fillRoundedRect(cx - BTN.w / 2, actionY - BTN.h / 2 + 14, BTN.w, BTN.h, 8);
             lockBtnBg.lineStyle(1, 0x5A4A3A, 0.4);
-            lockBtnBg.strokeRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
+            lockBtnBg.strokeRoundedRect(cx - BTN.w / 2, actionY - BTN.h / 2 + 14, BTN.w, BTN.h, 8);
             this._previewElements.push(lockBtnBg);
 
             this._previewElements.push(
-                this.add.text(cx, actionY + 26, I18n.t('shop_extra.locked'), {
-                    fontFamily: FONT_PIXEL, fontSize: '9px',
+                this.add.text(cx, actionY + 14, I18n.t('shop_extra.locked'), {
+                    fontFamily: FONT_PIXEL, fontSize: BTN.btnFs,
                     color: '#5A4A3A', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6)
             );
@@ -505,37 +521,38 @@ export default class ShopScene extends Phaser.Scene {
             // Price
             const priceColor = canAfford ? CSS.OR : '#C44B3F';
             this._previewElements.push(
-                this.add.text(cx, actionY - 5, I18n.t('shop_extra.price_galets', { price: item.price }), {
-                    fontFamily: FONT_PIXEL, fontSize: '11px',
+                this.add.text(cx, actionY - BTN.h / 2 - 10, I18n.t('shop_extra.price_galets', { price: item.price }), {
+                    fontFamily: FONT_PIXEL, fontSize: BTN.priceFs,
                     color: priceColor, shadow: SHADOW
                 }).setOrigin(0.5).setDepth(5)
             );
 
-            // Buy button
+            // Buy button — gros CTA pleine largeur en portrait
             if (canAfford) {
+                const buyY = actionY + 14;
                 const buyBg = this.add.graphics().setDepth(5);
-                buyBg.fillStyle(0x2A5A2A, 0.9);
-                buyBg.fillRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
-                buyBg.lineStyle(1, 0x44CC44, 0.6);
-                buyBg.strokeRoundedRect(cx - 55, actionY + 12, 110, 28, 6);
+                buyBg.fillStyle(0x2A5A2A, 0.95);
+                buyBg.fillRoundedRect(cx - BTN.w / 2, buyY - BTN.h / 2, BTN.w, BTN.h, 10);
+                buyBg.lineStyle(2, 0x44CC44, 0.8);
+                buyBg.strokeRoundedRect(cx - BTN.w / 2, buyY - BTN.h / 2, BTN.w, BTN.h, 10);
                 this._previewElements.push(buyBg);
 
-                const buyTxt = this.add.text(cx, actionY + 26, I18n.t('shop_extra.buy'), {
-                    fontFamily: FONT_PIXEL, fontSize: '10px',
-                    color: '#44CC44', shadow: SHADOW
+                const buyTxt = this.add.text(cx, buyY, I18n.t('shop_extra.buy'), {
+                    fontFamily: FONT_PIXEL, fontSize: BTN.btnFs,
+                    color: '#FFFFFF', shadow: SHADOW
                 }).setOrigin(0.5).setDepth(6);
                 this._previewElements.push(buyTxt);
 
-                const buyZone = this.add.zone(cx, actionY + 26, 110, 28)
+                const buyZone = this.add.zone(cx, buyY, BTN.w, BTN.h)
                     .setOrigin(0.5).setInteractive({ useHandCursor: true });
                 buyZone.on('pointerdown', () => this._purchaseItem(item));
-                buyZone.on('pointerover', () => buyTxt.setColor('#66FF66'));
-                buyZone.on('pointerout', () => buyTxt.setColor('#44CC44'));
+                buyZone.on('pointerover', () => buyTxt.setColor('#CCFFCC'));
+                buyZone.on('pointerout', () => buyTxt.setColor('#FFFFFF'));
                 this._previewElements.push(buyZone);
             } else {
                 this._previewElements.push(
-                    this.add.text(cx, actionY + 18, I18n.t('shop_extra.insufficient'), {
-                        fontFamily: 'monospace', fontSize: '7px',
+                    this.add.text(cx, actionY + 14, I18n.t('shop_extra.insufficient'), {
+                        fontFamily: 'monospace', fontSize: IS_PORTRAIT ? '12px' : '7px',
                         color: '#C44B3F', shadow: SHADOW
                     }).setOrigin(0.5).setDepth(5)
                 );
@@ -554,7 +571,7 @@ export default class ShopScene extends Phaser.Scene {
 
         const items = category.items;
         const save = this._save;
-        const maxRows = 4;
+        const maxRows = IS_PORTRAIT ? 3 : 4;
         const visibleCount = GRID_COLS * maxRows;
 
         for (let i = 0; i < items.length; i++) {
@@ -608,78 +625,92 @@ export default class ShopScene extends Phaser.Scene {
         } else {
             g.fillStyle(0x2A2218, 0.8);
         }
-        g.fillRoundedRect(x, y, CARD_W, CARD_H, 5);
+        const radius = IS_PORTRAIT ? 12 : 5;
+        g.fillRoundedRect(x, y, CARD_W, CARD_H, radius);
 
         // Border
         if (isSelected) {
-            g.lineStyle(2, 0xFFD700, 0.9);
+            g.lineStyle(IS_PORTRAIT ? 3 : 2, 0xFFD700, 0.9);
         } else if (owned) {
             g.lineStyle(1, 0x44CC44, 0.4);
         } else {
             g.lineStyle(1, 0xD4A574, 0.2);
         }
-        g.strokeRoundedRect(x, y, CARD_W, CARD_H, 5);
+        g.strokeRoundedRect(x, y, CARD_W, CARD_H, radius);
         elements.push(g);
 
-        // Icon (compact, left-aligned in card)
-        const iconX = x + 28;
-        const iconY = cy - 8;
+        // Icon — portrait: centered top (vertical card) / desktop: left (horizontal card)
+        const iconX = IS_PORTRAIT ? cx : (x + 28);
+        const iconY = IS_PORTRAIT ? (y + 34) : (cy - 8);
         if (item.icon && this.textures.exists(item.icon)) {
             const tex = this.textures.get(item.icon);
             const isSheet = tex.frameTotal > 2;
+            const iconScale = IS_PORTRAIT ? (isSheet ? 0.9 : 1.4) : (isSheet ? 0.5 : 0.75);
             const icon = isSheet
-                ? this.add.sprite(iconX, iconY, item.icon, 0).setScale(0.5).setDepth(6)
-                : this.add.image(iconX, iconY, item.icon).setScale(0.75).setDepth(6);
+                ? this.add.sprite(iconX, iconY, item.icon, 0).setScale(iconScale).setDepth(6)
+                : this.add.image(iconX, iconY, item.icon).setScale(iconScale).setDepth(6);
             icon.setOrigin(0.5);
             if (locked) icon.setAlpha(0.35);
             elements.push(icon);
         } else {
             const ph = this.add.graphics().setDepth(6);
             ph.fillStyle(item.type === 'ability' ? 0x9B7BB8 : 0xD4A574, 0.6);
-            ph.fillCircle(iconX, iconY, 12);
+            ph.fillCircle(iconX, iconY, IS_PORTRAIT ? 18 : 12);
             elements.push(ph);
         }
 
-        // Name (right of icon) — y -26 leaves room for desc below (no overlap)
+        // Card text positions : portrait vertical flow / desktop horizontal
+        const nameX = IS_PORTRAIT ? cx : (x + 56);
+        const nameY = IS_PORTRAIT ? (y + 72) : (cy - 26);
+        const descY = IS_PORTRAIT ? (y + 92) : (cy - 8);
+        const priceY = IS_PORTRAIT ? (y + 112) : (cy + 8);
+        const textOrigin = IS_PORTRAIT ? 0.5 : 0;
+        const nameFs = IS_PORTRAIT ? '12px' : '9px';
+        const descFs = IS_PORTRAIT ? '9px' : '7px';
+        const priceFs = IS_PORTRAIT ? '11px' : '8px';
+
+        // Name
         const shortName = item.name.replace('Boule ', '').replace('Cochonnet ', '');
         elements.push(
-            this.add.text(x + 56, cy - 26, shortName, {
-                fontFamily: 'monospace', fontSize: '9px',
+            this.add.text(nameX, nameY, shortName, {
+                fontFamily: 'monospace', fontSize: nameFs,
                 color: isSelected ? CSS.OR : CSS.CREME, shadow: SHADOW
-            }).setDepth(6)
+            }).setOrigin(textOrigin, 0.5).setDepth(6)
         );
 
-        // Description (1 line) — y -8 gives gap after 9px name
-        const desc = item.description.length > 26 ? item.description.substring(0, 24) + '..' : item.description;
+        // Description (1 line, plus longue en portrait car plus large)
+        const descMax = IS_PORTRAIT ? 22 : 26;
+        const desc = item.description.length > descMax ? item.description.substring(0, descMax - 2) + '..' : item.description;
         elements.push(
-            this.add.text(x + 56, cy - 8, desc, {
-                fontFamily: 'monospace', fontSize: '7px',
+            this.add.text(nameX, descY, desc, {
+                fontFamily: 'monospace', fontSize: descFs,
                 color: CSS.GRIS, shadow: SHADOW
-            }).setDepth(6)
+            }).setOrigin(textOrigin, 0.5).setDepth(6)
         );
 
-        // Price / owned badge (bottom of card) — y +8 gives gap after 7px desc
+        // Price / owned badge
         if (owned) {
             elements.push(
-                this.add.text(x + 56, cy + 8, I18n.t('shop_extra.owned'), {
-                    fontFamily: 'monospace', fontSize: '8px',
+                this.add.text(nameX, priceY, I18n.t('shop_extra.owned'), {
+                    fontFamily: 'monospace', fontSize: priceFs,
                     color: '#44CC44', shadow: SHADOW
-                }).setDepth(6)
+                }).setOrigin(textOrigin, 0.5).setDepth(6)
             );
         } else if (locked) {
+            const lockedLabel = IS_PORTRAIT ? `\u{1F512} ${item.minWins} vict.` : `\u{1F512} ${item.minWins} victoires`;
             elements.push(
-                this.add.text(x + 56, cy + 8, `\u{1F512} ${item.minWins} victoires`, {
-                    fontFamily: 'monospace', fontSize: '8px',
+                this.add.text(nameX, priceY, lockedLabel, {
+                    fontFamily: 'monospace', fontSize: priceFs,
                     color: '#5A4A3A', shadow: SHADOW
-                }).setDepth(6)
+                }).setOrigin(textOrigin, 0.5).setDepth(6)
             );
         } else {
             const canAfford = save.galets >= item.price;
             elements.push(
-                this.add.text(x + 56, cy + 8, `${item.price} G`, {
-                    fontFamily: 'monospace', fontSize: '9px',
+                this.add.text(nameX, priceY, `${item.price} G`, {
+                    fontFamily: 'monospace', fontSize: priceFs,
                     color: canAfford ? CSS.OR : '#C44B3F', shadow: SHADOW
-                }).setDepth(6)
+                }).setOrigin(textOrigin, 0.5).setDepth(6)
             );
         }
 
@@ -700,9 +731,9 @@ export default class ShopScene extends Phaser.Scene {
                 // Subtle hover highlight
                 g.clear();
                 g.fillStyle(0x3A3028, 0.9);
-                g.fillRoundedRect(x, y, CARD_W, CARD_H, 5);
+                g.fillRoundedRect(x, y, CARD_W, CARD_H, radius);
                 g.lineStyle(1, 0xD4A574, 0.5);
-                g.strokeRoundedRect(x, y, CARD_W, CARD_H, 5);
+                g.strokeRoundedRect(x, y, CARD_W, CARD_H, radius);
                 sfxUIHover();
             }
         });
@@ -710,9 +741,9 @@ export default class ShopScene extends Phaser.Scene {
             if (this.selectedIndex !== index) {
                 g.clear();
                 g.fillStyle(owned ? 0x2A3A22 : 0x2A2218, 0.8);
-                g.fillRoundedRect(x, y, CARD_W, CARD_H, 5);
+                g.fillRoundedRect(x, y, CARD_W, CARD_H, radius);
                 g.lineStyle(1, owned ? 0x44CC44 : 0xD4A574, owned ? 0.4 : 0.2);
-                g.strokeRoundedRect(x, y, CARD_W, CARD_H, 5);
+                g.strokeRoundedRect(x, y, CARD_W, CARD_H, radius);
             }
         });
         elements.push(zone);
@@ -867,7 +898,7 @@ export default class ShopScene extends Phaser.Scene {
             const category = this.shopData.categories.find(c => c.id === TABS[this.activeTab].id);
             if (!category) return;
             const totalRows = Math.ceil(category.items.length / GRID_COLS);
-            const maxRows = 4;
+            const maxRows = IS_PORTRAIT ? 3 : 4;
             if (totalRows <= maxRows) return;
 
             if (dy > 0 && this._scrollOffset < totalRows - maxRows) {
@@ -899,7 +930,7 @@ export default class ShopScene extends Phaser.Scene {
             this.selectedIndex = newIndex;
 
             // Auto-scroll if needed
-            const maxRows = 4;
+            const maxRows = IS_PORTRAIT ? 3 : 4;
             const visRow = Math.floor(newIndex / GRID_COLS) - this._scrollOffset;
             if (visRow >= maxRows) {
                 this._scrollOffset = Math.floor(newIndex / GRID_COLS) - maxRows + 1;
