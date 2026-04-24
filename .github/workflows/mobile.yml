@@ -1,0 +1,50 @@
+name: QA Mobile - Playwright devices (iPhone / Pixel)
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  mobile-e2e:
+    name: E2E Mobile (Chromium + WebKit emulation)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+
+      # Chromium + WebKit (iPhone SE/14 tournent sur WebKit, Pixel 5 sur Chromium)
+      - run: npx playwright install --with-deps chromium webkit
+
+      # Mobile smoke + visual
+      - name: Run mobile tests (@mobile tag)
+        run: npm run test:e2e:mobile
+        continue-on-error: true
+
+      - name: Upload Playwright mobile report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-mobile
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload mobile test results (videos, traces)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-mobile
+          path: test-results/
+          retention-days: 7
+
+      - name: Upload mobile visual snapshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-snapshots-mobile
+          path: tests/e2e/snapshots/mobile-visual.pw.js/
+          retention-days: 30

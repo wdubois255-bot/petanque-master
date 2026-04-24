@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Mockups portrait — Petanque Master (démo Claude Design)</title>
+<style>
+  :root {
+    --ocre: #D4A574;
+    --terracotta: #C4854A;
+    --olive: #6B8E4E;
+    --lavande: #9B7BB8;
+    --ciel: #87CEEB;
+    --creme: #F5E6D0;
+    --ombre: #3A2E28;
+    --ombre-deep: #1A1510;
+    --accent: #C44B3F;
+    --or: #FFD700;
+    --gris: #9E9E8E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+  body {
+    background: #1a1510;
+    color: var(--creme);
+    padding: 40px 20px;
+  }
+  .intro {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    padding: 24px;
+    background: #2a1f1a;
+    border-left: 4px solid var(--or);
+    line-height: 1.6;
+  }
+  .intro h1 { color: var(--or); margin-bottom: 12px; }
+  .intro p { margin-bottom: 10px; }
+  .intro code { color: var(--ocre); background: #0f0a08; padding: 2px 6px; border-radius: 3px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .scene {
+    background: #2a1f1a;
+    border: 1px solid var(--ombre);
+    padding: 20px;
+  }
+  .scene h2 { color: var(--ocre); margin-bottom: 8px; }
+  .scene .caption {
+    font-size: 12px; color: var(--gris); margin-bottom: 16px; line-height: 1.4;
+  }
+  .frame {
+    width: 480px; height: 960px;
+    background: var(--ombre);
+    position: relative;
+    margin: 0 auto;
+    border: 2px solid var(--terracotta);
+    overflow: hidden;
+    image-rendering: pixelated;
+  }
+  .note {
+    position: absolute;
+    background: rgba(255,215,0,0.15);
+    border-left: 2px solid var(--or);
+    padding: 4px 8px;
+    font-size: 10px;
+    color: var(--or);
+    z-index: 99;
+  }
+  .specs {
+    margin-top: 16px; padding: 12px; background: #0f0a08; font-size: 12px;
+    color: var(--gris); line-height: 1.5;
+  }
+  .specs b { color: var(--ocre); }
+
+  /* ============ TITLE SCENE ============ */
+  .title-scene { background: linear-gradient(180deg, #5A94C8 0%, #E8B868 50%, #8B6030 100%); }
+  .title-logo {
+    position: absolute; top: 140px; left: 50%; transform: translateX(-50%);
+    font-size: 32px; color: var(--ombre); text-shadow: 2px 2px 0 var(--or);
+    letter-spacing: 3px; text-align: center; line-height: 1.3;
+    font-weight: bold;
+  }
+  .title-sub { font-size: 10px; color: var(--ombre); margin-top: 8px; letter-spacing: 2px; }
+  .title-menu {
+    position: absolute; top: 380px; left: 50%; transform: translateX(-50%);
+    width: 340px; display: flex; flex-direction: column; gap: 16px;
+  }
+  .btn {
+    height: 64px; background: var(--ombre); color: var(--creme);
+    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
+    font-size: 18px; letter-spacing: 1px; box-shadow: 3px 3px 0 var(--ombre-deep);
+  }
+  .btn.primary { background: var(--terracotta); border-color: var(--or); }
+  .btn.secondary { background: var(--olive); }
+  .title-footer {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: var(--ombre); display: flex; gap: 20px;
+  }
+
+  /* ============ CHARSELECT SCENE ============ */
+  .charselect-header {
+    position: absolute; top: 16px; left: 0; right: 0; height: 60px;
+    background: var(--ombre-deep); display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--or); border-bottom: 2px solid var(--ocre);
+  }
+  .charselect-grid {
+    position: absolute; top: 96px; left: 24px; right: 24px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .char-card {
+    aspect-ratio: 1; background: var(--ombre-deep); border: 2px solid var(--ocre);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    font-size: 9px; color: var(--creme); text-align: center; padding: 4px;
+  }
+  .char-card.selected { border-color: var(--or); box-shadow: 0 0 10px var(--or); background: #5a3f2d; }
+  .char-card.locked { opacity: 0.4; }
+  .char-stats {
+    position: absolute; bottom: 140px; left: 24px; right: 24px;
+    background: var(--ombre-deep); padding: 16px; border: 1px solid var(--ocre);
+  }
+  .char-stats h3 { color: var(--or); font-size: 14px; margin-bottom: 8px; }
+  .stat-bar { display: flex; justify-content: space-between; margin: 4px 0; font-size: 11px; }
+  .charselect-footer {
+    position: absolute; bottom: 24px; left: 24px; right: 24px;
+    display: flex; gap: 12px;
+  }
+  .charselect-footer .btn { flex: 1; height: 56px; font-size: 14px; }
+
+  /* ============ SHOP SCENE ============ */
+  .shop-header {
+    position: absolute; top: 16px; left: 0; right: 0; padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--ombre-deep); border-bottom: 2px solid var(--ocre);
+  }
+  .shop-galets {
+    display: flex; align-items: center; gap: 6px; color: var(--or); font-size: 14px;
+  }
+  .shop-galets::before { content: "●"; color: var(--or); font-size: 18px; }
+  .shop-tabs {
+    position: absolute; top: 80px; left: 0; right: 0; display: flex; height: 48px;
+  }
+  .shop-tab {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: var(--ombre-deep); color: var(--gris); font-size: 12px;
+    border-bottom: 2px solid transparent;
+  }
+  .shop-tab.active { color: var(--or); background: var(--ombre); border-bottom-color: var(--or); }
+  .shop-list {
+    position: absolute; top: 136px; bottom: 96px; left: 16px; right: 16px;
+    overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+  }
+  .shop-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: var(--ombre-deep); border: 1px solid var(--ocre);
+  }
+  .shop-item-icon { width: 48px; height: 48px; background: var(--terracotta); border-radius: 50%; }
+  .shop-item-info { flex: 1; font-size: 12px; }
+  .shop-item-info .name { color: var(--creme); margin-bottom: 4px; }
+  .shop-item-info .desc { color: var(--gris); font-size: 10px; }
+  .shop-item-price { color: var(--or); font-size: 14px; }
+  .shop-buy {
+    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    height: 56px;
+  }
+
+  /* ============ PETANQUE SCENE ============ */
+  .petanque-scene { background: linear-gradient(180deg, #5A94C8 0%, #8BA878 40%, #8B6030 100%); }
+  .petanque-score {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    width: 320px; height: 56px; background: var(--ombre-deep);
+    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
+    gap: 20px; font-size: 18px;
+  }
+  .petanque-score .player { color: var(--ciel); }
+  .petanque-score .opp { color: var(--accent); }
+  .petanque-score .sep { color: var(--ocre); font-size: 14px; }
+  .petanque-score .mene { font-size: 10px; color: var(--or); margin-left: 12px; }
+  .petanque-pause {
+    position: absolute; top: 16px; left: 16px;
+    width: 48px; height: 48px; background: var(--ombre-deep);
+    border: 2px solid var(--ocre); display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--creme);
+  }
+  .petanque-dist {
+    position: absolute; top: 84px; left: 50%; transform: translateX(-50%);
+    padding: 4px 12px; background: var(--ombre-deep); border: 1px solid var(--ocre);
+    font-size: 12px; color: var(--or);
+  }
+  .petanque-terrain {
+    position: absolute; left: 50%; top: 144px;
+    width: 288px; height: 672px;
+    transform: translateX(-50%);
+    background: #8B6030;
+    border: 4px solid #6B4F2D;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+  }
+  .terrain-cochonnet {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px; background: var(--or); border-radius: 50%;
+    box-shadow: 0 0 8px var(--or);
+  }
+  .terrain-ball {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  }
+  .terrain-ball.player { background: var(--ciel); }
+  .terrain-ball.opp { background: var(--accent); }
+  .petanque-player {
+    position: absolute; bottom: 270px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 60px; background: var(--terracotta); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; font-size: 9px; color: white;
+  }
+  .petanque-circle {
+    position: absolute; bottom: 260px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 40px; border: 2px solid var(--creme); border-radius: 50%;
+  }
+  .petanque-opponent {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 60px; background: var(--ombre-deep);
+    display: flex; align-items: center; justify-content: center; font-size: 9px; color: white;
+    border: 1px solid var(--ocre);
+  }
+  .petanque-modes {
+    position: absolute; bottom: 128px; left: 16px; right: 16px;
+    display: flex; gap: 12px;
+  }
+  .mode-btn {
+    flex: 1; height: 64px; background: var(--ombre-deep); border: 2px solid var(--ocre);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--creme);
+  }
+  .mode-btn.selected { border-color: var(--or); background: #5a3f2d; }
+  .mode-btn .sub { font-size: 9px; color: var(--gris); margin-top: 2px; }
+  .petanque-hud {
+    position: absolute; bottom: 24px; left: 16px; right: 16px;
+    display: flex; gap: 12px;
+  }
+  .hud-btn {
+    height: 56px; background: var(--ombre-deep); border: 2px solid var(--ocre);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 11px; color: var(--creme); padding: 0 10px;
+  }
+  .hud-btn.back { width: 56px; }
+  .hud-btn.focus { flex: 1; border-color: var(--ciel); color: var(--ciel); }
+  .hud-btn.ability { flex: 1; border-color: var(--or); color: var(--or); }
+  .hud-dots { display: flex; gap: 3px; margin-left: 4px; }
+  .hud-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* ============ RESULT SCENE ============ */
+  .result-bg {
+    background: radial-gradient(circle at center, #5a3f2d 0%, var(--ombre) 60%, var(--ombre-deep) 100%);
+  }
+  .result-title {
+    position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+    font-size: 48px; color: var(--or); text-shadow: 0 0 20px var(--or);
+    letter-spacing: 4px;
+  }
+  .result-score {
+    position: absolute; top: 220px; left: 50%; transform: translateX(-50%);
+    font-size: 72px; color: var(--creme); letter-spacing: 8px;
+  }
+  .result-score .acc { color: var(--accent); }
+  .result-reward {
+    position: absolute; top: 400px; left: 50%; transform: translateX(-50%);
+    width: 360px; background: var(--ombre-deep); padding: 20px;
+    border: 2px solid var(--or); text-align: center;
+  }
+  .result-reward h3 { color: var(--or); margin-bottom: 10px; }
+  .result-reward .amount { color: var(--creme); font-size: 24px; }
+  .result-actions {
+    position: absolute; bottom: 32px; left: 24px; right: 24px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .result-actions .btn { height: 56px; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Démo « Claude Design » — Petanque Master portrait mobile</h1>
+  <p>
+    Ce fichier est un <b>exemple de livrable</b> que <code>Claude Design</code> produirait en quelques
+    prompts conversationnels à partir de ton codebase. Il montre une refonte des 5 scènes clés en
+    portrait 480×960 respectant ta palette provençale, tes conventions de taille (boutons 56px+ WCAG),
+    et les ancres définies dans <code>src/utils/Layout.js</code>.
+  </p>
+  <p>
+    <b>Valeur démonstrée :</b> au lieu d'itérer coordonnée par coordonnée dans Phaser pour chaque
+    scène, un mockup comme celui-ci sert de <b>source de vérité visuelle</b>. Chaque agent Sonnet
+    qui attaque une scène (Phase 2 polish) a un référent pixel-précis à reproduire. Gain estimé :
+    ~50% de temps de polish, et cohérence globale garantie.
+  </p>
+  <p>
+    <b>Ce qui manque dans ce fichier vs Claude Design réel :</b> export Figma/PDF/PPT, édition live
+    par conversation, extraction automatique du design system depuis le codebase, capture web du
+    produit existant. Ici c'est du HTML/CSS statique fait main pour illustrer.
+  </p>
+  <p style="margin-top: 16px; color: var(--gris);">
+    Ouvre ce fichier dans ton navigateur : <code>docs/mobile/DESIGN_MOCKUPS.html</code>. Les 5 cadres
+    480×960 ci-dessous simulent un écran mobile portrait.
+  </p>
+</div>
+
+<div class="grid">
+
+  <!-- ====== TITLE ====== -->
+  <div class="scene">
+    <h2>1. TitleScene</h2>
+    <p class="caption">Logo grand + menu vertical 4 boutons gros + tag version. Hiérarchie claire, pouces naturellement sur le menu.</p>
+    <div class="frame title-scene">
+      <div class="title-logo">
+        PETANQUE<br>MASTER
+        <div class="title-sub">PIXEL ART PROVENÇAL</div>
+      </div>
+      <div class="title-menu">
+        <div class="btn primary">JOUER ARCADE</div>
+        <div class="btn">PARTIE RAPIDE</div>
+        <div class="btn secondary">BOUTIQUE</div>
+        <div class="btn secondary">TUTO / PROFIL</div>
+      </div>
+      <div class="title-footer">
+        <span>v1.0.2</span><span>🔊</span><span>🇫🇷</span>
+      </div>
+      <div class="note" style="top: 380px; left: 20px;">Btn 64×340, shadow 3px</div>
+      <div class="note" style="top: 140px; right: 20px;">Logo centered 140px top</div>
+    </div>
+    <div class="specs">
+      <b>Ancres :</b> logo (W/2, 140) • menu (W/2, 380) step 80px • footer (W/2, H-32)<br>
+      <b>Dimensions :</b> boutons 340×64, spacing 16px • tag version 11px<br>
+      <b>Palette :</b> gradient ciel→ocre→terracotta, btn ombre/olive, accent or
+    </div>
+  </div>
+
+  <!-- ====== CHARSELECT ====== -->
+  <div class="scene">
+    <h2>2. CharSelectScene</h2>
+    <p class="caption">Grille 3×4 (vs 4×3 paysage), stats bas, boutons action en pied. Scroll vertical si plus de 12 persos.</p>
+    <div class="frame" style="background: #2a2018;">
+      <div class="charselect-header">CHOIX DU PERSONNAGE</div>
+      <div class="charselect-grid">
+        <div class="char-card selected">ROOKIE<br>14/40</div>
+        <div class="char-card">LA CHOUPE<br>27</div>
+        <div class="char-card locked">🔒<br>LEY</div>
+        <div class="char-card locked">🔒<br>FOYOT</div>
+        <div class="char-card locked">🔒<br>SUCHAUD</div>
+        <div class="char-card locked">🔒<br>FAZZINO</div>
+        <div class="char-card locked">🔒<br>ROCHER</div>
+        <div class="char-card locked">🔒<br>ROBINEAU</div>
+        <div class="char-card locked">🔒<br>MAMIE</div>
+        <div class="char-card locked">🔒<br>SOFIA</div>
+        <div class="char-card locked">🔒<br>PAPI</div>
+        <div class="char-card locked">🔒<br>RIZZI</div>
+      </div>
+      <div class="char-stats">
+        <h3>LE ROOKIE — Adaptable</h3>
+        <div class="stat-bar"><span>PRÉCISION</span><span>★★★★☆☆☆☆☆☆</span></div>
+        <div class="stat-bar"><span>PUISSANCE</span><span>★★★★☆☆☆☆☆☆</span></div>
+        <div class="stat-bar"><span>EFFET</span><span>★★★☆☆☆☆☆☆☆</span></div>
+        <div class="stat-bar"><span>SANG-FROID</span><span>★★★☆☆☆☆☆☆☆</span></div>
+      </div>
+      <div class="charselect-footer">
+        <div class="btn" style="flex:0 0 100px;">RETOUR</div>
+        <div class="btn primary">VALIDER</div>
+      </div>
+      <div class="note" style="top: 100px; right: 4px;">Grille 3×4 fixe, 12 persos</div>
+    </div>
+    <div class="specs">
+      <b>Ancres :</b> header (0, 16) • grille (24, 96) 3 cols • stats panel (24, H-260) • btn (24, H-80)<br>
+      <b>Cartes :</b> aspect 1:1, ~136×136 chacune, border 2px, selected = glow or<br>
+      <b>UX :</b> tap carte → select + stats panel update. Double tap = valider
+    </div>
+  </div>
+
+  <!-- ====== SHOP ====== -->
+  <div class="scene">
+    <h2>3. ShopScene</h2>
+    <p class="caption">Onglets haut horizontaux, liste verticale scrollable, bouton achat full-width bas.</p>
+    <div class="frame" style="background: #2a2018;">
+      <div class="shop-header">
+        <span>BOUTIQUE</span>
+        <div class="shop-galets">1 247</div>
+      </div>
+      <div class="shop-tabs">
+        <div class="shop-tab active">BOULES</div>
+        <div class="shop-tab">COCHONNETS</div>
+        <div class="shop-tab">CAPACITÉS</div>
+      </div>
+      <div class="shop-list">
+        <div class="shop-item">
+          <div class="shop-item-icon" style="background: silver;"></div>
+          <div class="shop-item-info">
+            <div class="name">BOULE CHROME</div>
+            <div class="desc">+10% restitution, +5% friction</div>
+          </div>
+          <div class="shop-item-price">250</div>
+        </div>
+        <div class="shop-item">
+          <div class="shop-item-icon" style="background: #8b4513;"></div>
+          <div class="shop-item-info">
+            <div class="name">BOULE BRONZE</div>
+            <div class="desc">Équilibrée — pas de bonus</div>
+          </div>
+          <div class="shop-item-price">100</div>
+        </div>
+        <div class="shop-item" style="border-color: var(--or); background: #3a2f1a;">
+          <div class="shop-item-icon" style="background: var(--or);"></div>
+          <div class="shop-item-info">
+            <div class="name" style="color: var(--or);">BOULE DORÉE ★</div>
+            <div class="desc">+15% précision, rare</div>
+          </div>
+          <div class="shop-item-price">800</div>
+        </div>
+        <div class="shop-item" style="opacity: 0.5;">
+          <div class="shop-item-icon" style="background: #333;"></div>
+          <div class="shop-item-info">
+            <div class="name">BOULE TITANE</div>
+            <div class="desc">Équipée</div>
+          </div>
+          <div class="shop-item-price">✓</div>
+        </div>
+      </div>
+      <div class="btn primary shop-buy">ACHETER — 250 GALETS</div>
+      <div class="note" style="top: 80px; right: 4px;">Tabs horiz 3 × 160px</div>
+    </div>
+    <div class="specs">
+      <b>Ancres :</b> header (0, 16) • tabs (0, 80) • list (16, 136) scrollable • buy (16, H-80)<br>
+      <b>Items :</b> hauteur 72px, icon 48×48, padding 12, price right • selected glow or<br>
+      <b>UX :</b> tap item → focus + bouton ACHETER active. Swipe vertical = scroll
+    </div>
+  </div>
+
+  <!-- ====== PETANQUE ====== -->
+  <div class="scene">
+    <h2>4. PetanqueScene (match)</h2>
+    <p class="caption">Terrain plein écran vertical, score haut, HUD compact bas, modes en ligne. Watchers latéraux visibles dans les marges.</p>
+    <div class="frame petanque-scene">
+      <div class="petanque-pause">II</div>
+      <div class="petanque-score">
+        <span class="player">3</span><span class="sep">—</span><span class="opp">2</span>
+        <span class="mene">MENE 4</span>
+      </div>
+      <div class="petanque-dist">● 7.1m</div>
+      <div class="petanque-terrain">
+        <div class="terrain-cochonnet"></div>
+        <div class="terrain-ball player" style="top: 140px; left: 130px;"></div>
+        <div class="terrain-ball opp" style="top: 110px; left: 90px;"></div>
+        <div class="terrain-ball player" style="top: 200px; left: 160px;"></div>
+        <div class="terrain-ball opp" style="top: 230px; left: 110px;"></div>
+      </div>
+      <div class="petanque-player">JOU</div>
+      <div class="petanque-circle"></div>
+      <div class="petanque-opponent">ADV</div>
+      <div class="petanque-modes">
+        <div class="mode-btn selected">DEMI-PORTÉE<div class="sub">polyvalent</div></div>
+        <div class="mode-btn">PLOMBÉE<div class="sub">roule moins</div></div>
+        <div class="mode-btn">TIR FER<div class="sub">carreau</div></div>
+      </div>
+      <div class="petanque-hud">
+        <div class="hud-btn back">← RET</div>
+        <div class="hud-btn focus">
+          RESPIRE
+          <div class="hud-dots"><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div></div>
+        </div>
+        <div class="hud-btn ability">
+          CAPA
+          <div class="hud-dots"><div class="hud-dot"></div><div class="hud-dot"></div><div class="hud-dot"></div></div>
+        </div>
+      </div>
+      <div class="note" style="top: 144px; left: 4px;">Terrain 288×672</div>
+      <div class="note" style="bottom: 200px; right: 4px;">Watcher marge 96px</div>
+    </div>
+    <div class="specs">
+      <b>Terrain :</b> 288×672 (scale 1.6), centré X, Y=144. Marges 96px latérales pour watchers<br>
+      <b>Score :</b> bandeau 320×56 centré haut. Pause 48×48 coin gauche. Distance badge sous<br>
+      <b>Modes :</b> 3 boutons flex 64px • HUD: 3 boutons (back 56, focus flex, ability flex)
+    </div>
+  </div>
+
+  <!-- ====== RESULT ====== -->
+  <div class="scene">
+    <h2>5. ResultScene</h2>
+    <p class="caption">Titre dramatique, score géant, reward centré, 2 actions claires en bas.</p>
+    <div class="frame result-bg">
+      <div class="result-title">VICTOIRE !</div>
+      <div class="result-score"><span>13</span><span style="color: var(--gris)">–</span><span class="acc">9</span></div>
+      <div class="result-reward">
+        <h3>RÉCOMPENSES</h3>
+        <div class="amount">+ 100 Galets</div>
+        <div class="amount" style="color: var(--or); margin-top: 8px;">+ 1 Carreau !</div>
+        <div style="color: var(--gris); font-size: 11px; margin-top: 10px;">Bonus run : +15 Galets</div>
+      </div>
+      <div class="result-actions">
+        <div class="btn primary">CONTINUER</div>
+        <div class="btn">REJOUER</div>
+        <div class="btn secondary">RETOUR AU MENU</div>
+      </div>
+    </div>
+    <div class="specs">
+      <b>Ancres :</b> titre (W/2, 100) • score (W/2, 220) • reward (W/2, 400) • actions (24, H-220)<br>
+      <b>Titre :</b> 48px, glow or, letter-spacing 4 • Score : 72px, letter-spacing 8<br>
+      <b>Actions :</b> 3 boutons pleine largeur 360px hauteur 56, stack vertical
+    </div>
+  </div>
+
+</div>
+
+<div class="intro" style="margin: 40px auto 0; border-left-color: var(--olive);">
+  <h1 style="color: var(--olive);">Workflow réel avec Claude Design</h1>
+  <p>
+    <b>1. Extraction design system</b> — Claude Design lit <code>src/utils/Constants.js</code>
+    (palette COLORS), <code>public/data/characters.json</code>, les sprites et détecte automatiquement
+    ocre #D4A574, terracotta #C4854A, olive #6B8E4E, etc. Il propose ensuite des composants (bouton
+    bois, panel ombré, carte perso).
+  </p>
+  <p>
+    <b>2. Conversation itérative</b> — « Redessine la TitleScene en portrait mobile 480×960 en gardant
+    le gradient ciel/ocre ». Claude Design produit une version interactive, tu commentes inline
+    (« le logo trop bas », « je veux 4 boutons pas 6 »), il ajuste en direct.
+  </p>
+  <p>
+    <b>3. Export spec</b> — chaque élément a ses coordonnées, tailles, couleurs exactes. Un agent
+    Sonnet lit la spec et produit le code Phaser correspondant en une passe au lieu de 5 itérations.
+  </p>
+  <p>
+    <b>4. Pitch / marketing</b> — le même outil génère la fiche itch.io visuelle, les slides pour
+    Poki/CrazyGames, les banners social media. Tout dans la même identité visuelle.
+  </p>
+  <p style="color: var(--gris); margin-top: 12px;">
+    Limite connue : Claude Design ne génère pas des <b>sprites pixel art</b> (rester sur PixelLab)
+    ni du <b>code Phaser</b> (rester sur Claude Code). C'est un outil de conception visuelle, pas
+    de production asset ni d'implémentation.
+  </p>
+</div>
+
+</body>
+</html>
