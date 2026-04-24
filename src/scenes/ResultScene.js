@@ -68,7 +68,8 @@ export default class ResultScene extends Phaser.Scene {
         // Horizontal separator line (subtle gold)
         const sepLine = this.add.graphics().setDepth(1);
         sepLine.lineStyle(1, this.won ? 0xD4A574 : 0x6B4A3A, 0.3);
-        sepLine.beginPath(); sepLine.moveTo(60, 140); sepLine.lineTo(Layout.W - 60, 140); sepLine.strokePath();
+        const sepY = portraitR ? 185 : 140;
+        sepLine.beginPath(); sepLine.moveTo(60, sepY); sepLine.lineTo(Layout.W - 60, sepY); sepLine.strokePath();
 
         // ════════════════════════════════════════════════════════
         //  TOP ZONE — Title + Score + Stars (0-140px)
@@ -106,7 +107,7 @@ export default class ResultScene extends Phaser.Scene {
         // Stars (victory only)
         if (this.won) {
             const stars = this._calculateStars();
-            this._drawStars(Layout.W / 2, 116, stars);
+            this._drawStars(Layout.W / 2, portraitR ? 150 : 116, stars);
             this._saveStarRating(stars);
         }
 
@@ -114,7 +115,7 @@ export default class ResultScene extends Phaser.Scene {
         if (!this.won) {
             const advice = this._getDefeatAdvice();
             if (advice) {
-                const adviceText = this.add.text(Layout.W / 2, portraitR ? 148 : 116, advice, {
+                const adviceText = this.add.text(Layout.W / 2, portraitR ? 156 : 116, advice, {
                     fontFamily: 'monospace', fontSize: portraitR ? '13px' : '10px', color: '#D4A574',
                     shadow: SHADOW, wordWrap: { width: portraitR ? (Layout.W - 40) : 500 }, align: 'center',
                     fontStyle: 'italic'
@@ -127,8 +128,8 @@ export default class ResultScene extends Phaser.Scene {
         //  MIDDLE ZONE — Character (left) + Stats (right) (140-380px)
         // ════════════════════════════════════════════════════════
         const winner = this.won ? this.playerCharacter : this.opponentCharacter;
-        const charX = 160; // Left zone center
-        const charY = 265;
+        const charX = portraitR ? Layout.W / 2 : 160;
+        const charY = portraitR ? 255 : 265;
 
         if (winner) {
             // Ground shadow under character
@@ -177,11 +178,12 @@ export default class ResultScene extends Phaser.Scene {
             }
         }
 
-        // === STATS + REWARDS PANEL (right side) ===
-        const panelX = 530;
-        const panelY = 155;
-        const panelW = 280;
-        const panelH = 195;
+        // === STATS + REWARDS PANEL ===
+        // Portrait: full-width panel below character. Desktop: right-side panel.
+        const panelX = portraitR ? Layout.W / 2 : 530;
+        const panelY = portraitR ? 400 : 155;
+        const panelW = portraitR ? Layout.W - 40 : 280;
+        const panelH = portraitR ? 230 : 195;
         const statsContainer = this.add.container(0, 0).setAlpha(0).setDepth(5);
 
         // Panel background
