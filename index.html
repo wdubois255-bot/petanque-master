@@ -35,6 +35,13 @@
             font-style: normal;
             font-display: block;
         }
+        /* Expose safe-area-inset-* en CSS custom properties, consomme par Layout.js */
+        :root {
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-right: env(safe-area-inset-right, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-area-left: env(safe-area-inset-left, 0px);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             width: 100%;
@@ -46,6 +53,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Respecte le notch iOS et le home indicator */
+            padding-top: var(--safe-area-top);
+            padding-right: var(--safe-area-right);
+            padding-bottom: var(--safe-area-bottom);
+            padding-left: var(--safe-area-left);
         }
         canvas {
             image-rendering: pixelated;
@@ -60,6 +72,8 @@
             justify-content: center;
             align-items: center;
             touch-action: none;
+            width: 100%;
+            height: 100%;
         }
         /* Anti-selection globale (requis CrazyGames/Poki) */
         * {

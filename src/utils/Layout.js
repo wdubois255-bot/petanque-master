@@ -41,20 +41,23 @@ const H = isMobile ? MOBILE_H : DESKTOP_H;
 // --- Safe area insets (iOS notch, home indicator) -----------------------
 
 function readSafeInsets() {
-    if (typeof window === 'undefined' || !window.getComputedStyle) {
+    if (typeof window === 'undefined' || !window.getComputedStyle || !document.body) {
         return { top: 0, right: 0, bottom: 0, left: 0 };
     }
-    const style = window.getComputedStyle(document.documentElement);
+    // On lit les paddings calcules du <body> qui utilise env(safe-area-inset-*)
+    // (cf. index.html). getPropertyValue sur custom property retourne le literal
+    // CSS, pas la valeur resolue — il faut passer par un element qui la consomme.
+    const bodyStyle = window.getComputedStyle(document.body);
     const parse = (prop) => {
-        const v = style.getPropertyValue(prop).trim();
-        const n = parseInt(v, 10);
-        return Number.isFinite(n) ? n : 0;
+        const v = bodyStyle.getPropertyValue(prop).trim();
+        const n = parseFloat(v);
+        return Number.isFinite(n) ? Math.round(n) : 0;
     };
     return {
-        top: parse('--safe-area-top'),
-        right: parse('--safe-area-right'),
-        bottom: parse('--safe-area-bottom'),
-        left: parse('--safe-area-left')
+        top: parse('padding-top'),
+        right: parse('padding-right'),
+        bottom: parse('padding-bottom'),
+        left: parse('padding-left')
     };
 }
 
