@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
+import { FONT_PIXEL } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick } from '../utils/SoundManager.js';
 import { fadeToScene } from '../utils/SceneTransition.js';
 import I18n from '../utils/I18n.js';
@@ -29,39 +30,39 @@ export default class CreditsScene extends Phaser.Scene {
         // Background: warm dark gradient
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x2A2520, 0x2A2520, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Subtle texture dots
         for (let i = 0; i < 60; i++) {
-            const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(0, GAME_HEIGHT);
+            const gx = Phaser.Math.Between(0, Layout.W);
+            const gy = Phaser.Math.Between(0, Layout.H);
             bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.02, 0.05));
             bg.fillRect(gx, gy, 1, 1);
         }
 
         // Credits content as scrolling container
-        this._container = this.add.container(0, GAME_HEIGHT + 20);
+        this._container = this.add.container(0, Layout.H + 20);
 
         const credits = this._buildCreditsText();
         let y = 0;
 
         for (const entry of credits) {
             if (entry.type === 'title') {
-                const t = this.add.text(GAME_WIDTH / 2, y, entry.text, {
+                const t = this.add.text(Layout.W / 2, y, entry.text, {
                     fontFamily: FONT_PIXEL, fontSize: '18px', color: '#FFD700',
                     align: 'center', shadow: SHADOW
                 }).setOrigin(0.5);
                 this._container.add(t);
                 y += 40;
             } else if (entry.type === 'heading') {
-                const t = this.add.text(GAME_WIDTH / 2, y, entry.text, {
+                const t = this.add.text(Layout.W / 2, y, entry.text, {
                     fontFamily: 'monospace', fontSize: '14px', color: '#D4A574',
                     align: 'center', shadow: SHADOW
                 }).setOrigin(0.5);
                 this._container.add(t);
                 y += 28;
             } else if (entry.type === 'line') {
-                const t = this.add.text(GAME_WIDTH / 2, y, entry.text, {
+                const t = this.add.text(Layout.W / 2, y, entry.text, {
                     fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0',
                     align: 'center', shadow: SHADOW, wordWrap: { width: 500 }
                 }).setOrigin(0.5);
@@ -75,7 +76,7 @@ export default class CreditsScene extends Phaser.Scene {
         this._totalHeight = y;
 
         // Back button (always visible)
-        const backBtn = this.add.text(20, GAME_HEIGHT - 24, I18n.t('ui.back'), {
+        const backBtn = this.add.text(20, Layout.H - 24, I18n.t('ui.back'), {
             fontFamily: 'monospace', fontSize: '12px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0, 0.5).setDepth(10).setInteractive({ useHandCursor: true });
         backBtn.on('pointerover', () => backBtn.setColor('#FFD700'));

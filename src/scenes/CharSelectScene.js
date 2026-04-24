@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI } from '../utils/Constants.js';
+import { getCharSpriteKey, CHAR_STATIC_SPRITES, CHAR_SCALE_GRID, CHAR_SCALE_GRID_LOCKED, CHAR_SCALE_PREVIEW, FONT_PIXEL, SHADOW_TEXT, COLORS, UI } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -55,18 +56,18 @@ export default class CharSelectScene extends Phaser.Scene {
         // Background — dark with subtle diagonal stripes
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Gold diagonal stripes (fighting game vibe)
         const stripes = this.add.graphics();
         stripes.fillStyle(0xFFD700, 0.02);
-        for (let i = -GAME_HEIGHT; i < GAME_WIDTH + GAME_HEIGHT; i += 40) {
-            stripes.fillRect(i, 0, 12, GAME_HEIGHT);
+        for (let i = -Layout.H; i < Layout.W + Layout.H; i += 40) {
+            stripes.fillRect(i, 0, 12, Layout.H);
         }
 
         // Title
-        UIFactory.addTitle(this, GAME_WIDTH / 2, 26, 'CHOIX DU PERSONNAGE', { depth: 5, fontSize: '14px' });
-        UIFactory.addDivider(this, GAME_WIDTH / 2, 44, 280, { depth: 5 });
+        UIFactory.addTitle(this, Layout.W / 2, 26, 'CHOIX DU PERSONNAGE', { depth: 5, fontSize: '14px' });
+        UIFactory.addDivider(this, Layout.W / 2, 44, 280, { depth: 5 });
 
         // Character grid
         this._createCharacterGrid();
@@ -214,7 +215,7 @@ export default class CharSelectScene extends Phaser.Scene {
     }
 
     _createPreviewPanel() {
-        const px = GAME_WIDTH - 220;
+        const px = Layout.W - 220;
         const py = 64;
         const pw = 200;
         const ph = 360;
@@ -348,7 +349,7 @@ export default class CharSelectScene extends Phaser.Scene {
             const bar = this._statBars[stat];
             const value = rookieStats ? (rookieStats[stat] ?? char.stats[stat]) : char.stats[stat];
             const targetWidth = (value / 10) * 120;
-            const bx = GAME_WIDTH - 220 - 40;
+            const bx = Layout.W - 220 - 40;
             const by = bar.y - 6;
 
             bar.fill.clear();
@@ -381,13 +382,13 @@ export default class CharSelectScene extends Phaser.Scene {
         if (this.textures.exists(spriteKey)) {
             this._previewShadow = this.add.graphics().setDepth(4);
             this._previewShadow.fillStyle(0x3A2E28, 0.3);
-            this._previewShadow.fillEllipse(GAME_WIDTH - 220, 418, 30, 8);
+            this._previewShadow.fillEllipse(Layout.W - 220, 418, 30, 8);
 
             if (isStatic) {
-                this._previewSprite = this.add.image(GAME_WIDTH - 220, 400, spriteKey)
+                this._previewSprite = this.add.image(Layout.W - 220, 400, spriteKey)
                     .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
             } else {
-                this._previewSprite = this.add.sprite(GAME_WIDTH - 220, 405, spriteKey, 0)
+                this._previewSprite = this.add.sprite(Layout.W - 220, 405, spriteKey, 0)
                     .setScale(CHAR_SCALE_PREVIEW).setOrigin(0.5).setDepth(3);
 
                 const animKey = `preview_walk_${char.id}`;

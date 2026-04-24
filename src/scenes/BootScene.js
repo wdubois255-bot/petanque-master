@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
+import { FONT_PIXEL } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { generateAllPortraits } from '../utils/PortraitGenerator.js';
 import { onSaveFailure } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -21,17 +22,17 @@ export default class BootScene extends Phaser.Scene {
 
         // === LOADING BAR ===
         const barW = 300, barH = 20;
-        const barX = (GAME_WIDTH - barW) / 2;
-        const barY = GAME_HEIGHT / 2 + 20;
+        const barX = (Layout.W - barW) / 2;
+        const barY = Layout.H / 2 + 20;
 
         // Title
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, I18n.t('boot.title'), {
+        this.add.text(Layout.W / 2, Layout.H / 2 - 40, I18n.t('boot.title'), {
             fontFamily: FONT_PIXEL, fontSize: '24px', color: '#FFD700',
             shadow: { offsetX: 2, offsetY: 2, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
         // Loading text
-        const loadText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 8, I18n.t('boot.loading'), {
+        const loadText = this.add.text(Layout.W / 2, Layout.H / 2 - 8, I18n.t('boot.loading'), {
             fontFamily: 'monospace', fontSize: '14px', color: '#F5E6D0',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
@@ -49,7 +50,7 @@ export default class BootScene extends Phaser.Scene {
         // Tip text
         const _tips = I18n.ta('boot.tips');
         const tip = _tips.length > 0 ? _tips[Math.floor(Math.random() * _tips.length)] : '';
-        this.add.text(GAME_WIDTH / 2, barY + 40, tip, {
+        this.add.text(Layout.W / 2, barY + 40, tip, {
             fontFamily: 'monospace', fontSize: '12px', color: '#D4A574',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true },
             wordWrap: { width: 500 }, align: 'center', lineSpacing: 4
@@ -297,7 +298,7 @@ export default class BootScene extends Phaser.Scene {
         onSaveFailure(() => {
             const activeScene = this.scene.manager.getScenes(true)[0];
             if (activeScene) {
-                UIFactory.showFloatingText(activeScene, GAME_WIDTH / 2, 20,
+                UIFactory.showFloatingText(activeScene, Layout.W / 2, 20,
                     I18n.t('boot.save_failed'), '#C44B3F',
                     { fontSize: '12px', duration: 3000, depth: 200 });
             }

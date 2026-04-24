@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, FONT_PIXEL } from '../utils/Constants.js';
+import { FONT_PIXEL } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
 import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
@@ -71,15 +72,15 @@ export default class TitleScene extends Phaser.Scene {
 
         // Main gradient: warm golden sky fading to deep ocre
         bg.fillGradientStyle(0x5A94C8, 0x5A94C8, 0xE8B868, 0xE8B868, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.7);
+        bg.fillRect(0, 0, Layout.W, Layout.H * 0.7);
 
         // Lower warm section
         bg.fillGradientStyle(0xD4A060, 0xD4A060, 0x8B6030, 0x8B6030, 1);
-        bg.fillRect(0, GAME_HEIGHT * 0.7, GAME_WIDTH, GAME_HEIGHT * 0.3);
+        bg.fillRect(0, Layout.H * 0.7, Layout.W, Layout.H * 0.3);
 
         // Soft sun glow (centered upper area)
-        const sunX = GAME_WIDTH * 0.5;
-        const sunY = GAME_HEIGHT * 0.35;
+        const sunX = Layout.W * 0.5;
+        const sunY = Layout.H * 0.35;
         for (let r = 200; r > 0; r -= 4) {
             const alpha = 0.008 + (200 - r) * 0.0004;
             bg.fillStyle(0xFFE8A0, alpha);
@@ -95,18 +96,18 @@ export default class TitleScene extends Phaser.Scene {
             const amps = [25, 20, 15];
 
             bg.fillStyle(colors[layer], alphas[layer]);
-            for (let x = 0; x < GAME_WIDTH; x += 2) {
+            for (let x = 0; x < Layout.W; x += 2) {
                 const h = Math.sin(x * freqs[layer] + layer * 2) * amps[layer]
                         + Math.sin(x * freqs[layer] * 2.3 + layer) * amps[layer] * 0.5
                         + baseY[layer];
-                bg.fillRect(x, h, 2, GAME_HEIGHT - h);
+                bg.fillRect(x, h, 2, Layout.H - h);
             }
         }
 
         // Subtle texture dots on lower area
         for (let i = 0; i < 100; i++) {
-            const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.75, GAME_HEIGHT);
+            const gx = Phaser.Math.Between(0, Layout.W);
+            const gy = Phaser.Math.Between(Layout.H * 0.75, Layout.H);
             bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.02, 0.06));
             bg.fillRect(gx, gy, 1, 1);
         }
@@ -115,16 +116,16 @@ export default class TitleScene extends Phaser.Scene {
         const vignette = this.add.graphics().setDepth(1);
         // Top edge
         vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.3, 0.3, 0, 0);
-        vignette.fillRect(0, 0, GAME_WIDTH, 60);
+        vignette.fillRect(0, 0, Layout.W, 60);
         // Bottom edge
         vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.4, 0.4);
-        vignette.fillRect(0, GAME_HEIGHT - 60, GAME_WIDTH, 60);
+        vignette.fillRect(0, Layout.H - 60, Layout.W, 60);
         // Left edge
         vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.2, 0, 0.2, 0);
-        vignette.fillRect(0, 0, 80, GAME_HEIGHT);
+        vignette.fillRect(0, 0, 80, Layout.H);
         // Right edge
         vignette.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.2, 0, 0.2);
-        vignette.fillRect(GAME_WIDTH - 80, 0, 80, GAME_HEIGHT);
+        vignette.fillRect(Layout.W - 80, 0, 80, Layout.H);
     }
 
     _drawCloud(g, x, y, scale, alpha) {
@@ -143,8 +144,8 @@ export default class TitleScene extends Phaser.Scene {
 
         // Soft diagonal light rays from center
         const rays = this.add.graphics().setDepth(2);
-        const rayX = GAME_WIDTH * 0.5;
-        const rayY = GAME_HEIGHT * 0.3;
+        const rayX = Layout.W * 0.5;
+        const rayY = Layout.H * 0.3;
         for (let i = 0; i < 8; i++) {
             const angle = -0.6 + i * 0.2;
             const length = 500;
@@ -172,9 +173,9 @@ export default class TitleScene extends Phaser.Scene {
     _createTitle() {
         if (this.textures.exists('v2_logo')) {
             this._titleOutlines = [];
-            this._titleText = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
+            this._titleText = this.add.image(Layout.W / 2, 90, 'v2_logo')
                 .setOrigin(0.5).setAlpha(0).setDepth(5);
-            this._titleGlow = this.add.image(GAME_WIDTH / 2, 90, 'v2_logo')
+            this._titleGlow = this.add.image(Layout.W / 2, 90, 'v2_logo')
                 .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0);
 
             // Triple-click → DevTestScene
@@ -197,7 +198,7 @@ export default class TitleScene extends Phaser.Scene {
                 [-1, -1], [1, -1], [-1, 1], [1, 1]
             ];
             this._titleOutlines = outlineOffsets.map(([ox, oy]) => {
-                return this.add.text(GAME_WIDTH / 2 + ox, 80 + oy, 'PETANQUE\nMASTER', {
+                return this.add.text(Layout.W / 2 + ox, 80 + oy, 'PETANQUE\nMASTER', {
                     fontFamily: FONT_PIXEL,
                     fontSize: '32px',
                     color: '#3A2E28',
@@ -206,7 +207,7 @@ export default class TitleScene extends Phaser.Scene {
                 }).setOrigin(0.5).setAlpha(0);
             });
 
-            this._titleText = this.add.text(GAME_WIDTH / 2, 80, 'PETANQUE\nMASTER', {
+            this._titleText = this.add.text(Layout.W / 2, 80, 'PETANQUE\nMASTER', {
                 fontFamily: FONT_PIXEL,
                 fontSize: '32px',
                 color: '#FFD700',
@@ -215,7 +216,7 @@ export default class TitleScene extends Phaser.Scene {
                 shadow: SHADOW_HEAVY
             }).setOrigin(0.5).setAlpha(0);
 
-            this._titleGlow = this.add.text(GAME_WIDTH / 2, 80, 'PETANQUE\nMASTER', {
+            this._titleGlow = this.add.text(Layout.W / 2, 80, 'PETANQUE\nMASTER', {
                 fontFamily: FONT_PIXEL,
                 fontSize: '32px',
                 color: '#FFF4D0',
@@ -225,7 +226,7 @@ export default class TitleScene extends Phaser.Scene {
         }
 
         // Subtitle
-        this._subtitle = this.add.text(GAME_WIDTH / 2, 172, I18n.t('title.subtitle'), {
+        this._subtitle = this.add.text(Layout.W / 2, 172, I18n.t('title.subtitle'), {
             fontFamily: 'monospace',
             fontSize: '14px',
             color: '#F5E6D0',
@@ -238,22 +239,22 @@ export default class TitleScene extends Phaser.Scene {
         const lineY = 192;
         this._titleLine.lineStyle(2, 0xFFD700, 0.6);
         this._titleLine.beginPath();
-        this._titleLine.moveTo(GAME_WIDTH / 2 - 140, lineY);
-        this._titleLine.lineTo(GAME_WIDTH / 2 - 6, lineY);
+        this._titleLine.moveTo(Layout.W / 2 - 140, lineY);
+        this._titleLine.lineTo(Layout.W / 2 - 6, lineY);
         this._titleLine.strokePath();
         this._titleLine.beginPath();
-        this._titleLine.moveTo(GAME_WIDTH / 2 + 6, lineY);
-        this._titleLine.lineTo(GAME_WIDTH / 2 + 140, lineY);
+        this._titleLine.moveTo(Layout.W / 2 + 6, lineY);
+        this._titleLine.lineTo(Layout.W / 2 + 140, lineY);
         this._titleLine.strokePath();
         this._titleLine.fillStyle(0xFFD700, 0.8);
-        this._titleLine.fillRect(GAME_WIDTH / 2 - 3, lineY - 3, 6, 6);
+        this._titleLine.fillRect(Layout.W / 2 - 3, lineY - 3, 6, 6);
     }
 
     // ================================================================
     // PRESS START
     // ================================================================
     _createPressStart() {
-        this._pressStart = this.add.text(GAME_WIDTH / 2, 280, I18n.t('title.press_start'), {
+        this._pressStart = this.add.text(Layout.W / 2, 280, I18n.t('title.press_start'), {
             fontFamily: FONT_PIXEL,
             fontSize: '16px',
             color: '#FFD700',
@@ -273,14 +274,14 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     _createVersionTag() {
-        this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 10, 'v1.0', {
+        this.add.text(Layout.W - 10, Layout.H - 10, 'v1.0', {
             fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E',
             shadow: SHADOW
         }).setOrigin(1, 1).setAlpha(0.5);
 
         // Lang toggle FR/EN (bottom-right, above version)
         const langLabel = I18n.locale === 'fr' ? '[FR|en]' : '[fr|EN]';
-        this._langBtn = this.add.text(GAME_WIDTH - 10, GAME_HEIGHT - 26, langLabel, {
+        this._langBtn = this.add.text(Layout.W - 10, Layout.H - 26, langLabel, {
             fontFamily: 'monospace', fontSize: '11px', color: '#D4A574',
             shadow: SHADOW
         }).setOrigin(1, 1).setAlpha(0.7).setDepth(10)
@@ -390,7 +391,7 @@ export default class TitleScene extends Phaser.Scene {
         this._menuContainer = this.add.container(0, 0).setDepth(5);
 
         // Menu layout: hero button + 2x2 grid + settings
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
         const menuDefs = [
             { label: I18n.t('title.menu.play'),       x: cx,       y: 230, w: 260, h: 46, hero: true },
             { label: I18n.t('title.menu.arcade'),     x: cx - 105, y: 286, w: 196, h: 36 },
@@ -466,7 +467,7 @@ export default class TitleScene extends Phaser.Scene {
         this._menuContainer = this.add.container(0, 0).setDepth(5);
 
         // Header
-        const header = UIFactory.addTitle(this, GAME_WIDTH / 2, 200, I18n.t('title.saves'), { depth: 6 });
+        const header = UIFactory.addTitle(this, Layout.W / 2, 200, I18n.t('title.saves'), { depth: 6 });
         this._menuContainer.add(header);
 
         const slots = getAllSlots();
@@ -487,7 +488,7 @@ export default class TitleScene extends Phaser.Scene {
 
         this._menuButtons = [];
         allItems.forEach((label, i) => {
-            const btn = UIFactory.createWoodButton(this, GAME_WIDTH / 2, 250 + i * 46, 340, 36, label, {
+            const btn = UIFactory.createWoodButton(this, Layout.W / 2, 250 + i * 46, 340, 36, label, {
                 fontSize: '10px',
                 depth: 6,
                 selected: i === 0,
@@ -725,13 +726,13 @@ export default class TitleScene extends Phaser.Scene {
 
         items.forEach((item, i) => {
             const iy = startY + i * rowH;
-            const txt = this.add.text(GAME_WIDTH / 2, iy, item.label, {
+            const txt = this.add.text(Layout.W / 2, iy, item.label, {
                 fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0', align: 'center', shadow: SHADOW
             }).setOrigin(0.5).setDepth(depth);
             this._settingsItems.push(txt);
 
             if (item.key === 'music' || item.key === 'sfx') {
-                const hint = this.add.text(GAME_WIDTH / 2 + 140, iy, '< >', {
+                const hint = this.add.text(Layout.W / 2 + 140, iy, '< >', {
                     fontFamily: 'monospace', fontSize: '14px', color: '#9E9E8E', shadow: SHADOW
                 }).setOrigin(1, 0.5).setDepth(depth);
                 this._settingsItems.push(hint);

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE, MAP_NODE_RADIUS, MAP_PATH_COLOR, MAP_PATH_DASH, MAP_NODE_PULSE_DURATION, MAP_STAR_SIZE, MAP_PREVIEW_Y, DEFEAT_CONSOLATION_GALETS, DEFEAT_RETRY_ENABLED, SHOP_EXPRESS_MIN_GALETS } from '../utils/Constants.js';
+import { getCharSpriteKey, GALET_WIN_ARCADE, GALET_ARCADE_COMPLETE, GALET_ARCADE_PERFECT, CHAR_SCALE_ARCADE, MAP_NODE_RADIUS, MAP_PATH_COLOR, MAP_PATH_DASH, MAP_NODE_PULSE_DURATION, MAP_STAR_SIZE, MAP_PREVIEW_Y, DEFEAT_CONSOLATION_GALETS, DEFEAT_RETRY_ENABLED, SHOP_EXPRESS_MIN_GALETS } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { loadSave, saveSave, unlockCharacter, unlockTerrain, setArcadeProgress, addGalets, recordWin, setArcadeIntroSeen, isMilestoneUnlocked, unlockMilestone } from '../utils/SaveManager.js';
 import { trackArcadeRound } from '../utils/Analytics.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -176,18 +177,18 @@ export default class ArcadeScene extends Phaser.Scene {
     _showNarrative(lines, onComplete) {
         const bg = this.add.graphics();
         bg.fillStyle(0x1A1510, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Parchment background — nearly full screen
         if (this.textures.exists('v2_dialog_bg')) {
-            const parch = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'v2_dialog_bg')
-                .setDisplaySize(GAME_WIDTH - 20, GAME_HEIGHT - 30).setAlpha(0);
+            const parch = this.add.image(Layout.W / 2, Layout.H / 2, 'v2_dialog_bg')
+                .setDisplaySize(Layout.W - 20, Layout.H - 30).setAlpha(0);
             this.tweens.add({ targets: parch, alpha: 0.65, duration: 800, ease: 'Sine.easeOut' });
         }
 
         const lineObjects = [];
         const lineSpacing = 28;
-        const startY = GAME_HEIGHT / 2 - (lines.length * lineSpacing) / 2 + 12;
+        const startY = Layout.H / 2 - (lines.length * lineSpacing) / 2 + 12;
 
         // Typewriter: reveal each line character by character
         let charIndex = 0;
@@ -195,7 +196,7 @@ export default class ArcadeScene extends Phaser.Scene {
         const lineDelay = 200; // pause between lines
 
         for (let i = 0; i < lines.length; i++) {
-            const txt = this.add.text(GAME_WIDTH / 2, startY + i * lineSpacing, '', {
+            const txt = this.add.text(Layout.W / 2, startY + i * lineSpacing, '', {
                 fontFamily: 'Georgia, serif', fontSize: '15px', color: '#C8A06A',
                 shadow: { offsetX: 1, offsetY: 1, color: '#3A2E18', blur: 1, fill: true },
                 align: 'center'
@@ -234,7 +235,7 @@ export default class ArcadeScene extends Phaser.Scene {
         });
 
         // Skip hint (appears after 2s)
-        const skipHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 24, I18n.t('arcade_extra.skip_hint'), {
+        const skipHint = this.add.text(Layout.W / 2, Layout.H - 24, I18n.t('arcade_extra.skip_hint'), {
             fontFamily: 'Georgia, serif', fontSize: '11px', color: '#8A7A5A',
             shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setAlpha(0);
@@ -318,18 +319,18 @@ export default class ArcadeScene extends Phaser.Scene {
         const totalStars = Object.values(save.starRatings || {}).reduce((s, v) => s + v, 0);
         const infoChip = this.add.graphics().setDepth(5);
         infoChip.fillStyle(0x1A1510, 0.55);
-        infoChip.fillRoundedRect(GAME_WIDTH - 168, 8, 160, 48, 6);
+        infoChip.fillRoundedRect(Layout.W - 168, 8, 160, 48, 6);
         if (nextMatch?.time_of_day) {
-            this.add.text(GAME_WIDTH - 16, 18, I18n.t('arcade.time_' + nextMatch.time_of_day), {
+            this.add.text(Layout.W - 16, 18, I18n.t('arcade.time_' + nextMatch.time_of_day), {
                 fontFamily: 'monospace', fontSize: '10px', color: '#F5E6D0', shadow: SHADOW
             }).setOrigin(1, 0).setDepth(6);
         }
-        this.add.text(GAME_WIDTH - 16, 36, I18n.t('arcade.stars_total', { n: totalStars }), {
+        this.add.text(Layout.W - 16, 36, I18n.t('arcade.stars_total', { n: totalStars }), {
             fontFamily: 'monospace', fontSize: '11px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(6);
 
         // Round indicator (centered top)
-        this.add.text(GAME_WIDTH / 2, 14, I18n.t('arcade.round', { n: this.currentRound, total: matches.length }), {
+        this.add.text(Layout.W / 2, 14, I18n.t('arcade.round', { n: this.currentRound, total: matches.length }), {
             fontFamily: 'monospace', fontSize: '11px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5, 0).setDepth(6);
 
@@ -501,7 +502,7 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // === PREVIEW PANEL (bottom section — full width, generous height) ===
         const panelY = 250;
-        const panelH = GAME_HEIGHT - panelY; // fills to bottom
+        const panelH = Layout.H - panelY; // fills to bottom
         const nextOpponent = this._getCharById(nextMatch.opponent);
         const nextTerrain = this._getTerrainById(nextMatch.terrain);
 
@@ -510,21 +511,21 @@ export default class ArcadeScene extends Phaser.Scene {
         const terrainTints = { village: 0x3A2E28, parc: 0x2A3A28, colline: 0x3A3228, docks: 0x2A2A30, plage: 0x3A3428 };
         const panelTint = terrainTints[nextMatch.terrain] || 0x3A2E28;
         panelBg.fillStyle(panelTint, 0.95);
-        panelBg.fillRoundedRect(16, panelY, GAME_WIDTH - 32, panelH - 8, 10);
+        panelBg.fillRoundedRect(16, panelY, Layout.W - 32, panelH - 8, 10);
         panelBg.lineStyle(2, 0xD4A574, 0.35);
-        panelBg.strokeRoundedRect(16, panelY, GAME_WIDTH - 32, panelH - 8, 10);
+        panelBg.strokeRoundedRect(16, panelY, Layout.W - 32, panelH - 8, 10);
         // Inner highlight line at top
         panelBg.lineStyle(1, 0xFFD700, 0.15);
         panelBg.beginPath();
         panelBg.moveTo(30, panelY + 1);
-        panelBg.lineTo(GAME_WIDTH - 30, panelY + 1);
+        panelBg.lineTo(Layout.W - 30, panelY + 1);
         panelBg.strokePath();
 
         if (nextOpponent) {
             // Layout: [Sprite | Info + Stats | Button]
             const spriteX = 110;
             const infoX = 210;
-            const btnX = GAME_WIDTH - 140;
+            const btnX = Layout.W - 140;
 
             // "PROCHAIN COMBAT" header (left-aligned)
             this.add.text(infoX, panelY + 12, I18n.t('arcade.next_fight'), {
@@ -636,7 +637,7 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // === BOTTOM BUTTONS: QUITTER + RECOMMENCER ===
-        const bottomY = GAME_HEIGHT - 20;
+        const bottomY = Layout.H - 20;
 
         const quitBtn = this.add.text(50, bottomY, I18n.t('arcade.quit'), {
             fontFamily: 'monospace', fontSize: '11px', color: '#9E9E8E',
@@ -671,15 +672,15 @@ export default class ArcadeScene extends Phaser.Scene {
 
         // Sky gradient: warm provencal blue → golden
         bg.fillGradientStyle(0x5A94C8, 0x5A94C8, 0xE8B868, 0xE8B868, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT * 0.55);
+        bg.fillRect(0, 0, Layout.W, Layout.H * 0.55);
 
         // Ground: warm ocre → deep brown
         bg.fillGradientStyle(0xC4954A, 0xC4954A, 0x8B6030, 0x8B6030, 1);
-        bg.fillRect(0, GAME_HEIGHT * 0.55, GAME_WIDTH, GAME_HEIGHT * 0.45);
+        bg.fillRect(0, Layout.H * 0.55, Layout.W, Layout.H * 0.45);
 
         // Soft sun glow (upper-right)
-        const sunX = GAME_WIDTH * 0.78;
-        const sunY = GAME_HEIGHT * 0.12;
+        const sunX = Layout.W * 0.78;
+        const sunY = Layout.H * 0.12;
         for (let r = 150; r > 0; r -= 3) {
             bg.fillStyle(0xFFE8A0, 0.005 + (150 - r) * 0.00025);
             bg.fillCircle(sunX, sunY, r);
@@ -711,18 +712,18 @@ export default class ArcadeScene extends Phaser.Scene {
         ];
         for (const hill of hillLayers) {
             bg.fillStyle(hill.color, hill.alpha);
-            for (let x = 0; x < GAME_WIDTH; x += 2) {
+            for (let x = 0; x < Layout.W; x += 2) {
                 const h = Math.sin(x * hill.freq + 1.5) * hill.amp
                         + Math.sin(x * hill.freq * 2.3 + 0.7) * hill.amp * 0.4
                         + hill.baseY;
-                bg.fillRect(x, h, 2, GAME_HEIGHT - h);
+                bg.fillRect(x, h, 2, Layout.H - h);
             }
         }
 
         // Subtle texture grain on ground
         for (let i = 0; i < 100; i++) {
-            const gx = Phaser.Math.Between(0, GAME_WIDTH);
-            const gy = Phaser.Math.Between(GAME_HEIGHT * 0.45, GAME_HEIGHT);
+            const gx = Phaser.Math.Between(0, Layout.W);
+            const gy = Phaser.Math.Between(Layout.H * 0.45, Layout.H);
             bg.fillStyle(0xFFFFFF, Phaser.Math.FloatBetween(0.01, 0.04));
             bg.fillRect(gx, gy, 1, 1);
         }
@@ -733,16 +734,16 @@ export default class ArcadeScene extends Phaser.Scene {
         // Dark bottom gradient for panel readability
         const panelFade = this.add.graphics().setDepth(1);
         panelFade.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0, 0.88, 0.88);
-        panelFade.fillRect(0, GAME_HEIGHT * 0.48, GAME_WIDTH, GAME_HEIGHT * 0.52);
+        panelFade.fillRect(0, Layout.H * 0.48, Layout.W, Layout.H * 0.52);
 
         // Vignette (frame effect)
         const vig = this.add.graphics().setDepth(1);
         vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.35, 0.35, 0, 0);
-        vig.fillRect(0, 0, GAME_WIDTH, 50);
+        vig.fillRect(0, 0, Layout.W, 50);
         vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0.25, 0, 0.25, 0);
-        vig.fillRect(0, 0, 70, GAME_HEIGHT);
+        vig.fillRect(0, 0, 70, Layout.H);
         vig.fillGradientStyle(0x1A1510, 0x1A1510, 0x1A1510, 0x1A1510, 0, 0.25, 0, 0.25);
-        vig.fillRect(GAME_WIDTH - 70, 0, 70, GAME_HEIGHT);
+        vig.fillRect(Layout.W - 70, 0, 70, Layout.H);
     }
 
     _drawMapDecorations() {
@@ -868,11 +869,11 @@ export default class ArcadeScene extends Phaser.Scene {
     _showArcadeCompleteScreen() {
         const bg = this.add.graphics();
         bg.fillGradientStyle(0x1A1510, 0x1A1510, 0x3A2E28, 0x3A2E28, 1);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         // Confetti effect
         for (let i = 0; i < 30; i++) {
-            const x = Phaser.Math.Between(50, GAME_WIDTH - 50);
+            const x = Phaser.Math.Between(50, Layout.W - 50);
             const y = Phaser.Math.Between(-50, -200);
             const colors = [0xFFD700, 0xC44B3F, 0x44CC44, 0x5B9BD5, 0x9B7BB8];
             const c = colors[Math.floor(Math.random() * colors.length)];
@@ -882,7 +883,7 @@ export default class ArcadeScene extends Phaser.Scene {
             conf.setPosition(x, y);
             this.tweens.add({
                 targets: conf,
-                y: GAME_HEIGHT + 50,
+                y: Layout.H + 50,
                 x: x + Phaser.Math.Between(-80, 80),
                 angle: Phaser.Math.Between(-360, 360),
                 duration: Phaser.Math.Between(2000, 4000),
@@ -892,44 +893,44 @@ export default class ArcadeScene extends Phaser.Scene {
         }
 
         // Victory text
-        this.add.text(GAME_WIDTH / 2, 100, I18n.t('arcade.complete'), {
+        this.add.text(Layout.W / 2, 100, I18n.t('arcade.complete'), {
             fontFamily: 'monospace', fontSize: '48px', color: '#FFD700',
             align: 'center', lineSpacing: 4,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 200, I18n.t('arcade.wins_label', { wins: this.wins, total: this.wins + this.losses }), {
+        this.add.text(Layout.W / 2, 200, I18n.t('arcade.wins_label', { wins: this.wins, total: this.wins + this.losses }), {
             fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0', shadow: SHADOW
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 240, I18n.t('arcade.champion_name', { name: I18n.field(this.playerCharacter, 'name') }), {
+        this.add.text(Layout.W / 2, 240, I18n.t('arcade.champion_name', { name: I18n.field(this.playerCharacter, 'name') }), {
             fontFamily: 'monospace', fontSize: '18px', color: '#D4A574', shadow: SHADOW
         }).setOrigin(0.5);
 
         // Perfect run badge
         if (this._isPerfect) {
-            this.add.text(GAME_WIDTH / 2, 270, I18n.t('arcade.perfect'), {
+            this.add.text(Layout.W / 2, 270, I18n.t('arcade.perfect'), {
                 fontFamily: 'monospace', fontSize: '22px', color: '#FFD700', shadow: SHADOW
             }).setOrigin(0.5);
         }
 
-        this.add.text(GAME_WIDTH / 2, 300, I18n.t('arcade.champion'), {
+        this.add.text(Layout.W / 2, 300, I18n.t('arcade.champion'), {
             fontFamily: 'monospace', fontSize: '20px', color: '#C44B3F', shadow: SHADOW
         }).setOrigin(0.5);
 
         // Galets bonus display
         const bonusLabel = this._isPerfect ? I18n.t('arcade.bonus_perfect') : I18n.t('arcade.bonus_complete');
-        this.add.text(GAME_WIDTH / 2, 335, `${I18n.t('arcade_extra.milestone_reward', { amount: this._completionGalets })} (${bonusLabel})`, {
+        this.add.text(Layout.W / 2, 335, `${I18n.t('arcade_extra.milestone_reward', { amount: this._completionGalets })} (${bonusLabel})`, {
             fontFamily: 'monospace', fontSize: '16px', color: '#FFD700', shadow: SHADOW
         }).setOrigin(0.5);
 
         // Buttons — replay + menu
-        const replayBtn = this.add.text(GAME_WIDTH / 2, 380, `[ ${I18n.t('arcade.replay')} ]`, {
+        const replayBtn = this.add.text(Layout.W / 2, 380, `[ ${I18n.t('arcade.replay')} ]`, {
             fontFamily: 'monospace', fontSize: '20px', color: '#F5E6D0',
             backgroundColor: '#6B8E4E', padding: { x: 16, y: 8 }, shadow: SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        const menuBtn = this.add.text(GAME_WIDTH / 2, 430, `[ ${I18n.t('arcade.menu')} ]`, {
+        const menuBtn = this.add.text(Layout.W / 2, 430, `[ ${I18n.t('arcade.menu')} ]`, {
             fontFamily: 'monospace', fontSize: '16px', color: '#F5E6D0',
             backgroundColor: '#C44B3F', padding: { x: 16, y: 6 }, shadow: SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -983,11 +984,11 @@ export default class ArcadeScene extends Phaser.Scene {
         const offered = allItems.slice(0, 2);
 
         const shopElements = [];
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const bg = this.add.graphics().setDepth(50);
         bg.fillStyle(0x1A1510, 0.85);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
         shopElements.push(bg);
 
         const title = this.add.text(cx, 80, I18n.t('arcade.shop_express_title'), {
@@ -1096,11 +1097,11 @@ export default class ArcadeScene extends Phaser.Scene {
 
     // === Phase 5 D3 — Defeat screen ===
     _showDefeatScreen(result) {
-        const cx = GAME_WIDTH / 2;
+        const cx = Layout.W / 2;
 
         const bg = this.add.graphics().setDepth(50);
         bg.fillStyle(0x1A1510, 0.9);
-        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        bg.fillRect(0, 0, Layout.W, Layout.H);
 
         this.add.text(cx, 80, I18n.t('arcade.defeat_title'), {
             fontFamily: 'monospace', fontSize: '28px', color: '#C44B3F',
@@ -1188,11 +1189,11 @@ export default class ArcadeScene extends Phaser.Scene {
     }
 
     _showMilestonePopup(milestone) {
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = Layout.W / 2;
+        const cy = Layout.H / 2;
         const overlay = this.add.graphics().setDepth(100);
         overlay.fillStyle(0x1A1510, 0.6);
-        overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        overlay.fillRect(0, 0, Layout.W, Layout.H);
         const panel = this.add.graphics().setDepth(101);
         panel.fillStyle(0x3A2E28, 0.95);
         panel.fillRoundedRect(cx - 180, cy - 50, 360, 100, 10);

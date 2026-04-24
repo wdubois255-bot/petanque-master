@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, UI } from '../utils/Constants.js';
+import { CHAR_SPRITE_MAP, CHAR_SCALE_QUICKPLAY, FONT_PIXEL, FONT_BODY, COLORS, CSS, UI } from '../utils/Constants.js';
+import Layout from '../utils/Layout.js';
 import { setSoundScene, sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import { loadSave } from '../utils/SaveManager.js';
 import UIFactory from '../ui/UIFactory.js';
@@ -37,7 +38,7 @@ function getModes() {
     ];
 }
 
-const CX = GAME_WIDTH / 2;
+const CX = Layout.W / 2;
 
 // Layout constants
 const BANNER_H = 32;
@@ -179,20 +180,20 @@ export default class QuickPlayScene extends Phaser.Scene {
         const p1Char = _charValues[this._p1Index];
         const p2Char = _charValues[this._p2Index];
 
-        this._p1NameText = this.add.text(GAME_WIDTH - 220, 14, p1Char.display, {
+        this._p1NameText = this.add.text(Layout.W - 220, 14, p1Char.display, {
             fontFamily: 'monospace', fontSize: '10px',
             color: '#5B9BD5', shadow: NO_SHADOW
         }).setOrigin(1, 0.5).setDepth(UI.DEPTH_UI);
         this._bannerObjects.push(this._p1NameText);
 
         this._bannerObjects.push(
-            this.add.text(GAME_WIDTH - 200, 14, 'VS', {
+            this.add.text(Layout.W - 200, 14, 'VS', {
                 fontFamily: FONT_PIXEL, fontSize: '10px',
                 color: CSS.ACCENT, shadow: NO_SHADOW
             }).setOrigin(0.5, 0.5).setDepth(UI.DEPTH_UI)
         );
 
-        this._p2NameText = this.add.text(GAME_WIDTH - 180, 14, p2Char.display, {
+        this._p2NameText = this.add.text(Layout.W - 180, 14, p2Char.display, {
             fontFamily: 'monospace', fontSize: '10px',
             color: '#C44B3F', shadow: NO_SHADOW
         }).setOrigin(0, 0.5).setDepth(UI.DEPTH_UI);
@@ -221,7 +222,7 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         const tabW = 170;
         const totalW = tabW * TAB_KEYS.length;
-        const startX = (GAME_WIDTH - totalW) / 2;
+        const startX = (Layout.W - totalW) / 2;
 
         for (let i = 0; i < TAB_KEYS.length; i++) {
             const x = startX + i * tabW + tabW / 2;
@@ -278,7 +279,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         this._tabObjects = [];
 
         // Content panel background
-        const panelBg = UIFactory.createWoodPanel(this, 16, TAB_CONTENT_Y, GAME_WIDTH - 32, TAB_CONTENT_H, {
+        const panelBg = UIFactory.createWoodPanel(this, 16, TAB_CONTENT_Y, Layout.W - 32, TAB_CONTENT_H, {
             depth: UI.DEPTH_PANEL - 1
         });
         UIFactory.addPanelShadow(panelBg);
@@ -332,7 +333,7 @@ export default class QuickPlayScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(UI.DEPTH_PANEL + 4));
 
         // J2 preview sprite (right of grid) — animated greeting
-        const rightSpace = GAME_WIDTH - 24 - gridX - gridW;
+        const rightSpace = Layout.W - 24 - gridX - gridW;
         const rightX = gridX + gridW + 12 + rightSpace / 2;
         const p2Char = _charValues[this._p2Index];
         const p2GreetKey = `${p2Char.charId}_greeting`;
@@ -501,12 +502,12 @@ export default class QuickPlayScene extends Phaser.Scene {
 
         // === SELECTED CHARACTERS DETAIL (below grid) ===
         const detailY = topY + 14 + 2 * (cellH + cellGap) + 8;
-        const halfW = (GAME_WIDTH - 80) / 2;
+        const halfW = (Layout.W - 80) / 2;
 
         // Horizontal divider above details
         const topDiv = this.add.graphics().setDepth(UI.DEPTH_PANEL + 1);
         topDiv.lineStyle(1, COLORS.OR, 0.15);
-        topDiv.lineBetween(40, detailY - 4, GAME_WIDTH - 40, detailY - 4);
+        topDiv.lineBetween(40, detailY - 4, Layout.W - 40, detailY - 4);
         this._tabObjects.push(topDiv);
 
         // Vertical divider between P1 and P2
@@ -617,7 +618,7 @@ export default class QuickPlayScene extends Phaser.Scene {
     // TAB: EQUIPEMENT
     // ----------------------------------------------------------------
     _buildTabEquipement() {
-        const colW = (GAME_WIDTH - 64) / 2;
+        const colW = (Layout.W - 64) / 2;
         const leftX = 32;
         const rightX = 32 + colW + 8;
         const topY = TAB_CONTENT_Y + 12;
