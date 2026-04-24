@@ -239,16 +239,29 @@ export default class AimingSystem {
     _buildStylePanel() {
         this._destroyStyleContent();
 
-        const cx = this.scene.scale.width / 2;
+        const W = this.scene.scale.width;
+        const cx = W / 2;
         const baseY = this.scene.scale.height - AIMING_UI_BOTTOM_OFFSET;
 
         const styles = this._getAvailableStyles();
         const count = styles.length;
-        const btnW = 130, btnH = 40, gap = 8;
-        const totalW = count * btnW + (count - 1) * gap;
-        const panelW = totalW + 24;
-        const panelH = btnH + 36;
-        const panelTop = baseY - panelH / 2;
+        const gap = 8;
+
+        // Mobile portrait: vertical stack, full-width buttons 60px tall
+        // Desktop: horizontal row, 130×40 buttons
+        const mobile = IS_MOBILE;
+        const btnW = mobile ? W - 48 : 130;
+        const btnH = mobile ? 60 : 40;
+        const panelW = mobile ? W - 16 : count * btnW + (count - 1) * gap + 24;
+        const panelH = mobile
+            ? count * btnH + (count - 1) * gap + 32
+            : btnH + 36;
+        const panelTop = mobile ? baseY - panelH : baseY - panelH / 2;
+
+        // Store for _updateStyleHighlight
+        this._styleBtnW = btnW;
+        this._styleBtnH = btnH;
+        this._styleMobile = mobile;
 
         // === PLOMBEE first-time hint (one-shot) ===
         if (styles.some(s => s.loftObj === LOFT_PLOMBEE)) {
@@ -267,13 +280,15 @@ export default class AimingSystem {
             bg.strokeRoundedRect(cx - panelW / 2, panelTop, panelW, panelH, 8);
             this._modeUI.push(bg);
 
-            // Keyboard bindings
-            this._key1 = this.scene.input.keyboard.addKey('ONE');
-            this._key2 = this.scene.input.keyboard.addKey('TWO');
-            this._key3 = this.scene.input.keyboard.addKey('THREE');
-            this._keyLeft = this.scene.input.keyboard.addKey('LEFT');
-            this._keyRight = this.scene.input.keyboard.addKey('RIGHT');
-            this._keySpace = this.scene.input.keyboard.addKey('SPACE');
+            // Keyboard bindings (desktop only — no physical keyboard on mobile)
+            if (!mobile) {
+                this._key1 = this.scene.input.keyboard.addKey('ONE');
+                this._key2 = this.scene.input.keyboard.addKey('TWO');
+                this._key3 = this.scene.input.keyboard.addKey('THREE');
+                this._keyLeft = this.scene.input.keyboard.addKey('LEFT');
+                this._keyRight = this.scene.input.keyboard.addKey('RIGHT');
+                this._keySpace = this.scene.input.keyboard.addKey('SPACE');
+            }
 
             // === FOCUS indicator ===
             this._showFocusUI(cx, panelTop - 22);
@@ -290,48 +305,57 @@ export default class AimingSystem {
                 : 'Adversaire au point';
             const hintColor = this._terrainState.iHavePoint ? '#6B8E4E' : '#C44B3F';
             const hint = this.scene.add.text(cx, panelTop + 5, hintText, {
-                fontFamily: 'monospace', fontSize: '9px', color: hintColor
-            }).setOrigin(0.5, 0).setDepth(97).setAlpha(0.6);
+                fontFamily: 'monospace', fontSize: mobile ? '11px' : '9px', color: hintColor
+            }).setOrigin(0.5, 0).setDepth(97).setAlpha(0.7);
             this._styleContentUI.push(hint);
         }
 
-        // === STYLE BUTTONS (clear, solid rectangles) ===
-        const btnBaseY = panelTop + panelH / 2 + 4;
-        const startX = cx - totalW / 2 + btnW / 2;
-
+        // === STYLE BUTTONS ===
         this._styleBtns = [];
         this._currentStyles = styles;
 
         for (let i = 0; i < styles.length; i++) {
             const s = styles[i];
-            const bx = startX + i * (btnW + gap);
             const selected = i === this._styleSelected;
 
-            // Button background
+            let bx, by;
+            if (mobile) {
+                // Vertical stack: each button full-width, centered
+                bx = cx;
+                by = panelTop + 16 + i * (btnH + gap) + btnH / 2;
+            } else {
+                // Horizontal row
+                const totalW = count * btnW + (count - 1) * gap;
+                const startX = cx - totalW / 2 + btnW / 2;
+                bx = startX + i * (btnW + gap);
+                by = panelTop + panelH / 2 + 4;
+            }
+
             const btnGfx = this.scene.add.graphics().setDepth(96);
-            this._drawStyleButton(btnGfx, bx, btnBaseY, btnW, btnH, s.color, selected);
+            this._drawStyleButton(btnGfx, bx, by, btnW, btnH, s.color, selected);
             this._styleContentUI.push(btnGfx);
 
-            // Button label: "[1] Demi-portee"
-            const label = this.scene.add.text(bx, btnBaseY - 4, `${s.label}`, {
-                fontFamily: 'monospace', fontSize: '13px', color: '#F5E6D0',
+            // Label — mobile: no keyboard hint, bigger font
+            const labelStr = mobile ? s.label : s.label;
+            const labelFs = mobile ? '16px' : '13px';
+            const label = this.scene.add.text(bx, by - (mobile ? 8 : 4), labelStr, {
+                fontFamily: 'monospace', fontSize: labelFs, color: '#F5E6D0',
                 shadow: { offsetX: 1, offsetY: 1, color: '#1A1510', blur: 0, fill: true }
             }).setOrigin(0.5).setDepth(97);
             this._styleContentUI.push(label);
 
-            // Keyboard hint + description
-            const sub = this.scene.add.text(bx, btnBaseY + 12, `[${i + 1}] ${s.desc}`, {
-                fontFamily: 'monospace', fontSize: '9px', color: '#D4A574'
+            // Sub — mobile: desc only, no [N] key hint
+            const subStr = mobile ? s.desc : `[${i + 1}] ${s.desc}`;
+            const sub = this.scene.add.text(bx, by + (mobile ? 10 : 12), subStr, {
+                fontFamily: 'monospace', fontSize: mobile ? '11px' : '9px', color: '#D4A574'
             }).setOrigin(0.5).setDepth(97).setAlpha(0.8);
             this._styleContentUI.push(sub);
 
-            // Hit zone
-            const hitW = IS_MOBILE ? TOUCH_BUTTON_SIZE + TOUCH_PADDING * 2 : btnW;
-            const hitH = IS_MOBILE ? TOUCH_BUTTON_SIZE : btnH;
-            const hitZone = this.scene.add.zone(bx, btnBaseY, hitW, hitH)
+            // Hit zone — full button size on mobile (already WCAG: 60px tall)
+            const hitZone = this.scene.add.zone(bx, by, btnW, btnH)
                 .setDepth(98).setInteractive({ useHandCursor: true });
             this._styleContentUI.push(hitZone);
-            this._styleBtns.push({ hitZone, label, sub, btnGfx, style: s });
+            this._styleBtns.push({ hitZone, label, sub, btnGfx, style: s, bx, by });
 
             const idx = i;
             hitZone.on('pointerdown', (pointer) => {
@@ -369,12 +393,15 @@ export default class AimingSystem {
 
     _updateStyleHighlight() {
         if (!this._styleBtns) return;
+        const bW = this._styleBtnW || 130;
+        const bH = this._styleBtnH || 40;
+        const mob = this._styleMobile || false;
         for (let i = 0; i < this._styleBtns.length; i++) {
-            const { label, sub, btnGfx, style } = this._styleBtns[i];
+            const { label, sub, btnGfx, style, bx, by } = this._styleBtns[i];
             const selected = i === this._styleSelected;
             label.setColor(selected ? '#F5E6D0' : '#9E9E8E');
             sub.setAlpha(selected ? 0.8 : 0.45);
-            this._drawStyleButton(btnGfx, label.x, label.y + 4, 130, 40, style.color, selected);
+            this._drawStyleButton(btnGfx, bx ?? label.x, by ?? (label.y + (mob ? 8 : 4)), bW, bH, style.color, selected);
         }
     }
 
@@ -1345,9 +1372,9 @@ export default class AimingSystem {
             this._predictionGfx.strokeCircle(baseX, baseY, scaledAmp);
         }
 
-        // Marker cross — mobile : radius 10 + lignes ±12px pour être visible au doigt
-        const markerRadius = IS_MOBILE ? 10 : 5;
-        const crossLen = IS_MOBILE ? 12 : 4;
+        // Marker cross — mobile : radius 7 + lignes ±8px (visible sans être trop grand)
+        const markerRadius = IS_MOBILE ? 7 : 5;
+        const crossLen = IS_MOBILE ? 8 : 4;
         this._predictionGfx.lineStyle(IS_MOBILE ? 2 : 1.5, color, IS_MOBILE ? 0.9 : 0.6);
         this._predictionGfx.strokeCircle(markerX, markerY, markerRadius);
         this._predictionGfx.beginPath();
