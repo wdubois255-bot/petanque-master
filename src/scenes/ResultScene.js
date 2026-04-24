@@ -78,8 +78,9 @@ export default class ResultScene extends Phaser.Scene {
             ? I18n.t('result.victory') || 'VICTOIRE !'
             : I18n.t('result.defeat') || 'DEFAITE...';
 
-        const title = this.add.text(Layout.W / 2, 36, titleText, {
-            fontFamily: 'monospace', fontSize: '36px', color: titleColor,
+        const portraitR = Layout.isPortrait;
+        const title = this.add.text(Layout.W / 2, portraitR ? 46 : 36, titleText, {
+            fontFamily: 'monospace', fontSize: portraitR ? '46px' : '36px', color: titleColor,
             shadow: { offsetX: 4, offsetY: 4, color: '#1A1510', blur: 0, fill: true }
         }).setOrigin(0.5).setScale(0).setDepth(10);
 
@@ -95,9 +96,9 @@ export default class ResultScene extends Phaser.Scene {
 
         // Score — big, clean
         const scoreColor = this.won ? '#F5E6D0' : '#D4A574';
-        const scoreText = this.add.text(Layout.W / 2, 82,
+        const scoreText = this.add.text(Layout.W / 2, portraitR ? 104 : 82,
             `${this.scores.player}  —  ${this.scores.opponent}`, {
-                fontFamily: 'monospace', fontSize: '28px', color: scoreColor,
+                fontFamily: 'monospace', fontSize: portraitR ? '36px' : '28px', color: scoreColor,
                 shadow: HEAVY_SHADOW
             }).setOrigin(0.5).setAlpha(0).setDepth(10);
         this.tweens.add({ targets: scoreText, alpha: 1, duration: 300, delay: 400 });
@@ -113,9 +114,9 @@ export default class ResultScene extends Phaser.Scene {
         if (!this.won) {
             const advice = this._getDefeatAdvice();
             if (advice) {
-                const adviceText = this.add.text(Layout.W / 2, 116, advice, {
-                    fontFamily: 'monospace', fontSize: '10px', color: '#D4A574',
-                    shadow: SHADOW, wordWrap: { width: 500 }, align: 'center',
+                const adviceText = this.add.text(Layout.W / 2, portraitR ? 148 : 116, advice, {
+                    fontFamily: 'monospace', fontSize: portraitR ? '13px' : '10px', color: '#D4A574',
+                    shadow: SHADOW, wordWrap: { width: portraitR ? (Layout.W - 40) : 500 }, align: 'center',
                     fontStyle: 'italic'
                 }).setOrigin(0.5).setAlpha(0).setDepth(10);
                 this.tweens.add({ targets: adviceText, alpha: 0.8, duration: 400, delay: 800 });
@@ -153,7 +154,7 @@ export default class ResultScene extends Phaser.Scene {
             // Character name
             const nameColor = this.won ? '#87CEEB' : '#C44B3F';
             this.add.text(charX, charY + 72, I18n.field(winner, 'name'), {
-                fontFamily: 'monospace', fontSize: '14px', color: nameColor, shadow: HEAVY_SHADOW
+                fontFamily: 'monospace', fontSize: portraitR ? '18px' : '14px', color: nameColor, shadow: HEAVY_SHADOW
             }).setOrigin(0.5).setDepth(5);
 
             // Opponent bark (speech bubble feel)
@@ -324,7 +325,7 @@ export default class ResultScene extends Phaser.Scene {
         // ════════════════════════════════════════════════════════
         //  BOTTOM ZONE — Buttons (380-480px)
         // ════════════════════════════════════════════════════════
-        const btnY = Layout.H - 80;
+        const btnY = Layout.H - (portraitR ? 100 : 80);
         const btnContainer = this.add.container(0, 0).setAlpha(0).setDepth(10);
 
         // Main action button (styled rectangle, not text backgroundColor)
@@ -332,8 +333,8 @@ export default class ResultScene extends Phaser.Scene {
             ? (this.won ? I18n.t('result.continue') : I18n.t('arcade.retry'))
             : I18n.t('result.replay');
         const mainBtnColor = this.won ? 0x6B8E4E : 0xC44B3F; // olive (victory) or terracotta (defeat)
-        const mainBtnW = 200;
-        const mainBtnH = 44;
+        const mainBtnW = portraitR ? (Layout.W - 60) : 200;
+        const mainBtnH = portraitR ? 68 : 44;
         const mainBtnX = Layout.W / 2;
 
         const mainBg = this.add.graphics();
@@ -350,7 +351,9 @@ export default class ResultScene extends Phaser.Scene {
         btnContainer.add(mainBg);
 
         const mainBtnText = this.add.text(mainBtnX, btnY, mainLabel.toUpperCase(), {
-            fontFamily: 'monospace', fontSize: '18px', color: '#F5E6D0', shadow: HEAVY_SHADOW
+            fontFamily: 'monospace', fontSize: portraitR ? '26px' : '18px', color: '#F5E6D0',
+            fontStyle: portraitR ? 'bold' : 'normal',
+            shadow: HEAVY_SHADOW
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         mainBtnText.on('pointerdown', () => { if (this._postDialogDone) this._returnToArcade(); });
         btnContainer.add(mainBtnText);
@@ -363,7 +366,7 @@ export default class ResultScene extends Phaser.Scene {
 
         // Secondary "Menu" button — top-right corner, away from main action
         const menuBtn = this.add.text(Layout.W - 16, 16, I18n.t('result.menu'), {
-            fontFamily: 'monospace', fontSize: '10px', color: '#5A4A38', shadow: SHADOW
+            fontFamily: 'monospace', fontSize: portraitR ? '14px' : '10px', color: '#5A4A38', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
         menuBtn.on('pointerover', () => menuBtn.setColor('#D4A574'));
         menuBtn.on('pointerout', () => menuBtn.setColor('#5A4A38'));
@@ -371,8 +374,8 @@ export default class ResultScene extends Phaser.Scene {
         btnContainer.add(menuBtn);
 
         // Feedback link — discreet, next to Menu
-        const fbBtn = this.add.text(Layout.W - 16, 30, I18n.t('title.settings.feedback'), {
-            fontFamily: 'monospace', fontSize: '10px', color: '#9B7BB8', shadow: SHADOW
+        const fbBtn = this.add.text(Layout.W - 16, portraitR ? 40 : 30, I18n.t('title.settings.feedback'), {
+            fontFamily: 'monospace', fontSize: portraitR ? '14px' : '10px', color: '#9B7BB8', shadow: SHADOW
         }).setOrigin(1, 0).setDepth(10).setInteractive({ useHandCursor: true });
         fbBtn.on('pointerover', () => fbBtn.setColor('#C49BE8'));
         fbBtn.on('pointerout', () => fbBtn.setColor('#9B7BB8'));
