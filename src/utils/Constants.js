@@ -1,5 +1,7 @@
 // Resolution (doubled from 416x240 for 32x32 tiles)
 // Desktop default (paysage). Pour le mode mobile portrait, utiliser Layout.js.
+import { isPortraitDevice, isMobileUA } from './DeviceDetect.js';
+
 export const GAME_WIDTH = 832;
 export const GAME_HEIGHT = 480;
 
@@ -9,7 +11,7 @@ export const GAME_WIDTH_PORTRAIT = 480;
 export const GAME_HEIGHT_PORTRAIT = 960;
 
 // === SCALING PORTRAIT (mobile) ===
-// Détection locale (pas d'import Layout pour éviter circular).
+// Detection deleguee a DeviceDetect.js (source unique).
 // Deux scales séparés pour découpler "taille visuelle terrain" de "vitesse perçue" :
 // - TERRAIN_SCALE : agrandit le terrain affiché (remplir l'écran portrait)
 // - VELOCITY_SCALE : scale les vitesses en px/frame (contrôle perception vitesse)
@@ -17,8 +19,7 @@ export const GAME_HEIGHT_PORTRAIT = 960;
 //     d_px = v²/(2f), on veut d_px/TERRAIN_HEIGHT = constant
 //     → s_f = s_v² / s_terrain (math derivation)
 // En desktop, tous les scales = 1 → comportement strictement inchangé.
-const _IS_PORTRAIT_DEVICE = typeof navigator !== 'undefined'
-    && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const _IS_PORTRAIT_DEVICE = isPortraitDevice();
 const TERRAIN_SCALE = _IS_PORTRAIT_DEVICE ? 2.1 : 1.0;     // Terrain 378×882 (marge 50px)
 const VELOCITY_SCALE = _IS_PORTRAIT_DEVICE ? 1.6 : 1.0;    // Perception vitesse validée user
 const FRICTION_SCALE = _IS_PORTRAIT_DEVICE
@@ -564,8 +565,8 @@ export const FOCUS_UI_STACK_OFFSET = 50; // 28 + 22 = espace au-dessus du mode U
 export const SCORE_PANEL_COMPACT_W = 94;
 export const SCORE_PANEL_COMPACT_H = 50;
 
-// Mobile detection & touch UX
-export const IS_MOBILE = typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent);
+// Mobile detection & touch UX (delegated to DeviceDetect.js)
+export const IS_MOBILE = isMobileUA();
 export const TOUCH_BUTTON_SIZE = 56;  // Zone tap minimale WCAG (px)
 export const TOUCH_PADDING = 8;       // Padding invisible autour des boutons interactifs (px)
 export const DUST_MAX_SIMULTANEOUS_DESKTOP = 5;  // Limite groupes dust simultanés (desktop)

@@ -12,37 +12,12 @@ import {
     GAME_WIDTH_PORTRAIT as MOBILE_W,
     GAME_HEIGHT_PORTRAIT as MOBILE_H
 } from './Constants.js';
-
-// --- Détection device ---------------------------------------------------
-
-function detectMobileUA() {
-    if (typeof navigator === 'undefined' || !navigator.userAgent) return false;
-    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function detectPortraitOrientation() {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(orientation: portrait)').matches;
-}
-
-// Detection coarse pointer (touch-only, pas de souris) — robuste vs UA spoofing
-function detectTouchOnly() {
-    if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(pointer: coarse)').matches &&
-           !window.matchMedia('(pointer: fine)').matches;
-}
-
-// Mobile = UA mobile, OU (touch-only + petit écran portrait pour DevTools device mode)
-// On exige pointer coarse pour éviter faux positifs en iframe desktop étroite.
-function detectMobile() {
-    if (detectMobileUA()) return true;
-    return detectTouchOnly() && typeof window !== 'undefined' &&
-           window.innerWidth < 800 && detectPortraitOrientation();
-}
+import { isPortraitDevice } from './DeviceDetect.js';
 
 // --- Résolution du mode (une seule fois au boot) ------------------------
+// Détection deleguee a DeviceDetect.js (source unique partagee avec Constants.js).
 
-const isMobile = detectMobile();
+const isMobile = isPortraitDevice();
 const mode = isMobile ? 'portrait' : 'landscape';
 const W = isMobile ? MOBILE_W : DESKTOP_W;
 const H = isMobile ? MOBILE_H : DESKTOP_H;
