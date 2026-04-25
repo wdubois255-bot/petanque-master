@@ -15,9 +15,17 @@ import LevelUpScene from './scenes/LevelUpScene.js';
 import ShopScene from './scenes/ShopScene.js';
 import TutorialScene from './scenes/TutorialScene.js';
 import PlayerScene from './scenes/PlayerScene.js';
-import DevTestScene from './scenes/DevTestScene.js';
 import CreditsScene from './scenes/CreditsScene.js';
 
+// Dev-only scenes: dynamic import → tree-shaken en build production.
+// import.meta.env.DEV est statiquement remplace par "false" en prod par Vite,
+// donc le bundle final ne contient ni DevTestScene ni SpriteTestScene.
+const devScenes = [];
+if (import.meta.env.DEV) {
+    const DevTestScene = (await import('./scenes/DevTestScene.js')).default;
+    const SpriteTestScene = (await import('./scenes/SpriteTestScene.js')).default;
+    devScenes.push(DevTestScene, SpriteTestScene);
+}
 
 const config = {
     type: Phaser.AUTO,
@@ -41,7 +49,12 @@ const config = {
             debug: false
         }
     },
-    scene: [BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene, VSIntroScene, ResultScene, OverworldScene, PetanqueScene, LevelUpScene, ShopScene, TutorialScene, PlayerScene, DevTestScene, CreditsScene]
+    scene: [
+        BootScene, TitleScene, CharSelectScene, QuickPlayScene, ArcadeScene,
+        VSIntroScene, ResultScene, OverworldScene, PetanqueScene, LevelUpScene,
+        ShopScene, TutorialScene, PlayerScene, CreditsScene,
+        ...devScenes
+    ]
 };
 
 export default config;

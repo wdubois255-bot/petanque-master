@@ -1,9 +1,8 @@
 import Phaser from 'phaser';
-import { FONT_PIXEL } from '../utils/Constants.js';
+import { FONT_PIXEL, UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import Layout from '../utils/Layout.js';
 import { hasSaveData, getAllSlots, loadGame, loadSave, formatPlaytime } from '../utils/SaveManager.js';
 import { setSoundScene, startMusic, stopMusic, sfxUIClick, sfxUIHover, getAudioSettings, setMasterVolume, setMusicVolumeLevel, setSfxVolume, toggleMute } from '../utils/SoundManager.js';
-import { UI, COLORS, CSS, SHADOW_TEXT, SHADOW_HEAVY } from '../utils/Constants.js';
 import UIFactory from '../ui/UIFactory.js';
 import FeedbackWidget from '../ui/FeedbackWidget.js';
 import I18n from '../utils/I18n.js';
@@ -258,19 +257,21 @@ export default class TitleScene extends Phaser.Scene {
             this._titleGlow = this.add.image(Layout.W / 2, logoY, 'v2_logo')
                 .setOrigin(0.5).setAlpha(0).setDepth(4).setTint(0xFFF4D0).setScale(logoScale);
 
-            // Triple-click → DevTestScene
-            this._logoClickCount = 0;
-            this._logoClickTimer = null;
-            this._titleText.setInteractive({ useHandCursor: false });
-            this._titleText.on('pointerdown', () => {
-                this._logoClickCount++;
-                if (this._logoClickTimer) { this._logoClickTimer.remove(); this._logoClickTimer = null; }
-                this._logoClickTimer = this.time.delayedCall(600, () => { this._logoClickCount = 0; this._logoClickTimer = null; });
-                if (this._logoClickCount >= 3) {
-                    this._logoClickCount = 0;
-                    this.scene.start('DevTestScene');
-                }
-            });
+            // Triple-click → DevTestScene (DEV uniquement, le scene n'est pas registree en prod)
+            if (import.meta.env.DEV) {
+                this._logoClickCount = 0;
+                this._logoClickTimer = null;
+                this._titleText.setInteractive({ useHandCursor: false });
+                this._titleText.on('pointerdown', () => {
+                    this._logoClickCount++;
+                    if (this._logoClickTimer) { this._logoClickTimer.remove(); this._logoClickTimer = null; }
+                    this._logoClickTimer = this.time.delayedCall(600, () => { this._logoClickCount = 0; this._logoClickTimer = null; });
+                    if (this._logoClickCount >= 3) {
+                        this._logoClickCount = 0;
+                        this.scene.start('DevTestScene');
+                    }
+                });
+            }
         } else {
             // Fallback: pixel font title
             const outlineOffsets = [

@@ -2,62 +2,25 @@ import Phaser from 'phaser';
 import config from './config.js';
 import I18n from './utils/I18n.js';
 import { initAudioOnFirstGesture } from './utils/SoundManager.js';
+import { isMobileUA } from './utils/DeviceDetect.js';
+import { installGlobalHandlers } from './utils/ErrorReporter.js';
 
-// Global error capture — stores last errors for feedback/debug
-// Errors are automatically included in FeedbackWidget reports
-const MAX_ERRORS = 20;
-const _capturedErrors = [];
-let _errorToastTimeout = null;
-
-function captureError(msg, source) {
-    _capturedErrors.push({
-        time: new Date().toISOString(),
-        msg: String(msg).slice(0, 200),
-        source: source || ''
-    });
-    if (_capturedErrors.length > MAX_ERRORS) _capturedErrors.shift();
-    showErrorToast();
-}
-
-// Discreet toast at bottom of screen (DOM-based, works even if Phaser crashes)
-function showErrorToast() {
-    let toast = document.getElementById('error-toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'error-toast';
-        toast.style.cssText = `
-            position: fixed; bottom: 8px; right: 8px; z-index: 9999;
-            background: rgba(90,26,26,0.92); color: #F5E6D0;
-            font-family: monospace; font-size: 11px;
-            padding: 6px 12px; border-radius: 4px;
-            border: 1px solid #C44B3F; opacity: 0;
-            transition: opacity 0.3s; pointer-events: none;
-        `;
-        document.body.appendChild(toast);
-    }
-    const count = _capturedErrors.length;
-    const last = _capturedErrors[count - 1];
-    toast.textContent = `[!] ${last.msg.slice(0, 60)}${count > 1 ? ` (+${count - 1})` : ''}`;
-    toast.style.opacity = '1';
-    clearTimeout(_errorToastTimeout);
-    _errorToastTimeout = setTimeout(() => { toast.style.opacity = '0'; }, 5000);
-}
-
-window.addEventListener('error', (e) => {
-    captureError(e.message, e.filename ? `${e.filename}:${e.lineno}` : '');
-});
-window.addEventListener('unhandledrejection', (e) => {
-    captureError(e.reason?.message || String(e.reason), 'promise');
-});
-if (typeof globalThis !== 'undefined') globalThis.__GAME_ERRORS__ = _capturedErrors;
+// Capture globale des erreurs (toast DOM + ring buffer + persist localStorage).
+// Module ErrorReporter — remplace l'ancien globalThis.__GAME_ERRORS__.
+installGlobalHandlers();
 
 await I18n.load(I18n.detect());
 initAudioOnFirstGesture();
 const game = new Phaser.Game(config);
-if (typeof globalThis !== 'undefined') globalThis.__PHASER_GAME__ = game;
+
+// __PHASER_GAME__ : conserve uniquement en DEV pour debug DevTools/Playwright.
+// En production le bundle ne l'expose pas (interdit par CLAUDE.md).
+if (import.meta.env.DEV && typeof globalThis !== 'undefined') {
+    globalThis.__PHASER_GAME__ = game;
+}
 
 // === Mobile: orientation lock + paysage warning + auto-fullscreen ===
-if (typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent)) {
+if (isMobileUA()) {
     // 1. Lock portrait — Android Chrome uniquement, echec silencieux sur iOS
     if (screen?.orientation?.lock) {
         screen.orientation.lock('portrait-primary').catch(() => {});
@@ -72,9 +35,14 @@ if (typeof navigator !== 'undefined' && /Mobi|Android/i.test(navigator.userAgent
         'flex-direction:column', 'justify-content:center', 'align-items:center',
         'gap:20px', 'padding:24px', 'pointer-events:none'
     ].join(';');
-    orientOverlay.innerHTML =
-        '<div style="font-size:52px">↻</div>' +
-        '<div>Retournez votre telephone<br>en mode portrait</div>';
+    // textContent + DOM API plutot qu'innerHTML (CSP strict, evite XSS)
+    const icon = document.createElement('div');
+    icon.style.fontSize = '52px';
+    icon.textContent = '↻';
+    const text = document.createElement('div');
+    text.textContent = 'Retournez votre telephone en mode portrait';
+    orientOverlay.appendChild(icon);
+    orientOverlay.appendChild(text);
     document.body.appendChild(orientOverlay);
     const checkOrient = () => {
         orientOverlay.style.display =
