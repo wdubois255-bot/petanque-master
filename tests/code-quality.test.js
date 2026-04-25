@@ -78,8 +78,8 @@ describe('QA-3 Phase 3A — Interdits', () => {
         }
     });
 
-    it('0 localStorage direct dans src/ (hors SaveManager.js et FeedbackWidget.js)', () => {
-        const allowed = ['SaveManager.js', 'FeedbackWidget.js'];
+    it('0 localStorage direct dans src/ (hors SaveManager.js, FeedbackWidget.js, ErrorReporter.js)', () => {
+        const allowed = ['SaveManager.js', 'FeedbackWidget.js', 'ErrorReporter.js'];
         for (const file of srcFiles) {
             if (allowed.some(a => file.endsWith(a))) continue;
             const content = readSrc(file);
@@ -240,9 +240,13 @@ describe('QA-3 Phase 3D — Sauvegarde', () => {
     const saveManager = readSrc('src/utils/SaveManager.js');
 
     it('SaveManager est le seul fichier qui accède directement à localStorage', () => {
-        // FeedbackWidget est aussi autorisé (stockage feedback séparé)
+        // Exceptions :
+        // - FeedbackWidget : stockage feedback + rate limit local separes
+        // - ErrorReporter : persistance des dernieres erreurs (debug post-crash)
         const forbidden = srcFiles.filter(f =>
-            !f.endsWith('SaveManager.js') && !f.endsWith('FeedbackWidget.js')
+            !f.endsWith('SaveManager.js') &&
+            !f.endsWith('FeedbackWidget.js') &&
+            !f.endsWith('ErrorReporter.js')
         );
         for (const file of forbidden) {
             const content = readSrc(file);
