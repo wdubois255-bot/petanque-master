@@ -1,5 +1,20 @@
 import { SAVE_KEY, SAVE_VERSION } from './Constants.js';
 
+// === Integrity check (anti-tampering casual) ===
+// FNV-1a 32-bit + secret pepper. Pas de la crypto serieuse (clé visible côté client),
+// juste de quoi décourager le DevTools casual cheating et détecter une corruption.
+// Pour un vrai anti-cheat il faut un backend — voir docs/VISION_V2.md.
+const SAVE_PEPPER = 'ptq-master-v2-galets-2026';
+function _checksum(str) {
+    let h = 0x811c9dc5;
+    const s = str + SAVE_PEPPER;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    return h.toString(16);
+}
+
 function defaultSaveData() {
     return {
         version: SAVE_VERSION,
@@ -61,11 +76,31 @@ function migrateV1(oldData) {
     return newData;
 }
 
+// Notification quand une sauvegarde a ete corrompue/falsifiee (UI peut afficher un toast)
+let _onIntegrityFailure = null;
+export function onIntegrityFailure(callback) { _onIntegrityFailure = callback; }
+
 export function loadSave() {
     try {
         const raw = localStorage.getItem(SAVE_KEY);
         if (!raw) return defaultSaveData();
-        const data = JSON.parse(raw);
+        const wrapped = JSON.parse(raw);
+
+        // Format wrapped { _data, _sig } → verifier integrite
+        let data;
+        if (wrapped && typeof wrapped === 'object' && '_data' in wrapped && '_sig' in wrapped) {
+            const expectedSig = _checksum(JSON.stringify(wrapped._data));
+            if (expectedSig !== wrapped._sig) {
+                // Sauvegarde modifiee a la main → reset propre, joueur notifie
+                if (_onIntegrityFailure) _onIntegrityFailure();
+                return defaultSaveData();
+            }
+            data = wrapped._data;
+        } else {
+            // Ancien format (pre-checksum) — accepte une fois, sera resigne au prochain saveSave
+            data = wrapped;
+        }
+
         if (!data.version || data.version < 2) return migrateV1(data);
         // Migrate ecus → galets (rename from old saves)
         if (data.ecus !== undefined && data.galets === undefined) {
@@ -93,7 +128,9 @@ export function saveSave(data) {
     try {
         data.version = SAVE_VERSION;
         data.timestamp = Date.now();
-        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+        const json = JSON.stringify(data);
+        const wrapped = { _data: data, _sig: _checksum(json) };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(wrapped));
         return true;
     } catch (e) {
         if (_onSaveFailure) _onSaveFailure(e);
@@ -312,6 +349,11 @@ export function completeDailyChallenge() {
 // Keep backward-compatible exports for old code that might use slots
 export function hasSaveData() {
     return !!localStorage.getItem(SAVE_KEY);
+}
+
+// Test helper: bypass wrapping pour creer un save legacy (non signe)
+export function _setRawSaveForTests(data) {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
 
 export function formatPlaytime(ms) {

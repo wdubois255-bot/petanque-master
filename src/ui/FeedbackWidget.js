@@ -3,6 +3,7 @@ import Layout from '../utils/Layout.js';
 import { loadSave } from '../utils/SaveManager.js';
 import { sfxUIClick, sfxUIHover } from '../utils/SoundManager.js';
 import I18n from '../utils/I18n.js';
+import { getRecentErrors, getRelease } from '../utils/ErrorReporter.js';
 
 /**
  * FeedbackWidget — modal in-game feedback form.
@@ -17,7 +18,12 @@ import I18n from '../utils/I18n.js';
  */
 
 const STORAGE_KEY = 'petanque_feedback';
+const RATELIMIT_KEY = 'petanque_feedback_ratelimit';
 const MAX_LOCAL_ENTRIES = 50;
+// Rate limit: max 5 envois / 10 minutes (anti-spam local). Le webhook Apps Script
+// est public — sans ca un script peut le saturer.
+const RATELIMIT_MAX = 5;
+const RATELIMIT_WINDOW_MS = 10 * 60 * 1000;
 const DEPTH = 300;
 
 export default class FeedbackWidget {
@@ -275,7 +281,7 @@ export default class FeedbackWidget {
     // ================================================================
     static _collectContext(scene, options) {
         const save = loadSave();
-        const errors = (typeof globalThis !== 'undefined' && globalThis.__GAME_ERRORS__) || [];
+        const errors = getRecentErrors();
 
         return {
             scene: options.scene || scene.scene?.key || 'unknown',
@@ -283,6 +289,7 @@ export default class FeedbackWidget {
             scores: options.scores || null,
             opponent: options.opponent || null,
             mene: options.mene ?? null,
+            release: getRelease(),
             device: IS_MOBILE ? 'mobile' : 'desktop',
             screen: `${window.innerWidth}x${window.innerHeight}`,
             userAgent: navigator.userAgent.slice(0, 120),
@@ -317,12 +324,29 @@ export default class FeedbackWidget {
     // ================================================================
     static _sendToWebhook(entry) {
         if (!FEEDBACK_URL || FEEDBACK_URL.includes('PLACEHOLDER')) return;
+        if (!FeedbackWidget._checkRateLimit()) return; // silent drop si quota depasse
         try {
             fetch(FEEDBACK_URL, {
                 method: 'POST',
                 body: JSON.stringify(entry)
             }).catch(() => { /* CORS error on redirect — expected, data was received */ });
         } catch (_) { /* fetch not available */ }
+    }
+
+    // Rate limit local: token-bucket fenetre glissante (RATELIMIT_MAX / RATELIMIT_WINDOW_MS)
+    // Stockage localStorage: tableau de timestamps recents
+    static _checkRateLimit() {
+        try {
+            const now = Date.now();
+            const raw = localStorage.getItem(RATELIMIT_KEY);
+            const recent = (raw ? JSON.parse(raw) : []).filter(t => now - t < RATELIMIT_WINDOW_MS);
+            if (recent.length >= RATELIMIT_MAX) return false;
+            recent.push(now);
+            localStorage.setItem(RATELIMIT_KEY, JSON.stringify(recent));
+            return true;
+        } catch (_) {
+            return true; // localStorage HS → fail open (UX > sécurité ici)
+        }
     }
 
     // ================================================================

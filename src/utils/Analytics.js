@@ -1,14 +1,20 @@
-// Analytics.js — GA4 custom events wrapper
-// Guard: si gtag n'est pas chargé (dev offline, tests), silencieux
+// Analytics.js — Umami events wrapper (cookieless, RGPD/CNIL exempt).
+//
+// Le tag <script> Umami est injecte au build par vite.config.js si les env vars
+// VITE_UMAMI_SCRIPT_URL et VITE_UMAMI_WEBSITE_ID sont definies. Sinon, window.umami
+// reste undefined et tous les appels ci-dessous sont des no-ops silencieux.
+//
+// Avantage vs GA4 : pas de cookie depose, pas de PII, pas de banniere de consentement
+// requise en France. Voir docs/lancement/UMAMI_SETUP.md pour l'install self-host.
 
-const g = (...args) => {
-    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-        window.gtag(...args);
+const track = (event, props) => {
+    if (typeof window !== 'undefined' && typeof window.umami?.track === 'function') {
+        try { window.umami.track(event, props); } catch (_) { /* analytics non bloquant */ }
     }
 };
 
 export function trackMatchStart({ terrain, difficulty, mode, playerChar, opponentChar }) {
-    g('event', 'match_start', {
+    track('match_start', {
         terrain,
         difficulty,
         mode,
@@ -18,7 +24,7 @@ export function trackMatchStart({ terrain, difficulty, mode, playerChar, opponen
 }
 
 export function trackMatchComplete({ won, playerScore, opponentScore, terrain, mode, durationSec, carreaux, biberons, galetsEarned }) {
-    g('event', 'match_complete', {
+    track('match_complete', {
         won: won ? 1 : 0,
         player_score: playerScore,
         opponent_score: opponentScore,
@@ -32,15 +38,15 @@ export function trackMatchComplete({ won, playerScore, opponentScore, terrain, m
 }
 
 export function trackMenuClick(item) {
-    g('event', 'menu_click', { menu_item: item });
+    track('menu_click', { menu_item: item });
 }
 
 export function trackShopView() {
-    g('event', 'shop_view', {});
+    track('shop_view');
 }
 
 export function trackPurchase({ itemId, itemType, priceGalets }) {
-    g('event', 'purchase', {
+    track('purchase', {
         item_id: itemId,
         item_type: itemType,
         price_galets: priceGalets,
@@ -49,15 +55,15 @@ export function trackPurchase({ itemId, itemType, priceGalets }) {
 }
 
 export function trackItemEquipped({ itemId, itemType }) {
-    g('event', 'item_equipped', { item_id: itemId, item_type: itemType });
+    track('item_equipped', { item_id: itemId, item_type: itemType });
 }
 
 export function trackUnlock(itemId) {
-    g('event', 'item_unlocked', { item_id: itemId });
+    track('item_unlocked', { item_id: itemId });
 }
 
 export function trackArcadeRound({ round, won, cumulWins }) {
-    g('event', 'arcade_round', {
+    track('arcade_round', {
         round_number: round,
         won: won ? 1 : 0,
         cumul_wins: cumulWins
