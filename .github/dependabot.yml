@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+      prod-dependencies:
+        dependency-type: production
+        update-types: [patch]
+    ignore:
+      # Phaser 4 RC: bumps majeurs gerés à la main (risque casse moteur custom)
+      - dependency-name: phaser
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3

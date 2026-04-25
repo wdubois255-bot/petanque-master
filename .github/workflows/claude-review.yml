@@ -13,11 +13,15 @@ permissions:
 
 jobs:
   claude-review:
-    # Run on PR events, or on issue comments that mention @claude
+    # Run on PR events from collaborators, or on @claude comments by repo OWNER/MEMBER/COLLABORATOR uniquement
+    # (sinon n'importe quel visiteur peut consommer ANTHROPIC_API_KEY via un commentaire)
     if: >
-      github.event_name == 'pull_request' ||
+      (github.event_name == 'pull_request' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association))
+      ||
       (github.event_name == 'issue_comment' &&
-       contains(github.event.comment.body, '@claude'))
+       contains(github.event.comment.body, '@claude') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
