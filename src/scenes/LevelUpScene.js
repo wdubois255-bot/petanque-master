@@ -82,11 +82,12 @@ export default class LevelUpScene extends Phaser.Scene {
         const bannerY = Layout.H / 2;
 
         // Banner background (v2 asset or fallback)
+        let banner;
         if (this.textures.exists('v2_panel_ornate')) {
-            this.add.nineslice(Layout.W / 2, bannerY, 'v2_panel_ornate', 0, 500, 80, 16, 16, 16, 16)
+            banner = this.add.nineslice(Layout.W / 2, bannerY, 'v2_panel_ornate', 0, 500, 80, 16, 16, 16, 16)
                 .setOrigin(0.5).setAlpha(0.95).setDepth(51);
         } else {
-            const banner = this.add.graphics().setDepth(51);
+            banner = this.add.graphics().setDepth(51);
             banner.fillStyle(COLORS.OMBRE, 0.95);
             banner.fillRoundedRect(Layout.W / 2 - 250, bannerY - 40, 500, 80, 8);
             banner.lineStyle(2, COLORS.OR, 0.8);
