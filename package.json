@@ -1,7 +1,7 @@
 {
   "name": "petanque-master",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Petanque Master - Jeu web 2D style Pokemon avec combats de petanque",
   "type": "module",
   "scripts": {
@@ -27,6 +27,9 @@
     "lint:fix": "eslint src/ --fix",
     "test:coverage": "vitest run --coverage",
     "feedback": "node scripts/analyze-feedback.js",
+    "release": "node scripts/release.mjs",
+    "release:crazygames": "cross-env VITE_PLATFORM=crazygames node scripts/release.mjs",
+    "release:poki": "cross-env VITE_PLATFORM=poki node scripts/release.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -41,6 +44,8 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
     "@vitest/coverage-v8": "^4.1.5",
+    "archiver": "^7.0.1",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "eslint": "^10.0.3",
     "husky": "^9.1.7",
