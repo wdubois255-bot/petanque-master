@@ -25,7 +25,13 @@ jobs:
       - run: npm ci
       - run: npm run lint --max-warnings 0
       - run: npm test -- --reporter=verbose
-      - run: npm run build
+      - name: Build (avec Umami si secrets configures)
+        run: npm run build
+        env:
+          # Umami analytics (cookieless, RGPD/CNIL exempt — voir docs/lancement/UMAMI_SETUP.md).
+          # Si les secrets ne sont pas definis, le build se passe sans analytics (no-op).
+          VITE_UMAMI_SCRIPT_URL: ${{ secrets.VITE_UMAMI_SCRIPT_URL }}
+          VITE_UMAMI_WEBSITE_ID: ${{ secrets.VITE_UMAMI_WEBSITE_ID }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
